@@ -1,0 +1,230 @@
+---
+// src/pages/mentions-legales.astro
+import BaseLayout from '@layouts/Layout.astro';
+---
+
+<BaseLayout
+  title="Mentions Légales | Biscuits du Dev"
+  description="Mentions légales du site Biscuits du Dev - Services informatiques à tech"
+>
+  <article class="legal-page">
+    <div class="container">
+      <h1>Mentions Légales</h1>
+      
+      <section class="legal-section">
+        <h2>1. Éditeur du site</h2>
+        <p>
+          Le site <strong>www.optea-tech.fr</strong> est édité par :
+        </p>
+        <address>
+          <strong>Biscuits du Dev</strong><br>
+          [Forme juridique] au capital de [X]€<br>
+          Siège social : [Adresse complète]<br>
+          86000 tech, France<br>
+          <br>
+          SIRET : [Numéro SIRET]<br>
+          TVA intracommunautaire : [Numéro TVA]<br>
+          <br>
+          Tél : <a href="tel:+33XXXXXXXXX">+33 X XX XX XX XX</a><br>
+          Email : <a href="mailto:contact@optea-tech.fr">contact@optea-tech.fr</a>
+        </address>
+        <p>
+          <strong>Directeur de la publication :</strong> [Nom du dirigeant]
+        </p>
+      </section>
+
+      <section class="legal-section">
+        <h2>2. Hébergement</h2>
+        <p>Le site est hébergé par :</p>
+        <address>
+          <strong>Netlify, Inc.</strong><br>
+          2325 3rd Street, Suite 215<br>
+          San Francisco, California 94107<br>
+          États-Unis<br>
+          <br>
+          Site web : <a href="https://www.netlify.com" target="_blank" rel="noopener noreferrer">www.netlify.com</a>
+        </address>
+      </section>
+
+      <section class="legal-section">
+        <h2>3. Propriété intellectuelle</h2>
+        <p>
+          L'ensemble du contenu de ce site (textes, images, vidéos, graphismes, logo, icônes, etc.) 
+          est la propriété exclusive d'<strong>Biscuits du Dev</strong>, sauf mention contraire.
+        </p>
+        <p>
+          Toute reproduction, distribution, modification, adaptation, retransmission ou publication, 
+          même partielle, de ces différents éléments est strictement interdite sans l'accord exprès 
+          par écrit d'Biscuits du Dev.
+        </p>
+        <p>
+          Le non-respect de cette interdiction constitue une contrefaçon pouvant engager la 
+          responsabilité civile et pénale du contrefacteur.
+        </p>
+      </section>
+
+      <section class="legal-section">
+        <h2>4. Responsabilité</h2>
+        <p>
+          Les informations contenues sur ce site sont aussi précises que possible et le site est 
+          périodiquement remis à jour, mais peut toutefois contenir des inexactitudes, des omissions 
+          ou des lacunes.
+        </p>
+        <p>
+          Biscuits du Dev ne pourra être tenu responsable de l'utilisation faite de ces informations, 
+          et de tout préjudice direct ou indirect pouvant en découler.
+        </p>
+        <p>
+          Les liens hypertextes mis en place dans le cadre du présent site internet en direction 
+          d'autres ressources présentes sur le réseau Internet ne sauraient engager la responsabilité 
+          d'Biscuits du Dev.
+        </p>
+      </section>
+
+      <section class="legal-section">
+        <h2>5. Cookies</h2>
+        <p>
+          Le site peut être amené à vous demander l'acceptation de cookies pour des besoins de 
+          statistiques et d'affichage. Un cookie est une information déposée sur votre disque dur 
+          par le serveur du site que vous visitez.
+        </p>
+        <p>
+          Il contient plusieurs données qui sont stockées sur votre ordinateur dans un simple 
+          fichier texte auquel un serveur accède pour lire et enregistrer des informations.
+        </p>
+        <p>
+          Vous pouvez refuser l'utilisation des cookies en configurant votre navigateur web, 
+          cependant certaines fonctionnalités du site pourraient ne plus être accessibles.
+        </p>
+      </section>
+
+      <section class="legal-section">
+        <h2>6. Protection des données personnelles</h2>
+        <p>
+          Conformément au Règlement Général sur la Protection des Données (RGPD) et à la loi 
+          Informatique et Libertés, vous disposez d'un droit d'accès, de rectification, 
+          de suppression et d'opposition aux données personnelles vous concernant.
+        </p>
+        <p>
+          Pour exercer ces droits, vous pouvez nous contacter :
+        </p>
+        <ul>
+          <li>Par email : <a href="mailto:contact@optea-tech.fr">contact@optea-tech.fr</a></li>
+          <li>Par courrier : Biscuits du Dev, [Adresse], 86000 tech</li>
+        </ul>
+        <p>
+          Pour plus d'informations, consultez notre 
+          <a href="/politique-confidentialite">Politique de Confidentialité</a>.
+        </p>
+      </section>
+
+      <section class="legal-section">
+        <h2>7. Droit applicable</h2>
+        <p>
+          Les présentes mentions légales sont soumises au droit français. En cas de litige et à 
+          défaut d'accord amiable, le litige sera porté devant les tribunaux français conformément 
+          aux règles de compétence en vigueur.
+        </p>
+      </section>
+
+      <section class="legal-section">
+        <h2>8. Contact</h2>
+        <p>
+          Pour toute question concernant ces mentions légales, vous pouvez nous contacter :
+        </p>
+        <ul>
+          <li>Par téléphone : <a href="tel:+33952587543">09 00 00 00 00</a></li>
+          <li>Par email : <a href="mailto:contact@optea-tech.fr">contact@optea-tech.fr</a></li>
+          <li>Via notre <a href="/contact">formulaire de contact</a></li>
+        </ul>
+      </section>
+
+      <p class="update-date">
+        <em>Dernière mise à jour : {new Date().toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' })}</em>
+      </p>
+    </div>
+  </article>
+</BaseLayout>
+
+<style>
+  .legal-page {
+    padding: var(--spacing-4xl) 0;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .legal-page h1 {
+    font-size: var(--font-size-5xl);
+    margin-bottom: var(--spacing-3xl);
+    color: var(--color-primary);
+    text-align: center;
+  }
+
+  .legal-section {
+    margin-bottom: var(--spacing-3xl);
+  }
+
+  .legal-section h2 {
+    font-size: var(--font-size-2xl);
+    color: var(--color-gray-900);
+    margin-bottom: var(--spacing-lg);
+    padding-bottom: var(--spacing-sm);
+    border-bottom: 2px solid var(--color-border);
+    text-align: left;
+  }
+
+  .legal-section p {
+    line-height: 1.8;
+    margin-bottom: var(--spacing-md);
+    color: var(--color-text);
+  }
+
+  .legal-section address {
+    font-style: normal;
+    line-height: 1.8;
+    background: var(--color-bg-alt);
+    padding: var(--spacing-lg);
+    border-radius: var(--radius-md);
+    border-left: 4px solid var(--color-primary);
+    margin: var(--spacing-lg) 0;
+  }
+
+  .legal-section ul {
+    margin: var(--spacing-md) 0;
+    padding-left: var(--spacing-xl);
+  }
+
+  .legal-section li {
+    margin-bottom: var(--spacing-sm);
+    line-height: 1.8;
+  }
+
+  .legal-section a {
+    color: var(--color-primary);
+    text-decoration: underline;
+    transition: color var(--transition-fast);
+  }
+
+  .legal-section a:hover {
+    color: var(--color-primary-dark);
+  }
+
+  .update-date {
+    text-align: center;
+    color: var(--color-text-light);
+    font-size: var(--font-size-sm);
+    margin-top: var(--spacing-3xl);
+    padding-top: var(--spacing-xl);
+    border-top: 1px solid var(--color-border);
+  }
+
+  @media (max-width: 768px) {
+    .legal-page h1 {
+      font-size: var(--font-size-3xl);
+    }
+
+    .legal-section h2 {
+      font-size: var(--font-size-xl);
+    }
+  }
+</style>

@@ -1,0 +1,88 @@
+---
+import BaseLayout from "@/layouts/Layout.astro";
+---
+
+<BaseLayout title="Politique Cookies - Biscuits du Dev" description="Politique cookies conforme CNIL. Cookies techniques uniquement.">
+  <main class="legal-wrapper">
+    <h1>Politique Cookies</h1>
+    <p><strong>Dernière mise à jour :</strong> 20/11/2025</p>
+
+    <p>
+      Le site <strong>Biscuits du Dev</strong> utilise uniquement des cookies
+      <strong>techniques nécessaires</strong> au fonctionnement et à la sécurité.
+      Aucun cookie publicitaire ou de suivi n’est utilisé.
+    </p>
+
+    <h2>1. Cookies techniques utilisés</h2>
+
+    <h3>1.1. Cookies Cloudflare</h3>
+    <p>
+      Cloudflare utilise des cookies indispensables pour :
+    </p>
+    <ul>
+      <li>la protection anti-bot</li>
+      <li>la prévention des attaques DDoS</li>
+      <li>l’identification du trafic légitime</li>
+    </ul>
+
+    <p>Cookies concernés :</p>
+    <ul>
+      <li><code>__cf_bm</code></li>
+      <li><code>cf_clearance</code></li>
+    </ul>
+
+    <p>
+      Ces cookies sont strictement nécessaires au fonctionnement du site
+      et sont <strong>exemptés de consentement</strong> (CNIL).
+    </p>
+
+    <h3>1.2. Cloudflare Turnstile</h3>
+    <p>
+      Le système anti-bot Turnstile utilise un jeton technique pour vérifier que la
+      soumission du formulaire provient bien d’un humain.
+    </p>
+
+    <p>
+      Ce cookie est également <strong>exempté</strong>, car il sert uniquement à la sécurité.
+    </p>
+
+    <h2>2. Absence de cookies non essentiels</h2>
+    <p>
+      Le site n’utilise :
+    </p>
+    <ul>
+      <li>aucun cookie de publicité</li>
+      <li>aucun cookie de mesure d’audience</li>
+      <li>aucun cookie tiers de suivi</li>
+    </ul>
+
+    <p>
+      Ainsi, aucun mécanisme de consentement (“Accepter / Refuser”) n’est nécessaire.
+    </p>
+
+    <h2>3. Gestion des cookies</h2>
+    <p>
+      Vous pouvez configurer votre navigateur pour bloquer les cookies techniques,
+      mais certaines fonctionnalités essentielles (sécurité, protection anti-bot) 
+      pourraient ne plus fonctionner.
+    </p>
+
+    <h2>4. Mise à jour</h2>
+    <p>
+      Cette politique sera modifiée si de nouveaux outils non-exemptés
+      venaient à être ajoutés (ex : analytics).
+    </p>
+  </main>
+
+  <style>
+    .legal-wrapper {
+      max-width: 800px;
+      margin: 2rem auto;
+      padding: 1.5rem;
+      line-height: 1.7;
+    }
+    h1, h2, h3 {
+      margin-top: 1.8rem;
+    }
+  </style>
+</BaseLayout>

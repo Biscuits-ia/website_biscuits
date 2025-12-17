@@ -1,0 +1,397 @@
+<header class="site-header" data-header>
+  <div class="header-container">
+    <div class="logo-section">
+      <a href="/" aria-label="Retour à l'accueil Biscuits Dev">
+        <span class="logo-text">
+          <strong>Biscuits</strong>
+          <small>Solutions IA & Dev</small>
+        </span>
+      </a>
+    </div>
+
+    <button 
+      class="mobile-menu-toggle" 
+      aria-label="Ouvrir le menu"
+      aria-expanded="false"
+      aria-controls="main-navigation"
+    >
+      <span class="hamburger"></span>
+    </button>
+
+    <nav id="main-navigation" class="main-nav" aria-label="Navigation principale">
+      <ul>
+        <li><a href="/">Accueil</a></li>
+        <li><a href="/services">Services</a></li>
+        <li><a href="/tarifs">Tarifs</a></li>
+        <li><a href="/blog">Blog</a></li>
+        <li><a href="/contact">Contact</a></li>
+        <li class="nav-cta">
+          <a href="/devis" class="cta-button">
+            <span>Devis gratuit</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+          </a>
+        </li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<style>
+  .site-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    background: var(--glass-bg, rgba(255, 255, 255, 0.05));
+    backdrop-filter: var(--glass-blur, blur(10px));
+    border-bottom: 1px solid var(--glass-border, rgba(255, 255, 255, 0.1));
+    transition: all var(--transition-base, 0.3s ease);
+  }
+
+  /* Scrolled state */
+  .site-header.scrolled {
+    background: rgba(13, 13, 13, 0.95);
+    box-shadow: var(--shadow-md, 0 4px 12px rgba(0, 0, 0, 0.4));
+  }
+
+  /* Hidden state (scroll down) */
+  .site-header.header-hidden {
+    transform: translateY(-100%);
+  }
+
+  /* === CONTAINER === */
+  .header-container {
+    max-width: var(--container-2xl, 1400px);
+    margin-inline: auto;
+    padding-inline: var(--spacing-lg, 1.5rem);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 80px;
+  }
+
+  /* === LOGO === */
+  .logo-section a {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md, 1rem);
+    transition: transform var(--transition-fast, 0.2s ease);
+  }
+
+  .logo-section a:hover {
+    transform: scale(1.05);
+  }
+
+  .logo-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
+  }
+
+  .logo-text strong {
+    font-size: var(--font-size-2xl, 1.5rem);
+    background: linear-gradient(135deg, var(--color-primary, oklch(70.716% 0.17277 43.29)), var(--color-first, oklch(73.847% 0.14656 42.001)));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .logo-text small {
+    font-size: var(--font-size-sm, 0.875rem);
+    color: var(--color-text-light, rgba(255, 255, 255, 0.6));
+  }
+
+  /* === HAMBURGER MENU === */
+  .mobile-menu-toggle {
+    display: none;
+    background: none;
+    border: none;
+    padding: var(--spacing-sm, 0.75rem);
+    cursor: pointer;
+    z-index: 1001;
+    position: relative;
+  }
+
+  .hamburger,
+  .hamburger::before,
+  .hamburger::after {
+    display: block;
+    width: 28px;
+    height: 2px;
+    background: var(--color-text, rgba(255, 255, 255, 0.9));
+    transition: all var(--transition-base, 0.3s ease);
+    border-radius: 2px;
+  }
+
+  .hamburger {
+    position: relative;
+  }
+
+  .hamburger::before,
+  .hamburger::after {
+    content: '';
+    position: absolute;
+    left: 0;
+  }
+
+  .hamburger::before {
+    top: -8px;
+  }
+
+  .hamburger::after {
+    bottom: -8px;
+  }
+
+  /* Hamburger animation quand menu ouvert */
+  .mobile-menu-toggle[aria-expanded="true"] .hamburger {
+    background: transparent;
+  }
+
+  .mobile-menu-toggle[aria-expanded="true"] .hamburger::before {
+    top: 0;
+    transform: rotate(45deg);
+  }
+
+  .mobile-menu-toggle[aria-expanded="true"] .hamburger::after {
+    bottom: 0;
+    transform: rotate(-45deg);
+  }
+
+  /* === NAVIGATION === */
+  .main-nav ul {
+    display: flex;
+    list-style: none;
+    gap: var(--spacing-xl, 2rem);
+    align-items: center;
+    margin: 0;
+    padding: 0;
+  }
+
+  .main-nav li {
+    margin: 0;
+  }
+
+  /* Nav CTA - pas de border bottom */
+  .nav-cta {
+    border-bottom: none !important;
+  }
+
+  .main-nav a {
+    color: var(--color-text-light, rgba(255, 255, 255, 0.6));
+    font-weight: var(--font-weight-medium, 500);
+    position: relative;
+    padding: var(--spacing-xs, 0.5rem) 0;
+    transition: color var(--transition-fast, 0.2s ease);
+  }
+
+  /* Pas d'underline sur le CTA */
+  .nav-cta a::before {
+    display: none;
+  }
+
+  /* Underline animation */
+  .main-nav a::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: 0;
+    height: 2px;
+    background: var(--color-primary, oklch(72.218% 0.16534 47.931));
+    transform: translateX(-50%);
+    transition: width var(--transition-base, 0.3s ease);
+  }
+
+  .main-nav a:hover {
+    color: var(--color-text, rgba(255, 255, 255, 0.9));
+  }
+
+  .main-nav a:hover::before {
+    width: 100%;
+  }
+
+  /* === CTA BUTTON === */
+  .cta-button {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-sm, 0.75rem);
+    padding: var(--spacing-sm, 0.75rem) var(--spacing-lg, 1.5rem);
+    background: linear-gradient(135deg, var(--color-primary, oklch(70.716% 0.17277 43.29)), var(--color-primary-dark, oklch(70.261% 0.16326 53.745)));
+    color: #fff !important;
+    border-radius: var(--radius-lg, 12px);
+    font-weight: var(--font-weight-semibold, 600);
+    transition: all var(--transition-base, 0.3s ease);
+    box-shadow: 0 0 20px oklch(75.632% 0.15376 59.288 / 0.3);
+    text-decoration: none;
+  }
+
+  .cta-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 30px oklch(73.159% 0.16141 50.968 / 0.5);
+    color: #fff !important;
+  }
+
+  .cta-button svg {
+    transition: transform var(--transition-fast, 0.2s ease);
+  }
+
+  .cta-button:hover svg {
+    transform: translateX(3px);
+  }
+
+  /* === RESPONSIVE === */
+  @media (width <= 1024px) {
+    .mobile-menu-toggle {
+      display: block;
+    }
+
+    .main-nav {
+      position: fixed;
+      inset: 0 -100% 0 auto;
+      width: min(320px, 100vw);
+      background: var(--color-dark-elevated, oklch(21.779% 0.00002 271.152));
+      padding: 6rem var(--spacing-xl, 2rem) var(--spacing-xl, 2rem);
+      box-shadow: -2px 0 20px rgba(0, 0, 0, 0.5);
+      transition: inset-inline-end var(--transition-base, 0.3s ease);
+      overflow-y: auto;
+      backdrop-filter: blur(20px);
+    }
+
+    .main-nav.active {
+      inset-inline-end: 0;
+    }
+
+    .main-nav ul {
+      flex-direction: column;
+      width: 100%;
+      gap: 0;
+      align-items: stretch;
+    }
+
+    .main-nav li {
+      width: 100%;
+      border-bottom: 1px solid var(--color-border, rgba(255, 255, 255, 0.1));
+    }
+
+    .main-nav li.nav-cta {
+      border-bottom: none;
+      margin-top: var(--spacing-md, 1rem);
+      padding-top: var(--spacing-md, 1rem);
+      border-top: 1px solid var(--color-border, rgba(255, 255, 255, 0.1));
+    }
+
+    .main-nav a {
+      display: block;
+      padding-block: var(--spacing-md, 1rem);
+      width: 100%;
+    }
+
+    .main-nav a::before {
+      left: 0;
+      transform: none;
+    }
+
+    .nav-cta .cta-button {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+
+  @media (width <= 480px) {
+    .logo-text small {
+      display: none;
+    }
+
+    .header-container {
+      padding-inline: var(--spacing-md, 1rem);
+    }
+  }
+</style>
+
+<script>
+  const header = document.querySelector('[data-header]') as HTMLElement | null;
+  
+  if (header) {
+    let lastScroll = 0;
+    let ticking = false;
+
+    function updateHeader() {
+      if (!header) return;
+      
+      const currentScroll = window.pageYOffset;
+
+      if (currentScroll > 50) {
+        header.classList.add('scrolled');
+      } else {
+        header.classList.remove('scrolled');
+      }
+
+      if (currentScroll > lastScroll && currentScroll > 80) {
+        header.classList.add('header-hidden');
+      } else {
+        header.classList.remove('header-hidden');
+      }
+
+      lastScroll = currentScroll;
+      ticking = false;
+    }
+
+    window.addEventListener('scroll', () => {
+      if (!ticking) {
+        window.requestAnimationFrame(updateHeader);
+        ticking = true;
+      }
+    }, { passive: true });
+  }
+
+  const toggle = document.querySelector('.mobile-menu-toggle') as HTMLButtonElement | null;
+  const nav = document.querySelector('.main-nav') as HTMLElement | null;
+
+  if (toggle && nav) {
+    toggle.addEventListener('click', () => {
+      const isExpanded = toggle.getAttribute('aria-expanded') === 'true';
+      toggle.setAttribute('aria-expanded', (!isExpanded).toString());
+      nav.classList.toggle('active');
+      
+      document.body.style.overflow = isExpanded ? '' : 'hidden';
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && nav.classList.contains('active')) {
+        toggle.click();
+      }
+    });
+
+    nav.querySelectorAll('a').forEach((link) => {
+      link.addEventListener('click', () => {
+        if (nav.classList.contains('active')) {
+          toggle.click();
+        }
+      });
+    });
+
+    document.addEventListener('click', (e) => {
+      const target = e.target as HTMLElement;
+      if (
+        nav.classList.contains('active') &&
+        !nav.contains(target) &&
+        !toggle.contains(target)
+      ) {
+        toggle.click();
+      }
+    });
+  }
+
+  document.addEventListener('astro:before-swap', () => {
+    if (nav) {
+      nav.classList.remove('active');
+    }
+    if (toggle) {
+      toggle.setAttribute('aria-expanded', 'false');
+    }
+    document.body.style.overflow = '';
+  });
+</script>

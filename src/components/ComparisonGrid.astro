@@ -1,0 +1,115 @@
+---
+interface Props {
+  type?: 'human' | 'ai';
+  items: Array<{
+    icon: string;
+    title: string;
+    description: string;
+  }>;
+}
+
+const { type = 'human', items } = Astro.props;
+---
+
+<div class="comparison-grid">
+  {items.map((item) => (
+    <div class={`comparison-card ${type}`} data-reveal>
+      <div class="comparison-icon">{item.icon}</div>
+      <h4>{item.title}</h4>
+      <p>{item.description}</p>
+    </div>
+  ))}
+</div>
+
+<style>
+  .comparison-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1.5rem;
+    margin: 2rem 0;
+  }
+
+  .comparison-card {
+    background: var(--color-bg-alt);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    padding: 2rem 1.5rem;
+    transition: all var(--transition-base);
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Glow effect au top */
+  .comparison-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--color-primary), var(--color-first));
+    transform: scaleX(0);
+    transition: transform var(--transition-base);
+  }
+
+  .comparison-card:hover {
+    transform: translateY(-8px);
+    box-shadow: var(--shadow-xl);
+    border-color: var(--color-primary);
+    background: var(--color-dark-elevated);
+  }
+
+  .comparison-card:hover::before {
+    transform: scaleX(1);
+  }
+
+  /* Variante AI avec accent différent */
+  .comparison-card.ai {
+    background: linear-gradient(135deg, 
+      rgba(59, 130, 246, 0.05) 0%, 
+      rgba(139, 92, 246, 0.05) 100%
+    );
+    border-color: rgba(59, 130, 246, 0.2);
+  }
+
+  .comparison-card.ai:hover {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 30px rgba(59, 130, 246, 0.3);
+  }
+
+  .comparison-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    filter: drop-shadow(0 0 10px rgba(59, 130, 246, 0.5));
+    transition: transform var(--transition-base);
+  }
+
+  .comparison-card:hover .comparison-icon {
+    transform: scale(1.1) rotate(5deg);
+  }
+
+  .comparison-card h4 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin: 0.75rem 0;
+    color: var(--color-text);
+    background: linear-gradient(135deg, var(--color-primary), var(--color-first));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .comparison-card p {
+    font-size: 0.95rem;
+    color: var(--color-text-light);
+    margin: 0;
+    line-height: 1.6;
+  }
+
+  @media (max-width: 768px) {
+    .comparison-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

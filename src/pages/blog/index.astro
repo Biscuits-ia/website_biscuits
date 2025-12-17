@@ -1,0 +1,850 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import { getCollection, type CollectionEntry } from 'astro:content';
+import NewsletterForm from '@/components/svelte/NewsletterForm.svelte';
+
+const articles = await getCollection('blog');
+
+const publishedArticles = import.meta.env.PROD 
+  ? articles.filter((article: CollectionEntry<'blog'>) => !article.data.draft)
+  : articles;
+
+const sortedArticles = publishedArticles.sort(
+  (a: CollectionEntry<'blog'>, b: CollectionEntry<'blog'>) => 
+    b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
+);
+
+const featuredArticles = sortedArticles.filter((a: CollectionEntry<'blog'>) => a.data.featured);
+const regularArticles = sortedArticles.filter((a: CollectionEntry<'blog'>) => !a.data.featured);
+
+// Récupérer tous les tags uniques
+const allTags = [...new Set(sortedArticles.flatMap((a: CollectionEntry<'blog'>) => (a.data.tags as string[]) || []))] as string[];
+
+
+const structuredData = {
+  "@context": "https://schema.org",
+  "@type": "Blog",
+  "name": "Blog – Biscuits AI",
+  "headline": "Blog Biscuits AI",
+  "description": "Articles sur l'IA, les starterkits optimisés, les outils de développement et les automatisations pour développeurs et vibe coders.",
+  "url": "https://biscuits.dev/blog",
+  "inLanguage": "fr-FR",
+  "publisher": {
+    "@type": "Organization",
+    "name": "Biscuits AI",
+    "url": "https://biscuits.dev",
+    "logo": "https://biscuits.dev/logo.webp"
+  }
+};
+---
+
+<Layout
+  title="Blog - Biscuits du Dev"
+  description="Articles, guides et tutoriels pour développeurs et vibe coders"
+  structuredData={structuredData}
+>
+  <div class="blog-wrapper">
+    <!-- Hero Section -->
+    <header class="blog-hero">
+      
+      <div class="hero-content">
+        <h1 class="hero-title">
+          Développe plus vite avec
+          <span class="gradient-text">Biscuits du Dev</span>
+        </h1>
+        
+        <p class="hero-description">
+          Des articles, guides et tutoriels pour shipper des projets propres et performants 🚀
+        </p>
+
+        <!-- Stats Cards -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon">📚</div>
+            <div class="stat-info">
+              <div class="stat-number">{sortedArticles.length}</div>
+              <div class="stat-label">Articles</div>
+            </div>
+          </div>
+          
+          <div class="stat-card">
+            <div class="stat-icon">🏷️</div>
+            <div class="stat-info">
+              <div class="stat-number">{allTags.length}</div>
+              <div class="stat-label">Tags</div>
+            </div>
+          </div>
+          
+          <div class="stat-card">
+            <div class="stat-icon">⭐</div>
+            <div class="stat-info">
+              <div class="stat-number">{featuredArticles.length}</div>
+              <div class="stat-label">En vedette</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="blog-container">
+      <!-- Newsletter Section -->
+      <section class="newsletter-section">
+        <NewsletterForm client:load />
+      </section>
+
+      <!-- Articles en vedette -->
+      {featuredArticles.length > 0 && (
+        <section class="featured-section">
+          <div class="section-header">
+            <div class="section-title-wrapper">
+              <h2 class="section-title">
+                <div class="title-icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                  </svg>
+                </div>
+                Articles en vedette
+              </h2>
+              <p class="section-subtitle">Les meilleurs articles sélectionnés pour toi</p>
+            </div>
+          </div>
+          
+          <div class="featured-grid">
+            {featuredArticles.map((article: CollectionEntry<'blog'>, index: number) => (
+              <article class="featured-card" style={`animation-delay: ${index * 0.1}s`}>
+                <a href={`/blog/${article.slug}`} class="card-link">
+                  {article.data.thumbnail && (
+                    <div class="card-thumbnail">
+                      <img src={article.data.thumbnail} alt={article.data.title} loading="lazy" />
+                      <div class="thumbnail-overlay"></div>
+                      <div class="featured-badge">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                        </svg>
+                        En vedette
+                      </div>
+                    </div>
+                  )}
+                  
+                  <div class="card-content">
+                    <div class="card-meta">
+                      <time datetime={article.data.pubDate.toISOString()}>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                          <line x1="16" y1="2" x2="16" y2="6"></line>
+                          <line x1="8" y1="2" x2="8" y2="6"></line>
+                          <line x1="3" y1="10" x2="21" y2="10"></line>
+                        </svg>
+                        {article.data.pubDate.toLocaleDateString('fr-FR', {
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric'
+                        })}
+                      </time>
+                      {article.data.author && (
+                        <span class="author">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                          </svg>
+                          {article.data.author}
+                        </span>
+                      )}
+                    </div>
+                    
+                    <h3 class="card-title">{article.data.title}</h3>
+                    
+                    {article.data.description && (
+                      <p class="card-description">{article.data.description}</p>
+                    )}
+                    
+                    {article.data.tags && article.data.tags.length > 0 && (
+                      <div class="card-tags">
+                        {article.data.tags.slice(0, 3).map((tag: string) => (
+                          <span class="tag">#{tag}</span>
+                        ))}
+                      </div>
+                    )}
+                    
+                    <div class="card-footer">
+                      <span class="read-more">
+                        Lire l'article
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <line x1="5" y1="12" x2="19" y2="12"></line>
+                          <polyline points="12 5 19 12 12 19"></polyline>
+                        </svg>
+                      </span>
+                    </div>
+                  </div>
+                </a>
+              </article>
+            ))}
+          </div>
+        </section>
+      )}
+
+      <!-- Tous les articles -->
+      <section class="articles-section">
+        <div class="section-header">
+          <div class="section-title-wrapper">
+            <h2 class="section-title">
+              <div class="title-icon">
+              </div>
+              {featuredArticles.length > 0 ? 'Tous les articles' : 'Articles récents'}
+            </h2>
+            <p class="section-subtitle">
+              {regularArticles.length} article{regularArticles.length > 1 ? 's' : ''} disponible{regularArticles.length > 1 ? 's' : ''}
+            </p>
+          </div>
+        </div>
+        
+        <div class="articles-grid">
+          {regularArticles.map((article: CollectionEntry<'blog'>, index: number) => (
+            <article class="article-card" style={`animation-delay: ${index * 0.05}s`}>
+              <a href={`/blog/${article.slug}`} class="card-link">
+                <div class="card-content">
+                  <div class="card-meta">
+                    <time datetime={article.data.pubDate.toISOString()}>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="16" y1="2" x2="16" y2="6"></line>
+                        <line x1="8" y1="2" x2="8" y2="6"></line>
+                        <line x1="3" y1="10" x2="21" y2="10"></line>
+                      </svg>
+                      {article.data.pubDate.toLocaleDateString('fr-FR', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                      })}
+                    </time>
+                    {article.data.author && (
+                      <span class="author">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                          <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                        {article.data.author}
+                      </span>
+                    )}
+                  </div>
+                  
+                  <h3 class="card-title">{article.data.title}</h3>
+                  
+                  {article.data.description && (
+                    <p class="card-description">{article.data.description}</p>
+                  )}
+                  
+                  {article.data.tags && article.data.tags.length > 0 && (
+                    <div class="card-tags">
+                      {article.data.tags.slice(0, 3).map((tag: string) => (
+                        <span class="tag">#{tag}</span>
+                      ))}
+                    </div>
+                  )}
+                  
+                  <div class="card-footer">
+                    <span class="read-more">
+                      Lire l'article
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                        <polyline points="12 5 19 12 12 19"></polyline>
+                      </svg>
+                    </span>
+                  </div>
+                </div>
+              </a>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <!-- Tags populaires -->
+      {allTags.length > 0 && (
+        <section class="tags-section">
+          <div class="section-header">
+            <h2 class="section-title-small">
+              🏷️ Tags populaires
+            </h2>
+          </div>
+          <div class="popular-tags">
+            {allTags.slice(0, 10).map((tag: string) => (
+              <a href={`/blog/tag/${tag}`} class="popular-tag">
+                #{tag}
+              </a>
+            ))}
+          </div>
+        </section>
+      )}
+    </div>
+  </div>
+</Layout>
+
+<style>
+  .blog-wrapper {
+    min-height: 100vh;
+    background: var(--color-dark-bg, #0d0d0d);
+  }
+
+  .blog-hero {
+    position: relative;
+    padding: 8rem 1rem 4rem;
+    overflow: hidden;
+    background: linear-gradient(180deg, 
+      var(--color-dark-bg) 0%, 
+      var(--color-dark-elevated, #1a1a1a) 100%
+    );
+  }
+
+  .hero-background {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    opacity: 0.3;
+  }
+
+  .hero-background::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(
+      circle at 30% 50%,
+      rgba(59, 130, 246, 0.15) 0%,
+      transparent 50%
+    );
+  }
+
+  .hero-background::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(
+      circle at 70% 50%,
+      rgba(139, 92, 246, 0.15) 0%,
+      transparent 50%
+    );
+  }
+
+  .hero-content {
+    position: relative;
+    z-index: 1;
+    max-width: 900px;
+    margin: 0 auto;
+    text-align: center;
+  }
+
+  .hero-title {
+    font-size: clamp(2.5rem, 6vw, 4.5rem);
+    font-weight: 900;
+    color: var(--color-text, rgba(255, 255, 255, 0.9));
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+    margin-bottom: 1.5rem;
+  }
+
+  .gradient-text {
+    display: block;
+    background: linear-gradient(
+      135deg, 
+      var(--color-primary, #3b82f6) 0%, 
+      var(--color-first, #8b5cf6) 50%,
+      var(--color-primary, #3b82f6) 100%
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: gradient-shift 4s ease infinite;
+    background-size: 200% 200%;
+  }
+
+  @keyframes gradient-shift {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+  }
+
+  .hero-description {
+    font-size: 1.25rem;
+    color: var(--color-text-light, rgba(255, 255, 255, 0.6));
+    max-width: 600px;
+    margin: 0 auto 3rem;
+    line-height: 1.7;
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1.5rem;
+    max-width: 700px;
+    margin: 0 auto;
+  }
+
+  .stat-card {
+    background: var(--color-bg-alt, #1a1a1a);
+    border: 1px solid var(--color-border, rgba(255, 255, 255, 0.1));
+    padding: 1.5rem;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    box-shadow: var(--shadow-md, 0 4px 12px rgba(0, 0, 0, 0.4));
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--color-primary), var(--color-first));
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
+  }
+
+  .stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-xl, 0 12px 24px rgba(0, 0, 0, 0.6));
+    border-color: var(--color-primary, #3b82f6);
+  }
+
+  .stat-card:hover::before {
+    transform: scaleX(1);
+  }
+
+  .stat-icon {
+    font-size: 2rem;
+    flex-shrink: 0;
+    filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.5));
+  }
+
+  .stat-info {
+    text-align: left;
+  }
+
+  .stat-number {
+    font-size: 2rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--color-primary), var(--color-first));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    line-height: 1;
+    margin-bottom: 0.25rem;
+  }
+
+  .stat-label {
+    font-size: 0.875rem;
+    color: var(--color-text-light, rgba(255, 255, 255, 0.6));
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .blog-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 4rem 1rem;
+  }
+
+  .section-header {
+    margin-bottom: 3rem;
+  }
+
+  .section-title-wrapper {
+    text-align: center;
+  }
+
+  .section-title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--color-text, rgba(255, 255, 255, 0.9));
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .title-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+    border-radius: 12px;
+    color: white;
+    box-shadow: var(--shadow-glow, 0 0 20px rgba(59, 130, 246, 0.3));
+  }
+
+  .section-subtitle {
+    color: var(--color-text-light, rgba(255, 255, 255, 0.6));
+    font-size: 1.125rem;
+    margin: 0;
+  }
+
+  .section-title-small {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--color-text, rgba(255, 255, 255, 0.9));
+    margin-bottom: 1.5rem;
+  }
+
+  .featured-section {
+    margin-bottom: 6rem;
+  }
+
+  .featured-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 2.5rem;
+  }
+
+  .featured-card {
+    background: var(--color-bg-alt, #1a1a1a);
+    border: 1px solid var(--color-border, rgba(255, 255, 255, 0.1));
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: var(--shadow-lg, 0 8px 20px rgba(0, 0, 0, 0.5));
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    animation: fade-in-up 0.6s ease forwards;
+    opacity: 0;
+    position: relative;
+  }
+
+  /* Border gradient effect */
+  .featured-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #fbbf24, #f59e0b);
+    transform: scaleX(0);
+    transition: transform 0.4s ease;
+  }
+
+  @keyframes fade-in-up {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .featured-card {
+    transform: translateY(20px);
+  }
+
+  .featured-card:hover {
+    transform: translateY(-12px);
+    box-shadow: var(--shadow-2xl, 0 24px 48px rgba(0, 0, 0, 0.7));
+    border-color: var(--color-primary, #3b82f6);
+  }
+
+  .featured-card:hover::before {
+    transform: scaleX(1);
+  }
+
+  .card-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    height: 100%;
+  }
+
+  .card-thumbnail {
+    position: relative;
+    width: 100%;
+    height: 220px;
+    overflow: hidden;
+    background: linear-gradient(135deg, #1a1a1a, #242424);
+  }
+
+  .card-thumbnail img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s ease;
+  }
+
+  .thumbnail-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.6), transparent);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .featured-card:hover .card-thumbnail img {
+    transform: scale(1.1);
+  }
+
+  .featured-card:hover .thumbnail-overlay {
+    opacity: 1;
+  }
+
+  .featured-badge {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: linear-gradient(135deg, #fbbf24, #f59e0b);
+    color: #111827;
+    padding: 0.5rem 1rem;
+    border-radius: 9999px;
+    font-size: 0.875rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    box-shadow: 0 4px 12px rgba(251, 191, 36, 0.4);
+  }
+
+  .card-content {
+    padding: 2rem;
+  }
+
+  .card-meta {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    font-size: 0.875rem;
+    color: var(--color-text-light, rgba(255, 255, 255, 0.6));
+  }
+
+  .card-meta time,
+  .card-meta .author {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+  }
+
+  .card-title {
+    font-size: 1.625rem;
+    font-weight: 700;
+    color: var(--color-text, rgba(255, 255, 255, 0.9));
+    margin: 0 0 1rem;
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .card-description {
+    color: var(--color-text-light, rgba(255, 255, 255, 0.6));
+    line-height: 1.7;
+    margin: 0 0 1.5rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .card-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .tag {
+    padding: 0.375rem 0.875rem;
+    background: var(--glass-bg, rgba(255, 255, 255, 0.05));
+    border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.1));
+    color: var(--color-text-light, rgba(255, 255, 255, 0.6));
+    border-radius: 9999px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    transition: all 0.2s;
+    backdrop-filter: blur(10px);
+  }
+
+  .tag:hover {
+    background: var(--color-primary, #3b82f6);
+    border-color: var(--color-primary);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-glow, 0 0 20px rgba(59, 130, 246, 0.3));
+  }
+
+  .card-footer {
+    display: flex;
+    justify-content: flex-end;
+    padding-top: 1rem;
+    border-top: 1px solid var(--color-border, rgba(255, 255, 255, 0.1));
+  }
+
+  .read-more {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--color-primary, #3b82f6);
+    font-weight: 700;
+    font-size: 0.9375rem;
+    transition: all 0.2s;
+  }
+
+  .read-more svg {
+    transition: transform 0.3s ease;
+  }
+
+  .card-link:hover .read-more {
+    gap: 0.75rem;
+  }
+
+  .card-link:hover .read-more svg {
+    transform: translateX(4px);
+  }
+
+  .articles-section {
+    margin-top: 5rem;
+  }
+
+  .articles-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 2rem;
+  }
+
+  .article-card {
+    background: var(--color-bg-alt, #1a1a1a);
+    border: 1px solid var(--color-border, rgba(255, 255, 255, 0.1));
+    border-radius: 16px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    box-shadow: var(--shadow-md, 0 4px 12px rgba(0, 0, 0, 0.4));
+    animation: fade-in-up 0.4s ease forwards;
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  .article-card:hover {
+    transform: translateY(-6px);
+    box-shadow: var(--shadow-xl, 0 12px 24px rgba(0, 0, 0, 0.6));
+    border-color: var(--color-primary, #3b82f6);
+  }
+
+  .tags-section {
+    margin-top: 5rem;
+    padding: 3rem;
+    background: var(--color-bg-alt, #1a1a1a);
+    border: 1px solid var(--color-border, rgba(255, 255, 255, 0.1));
+    border-radius: 20px;
+    text-align: center;
+  }
+
+  .popular-tags {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1rem;
+  }
+
+  .popular-tag {
+    padding: 0.75rem 1.5rem;
+    background: var(--color-dark-elevated, #242424);
+    color: var(--color-text-light, rgba(255, 255, 255, 0.6));
+    border-radius: 9999px;
+    font-size: 1rem;
+    font-weight: 600;
+    text-decoration: none;
+    border: 1px solid var(--color-border, rgba(255, 255, 255, 0.1));
+    transition: all 0.3s ease;
+    box-shadow: var(--shadow-sm, 0 2px 4px rgba(0, 0, 0, 0.3));
+  }
+
+  .popular-tag:hover {
+    background: linear-gradient(135deg, var(--color-primary), var(--color-first));
+    color: white;
+    border-color: var(--color-primary);
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-glow, 0 0 20px rgba(59, 130, 246, 0.4));
+  }
+
+  .newsletter-section {
+    position: relative;
+    z-index: 10;
+    margin: 3rem 0;
+  }
+
+  @media (max-width: 768px) {
+    .blog-hero {
+      padding: 6rem 1rem 3rem;
+    }
+
+    .hero-title {
+      font-size: 2.5rem;
+    }
+
+    .hero-description {
+      font-size: 1rem;
+    }
+
+    .stats-grid {
+      grid-template-columns: 1fr;
+      max-width: 350px;
+    }
+
+    .featured-grid,
+    .articles-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .section-title {
+      font-size: 1.875rem;
+    }
+
+    .card-title {
+      font-size: 1.375rem;
+    }
+
+    .newsletter-section {
+      margin: 2rem 0;
+    }
+
+    .tags-section {
+      padding: 2rem 1.5rem;
+    }
+  }
+
+  .featured-card:nth-child(1) {
+    animation-delay: 0s;
+  }
+
+  .featured-card:nth-child(2) {
+    animation-delay: 0.1s;
+  }
+
+  .featured-card:nth-child(3) {
+    animation-delay: 0.2s;
+  }
+
+  .article-card:nth-child(1) {
+    animation-delay: 0s;
+  }
+
+  .article-card:nth-child(2) {
+    animation-delay: 0.05s;
+  }
+
+  .article-card:nth-child(3) {
+    animation-delay: 0.1s;
+  }
+
+  .article-card:nth-child(4) {
+    animation-delay: 0.15s;
+  }
+
+  .article-card:nth-child(5) {
+    animation-delay: 0.2s;
+  }
+
+  .article-card:nth-child(6) {
+    animation-delay: 0.25s;
+  }
+</style>

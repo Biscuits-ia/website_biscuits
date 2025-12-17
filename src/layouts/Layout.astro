@@ -1,0 +1,134 @@
+---
+import Header from '@/components/Header.astro';
+import Footer from '@/components/Footer.astro';
+import CookieConsent from '../components/svelte/CookieConsent.svelte';
+import Analytics from '@vercel/analytics/astro'
+import  SpeedInsights  from "@vercel/speed-insights/astro"
+
+import '@/styles/global.css';
+
+interface Props {
+  title: string;
+  description: string;
+  canonical?: string;
+  ogImage?: string;
+  type?: 'website' | 'article';
+  structuredData?: object;
+}
+
+const {
+  title,
+  description,
+  canonical,
+  ogImage = '/og-image.jpg',
+  type = 'website',
+  structuredData
+} = Astro.props;
+
+const siteUrl = 'https://biscuits.dev';
+const finalCanonical = canonical || Astro.url.origin + Astro.url.pathname;
+
+const fullTitle = `${title} | Biscuits AI – IA, Starterkits & Automatisation`;
+
+const organizationSchema = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "Biscuits AI",
+  "url": "https://biscuits.dev",
+  "logo": "https://biscuits.dev/logo.png",
+  "description": "Starterkits Next.js / Astro, outils IA, prompts avancés et automatisations pour développeurs et vibe coders.",
+  "email": "contact@biscuits.dev",
+  "sameAs": [
+    "https://github.com/optea-tech",
+    "https://tiktok.com/@sweetosky"
+  ]
+};
+---
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- SEO -->
+  <title>{fullTitle}</title>
+  <meta name="description" content={description} />
+  <link rel="canonical" href={finalCanonical} />
+
+  <!-- Theme + UI -->
+  <meta name="theme-color" content="#0d0d0d" />
+  <meta name="color-scheme" content="dark light" />
+
+  <!-- Preconnect pour Storyblok -->
+  <link rel="preconnect" href="https://a.storyblok.com" />
+  <link rel="dns-prefetch" href="https://a.storyblok.com" />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content={type} />
+  <meta property="og:title" content={fullTitle} />
+  <meta property="og:description" content={description} />
+  <meta property="og:url" content={finalCanonical} />
+  <meta property="og:image" content={`${siteUrl}${ogImage}`} />
+  <meta property="og:locale" content="fr_FR" />
+  <meta property="og:site_name" content="Biscuits AI" />
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content={fullTitle} />
+  <meta name="twitter:description" content={description} />
+  <meta name="twitter:image" content={`${siteUrl}${ogImage}`} />
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+
+  <!-- Preconnect pour Storyblok -->
+  <link rel="preconnect" href="https://a.storyblok.com" />
+  <link rel="dns-prefetch" href="https://a.storyblok.com" />
+
+  <!-- Preconnect -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+  <!-- JSON-LD -->
+  <script type="application/ld+json" set:html={JSON.stringify(organizationSchema)} />
+  {structuredData && (
+    <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
+  )}
+
+  <!-- Robots -->
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+</head>
+
+<body>
+  <Header />
+  <main id="main-content">
+    <slot />
+    <CookieConsent client:load />
+  </main>
+  <Footer />
+  <Analytics/>
+  <SpeedInsights/>
+</body>
+
+<script is:inline>
+  window.addEventListener('cookieConsentUpdated', (event) => {
+    const preferences = event.detail;
+    console.log('Préférences mises à jour:', preferences);
+  });
+</script>
+
+<script>
+  import { initGSAP, killAllAnimations } from '@/animations/core/gsap-config';
+  
+  initGSAP();
+  
+  document.addEventListener('astro:before-swap', () => {
+    killAllAnimations();
+  });
+  
+  document.addEventListener('astro:after-swap', () => {
+    initGSAP();
+  });
+</script>
+</html>

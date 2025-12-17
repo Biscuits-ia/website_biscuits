@@ -1,0 +1,129 @@
+---
+import '@/styles/global.css'
+import BaseLayout from '@layouts/Layout.astro';
+import Service from '@/components/Services.astro';
+
+const structuredData = {
+  "@context": "https://schema.org",
+  "@type": "Service",
+  "name": "Services Biscuits AI",
+  "provider": {
+    "@type": "Organization",
+    "name": "Biscuits AI"
+  },
+  "description": "Starterkits Next.js / Astro, outils IA, automatisations, prompts avancés et consulting.",
+  "url": "https://biscuits.dev/services"
+};
+---
+
+<BaseLayout
+  title="Tous nos Services IA"
+  description="Consultez les services proposer."
+  structuredData={structuredData}
+>
+  <section class="services-hero">
+    <div class="container">
+      <h1 class="text-center title">Nos Services</h1>
+      <p class="lead">
+        Solutions complètes pour Vibe coder
+      </p>
+    </div>
+  </section>
+
+  <section class="services-list">
+    <div class="container">
+      <Service client:load />
+    </div>
+  </section>
+
+<section class="services-details">
+  <div class="container">
+    <h2>Pourquoi choisir Biscuits IA ?</h2>
+    
+    <div class="benefits-grid">
+      <article class="benefit-card">
+        <div class="benefit-icon">🤖</div>
+        <h3>Solutions IA sur mesure</h3>
+        <p>
+          Chaque assistant et automatisation est conçu selon vos besoins métiers,
+          sans solution générique inutile.
+        </p>
+      </article>
+
+      <article class="benefit-card">
+        <div class="benefit-icon">⚙️</div>
+        <h3>Expertise IA & automatisation</h3>
+        <p>
+          Conception d'agents IA, automatisation , intégration API
+          et solutions SaaS modernes.
+        </p>
+      </article>
+
+      <article class="benefit-card">
+        <div class="benefit-icon">🚀</div>
+        <h3>Déploiement rapide</h3>
+        <p>
+          Projets livrés rapidement avec une approche pragmatique :
+          de l'idée à la mise en production sans complexité inutile.
+        </p>
+      </article>
+
+      <article class="benefit-card">
+        <div class="benefit-icon">💡</div>
+        <h3>Transparence & accompagnement</h3>
+        <p>
+          Devis clair, communication continue et accompagnement après livraison
+          pour faire évoluer vos solutions IA.
+        </p>
+      </article>
+    </div>
+  </div>
+</section>
+
+
+  <section class="process-section">
+    <div class="container">
+      <h2>Comment ça marche ?</h2>
+      
+      <div class="process-steps">
+        <div class="process-step">
+          <div class="step-number">1</div>
+          <h3>Contact</h3>
+          <p>Vous nous présentez votre besoin IA ou votre idée via le formulaire
+          de contact</p>
+        </div>
+
+        <div class="process-step">
+          <div class="step-number">2</div>
+          <h3>Cadrage & étude</h3>
+          <p>Analyse du cas d'usage, faisabilité technique et proposition
+          d'une solution adaptée.</p>
+        </div>
+
+        <div class="process-step">
+          <div class="step-number">3</div>
+          <h3>Conception & déploiement</h3>
+          <p>Développement de la solution IA, intégration et mise en production
+          progressive.</p>
+        </div>
+
+        <div class="process-step">
+          <div class="step-number">4</div>
+          <h3>Suivi & évolution</h3>
+          <p>Accompagnement après livraison, optimisations et évolutions
+          continues selon vos besoins.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta-section">
+    <div class="container">
+      <h2>Besoin d'un service informatique ?</h2>
+      <p>Devis gratuit et sans engagement</p>
+      <div class="cta-buttons">
+        <a href="/devis" class="btn-secondary">Demander un devis</a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

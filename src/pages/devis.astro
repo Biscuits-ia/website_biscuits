@@ -1,0 +1,715 @@
+---
+import BaseLayout from '@layouts/Layout.astro';
+import '@/styles/global.css';
+import { SERVICES_CONFIG } from "@/utils/formValidation"; 
+
+const structuredData = {
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  "name": "Demande de devis - Biscuits AI", 
+  "description": "Demandez un devis pour un outil IA, un starterkit ou une automatisation sur-mesure.",
+  "url": "https://biscuits.dev/devis"
+};
+---
+
+<BaseLayout
+  title="Demande de devis | Biscuits AI"
+  description="Obtenez un devis personnalisé"
+  structuredData={structuredData}
+>
+  <section class="quote-hero">
+    <div class="container">
+      <h1 class="text-7xl">Demande de devis</h1>
+      <p>Obtenez une estimation personnalisée sous 24–48h pour vos besoins professionnels.</p>
+    </div>
+  </section>
+
+  <section class="quote-form-section">
+    <div class="container">
+      <h2>Informations nécessaires</h2>
+
+      <!-- Messages -->
+      <div class="alert alert-success" id="success-message" role="status" aria-live="polite">
+        <svg class="alert-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" fill="none"/>
+        </svg>
+        <span>Demande envoyée avec succès ! Nous vous répondrons sous 24-48h.</span>
+      </div>
+
+      <div class="alert alert-error" id="error-message" role="alert" aria-live="assertive">
+        <svg class="alert-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" fill="none" />
+          <path d="M12 8v4m0 4h.01" stroke="currentColor" stroke-width="2" />
+        </svg>
+        <span id="error-text">Une erreur est survenue. Veuillez réessayer.</span>
+      </div>
+
+      <form id="quote-form" class="quote-form" novalidate>
+        <div class="form-group" data-field="name">
+          <label for="name">Nom / Entreprise <span class="required">*</span></label>
+          <input 
+            type="text" 
+            id="name" 
+            name="name" 
+            placeholder="Votre nom ou entreprise" 
+            required 
+            maxlength="100"
+            autocomplete="name"
+          />
+          <span class="error-message" role="alert" aria-live="polite"></span>
+        </div>
+
+        <div class="form-group" data-field="email">
+          <label for="email">Email professionnel <span class="required">*</span></label>
+          <input 
+            type="email" 
+            id="email" 
+            name="email" 
+            placeholder="contact@exemple.fr" 
+            required 
+            maxlength="255"
+            autocomplete="email"
+          />
+          <span class="error-message" role="alert" aria-live="polite"></span>
+        </div>
+
+        <div class="form-group" data-field="phone">
+          <label for="phone">Téléphone</label>
+          <input 
+            type="tel" 
+            id="phone" 
+            name="phone" 
+            placeholder="+33 6 00 00 00 00" 
+            maxlength="20"
+            autocomplete="tel"
+          />
+          <span class="error-message" role="alert" aria-live="polite"></span>
+        </div>
+
+        <div class="form-group" data-field="budget">
+          <label for="budget">Budget estimé</label>
+          <select id="budget" name="budget">
+            <option value="">-- Budget indicatif --</option>
+            <option value="< 1000€">Moins de 1 000€</option>
+            <option value="1000-3000€">1 000€ - 3 000€</option>
+            <option value="3000-5000€">3 000€ - 5 000€</option>
+            <option value="5000-10000€">5 000€ - 10 000€</option>
+            <option value="10000-20000€">10 000€ - 20 000€</option>
+            <option value="> 20000€">Plus de 20 000€</option>
+          </select>
+          <span class="error-message" role="alert" aria-live="polite"></span>
+        </div>
+
+        <div class="form-group full" data-field="service">
+          <label for="service">Service souhaité <span class="required">*</span></label>
+          <select id="service" name="service" required aria-required="true">
+            <option value="">Sélectionnez un service…</option>
+            <optgroup label="Starter Kits">
+              {SERVICES_CONFIG["starter-kits"].map((s) => <option value={s}>{s}</option>)}
+            </optgroup>
+            <optgroup label="Solutions IA">
+              {SERVICES_CONFIG["ia"].map((s) => <option value={s}>{s}</option>)}
+            </optgroup>
+            <optgroup label="Consulting & Coaching">
+              {SERVICES_CONFIG["consulting"].map((s) => <option value={s}>{s}</option>)}
+            </optgroup>
+          </select>
+          <span class="error-message" role="alert" aria-live="polite"></span>
+        </div>
+
+        <div class="form-group full" data-field="message">
+          <label for="message">Détails supplémentaires <span class="required">*</span></label>
+          <textarea 
+            id="message" 
+            name="message" 
+            rows="5" 
+            placeholder="Nombre de postes, besoins, contraintes, deadlines…" 
+            required 
+            minlength="20"
+            maxlength="2000"
+          ></textarea>
+          <span class="char-count" aria-live="polite">0 / 2000</span>
+          <span class="error-message" role="alert" aria-live="polite"></span>
+        </div>
+
+        <!-- Honeypot -->
+        <input type="text" name="website" tabindex="-1" autocomplete="off" class="honeypot" aria-hidden="true" />
+
+        <button type="submit" id="submit-btn" class="btn-primary">
+          <span class="btn-text">Envoyer ma demande</span>
+          <span class="btn-loader" aria-hidden="true"></span>
+        </button>
+      </form>
+    </div>
+  </section>
+
+  <section class="quote-info">
+    <div class="container">
+      <h2>Comment ça marche ?</h2>
+      <div class="steps">
+        <div class="step">
+          <span class="icon">📥</span>
+          <h3>1. Vous envoyez votre demande</h3>
+          <p>Avec les informations nécessaires pour analyser vos besoins.</p>
+        </div>
+
+        <div class="step">
+          <span class="icon">🧠</span>
+          <h3>2. Analyse & estimation</h3>
+          <p>Nous évaluons la charge, les outils nécessaires et les délais.</p>
+        </div>
+
+        <div class="step">
+          <span class="icon">📄</span>
+          <h3>3. Envoi du devis sous 24–48h</h3>
+          <p>Tarifs transparents, modulaires, sans engagement.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="final-cta">
+    <div class="container">
+      <h2>Des questions avant de demander un devis ?</h2>
+      <p>Contactez-nous, nous vous guidons gratuitement.</p>
+      <div class="cta-buttons">
+        <a href="/contact" class="btn-secondary">Formulaire de contact</a>
+      </div>
+    </div>
+  </section>
+
+<script>
+  const API_BASE_URL = import.meta.env.PUBLIC_API_URL || 'http://localhost:3000';
+  const API_ENDPOINT = `${API_BASE_URL}/api/v1/quotes`;
+  const API_TIMEOUT = 15000;
+  const DEBOUNCE_DELAY = 300;
+
+  // Elements
+  const form = document.getElementById('quote-form') as HTMLFormElement;
+  const submitBtn = document.getElementById('submit-btn') as HTMLButtonElement;
+  const successMsg = document.getElementById('success-message') as HTMLDivElement;
+  const errorMsg = document.getElementById('error-message') as HTMLDivElement;
+  const errorText = document.getElementById('error-text') as HTMLSpanElement;
+  const messageTextarea = document.getElementById('message') as HTMLTextAreaElement;
+  const charCount = document.querySelector('.char-count') as HTMLSpanElement;
+
+  // Types
+  interface QuoteFormData {
+    name: string;
+    email: string;
+    phone?: string;
+    service: string;
+    budget?: string;
+    message: string;
+    website?: string;
+  }
+
+  interface ApiResponse {
+    success: boolean;
+    message: string;
+    id?: number;
+  }
+
+  // Validation
+  const sanitizeInput = (value: string): string => {
+    if (!value) return '';
+    return value.trim().replace(/[<>]/g, '').slice(0, 5000);
+  };
+
+  const validateField = (name: string, value: string): string | null => {
+    if (!value || value.trim() === '') {
+      if (name === 'phone' || name === 'budget') return null; // Champs optionnels
+      return 'Ce champ est obligatoire';
+    }
+
+    switch (name) {
+      case 'name':
+        if (value.length < 2) return 'Le nom doit contenir au moins 2 caractères';
+        if (value.length > 100) return 'Le nom ne peut pas dépasser 100 caractères';
+        break;
+
+      case 'email':
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(value)) return 'Email invalide';
+        if (value.length > 255) return 'L\'email ne peut pas dépasser 255 caractères';
+        break;
+
+      case 'phone':
+        if (value && !/^[+\d\s()-]+$/.test(value)) return 'Téléphone invalide';
+        break;
+
+      case 'service':
+        if (value.length < 3) return 'Veuillez sélectionner un service';
+        break;
+
+      case 'message':
+        if (value.length < 20) return 'Le message doit contenir au moins 20 caractères';
+        if (value.length > 2000) return 'Le message ne peut pas dépasser 2000 caractères';
+        break;
+    }
+
+    return null;
+  };
+
+  // UI helpers
+  const showError = (fieldName: string, message: string): void => {
+    const field = document.querySelector(`[data-field="${fieldName}"]`);
+    if (!field) return;
+
+    field.classList.add("error");
+    const errorSpan = field.querySelector(".error-message");
+    if (errorSpan) errorSpan.textContent = message;
+
+    const input = field.querySelector("input, textarea, select") as HTMLInputElement;
+    if (input) input.setAttribute("aria-invalid", "true");
+  };
+
+  const clearError = (fieldName: string): void => {
+    const field = document.querySelector(`[data-field="${fieldName}"]`);
+    if (!field) return;
+
+    field.classList.remove("error");
+    const errorSpan = field.querySelector(".error-message");
+    if (errorSpan) errorSpan.textContent = "";
+
+    const input = field.querySelector("input, textarea, select") as HTMLInputElement;
+    if (input) input.removeAttribute("aria-invalid");
+  };
+
+  const clearAllErrors = (): void => {
+    form.querySelectorAll('[data-field]').forEach((field) => {
+      const fieldName = field.getAttribute('data-field');
+      if (fieldName) clearError(fieldName);
+    });
+  };
+
+  const updateCharCount = (): void => {
+    const length = messageTextarea.value.length;
+    charCount.textContent = `${length} / 2000`;
+    
+    if (length > 1900) {
+      charCount.style.color = "var(--color-danger)";
+    } else if (length > 1500) {
+      charCount.style.color = "var(--color-warning)";
+    } else {
+      charCount.style.color = "";
+    }
+  };
+
+  // API
+  const fetchWithTimeout = async (
+    url: string, 
+    options: RequestInit, 
+    timeout: number = API_TIMEOUT
+  ): Promise<Response> => {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+    try {
+      const response = await fetch(url, {
+        ...options,
+        signal: controller.signal,
+      });
+      clearTimeout(timeoutId);
+      return response;
+    } catch (error) {
+      clearTimeout(timeoutId);
+      if ((error as Error).name === 'AbortError') {
+        throw new Error('La requête a expiré. Veuillez réessayer.');
+      }
+      throw error;
+    }
+  };
+
+  const sendToApi = async (data: QuoteFormData): Promise<ApiResponse> => {
+    const response = await fetchWithTimeout(
+      API_ENDPOINT,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify(data),
+      },
+      API_TIMEOUT
+    );
+
+    const result: ApiResponse = await response.json();
+
+    if (!response.ok) {
+      if (response.status === 429) {
+        throw new Error('Trop de tentatives. Veuillez patienter quelques instants.');
+      }
+
+      if (response.status >= 500) {
+        throw new Error('Erreur serveur. Veuillez réessayer plus tard.');
+      }
+
+      throw new Error(result.message || 'Une erreur est survenue');
+    }
+
+    return result;
+  };
+
+  // Event listeners
+  const setupFieldValidation = (): void => {
+    const fields = form.querySelectorAll("input:not([type='hidden']):not(.honeypot), textarea, select");
+    let debounceTimeout: number;
+
+    fields.forEach((field) => {
+      const input = field as HTMLInputElement;
+
+      input.addEventListener("blur", () => {
+        const sanitized = sanitizeInput(input.value);
+        const error = validateField(input.name, sanitized);
+        error ? showError(input.name, error) : clearError(input.name);
+      });
+
+      input.addEventListener("input", () => {
+        clearTimeout(debounceTimeout);
+        debounceTimeout = window.setTimeout(() => {
+          clearError(input.name);
+        }, DEBOUNCE_DELAY);
+      });
+    });
+  };
+
+  // Form submission
+  form.addEventListener('submit', async (e: Event) => {
+    e.preventDefault();
+
+    successMsg.style.display = 'none';
+    errorMsg.style.display = 'none';
+    clearAllErrors();
+
+    const formData = new FormData(form);
+    const data: QuoteFormData = {
+      name: sanitizeInput(formData.get('name') as string),
+      email: sanitizeInput(formData.get('email') as string),
+      phone: sanitizeInput(formData.get('phone') as string) || undefined,
+      service: sanitizeInput(formData.get('service') as string),
+      budget: sanitizeInput(formData.get('budget') as string) || undefined,
+      message: sanitizeInput(formData.get('message') as string),
+      website: formData.get('website') as string,
+    };
+
+    // Validation côté client
+    let hasErrors = false;
+    const fieldsToValidate: Array<keyof QuoteFormData> = ['name', 'email', 'phone', 'service', 'message'];
+    
+    fieldsToValidate.forEach((field) => {
+      const value = data[field];
+      if (value !== undefined) {
+        const error = validateField(field, value as string);
+        if (error) {
+          showError(field, error);
+          hasErrors = true;
+        }
+      }
+    });
+
+    if (hasErrors) {
+      const firstError = document.querySelector('.form-group.error input, .form-group.error textarea, .form-group.error select') as HTMLInputElement;
+      firstError?.focus();
+      return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.classList.add('loading');
+    submitBtn.setAttribute('aria-busy', 'true');
+
+    try {
+      await sendToApi(data);
+
+      successMsg.style.display = 'flex';
+      form.reset();
+      updateCharCount();
+      
+      successMsg.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+      // Analytics
+      if (typeof window.gtag !== 'undefined') {
+        window.gtag('event', 'form_submit', {
+          form_name: 'quote',
+          service: data.service,
+          budget: data.budget,
+        });
+      }
+
+      setTimeout(() => {
+        successMsg.style.display = 'none';
+      }, 10000);
+
+    } catch (error) {
+      console.error('Erreur lors de l\'envoi:', error);
+      
+      errorText.textContent = error instanceof Error 
+        ? error.message 
+        : 'Une erreur inattendue est survenue';
+      
+      errorMsg.style.display = 'flex';
+      errorMsg.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.classList.remove('loading');
+      submitBtn.removeAttribute('aria-busy');
+    }
+  });
+
+  // Initialize
+  setupFieldValidation();
+  messageTextarea.addEventListener('input', updateCharCount);
+  updateCharCount();
+</script>
+
+</BaseLayout>
+
+<style>
+h1 {
+  font-size: var(--spacing-3xl);
+}
+
+.quote-hero {
+  padding: 6rem 0;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+  color: white;
+  text-align: center;
+}
+
+.quote-form-section {
+  padding: 4rem 0;
+}
+
+.quote-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.8rem;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.form-group.full {
+  grid-column: 1 / -1;
+}
+
+.form-group label {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--color-text-light);
+}
+
+.required {
+  color: var(--color-danger);
+}
+
+input, select, textarea {
+  padding: 0.8rem;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: var(--color-bg-alt);
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: 15px;
+  transition: all var(--transition-fast);
+}
+
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px oklch(72.218% 0.16534 47.931 / 0.1);
+}
+
+.form-group.error input,
+.form-group.error textarea,
+.form-group.error select {
+  border-color: var(--color-danger);
+  background-color: rgba(239, 68, 68, 0.05);
+}
+
+.error-message {
+  color: var(--color-danger);
+  font-size: 0.875rem;
+  margin-top: 0.5rem;
+  min-height: 1.25rem;
+  font-weight: 500;
+}
+
+.form-group:not(.error) .error-message {
+  visibility: hidden;
+}
+
+.char-count {
+  display: block;
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+  text-align: right;
+  color: var(--color-text-light);
+  transition: color var(--transition-fast);
+}
+
+.honeypot {
+  position: absolute !important;
+  left: -9999px !important;
+  width: 1px !important;
+  height: 1px !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+.alert {
+  display: none;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  padding: 1.25rem;
+  border-radius: var(--radius-lg);
+  font-size: 0.95rem;
+  font-weight: 500;
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.alert-icon {
+  width: 1.5rem;
+  height: 1.5rem;
+  flex-shrink: 0;
+}
+
+.alert-success {
+  background: oklch(69.588% 0.14907 162.508 / 0.1);
+  color: var(--color-success);
+  border: 1px solid var(--color-success);
+}
+
+.alert-error {
+  background: oklch(63.681% 0.20784 25.315 / 0.1);
+  color: var(--color-danger);
+  border: 1px solid var(--color-danger);
+}
+
+.btn-primary {
+  position: relative;
+  width: 100%;
+  padding: 1.25rem;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-lg);
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-base);
+  margin-top: 1rem;
+  box-shadow: var(--shadow-glow);
+  overflow: hidden;
+}
+
+.btn-primary::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.btn-primary:hover:not(:disabled)::before {
+  left: 100%;
+}
+
+.btn-primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-glow-hover);
+}
+
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-primary.loading .btn-text {
+  opacity: 0;
+}
+
+.btn-loader {
+  display: none;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 24px;
+  height: 24px;
+  border: 3px solid oklch(100% 0.00011 271.152 / 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+.btn-primary.loading .btn-loader {
+  display: block;
+}
+
+@keyframes spin {
+  to { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+.steps {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+.step {
+  background: var(--color-bg);
+  padding: 2rem;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.step .icon {
+  font-size: 2.4rem;
+  margin-bottom: 1rem;
+}
+
+.final-cta {
+  color: white;
+  padding: 4rem 0;
+  text-align: center;
+  margin-top: 4rem;
+}
+
+.cta-buttons {
+  margin-top: 1.5rem;
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 768px) {
+  .quote-form {
+    grid-template-columns: 1fr;
+  }
+}
+</style>

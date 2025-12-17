@@ -1,0 +1,321 @@
+---
+import BaseLayout from '@layouts/Layout.astro';
+import ContactForm from '@/components/ContactForm.astro';
+
+import '@/styles/global.css'
+
+const structuredData = {
+"@context": "https://schema.org",
+  "@type": "ContactPage",
+  "name": "Contact Biscuits AI",
+  "description": "Page de contact Biscuits AI.",
+  "url": "https://biscuits.dev/contact"
+};
+---
+
+<BaseLayout
+  title="Contact - Biscuits du Dev | Devis Gratuit"
+  description="Contactez nous pour vos besoins"
+  structuredData={structuredData}
+>
+  <section class="contact-hero">
+    <div class="container">
+      <h1>Contactez-nous</h1>
+      <p class="lead">
+        Une question ? Un projet ? Nous sommes là pour vous aider. 
+        Réponse garantie sous 48h.
+      </p>
+    </div>
+  </section>
+
+  <section class="contact-content">
+    <div class="container">
+      <div class="contact-grid">
+        <div class="contact-form-section">
+          <h2>Demande de Devis Gratuit</h2>
+          <p class="form-intro text-center">
+            Remplissez ce formulaire et nous vous répondrons dans les plus brefs délais.
+          </p>
+          <div class="background">
+          <ContactForm />
+          </div>
+        </div>
+
+
+          <div class="info-card">
+            <h3>📧 Par Email</h3>
+            <p>Pour toute demande non urgente</p>
+            <a href="mailto:contact@biscuits-dev.com" class="contact-link-big">
+              contact@biscuits-dev.com
+            </a>
+            <p class="availability">
+              Réponse sous 48h ouvrées
+            </p>
+          </div>
+
+  <section class="contact-faq">
+    <div class="container">
+      <h2>Questions Fréquentes</h2>
+      
+      <div class="faq-grid">
+        <details class="faq-item">
+          <summary>Combien de temps pour recevoir une réponse ?</summary>
+          <p>
+            Nous nous engageons à vous répondre sous 48h ouvrées maximum. 
+            Pour les urgences, appelez-nous directement au téléphone.
+          </p>
+        </details>
+
+        <details class="faq-item">
+          <summary>Le devis est-il vraiment gratuit ?</summary>
+          <p>
+            Oui, absolument ! Le devis et le diagnostic sont 100% gratuits et sans engagement. 
+            Vous ne payez que si vous acceptez notre proposition.
+          </p>
+        </details>
+
+        <details class="faq-item">
+          <summary>Puis-je prendre rendez-vous en ligne ?</summary>
+          <p>
+            Oui, utilisez le formulaire de contact en précisant vos disponibilités. 
+            Nous vous proposerons des créneaux horaires adaptés.
+          </p>
+        </details>
+
+        <details class="faq-item">
+          <summary>Intervenez-vous en urgence ?</summary>
+          <p>
+            Oui, pour les urgences professionnelles, nous pouvons intervenir rapidement, 
+            parfois le jour même. Appelez-nous pour discuter de votre situation.
+          </p>
+        </details>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style scoped>
+  .contact-hero {
+    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary) 100%);
+    color: var(--color-bg);
+    padding: var(--spacing-4xl) 0;
+    text-align: center;
+  }
+
+  .contact-hero h1 {
+    font-size: var(--font-size-5xl);
+    margin-bottom: var(--spacing-md);
+    color: var(--color-bg);
+  }
+
+  .lead {
+    font-size: var(--font-size-xl);
+    opacity: 0.95;
+    color: var(--color-gray-50);
+    max-width: 700px;
+    margin: 0 auto;
+  }
+
+  .contact-content {
+    padding: var(--spacing-4xl) 0;
+  }
+
+  .contact-grid {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    gap: var(--spacing-3xl);
+  }
+
+  .contact-form-section h2 {
+    text-align: center;
+    margin-bottom: var(--spacing-md);
+  }
+
+  .form-intro {
+    color: var(--color-text-light);
+    margin-bottom: var(--spacing-xl);
+  }
+
+  .contact-info-section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+  }
+
+  .info-card {
+    background: var(--color-bg-alt);
+    padding: var(--spacing-xl);
+    border-radius: var(--radius-lg);
+    border-left: 4px solid var(--color-primary);
+  }
+
+  .info-card h3 {
+    font-size: var(--font-size-xl);
+    margin-bottom: var(--spacing-md);
+    color: var(--color-gray-200);
+  }
+
+  .info-card p {
+    color: var(--color-text-light);
+    margin-bottom: var(--spacing-md);
+  }
+
+  .contact-link-big {
+    display: block;
+    font-size: var(--font-size-2xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-primary);
+    margin: var(--spacing-md) 0;
+    transition: color var(--transition-fast);
+  }
+
+  .contact-link-big:hover {
+    color: var(--color-primary-dark);
+    text-decoration: underline;
+  }
+
+  .availability {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-light);
+    margin-top: var(--spacing-md);
+    padding-top: var(--spacing-md);
+    border-top: 1px solid var(--color-border);
+  }
+
+  address {
+    font-style: normal;
+    line-height: 1.8;
+  }
+
+  .social-card {  
+    color: var(--color-bg);
+    border-left-color: var(--color-primary);
+  }
+
+  .social-card h3 {
+    color: var(--color-gray-200);
+  }
+
+  .social-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+  }
+
+  .social-btn {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    padding: var(--spacing-md);
+    border-radius: var(--radius-md);
+    font-weight: var(--font-weight-semibold);
+    transition: transform var(--transition-fast), opacity var(--transition-fast);
+  }
+
+  .social-btn:hover {
+    transform: translateX(8px);
+    opacity: 0.9;
+  }
+
+  .social-btn.linkedin {
+    background: #0077b5;
+    color: white;
+  }
+
+  .social-btn.facebook {
+    background: #1877f2;
+    color: white;
+  }
+
+  .map-section {
+    background: var(--color-bg-alt);
+    padding: var(--spacing-4xl) 0;
+  }
+
+  .map-wrapper {
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+    box-shadow: var(--shadow-xl);
+    margin-top: var(--spacing-xl);
+  }
+
+  .contact-faq {
+    padding: var(--spacing-4xl) 0;
+  }
+
+  .faq-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: var(--spacing-lg);
+    margin-top: var(--spacing-2xl);
+  }
+
+  .background {
+    border-radius: 10px;
+    background-color: var(--color-primary);
+  }
+
+  .faq-item {
+    background: var(--color-bg-alt);
+    padding: var(--spacing-lg);
+    border-radius: var(--radius-md);
+    border-left: 3px solid var(--color-primary);
+  }
+
+  .faq-item summary {
+    cursor: pointer;
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-gray-200);
+    list-style: none;
+    transition: color var(--transition-fast);
+  }
+
+  .faq-item summary:hover {
+    color: var(--color-primary);
+  }
+
+  .faq-item summary::marker {
+    display: none;
+  }
+
+  .faq-item summary::before {
+    content: '▶';
+    display: inline-block;
+    margin-right: var(--spacing-sm);
+    transition: transform var(--transition-fast);
+  }
+
+  .faq-item[open] summary::before {
+    transform: rotate(90deg);
+  }
+
+  .faq-item p {
+    margin-top: var(--spacing-md);
+    color: var(--color-text-light);
+    line-height: 1.7;
+  }
+
+  @media (max-width: 1024px) {
+    .contact-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .contact-info-section {
+      order: -1;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .contact-hero h1 {
+      font-size: var(--font-size-3xl);
+    }
+
+    .lead {
+      font-size: var(--font-size-lg);
+    }
+
+    .faq-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

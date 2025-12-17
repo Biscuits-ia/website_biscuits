@@ -1,0 +1,178 @@
+---
+---
+
+<div class="devis-form">
+  <h2>Demander un devis</h2>
+  <form id="devisForm">
+    <div class="form-group">
+      <label for="name">Nom complet *</label>
+      <input type="text" id="name" name="name" required>
+    </div>
+    
+    <div class="form-group">
+      <label for="email">Email *</label>
+      <input type="email" id="email" name="email" required>
+    </div>
+    
+    <div class="form-group">
+      <label for="service">Service souhaité *</label>
+      <select id="service" name="service" required>
+        <option value="">Sélectionner...</option>
+        <option value="site-vitrine">Site vitrine</option>
+        <option value="e-commerce">E-commerce</option>
+        <option value="application">Application web</option>
+        <option value="seo">Référencement SEO</option>
+        <option value="autre">Autre</option>
+      </select>
+    </div>
+    
+    <div class="form-group">
+      <label for="budget">Budget estimé</label>
+      <input type="text" id="budget" name="budget" placeholder="Ex: 1000-5000€">
+    </div>
+    
+    <div class="form-group">
+      <label for="message">Détails du projet</label>
+      <textarea id="message" name="message" rows="5"></textarea>
+    </div>
+    
+    <button type="submit" class="submit-btn">Envoyer la demande</button>
+    
+    <div id="result" class="result"></div>
+  </form>
+</div>
+
+<style>
+  .devis-form {
+    max-width: 600px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+  
+  h2 {
+    margin-bottom: 1.5rem;
+    color: #111;
+  }
+  
+  .form-group {
+    margin-bottom: 1.25rem;
+  }
+  
+  label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: #333;
+  }
+  
+  input, select, textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1rem;
+    font-family: inherit;
+  }
+  
+  input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: #2563eb;
+  }
+  
+  .submit-btn {
+    width: 100%;
+    padding: 1rem;
+    background: #2563eb;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  
+  .submit-btn:hover {
+    background: var(--color-primary);
+  }
+  
+  .submit-btn:disabled {
+    background: #94a3b8;
+    cursor: not-allowed;
+  }
+  
+  .result {
+    margin-top: 1rem;
+    padding: 1rem;
+    border-radius: 4px;
+    display: none;
+  }
+  
+  .result.success {
+    background: #dcfce7;
+    color: #166534;
+    display: block;
+  }
+  
+  .result.error {
+    background: #fee2e2;
+    color: #991b1b;
+    display: block;
+  }
+</style>
+
+<script>
+  import { submitDevis } from '@/utils/api';
+
+  const form = document.getElementById('quote-form') as HTMLFormElement;
+  const submitBtn = document.getElementById('submit-btn') as HTMLButtonElement;
+  const btnText = document.getElementById('btn-text') as HTMLSpanElement;
+  const btnLoading = document.getElementById('btn-loading') as HTMLSpanElement;
+  const formMessage = document.getElementById('form-message') as HTMLDivElement;
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    // Hide previous messages
+    formMessage.style.display = 'none';
+    formMessage.className = '';
+
+    // Disable button
+    submitBtn.disabled = true;
+    btnText.style.display = 'none';
+    btnLoading.style.display = 'inline';
+
+    const formData = new FormData(form);
+    const data = {
+      name: formData.get('name') as string,
+      email: formData.get('email') as string,
+      phone: formData.get('phone') as string,
+      service: formData.get('service') as string,
+      message: formData.get('message') as string,
+    };
+
+    try {
+      const response = await submitDevis(data);
+
+      if (response.success) {
+        formMessage.textContent = response.message || 'Demande envoyée avec succès !';
+        formMessage.className = 'success';
+        formMessage.style.display = 'block';
+        form.reset();
+      } else {
+        throw new Error(response.message || 'Erreur inconnue');
+      }
+    } catch (error) {
+      formMessage.textContent = error instanceof Error ? error.message : 'Erreur lors de l\'envoi';
+      formMessage.className = 'error';
+      formMessage.style.display = 'block';
+    } finally {
+      submitBtn.disabled = false;
+      btnText.style.display = 'inline';
+      btnLoading.style.display = 'none';
+    }
+  });
+</script>

@@ -1,0 +1,655 @@
+---
+/**
+ * Hero Section - Biscuits Dev
+ * Version complète avec tous les styles
+ */
+import { Image } from "astro:assets";
+import Logo from '@/assets/logo.webp';
+---
+
+<section class="hero-section" data-hero-section>
+  <div class="hero-bg" data-hero-bg>
+    <div class="gradient-orb gradient-orb-1"></div>
+    <div class="gradient-orb gradient-orb-2"></div>
+    <div class="gradient-grid"></div>
+  </div>
+
+  <div class="hero-content">
+    <div class="hero-text">
+
+      <h2 class="hero-subtitle" data-reveal="subtitle">
+        Vos Vibe <span class="highlight">Solutions</span>
+      </h2>
+      
+      <h1 class="hero-title" data-reveal="title">
+        Créé plus vite avec les outils IA & starterkits
+      </h1>
+      
+      <div class="hero-features" data-reveal="features">
+        <div class="feature-badge" data-badge>
+          <span class="badge-icon">⚡</span>
+          <span>Solution Vibe coder</span>
+        </div>
+        <div class="feature-badge" data-badge>
+          <span class="badge-icon">⚙️</span>
+          <span>Solution d'Automatisation</span>
+        </div>
+        <div class="feature-badge" data-badge>
+          <span class="badge-icon">🖥️</span>
+          <span>Solution Software</span>
+        </div>
+        <div class="feature-badge" data-badge>
+          <span class="badge-icon">🚀</span>
+          <span>Solution SaaS</span>
+        </div>
+      </div>
+
+      <!-- CTA avec hover effect amélioré -->
+      <div class="hero-cta" data-reveal="cta">
+        <a href="/devis" class="btn-primary" data-cta-btn data-magnetic>
+          <span class="btn-text">Demander un devis gratuit</span>
+          <svg class="btn-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
+        </a>
+      </div>
+
+      <!-- Trust indicators avec counter animation -->
+      <div class="trust-indicators" data-reveal="trust">
+        <div class="trust-item" data-counter>
+          <strong data-counter-value="15">0</strong>
+          <span>Années d'expérience</span>
+        </div>
+        <div class="trust-item" data-counter>
+          <strong data-counter-value="500">0</strong>
+          <span>Clients satisfaits</span>
+        </div>
+        <div class="trust-item" data-counter>
+          <strong data-counter-value="1000">0</strong>
+          <span>Projets réalisés</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Image avec parallax -->
+    <div class="hero-visual" data-reveal="visual">
+      <div class="visual-card" data-parallax-img>
+        <Image 
+          src={Logo}
+          alt="Solutions tech et développement IA - Biscuits Dev"
+          widths={[400, 800, 1200, 1600]}
+          sizes="(max-width: 768px) 100vw, 50vw"
+          format="webp"
+          loading="eager"
+          quality={80}
+        />
+        
+        <!-- Floating elements décoratifs -->
+        <div class="floating-element floating-1" data-float>
+          <span>🎯</span>
+        </div>
+        <div class="floating-element floating-2" data-float>
+          <span>🧠</span>
+        </div>
+        <div class="floating-element floating-3" data-float>
+          <span>🤖</span>
+        </div>
+        <div class="floating-element floating-4" data-float>
+          <span>🌍</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scroll indicator -->
+  <div class="scroll-indicator" data-scroll-indicator>
+    <span>Scroll</span>
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M12 5v14m0 0l-7-7m7 7l7-7"/>
+    </svg>
+  </div>
+</section>
+
+<style>
+  /* === BASE HERO === */
+  .hero-section {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background: var(--color-dark-bg, #0d0d0d);
+    padding: 2rem 1rem;
+  }
+
+  /* === BACKGROUND ANIMÉ === */
+  .hero-bg {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+  }
+
+  .gradient-orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.3;
+    animation: float 20s ease-in-out infinite;
+  }
+
+  .gradient-orb-1 {
+    width: 500px;
+    height: 500px;
+    background: radial-gradient(circle, oklch(70.716% 0.17277 43.29) 0%, transparent 70%);
+    top: -200px;
+    left: -100px;
+    animation-delay: 0s;
+  }
+
+  .gradient-orb-2 {
+    width: 400px;
+    height: 400px;
+    background: radial-gradient(circle, oklab(75.978% 0.08854 0.10532) 0%, transparent 70%);
+    bottom: -150px;
+    right: -50px;
+    animation-delay: 5s;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    33% { transform: translate(30px, -30px) scale(1.1); }
+    66% { transform: translate(-20px, 20px) scale(0.9); }
+  }
+
+  .gradient-grid {
+    position: absolute;
+    inset: 0;
+    background-image: 
+      linear-gradient(oklch(73.159% 0.16141 50.968 / 0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(246, 118, 59, 0.05) 1px, transparent 1px);
+    background-size: 50px 50px;
+    mask-image: radial-gradient(ellipse at center, black 20%, transparent 80%);
+  }
+
+  /* === CONTENT === */
+  .hero-content {
+    position: relative;
+    z-index: 1;
+    max-width: 1400px;
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    align-items: center;
+  }
+
+  .hero-text {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  /* === LOGO === */
+  .hero-logo {
+    opacity: 0; /* Fallback si JS off */
+  }
+
+  .hero-logo img {
+    max-width: 250px;
+    height: auto;
+    filter: drop-shadow(0 0 20px oklch(73.159% 0.16141 50.968 / 0.3));
+  }
+
+  /* === TITLES === */
+  .hero-subtitle {
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.9);
+    margin: 0;
+    opacity: 0; /* Fallback */
+  }
+
+  .highlight {
+    background: linear-gradient(135deg, oklch(77.366% 0.1507 65.27) 0%, oklch(78.934% 0.13059 61.765) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 800;
+  }
+
+  .hero-title {
+    font-size: clamp(2rem, 4.5vw, 3.5rem);
+    font-weight: 800;
+    line-height: 1.2;
+    color: #fff;
+    margin: 0;
+    opacity: 0; /* Fallback */
+  }
+
+  /* === FEATURE BADGES === */
+  .hero-features {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    margin-top: 1rem;
+    opacity: 0; /* Fallback */
+  }
+
+  .feature-badge {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 1.25rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+    transform: translateY(20px); /* Fallback */
+    opacity: 0;
+  }
+
+  .feature-badge:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: oklch(75.632% 0.15376 59.288 / 0.3);
+    transform: translateY(-2px);
+  }
+
+  .badge-icon {
+    font-size: 1.5rem;
+    filter: drop-shadow(0 0 8px oklch(74.623% 0.15641 55.847 / 0.5));
+  }
+
+  .feature-badge span:last-child {
+    font-size: 0.95rem;
+    color: rgba(255, 255, 255, 0.85);
+    font-weight: 500;
+  }
+
+  /* === CTA === */
+  .hero-cta {
+    margin-top: 1.5rem;
+    opacity: 0; /* Fallback */
+  }
+
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1.25rem 2.5rem;
+    background: linear-gradient(135deg, oklch(73.159% 0.16141 50.968) 0%, oklch(67.817% 0.17402 46.171) 100%);
+    color: #fff;
+    font-weight: 600;
+    font-size: 1.1rem;
+    border-radius: 12px;
+    text-decoration: none;
+    box-shadow: 0 10px 30px oklch(73.159% 0.16141 50.968 / 0.3);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn-primary::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s ease;
+  }
+
+  .btn-primary:hover::before {
+    left: 100%;
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 40px rgba(246, 143, 59, 0.4);
+  }
+
+  .btn-arrow {
+    transition: transform 0.3s ease;
+  }
+
+  .btn-primary:hover .btn-arrow {
+    transform: translateX(5px);
+  }
+
+  /* === TRUST INDICATORS === */
+  .trust-indicators {
+    display: flex;
+    gap: 3rem;
+    margin-top: 2rem;
+    opacity: 0; /* Fallback */
+  }
+
+  .trust-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .trust-item strong {
+    font-size: 2rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, oklch(74.623% 0.15641 55.847) 0%, oklch(75.978% 0.13759 49.949) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .trust-item span {
+    font-size: 0.875rem;
+    color: rgba(255, 255, 255, 0.6);
+  }
+
+  
+  /* Floating elements */
+  .floating-element {
+    position: absolute;
+    font-size: 2rem;
+    filter: drop-shadow(0 0 10px oklch(74.623% 0.15641 55.847 / 0.6));
+    animation: floatElement 3s ease-in-out infinite;
+    opacity: 0.8;
+  }
+
+  .floating-1 {
+    top: 10%;
+    right: -5%;
+    animation-delay: 0s;
+  }
+
+  .floating-2 {
+    bottom: 15%;
+    left: -5%;
+    animation-delay: 1s;
+  }
+
+  .floating-3 {
+    top: 50%;
+    right: -8%;
+    animation-delay: 2s;
+  }
+
+  @keyframes floatElement {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-20px) rotate(10deg); }
+  }
+
+  /* === SCROLL INDICATOR === */
+  .scroll-indicator {
+    position: absolute;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.875rem;
+    animation: bounce 2s ease-in-out infinite;
+    opacity: 0; /* Fallback */
+  }
+
+  @keyframes bounce {
+    0%, 100% { transform: translateX(-50%) translateY(0); }
+    50% { transform: translateX(-50%) translateY(10px); }
+  }
+
+  /* === RESPONSIVE === */
+  @media (max-width: 1024px) {
+    .hero-content {
+      grid-template-columns: 1fr;
+      gap: 3rem;
+      text-align: center;
+    }
+
+    .hero-text {
+      align-items: center;
+    }
+
+    .hero-logo img {
+      max-width: 200px;
+    }
+
+    .hero-features {
+      max-width: 500px;
+    }
+
+    .trust-indicators {
+      justify-content: center;
+      gap: 2rem;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .hero-features {
+      grid-template-columns: 1fr;
+    }
+
+    .trust-indicators {
+      flex-direction: column;
+      gap: 1.5rem;
+      text-align: center;
+    }
+
+    .floating-element {
+      display: none; /* Cache sur mobile pour perf */
+    }
+  }
+
+  /* === ACCESSIBILITY === */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+
+    /* Affiche tous les éléments directement */
+    .hero-logo,
+    .hero-subtitle,
+    .hero-title,
+    .hero-features,
+    .hero-cta,
+    .trust-indicators,
+    .hero-visual,
+    .scroll-indicator,
+    .feature-badge {
+      opacity: 1 !important;
+      transform: none !important;
+    }
+  }
+</style>
+
+<script>
+  import { gsap } from 'gsap';
+  import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  function initHeroAnimations() {
+    const shouldReduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    
+    if (shouldReduce) {
+      gsap.set('[data-reveal], [data-badge], [data-scroll-indicator]', { 
+        opacity: 1, 
+        y: 0 
+      });
+      return;
+    }
+
+    const tl = gsap.timeline({
+      defaults: {
+        ease: 'power3.out',
+        duration: 0.5,
+      },
+    });
+
+    // Séquence d'apparition
+    tl.fromTo('[data-reveal="logo"]', 
+      { opacity: 0, y: -20 },
+      { opacity: 1, y: 0, duration: 0.8 }
+    )
+    .fromTo('[data-reveal="subtitle"]',
+      { opacity: 0, y: 20 },
+      { opacity: 1, y: 0 },
+      '-=0.4'
+    )
+    .fromTo('[data-reveal="title"]',
+      { opacity: 0, y: 30 },
+      { opacity: 1, y: 0 },
+      '-=0.6'
+    )
+    .fromTo('[data-badge]',
+      { opacity: 0, y: 20 },
+      { 
+        opacity: 1, 
+        y: 0, 
+        stagger: 0.1,
+        clearProps: 'transform' 
+      },
+      '-=0.4'
+    )
+    .fromTo('[data-reveal="cta"]',
+      { opacity: 0, scale: 0.9 },
+      { opacity: 1, scale: 1 },
+      '-=0.3'
+    )
+    .fromTo('[data-reveal="trust"]',
+      { opacity: 0, y: 20 },
+      { opacity: 1, y: 0 },
+      '-=0.4'
+    )
+    .fromTo('[data-reveal="visual"]',
+      { opacity: 0, x: 50 },
+      { opacity: 1, x: 0, duration: 1.2 },
+      '-=1'
+    )
+    .fromTo('[data-scroll-indicator]',
+      { opacity: 0, y: -10 },
+      { opacity: 1, y: 0 },
+      '-=0.5'
+    );
+
+    // Counter animation (déclenche après le reveal)
+    tl.call(animateCounters, undefined, '-=0.5');
+
+    // Parallax sur l'image (scroll)
+    const parallaxImg = document.querySelector('[data-parallax-img]');
+    if (parallaxImg) {
+      gsap.to(parallaxImg, {
+        y: () => window.innerHeight * 0.15,
+        ease: 'none',
+        scrollTrigger: {
+          trigger: '[data-hero-section]',
+          start: 'top top',
+          end: 'bottom top',
+          scrub: 1,
+        },
+      });
+    }
+
+    // Floating elements animation
+    const floatingElements = document.querySelectorAll('[data-float]');
+    floatingElements.forEach((el, index) => {
+      gsap.to(el, {
+        y: -30,
+        rotation: 360,
+        duration: 3 + index,
+        repeat: -1,
+        yoyo: true,
+        ease: 'sine.inOut',
+      });
+    });
+
+    // Background gradient animation
+    const orbs = document.querySelectorAll('.gradient-orb');
+    orbs.forEach((orb, index) => {
+      gsap.to(orb, {
+        x: 'random(-50, 50)',
+        y: 'random(-50, 50)',
+        scale: 'random(0.9, 1.2)',
+        duration: 'random(15, 25)',
+        repeat: -1,
+        yoyo: true,
+        ease: 'sine.inOut',
+        delay: index * 2,
+      });
+    });
+
+    // Magnetic button effect
+    const magneticBtn = document.querySelector('[data-magnetic]');
+    if (magneticBtn) {
+      const btn = magneticBtn as HTMLElement;
+      
+      btn.addEventListener('mouseenter', () => {
+        gsap.to(btn, { scale: 1.05, duration: 0.3 });
+      });
+
+      btn.addEventListener('mouseleave', () => {
+        gsap.to(btn, { scale: 1, x: 0, y: 0, duration: 0.3 });
+      });
+
+      btn.addEventListener('mousemove', (e: MouseEvent) => {
+        const rect = btn.getBoundingClientRect();
+        const x = e.clientX - rect.left - rect.width / 2;
+        const y = e.clientY - rect.top - rect.height / 2;
+
+        gsap.to(btn, {
+          x: x * 0.3,
+          y: y * 0.3,
+          duration: 0.3,
+        });
+      });
+    }
+  }
+
+  /**
+   * Counter animation (trust indicators)
+   */
+  function animateCounters() {
+    const counters = document.querySelectorAll('[data-counter-value]');
+    
+    counters.forEach((counter) => {
+      const target = parseInt(counter.getAttribute('data-counter-value') || '0');
+      const duration = 2;
+      
+      gsap.to(counter, {
+        textContent: target,
+        duration,
+        ease: 'power2.out',
+        snap: { textContent: 1 },
+        onUpdate: function() {
+          const value = Math.round(this.targets()[0].textContent);
+          this.targets()[0].textContent = value + (target >= 100 ? '+' : '');
+        },
+      });
+    });
+  }
+
+  // Init au chargement
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initHeroAnimations);
+  } else {
+    initHeroAnimations();
+  }
+
+  // Cleanup avant navigation (Astro View Transitions)
+  document.addEventListener('astro:before-swap', () => {
+    ScrollTrigger.getAll().forEach(st => st.kill());
+    gsap.globalTimeline.clear();
+  });
+
+  // Re-init après navigation
+  document.addEventListener('astro:after-swap', () => {
+    initHeroAnimations();
+  });
+</script>

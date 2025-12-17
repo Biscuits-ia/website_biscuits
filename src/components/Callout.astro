@@ -1,0 +1,122 @@
+---
+interface Props {
+  type?: 'info' | 'warning' | 'success' | 'error' | 'tip';
+  title?: string;
+}
+
+const { type = 'info', title } = Astro.props;
+
+const icons = {
+  info: '💡',
+  warning: '⚠️',
+  success: '✅',
+  error: '❌',
+  tip: '💭'
+};
+
+const titles = {
+  info: 'Information',
+  warning: 'Attention',
+  success: 'Succès',
+  error: 'Erreur',
+  tip: 'Astuce'
+};
+---
+
+<div class={`callout callout-${type}`}>
+  <div class="callout-header">
+    <span class="callout-icon">{icons[type]}</span>
+    <span class="callout-title">{title || titles[type]}</span>
+  </div>
+  <div class="callout-content">
+    <slot />
+  </div>
+</div>
+
+<style>
+  .callout {
+    margin: 1.5rem 0;
+    padding: 1.5rem;
+    border-radius: var(--radius-lg);
+    border-left: 4px solid;
+    background: var(--color-bg-alt);
+    border: 1px solid var(--color-border);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .callout::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    transition: width var(--transition-base);
+  }
+
+  .callout:hover::before {
+    width: 8px;
+  }
+
+  .callout-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+    font-weight: 600;
+    color: var(--color-text);
+  }
+
+  .callout-icon {
+    font-size: 1.5rem;
+    filter: drop-shadow(0 0 8px currentColor);
+  }
+
+  .callout-content {
+    font-size: 0.95rem;
+    color: var(--color-text-light);
+    line-height: 1.6;
+  }
+
+  /* Variants avec couleurs adaptées au dark */
+  .callout-info::before {
+    background: var(--color-primary);
+  }
+  .callout-info {
+    background: rgba(59, 130, 246, 0.05);
+    border-color: rgba(59, 130, 246, 0.2);
+  }
+
+  .callout-warning::before {
+    background: var(--color-warning);
+  }
+  .callout-warning {
+    background: rgba(245, 158, 11, 0.05);
+    border-color: rgba(245, 158, 11, 0.2);
+  }
+
+  .callout-success::before {
+    background: var(--color-success);
+  }
+  .callout-success {
+    background: rgba(16, 185, 129, 0.05);
+    border-color: rgba(16, 185, 129, 0.2);
+  }
+
+  .callout-error::before {
+    background: var(--color-danger);
+  }
+  .callout-error {
+    background: rgba(239, 68, 68, 0.05);
+    border-color: rgba(239, 68, 68, 0.2);
+  }
+
+  .callout-tip::before {
+    background: #a855f7;
+  }
+  .callout-tip {
+    background: rgba(168, 85, 247, 0.05);
+    border-color: rgba(168, 85, 247, 0.2);
+  }
+</style>

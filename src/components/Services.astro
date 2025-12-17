@@ -1,0 +1,283 @@
+---
+interface Service {
+  id: string;
+  title: string;
+  description: string;
+  icon: string;
+  details: string[];
+  zone: 'france' | 'global';
+}
+
+const services: Service[] = [
+  {
+    id: 'starterkits',
+    title: 'Starter Kits Premium',
+    description: 'Des projets prêts à l\'emploi, optimisés et conçus pour aller plus vite.',
+    icon: '🚀',
+    details: [
+      'Starter Kit Next.js Pro',
+      'Starter Kit Astro Local Business',
+      'Starter Kit SaaS Supabase complet',
+      'Code structuré, optimisé et scalable'
+    ],
+    zone: 'global'
+  },
+  {
+    id: 'solutions-ia',
+    title: 'Solutions IA Personnalisées',
+    description: 'Intégration d\'intelligence artificielle dans vos projets.',
+    icon: '🤖',
+    details: [
+      'Automatisation de tâches',
+      'IA intégrée à votre app',
+      'Chatbots IA avancés',
+      'IA pour workflows développeurs'
+    ],
+    zone: 'global'
+  },
+  {
+    id: 'consulting-ia',
+    title: 'Consulting IA & Dev',
+    description: 'Accompagnement pour optimiser vos projets techniques.',
+    icon: '🧠',
+    details: [
+      'Choix de stack moderne',
+      'Optimisation de code',
+      'Architecture logicielle',
+      'Accompagnement projet IA'
+    ],
+    zone: 'france'
+  },
+  {
+    id: 'automation',
+    title: 'Automatisation & Workflows',
+    description: 'Gagnez du temps avec des processus automatisés.',
+    icon: '⚙️',
+    details: [
+      'API automatisées',
+      'Générateurs IA',
+      'Scripts dev intelligents',
+      'Intégrations web & SaaS'
+    ],
+    zone: 'global'
+  }
+];
+
+function getZoneBadge(zone: Service['zone']) {
+  return zone === 'france' 
+    ? { text: 'Disponible en France', color: 'var(--color-primary)' }
+    : { text: 'Disponible partout', color: 'var(--color-first)' };
+}
+---
+
+<div class="services-container">
+  <div class="services-grid">
+    {services.map((service) => {
+      const badge = getZoneBadge(service.zone);
+      
+      return (
+        <div
+          class="service-card"
+          data-service-id={service.id}
+          data-reveal
+          role="button"
+          tabindex="0"
+          aria-expanded="false"
+        >
+          <div class="service-header">
+            <span class="service-icon">{service.icon}</span>
+            <h3>{service.title}</h3>
+          </div>
+          
+          <p class="service-description">{service.description}</p>
+          
+          <div class="zone-badge" style={`background: ${badge.color}`}>
+            {badge.text}
+          </div>
+          
+          <div class="service-details">
+            <h4>Prestations incluses :</h4>
+            <ul>
+              {service.details.map((detail) => (
+                <li>✓ {detail}</li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      );
+    })}
+  </div>
+</div>
+
+<style>
+  .services-container {
+    width: 100%;
+  }
+
+  .services-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: var(--spacing-xl);
+  }
+
+  .service-card {
+    background: var(--color-bg-alt);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    padding: var(--spacing-xl);
+    transition: all var(--transition-base);
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Glow effect */
+  .service-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--color-primary), var(--color-first));
+    transform: scaleX(0);
+    transition: transform var(--transition-base);
+  }
+
+  .service-card:hover,
+  .service-card:focus {
+    transform: translateY(-8px);
+    box-shadow: var(--shadow-xl);
+    border-color: var(--color-primary);
+    background: var(--color-dark-elevated);
+  }
+
+  .service-card:hover::before {
+    transform: scaleX(1);
+  }
+
+  .service-card:focus {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
+
+  .service-card.active {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 30px oklch(69.859% 0.17765 40.766 / 0.3);
+  }
+
+  .service-header {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-md);
+  }
+
+  .service-icon {
+    font-size: 3rem;
+    filter: drop-shadow(0 0 10px oklch(72.218% 0.16534 47.931 / 0.5));
+    transition: transform var(--transition-base);
+  }
+
+  .service-card:hover .service-icon {
+    transform: scale(1.1) rotate(5deg);
+  }
+
+  .service-card h3 {
+    font-size: var(--font-size-xl);
+    color: var(--color-text);
+    margin: 0;
+  }
+
+  .service-description {
+    color: var(--color-text-light);
+    margin-bottom: var(--spacing-md);
+    line-height: 1.6;
+  }
+
+  .zone-badge {
+    display: inline-block;
+    padding: var(--spacing-xs) var(--spacing-md);
+    border-radius: var(--radius-full);
+    color: #fff;
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-bold);
+    text-transform: uppercase;
+    margin-bottom: var(--spacing-md);
+    box-shadow: var(--shadow-glow);
+  }
+
+  .service-details {
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: all var(--transition-base);
+    margin-top: var(--spacing-lg);
+    padding-top: 0;
+    border-top: 1px solid transparent;
+  }
+
+  .service-card.active .service-details {
+    max-height: 500px;
+    opacity: 1;
+    padding-top: var(--spacing-lg);
+    border-top-color: var(--color-border);
+  }
+
+  .service-details h4 {
+    font-size: var(--font-size-base);
+    color: var(--color-primary);
+    margin-bottom: var(--spacing-md);
+  }
+
+  .service-details ul {
+    list-style: none;
+    padding: 0;
+  }
+
+  .service-details li {
+    padding: var(--spacing-xs) 0;
+    color: var(--color-text-light);
+    line-height: 1.5;
+  }
+
+  @media (max-width: 768px) {
+    .services-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const cards = document.querySelectorAll('.service-card');
+    
+    cards.forEach((card) => {
+      const handleToggle = () => {
+        const isActive = card.classList.contains('active');
+        
+        // Fermer toutes les autres
+        cards.forEach((c) => {
+          c.classList.remove('active');
+          c.setAttribute('aria-expanded', 'false');
+        });
+        
+        // Toggle actuelle
+        if (!isActive) {
+          card.classList.add('active');
+          card.setAttribute('aria-expanded', 'true');
+        }
+      };
+      
+      card.addEventListener('click', handleToggle);
+      
+      card.addEventListener('keydown', (e) => {
+        const event = e as KeyboardEvent;
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          handleToggle();
+        }
+      });
+    });
+  });
+</script>

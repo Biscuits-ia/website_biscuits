@@ -1,0 +1,136 @@
+---
+import { ViewTransitions } from 'astro:transitions';
+
+interface Props {
+  title: string;
+  description: string;
+}
+
+const { title, description } = Astro.props;
+---
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>{title}</title>
+  <meta name="description" content={description}>
+  
+  <link rel="preload" href="/fonts/inter.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/hero-tech.webp" as="image">
+  
+  <link rel="dns-prefetch" href="https://fonts.googleapis.com">
+  <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+  
+  <style>
+    body { 
+      margin: 0; 
+      background: #0d0d0d; 
+      color: rgba(255,255,255,0.9);
+      font-family: system-ui, sans-serif;
+    }
+    
+    /* Loading state */
+    .component-loading {
+      opacity: 0.5;
+      pointer-events: none;
+    }
+    
+    /* Lazy images */
+    img[data-src] {
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    
+    img.loaded {
+      opacity: 1;
+    }
+    
+    .cursor,
+    .cursor-follower {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      position: fixed;
+      pointer-events: none;
+      z-index: 9999;
+      mix-blend-mode: difference;
+    }
+    
+    .cursor {
+      background: white;
+      transform: translate(-50%, -50%);
+    }
+    
+    .cursor-follower {
+      width: 40px;
+      height: 40px;
+      border: 2px solid white;
+      background: transparent;
+      transform: translate(-50%, -50%);
+    }
+    
+    .cursor-hover {
+      transform: translate(-50%, -50%) scale(1.5);
+    }
+  </style>
+  
+  <ViewTransitions />
+  
+  <link rel="stylesheet" href="/styles/global.css">
+</head>
+
+<body>
+  <slot />
+  
+  <script>
+    import { 
+      LazyImageLoader, 
+      ComponentLazyLoader,
+      PerformanceMonitor,
+      preloadCriticalResources 
+    } from '@/utils/performance';
+    
+    import { 
+      initAdvancedAnimations,
+      MultiLayerParallax 
+    } from '@/animations/advanced/scroll-effects';
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const monitor = new PerformanceMonitor();
+      monitor.mark('app-start');
+
+      preloadCriticalResources();
+
+      new LazyImageLoader({
+        rootMargin: '50px',
+        threshold: 0.01,
+      });
+
+      new ComponentLazyLoader();
+
+      initAdvancedAnimations();
+
+      new MultiLayerParallax([
+        { selector: '[data-parallax="slow"]', speed: 0.3 },
+        { selector: '[data-parallax="medium"]', speed: 0.5 },
+        { selector: '[data-parallax="fast"]', speed: 0.8 },
+      ]);
+
+      setTimeout(() => {
+        monitor.mark('app-ready');
+        monitor.measure('app-init', 'app-start', 'app-ready');
+        
+        if (import.meta.env.DEV) {
+          monitor.logMetrics();
+        }
+      }, 3000);
+    });
+  </script>
+</body>
+</html>

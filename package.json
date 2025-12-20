@@ -11,7 +11,7 @@
     "optimize": "npm run build && npm run compress",
     "compress": "node scripts/compress-assets.js",
     "analyze": "astro build --analyze",
-    "lighthouse": "lighthouse https://localhost:4321 --view",
+    "lighthouse": "lighthouse https://localhost:4321 --view"
   },
   "dependencies": {
     "@astrojs/mdx": "4.3.13",

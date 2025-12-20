@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.PUBLIC_API_URL || 'https://biscuits-admin-main-1a6oe6.laravel.cloud';
+const API_BASE_URL = import.meta.env.PUBLIC_API_URL || 'http://biscuits-admin-main-1a6oe6.laravel.cloud/';
 const REQUEST_TIMEOUT = 15000; // 15 secondes
 const MAX_RETRIES = 2; // Nombre de tentatives
 const RETRY_DELAY = 1000; // Délai initial entre retries (ms)

@@ -8,15 +8,10 @@
     "preview": "astro preview",
     "send-newsletter": "tsx scripts/send-newsletter.ts",
     "astro": "astro",
-    "db:generate": "drizzle-kit generate",
-    "db:migrate": "drizzle-kit migrate",
-    "db:push": "drizzle-kit push",
     "optimize": "npm run build && npm run compress",
     "compress": "node scripts/compress-assets.js",
     "analyze": "astro build --analyze",
     "lighthouse": "lighthouse https://localhost:4321 --view",
-    "db:studio": "drizzle-kit studio",
-    "db:check": "drizzle-kit check"
   },
   "dependencies": {
     "@astrojs/mdx": "4.3.13",

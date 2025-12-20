@@ -14,23 +14,6 @@ Le projet s'adresse aux **vibe coders**, indépendants, startups et équipes tec
 - **Tailwind CSS + DaisyUI**
 - **SEO avancé & Lighthouse 100/100**
 
-### Backend
-- **Laravel 12 – Breeze API**
-- **Auth API sécurisée (tokens, rôles)**
-- **Stripe / Mollie (paiement)**
-
-### Base de données
-- **PostgreSQL**
-- **RLS (Row Level Security)**
-- **Migrations & seeds**
-
-### DevOps & Sécurité
-- GitHub Actions (CI/CD)
-- Docker
-- MFA, WebAuthn / FIDO2
-- Headers de sécurité
-- Audit & monitoring
-
 ---
 
 ## ✨ Fonctionnalités principales
@@ -45,72 +28,7 @@ Le projet s'adresse aux **vibe coders**, indépendants, startups et équipes tec
 - ✅ SEO avancé
 - ✅ Architecture scalable
 
----
 
-## 📦 Installation
-
-### Prérequis
-- Node.js >= 20
-- PHP >= 8.3
-- Composer
-- PostgreSQL
-- Docker (optionnel)
-
----
-
-### 1. Frontend (Astro)
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-Build production :
-
-```bash
-npm run build
-```
-
----
-
-### 2. Backend (Laravel)
-
-```bash
-cd backend
-composer install
-cp .env.example .env
-php artisan key:generate
-php artisan migrate --seed
-php artisan serve
-```
-
----
-
-### 3. Variables d'environnement
-
-#### Frontend
-```env
-PUBLIC_API_URL=http://localhost:8000
-```
-
-#### Backend
-```env
-APP_NAME=Biscuits AI
-APP_ENV=local
-APP_KEY=
-APP_DEBUG=true
-DB_CONNECTION=pgsql
-DB_HOST=127.0.0.1
-DB_PORT=5432
-DB_DATABASE=biscuits
-DB_USERNAME=postgres
-DB_PASSWORD=
-STRIPE_KEY=
-STRIPE_SECRET=
-```
-
----
 
 ## 🧠 Philosophie du projet
 

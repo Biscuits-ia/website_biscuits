@@ -2,7 +2,7 @@
 
 // ✅ Timeout réduit à 5 secondes
 const API_URL = import.meta.env.PUBLIC_API_URL || 'https://biscuits-admin-main-1a6oe6.laravel.cloud';
-const REQUEST_TIMEOUT = 5000; // ✅ 5 secondes au lieu de 15
+const REQUEST_TIMEOUT = 2000; // 2 secondes
 
 interface ContactData {
   name: string;
@@ -21,8 +21,8 @@ interface DevisData {
   service: string;
   budget?: string;
   message?: string;
-  honey?: string;     // ✅ Ajouté pour anti-spam
-  timestamp?: number; // ✅ Ajouté pour anti-spam
+  honey?: string;
+  timestamp?: number;
 }
 
 interface ApiResponse<T = unknown> {
@@ -135,7 +135,6 @@ export async function submitContact(data: ContactData): Promise<ApiResponse> {
   const startTime = performance.now();
 
   try {
-    // ✅ Ajouter timestamp automatiquement
     const payload: ContactData = {
       ...data,
       timestamp: data.timestamp || Math.floor(Date.now() / 1000),

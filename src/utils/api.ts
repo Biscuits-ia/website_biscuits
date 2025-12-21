@@ -1,6 +1,3 @@
-// src/utils/api.ts
-
-// ✅ Supprimer le slash final pour éviter les doubles slashes
 const API_URL = import.meta.env.PUBLIC_API_URL || 'https://biscuits-admin-main-1a6oe6.laravel.cloud';
 const REQUEST_TIMEOUT = 5000; // 15 secondes (plus long pour les connexions lentes)
 

@@ -1,37 +1,52 @@
+---
+// Aucune prop nécessaire pour ce composant standalone
+---
+
 <div class="devis-wrapper">
-  <form class="devis-form" id="devis-form" novalidate>
-    <h2 class="form-title">Demander un devis</h2>
+  <form class="devis-form" id="devis-form" novalidate data-devis-form>
+    <h2 class="form-title" data-reveal="title">Demander un devis</h2>
     
-    <div class="form-group">
-      <label for="name">Nom complet <span class="required">*</span></label>
-      <input 
-        type="text" 
-        id="name" 
-        name="name" 
-        required
-        maxlength="100"
-        autocomplete="name"
-        placeholder="Marie Dupont"
-      />
-      <span class="error-message" role="alert" aria-live="polite"></span>
+    <div class="form-grid" data-reveal="fields">
+      <!-- Nom -->
+      <div class="field" data-field="name">
+        <label for="name">
+          Nom complet <span class="required" aria-label="requis">*</span>
+        </label>
+        <input 
+          type="text" 
+          id="name" 
+          name="name" 
+          required
+          maxlength="100"
+          autocomplete="name"
+          placeholder="Marie Dupont"
+          aria-required="true"
+        />
+        <span class="error-message" role="alert" aria-live="polite"></span>
+      </div>
+      
+      <!-- Email -->
+      <div class="field" data-field="email">
+        <label for="email">
+          Email <span class="required" aria-label="requis">*</span>
+        </label>
+        <input 
+          type="email" 
+          id="email" 
+          name="email" 
+          required
+          maxlength="255"
+          autocomplete="email"
+          placeholder="marie@exemple.fr"
+          aria-required="true"
+        />
+        <span class="error-message" role="alert" aria-live="polite"></span>
+      </div>
     </div>
-    
-    <div class="form-group">
-      <label for="email">Email <span class="required">*</span></label>
-      <input 
-        type="email" 
-        id="email" 
-        name="email" 
-        required
-        maxlength="255"
-        autocomplete="email"
-        placeholder="marie@exemple.fr"
-      />
-      <span class="error-message" role="alert" aria-live="polite"></span>
-    </div>
-    
-    <div class="form-group">
-      <label for="phone">Téléphone</label>
+
+    <!-- Téléphone -->
+    <div class="field" data-field="phone" data-reveal="phone">
+      <label for="phone">Téléphone (optionnel)</label>
       <input 
         type="tel" 
         id="phone" 
@@ -43,10 +58,13 @@
       <span class="error-message" role="alert" aria-live="polite"></span>
     </div>
     
-    <div class="form-group">
-      <label for="service">Service souhaité <span class="required">*</span></label>
-      <select id="service" name="service" required>
-        <option value="">Sélectionner...</option>
+    <!-- Service -->
+    <div class="field" data-field="service" data-reveal="service">
+      <label for="service">
+        Service souhaité <span class="required" aria-label="requis">*</span>
+      </label>
+      <select id="service" name="service" required aria-required="true">
+        <option value="">Sélectionner un service…</option>
         <option value="site-vitrine">Site vitrine</option>
         <option value="e-commerce">E-commerce</option>
         <option value="application">Application web</option>
@@ -58,28 +76,32 @@
       <span class="error-message" role="alert" aria-live="polite"></span>
     </div>
     
-    <div class="form-group">
-      <label for="budget">Budget estimé</label>
-      <input 
-        type="text" 
-        id="budget" 
-        name="budget" 
-        placeholder="Ex: 1000-5000€"
-        maxlength="50"
-      />
+    <!-- Budget -->
+    <div class="field" data-field="budget" data-reveal="budget">
+      <label for="budget">Budget estimé (optionnel)</label>
+      <select id="budget" name="budget">
+        <option value="">Sélectionner une fourchette…</option>
+        <option value="< 1000€">Moins de 1 000€</option>
+        <option value="1000-3000€">1 000€ - 3 000€</option>
+        <option value="3000-5000€">3 000€ - 5 000€</option>
+        <option value="5000-10000€">5 000€ - 10 000€</option>
+        <option value="10000-20000€">10 000€ - 20 000€</option>
+        <option value="> 20000€">Plus de 20 000€</option>
+      </select>
       <span class="error-message" role="alert" aria-live="polite"></span>
     </div>
     
-    <div class="form-group">
-      <label for="message">Détails du projet</label>
+    <!-- Message -->
+    <div class="field" data-field="message" data-reveal="message">
+      <label for="message">Détails du projet (optionnel)</label>
       <textarea 
         id="message" 
         name="message" 
         rows="5"
         maxlength="2000"
-        placeholder="Décrivez votre projet..."
+        placeholder="Décrivez vos besoins, contraintes, délais…"
       ></textarea>
-      <span class="char-count">0 / 2000</span>
+      <span class="char-count" aria-live="polite">0 / 2000</span>
       <span class="error-message" role="alert" aria-live="polite"></span>
     </div>
 
@@ -100,20 +122,23 @@
       id="devis-timestamp"
     />
     
-    <button type="submit" class="submit-btn" id="submit-btn">
-      <span class="btn-text">Envoyer la demande</span>
-      <span class="btn-loader"></span>
+    <!-- Submit button -->
+    <button type="submit" class="submit-btn" id="submit-btn" data-reveal="submit">
+      <span class="btn-text">Envoyer ma demande</span>
+      <span class="btn-loader" aria-hidden="true"></span>
     </button>
     
-    <div class="alert alert-success" id="success-message" role="status">
-      <svg class="alert-icon" viewBox="0 0 24 24">
+    <!-- Success message -->
+    <div class="alert alert-success" id="success-message" role="status" aria-live="polite">
+      <svg class="alert-icon" viewBox="0 0 24 24" aria-hidden="true">
         <path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" fill="none"/>
       </svg>
       <span>Demande envoyée avec succès ! Nous vous répondrons dans les 24 heures.</span>
     </div>
 
-    <div class="alert alert-error" id="error-message" role="alert">
-      <svg class="alert-icon" viewBox="0 0 24 24">
+    <!-- Error message -->
+    <div class="alert alert-error" id="error-message" role="alert" aria-live="assertive">
+      <svg class="alert-icon" viewBox="0 0 24 24" aria-hidden="true">
         <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" fill="none" />
         <path d="M12 8v4m0 4h.01" stroke="currentColor" stroke-width="2" />
       </svg>
@@ -130,59 +155,97 @@
   }
 
   .devis-form {
-    width: min(100%, 42rem);
-    padding: 2.5rem;
-    background: var(--color-bg-alt, white);
-    border: 1px solid var(--color-border, #e5e7eb);
-    border-radius: 1rem;
-    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+    width: min(100%, 48rem);
+    padding: 3rem;
+    background: var(--color-bg-alt);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-2xl);
+    box-shadow: var(--shadow-2xl);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .devis-form::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--color-primary), var(--color-first));
   }
 
   .form-title {
     text-align: center;
     font-weight: 700;
     font-size: 1.875rem;
-    color: var(--color-text, #111);
+    color: var(--color-text);
     margin-bottom: 2rem;
+    background: linear-gradient(135deg, var(--color-primary), var(--color-first));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
   }
-  
-  .form-group {
+
+  .form-grid {
+    display: grid;
+    gap: 1.5rem;
     margin-bottom: 1.5rem;
   }
+
+  @media (width >= 768px) {
+    .form-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
   
-  .form-group label {
-    display: block;
-    margin-bottom: 0.5rem;
-    font-weight: 600;
+  .field {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .field label {
     font-size: 0.95rem;
-    color: var(--color-text-light, #333);
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--color-text-light);
   }
 
   .required {
-    color: var(--color-danger, #ef4444);
+    color: var(--color-danger);
   }
   
-  input, select, textarea {
-    width: 100%;
-    padding: 0.875rem;
-    border: 1px solid var(--color-border, #ddd);
-    border-radius: 0.5rem;
+  .field input,
+  .field select,
+  .field textarea {
+    padding: 1rem;
+    border-radius: var(--radius-lg);
+    background: var(--color-dark-bg);
     font-size: 1rem;
+    border: 1px solid var(--color-border);
+    color: var(--color-text);
     font-family: inherit;
-    transition: all 0.2s;
-    background: var(--color-bg, white);
-    color: var(--color-text, #111);
+    transition: all var(--transition-fast);
   }
   
-  input:focus, select:focus, textarea:focus {
+  .field input:focus,
+  .field select:focus,
+  .field textarea:focus {
     outline: none;
-    border-color: var(--color-primary, #2563eb);
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px oklch(72.218% 0.16534 47.931 / 0.1);
   }
 
-  textarea {
+  .field textarea {
     resize: vertical;
-    min-height: 120px;
+    min-height: 150px;
+  }
+
+  .field.error input,
+  .field.error select,
+  .field.error textarea {
+    border-color: var(--color-danger);
+    background-color: rgba(239, 68, 68, 0.05);
   }
 
   .char-count {
@@ -190,26 +253,20 @@
     margin-top: 0.5rem;
     font-size: 0.875rem;
     text-align: right;
-    color: var(--color-text-light, #666);
+    color: var(--color-text-light);
+    transition: color var(--transition-fast);
   }
 
   .error-message {
-    display: block;
-    color: var(--color-danger, #ef4444);
+    color: var(--color-danger);
     font-size: 0.875rem;
     margin-top: 0.5rem;
     min-height: 1.25rem;
+    font-weight: 500;
   }
 
-  .form-group:not(.error) .error-message {
+  .field:not(.error) .error-message {
     visibility: hidden;
-  }
-
-  .form-group.error input,
-  .form-group.error select,
-  .form-group.error textarea {
-    border-color: var(--color-danger, #ef4444);
-    background-color: rgba(239, 68, 68, 0.05);
   }
 
   .honeypot {
@@ -224,21 +281,38 @@
   .submit-btn {
     position: relative;
     width: 100%;
-    padding: 1rem 2rem;
-    background: linear-gradient(135deg, var(--color-primary, #2563eb), var(--color-primary-dark, #1e40af));
-    color: white;
+    padding: 1.25rem;
+    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+    color: #fff;
     border: none;
-    border-radius: 0.5rem;
+    border-radius: var(--radius-lg);
     font-size: 1.1rem;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.3s;
+    transition: all var(--transition-base);
+    margin-top: 2rem;
+    box-shadow: var(--shadow-glow);
     overflow: hidden;
+  }
+
+  .submit-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s ease;
+  }
+
+  .submit-btn:hover:not(:disabled)::before {
+    left: 100%;
   }
   
   .submit-btn:hover:not(:disabled) {
     transform: translateY(-2px);
-    box-shadow: 0 10px 25px rgba(37, 99, 235, 0.3);
+    box-shadow: var(--shadow-glow-hover);
   }
   
   .submit-btn:disabled {
@@ -258,7 +332,7 @@
     transform: translate(-50%, -50%);
     width: 24px;
     height: 24px;
-    border: 3px solid rgba(255, 255, 255, 0.3);
+    border: 3px solid oklch(100% 0.00011 271.152 / 0.3);
     border-top-color: white;
     border-radius: 50%;
     animation: spin 0.6s linear infinite;
@@ -278,8 +352,9 @@
     gap: 1rem;
     margin-top: 1.5rem;
     padding: 1.25rem;
-    border-radius: 0.5rem;
+    border-radius: var(--radius-lg);
     font-size: 0.95rem;
+    font-weight: 500;
     animation: slideDown 0.3s ease-out;
   }
 
@@ -300,18 +375,16 @@
     flex-shrink: 0;
   }
   
-  .alert.alert-success {
-    display: flex;
-    background: #dcfce7;
-    color: #166534;
-    border: 1px solid #22c55e;
+  .alert-success {
+    background: oklch(69.588% 0.14907 162.508 / 0.1);
+    color: var(--color-success);
+    border: 1px solid var(--color-success);
   }
   
-  .alert.alert-error {
-    display: flex;
-    background: #fee2e2;
-    color: #991b1b;
-    border: 1px solid #ef4444;
+  .alert-error {
+    background: oklch(63.681% 0.20784 25.315 / 0.1);
+    color: var(--color-danger);
+    border: 1px solid var(--color-danger);
   }
 
   @media (max-width: 768px) {
@@ -322,8 +395,15 @@
 </style>
 
 <script>
-  import { submitDevis } from '@/utils/api';
+  import { gsap } from 'gsap';
+  import { ScrollTrigger } from 'gsap/ScrollTrigger';
+  import { submitDevis } from '@/utils/api'; // ✅ Import unique depuis utils/api
 
+  gsap.registerPlugin(ScrollTrigger);
+
+  const DEBOUNCE_DELAY = 300;
+  
+  // Elements
   const form = document.getElementById('devis-form') as HTMLFormElement;
   const submitBtn = document.getElementById('submit-btn') as HTMLButtonElement;
   const successMsg = document.getElementById('success-message') as HTMLDivElement;
@@ -338,6 +418,48 @@
     timestampInput.value = Math.floor(Date.now() / 1000).toString();
   }
 
+  // Animations GSAP
+  function initFormAnimations(): void {
+    const shouldReduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    
+    if (shouldReduce) {
+      gsap.set('[data-reveal]', { opacity: 1, y: 0 });
+      return;
+    }
+
+    const tl = gsap.timeline({
+      scrollTrigger: {
+        trigger: '[data-devis-form]',
+        start: 'top 80%',
+        once: true,
+      },
+      defaults: {
+        ease: 'power3.out',
+        duration: 0.8,
+      },
+    });
+
+    tl.fromTo('[data-reveal="title"]',
+      { opacity: 0, y: -20 },
+      { opacity: 1, y: 0 }
+    )
+    .fromTo('[data-reveal="fields"] .field',
+      { opacity: 0, y: 20 },
+      { opacity: 1, y: 0, stagger: 0.1 },
+      '-=0.4'
+    )
+    .fromTo('[data-reveal="phone"], [data-reveal="service"], [data-reveal="budget"], [data-reveal="message"]',
+      { opacity: 0, y: 20 },
+      { opacity: 1, y: 0, stagger: 0.1 },
+      '-=0.4'
+    )
+    .fromTo('[data-reveal="submit"]',
+      { opacity: 0, scale: 0.9 },
+      { opacity: 1, scale: 1 },
+      '-=0.3'
+    );
+  }
+
   // Validation
   const sanitizeInput = (value: string): string => {
     if (!value) return '';
@@ -350,16 +472,18 @@
         if (!value || value.trim() === '') return 'Ce champ est obligatoire';
         if (value.length < 2) return 'Le nom doit contenir au moins 2 caractères';
         if (value.length > 100) return 'Le nom ne peut pas dépasser 100 caractères';
+        if (!/^[a-zA-ZÀ-ÿ\s'-]+$/.test(value)) return 'Le nom contient des caractères invalides';
         break;
 
       case 'email':
         if (!value || value.trim() === '') return 'Ce champ est obligatoire';
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(value)) return 'Email invalide';
+        if (value.length > 255) return 'L\'email ne peut pas dépasser 255 caractères';
         break;
 
       case 'phone':
-        if (value && value.length < 8) return 'Numéro de téléphone invalide';
+        if (value && !/^[+\d\s()-]+$/.test(value)) return 'Numéro de téléphone invalide';
         break;
 
       case 'service':
@@ -375,28 +499,33 @@
 
   // UI helpers
   const showError = (fieldName: string, message: string): void => {
-    const field = document.getElementById(fieldName)?.closest('.form-group');
+    const field = document.querySelector(`[data-field="${fieldName}"]`);
     if (!field) return;
 
     field.classList.add('error');
     const errorSpan = field.querySelector('.error-message');
     if (errorSpan) errorSpan.textContent = message;
+
+    const input = field.querySelector('input, select, textarea') as HTMLInputElement;
+    if (input) input.setAttribute('aria-invalid', 'true');
   };
 
   const clearError = (fieldName: string): void => {
-    const field = document.getElementById(fieldName)?.closest('.form-group');
+    const field = document.querySelector(`[data-field="${fieldName}"]`);
     if (!field) return;
 
     field.classList.remove('error');
     const errorSpan = field.querySelector('.error-message');
     if (errorSpan) errorSpan.textContent = '';
+
+    const input = field.querySelector('input, select, textarea') as HTMLInputElement;
+    if (input) input.removeAttribute('aria-invalid');
   };
 
   const clearAllErrors = (): void => {
-    document.querySelectorAll('.form-group.error').forEach((field) => {
-      field.classList.remove('error');
-      const errorSpan = field.querySelector('.error-message');
-      if (errorSpan) errorSpan.textContent = '';
+    form.querySelectorAll('[data-field]').forEach((field) => {
+      const fieldName = field.getAttribute('data-field');
+      if (fieldName) clearError(fieldName);
     });
   };
 
@@ -407,17 +536,18 @@
     charCount.textContent = `${length} / 2000`;
     
     if (length > 1900) {
-      charCount.style.color = 'var(--color-danger, #ef4444)';
+      charCount.style.color = 'var(--color-danger)';
     } else if (length > 1500) {
-      charCount.style.color = 'var(--color-warning, #f59e0b)';
+      charCount.style.color = 'var(--color-warning)';
     } else {
       charCount.style.color = '';
     }
   };
 
-  // Field validation
+  // Field validation avec debounce
   const setupFieldValidation = (): void => {
     const fields = form.querySelectorAll('input:not([type="hidden"]):not(.honeypot), textarea, select');
+    let debounceTimeout: number;
 
     fields.forEach((field) => {
       const input = field as HTMLInputElement;
@@ -429,7 +559,10 @@
       });
 
       input.addEventListener('input', () => {
-        clearError(input.name);
+        clearTimeout(debounceTimeout);
+        debounceTimeout = window.setTimeout(() => {
+          clearError(input.name);
+        }, DEBOUNCE_DELAY);
       });
     });
   };
@@ -455,7 +588,7 @@
       timestamp: parseInt(formData.get('timestamp') as string || '0'),
     };
 
-    // Validation
+    // Validation côté client
     let hasErrors = false;
     const requiredFields = ['name', 'email', 'service'] as const;
     
@@ -468,15 +601,17 @@
     });
 
     if (hasErrors) {
-      const firstError = document.querySelector('.form-group.error input, .form-group.error select') as HTMLInputElement;
+      const firstError = document.querySelector('.field.error input, .field.error select') as HTMLInputElement;
       firstError?.focus();
       return;
     }
 
     submitBtn.disabled = true;
     submitBtn.classList.add('loading');
+    submitBtn.setAttribute('aria-busy', 'true');
 
     try {
+      // ✅ Appel à la fonction centralisée dans utils/api
       await submitDevis(data);
 
       successMsg.style.display = 'flex';
@@ -487,11 +622,17 @@
         timestampInput.value = Math.floor(Date.now() / 1000).toString();
       }
       
-      if (messageTextarea && charCount) {
-        updateCharCount();
-      }
-
+      updateCharCount();
       successMsg.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+      // Analytics
+      if (typeof window.gtag !== 'undefined') {
+        window.gtag('event', 'form_submit', {
+          form_name: 'devis',
+          service: data.service,
+          budget: data.budget,
+        });
+      }
 
       setTimeout(() => {
         successMsg.style.display = 'none';
@@ -507,10 +648,12 @@
     } finally {
       submitBtn.disabled = false;
       submitBtn.classList.remove('loading');
+      submitBtn.removeAttribute('aria-busy');
     }
   });
 
   // Initialize
+  initFormAnimations();
   setupFieldValidation();
   if (messageTextarea) {
     messageTextarea.addEventListener('input', updateCharCount);

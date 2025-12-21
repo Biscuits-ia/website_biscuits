@@ -18,6 +18,8 @@ interface DevisData {
   service: string;
   budget?: string;
   message?: string;
+  honey?: string;     // ✅ Ajouté pour anti-spam
+  timestamp?: number; // ✅ Ajouté pour anti-spam
 }
 
 interface ApiResponse<T = unknown> {
@@ -214,17 +216,19 @@ export async function submitDevis(data: DevisData): Promise<ApiResponse> {
   const startTime = performance.now();
 
   try {
-    // ✅ Ajouter timestamp et honeypot
+    // ✅ Le honey et timestamp sont déjà dans data depuis le formulaire
     const payload = {
       ...data,
-      honey: '',
-      timestamp: Math.floor(Date.now() / 1000),
+      honey: data.honey || '', // Utiliser celui du form, sinon vide
+      timestamp: data.timestamp || Math.floor(Date.now() / 1000), // Utiliser celui du form, sinon maintenant
     };
 
     console.log('📤 Envoi devis:', {
-      name: data.name,
-      email: data.email,
-      service: data.service,
+      name: payload.name,
+      email: payload.email,
+      service: payload.service,
+      hasHoney: 'honey' in payload,
+      hasTimestamp: 'timestamp' in payload,
     });
 
     const response = await fetchWithTimeout(

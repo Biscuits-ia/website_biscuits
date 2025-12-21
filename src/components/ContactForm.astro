@@ -390,7 +390,6 @@ import { SERVICES_CONFIG, EUROPE_COUNTRIES } from "@/utils/formValidation";
   const charCount = document.querySelector(".char-count") as HTMLSpanElement;
   const timestampInput = document.getElementById("form-timestamp") as HTMLInputElement;
 
-  // ✅ Initialiser le timestamp à l'ouverture de la page
   if (timestampInput) {
     timestampInput.value = Math.floor(Date.now() / 1000).toString();
   }

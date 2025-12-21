@@ -339,11 +339,11 @@ const structuredData = {
 
     if (!response.ok) {
       if (response.status === 429) {
-        throw new Error('Trop de tentatives. Veuillez patienter quelques instants.');
+        throw new Error('Nous ne sommes pas en mesure d\'accepter de devis pour le moment.');
       }
 
       if (response.status >= 500) {
-        throw new Error('Nous ne sommes pas en mesure d’accepter de devis pour le moment.');
+        throw new Error('Nous ne sommes pas en mesure d\'accepter de devis pour le moment.');
       }
 
       throw new Error(result.message || 'Une erreur est survenue');

@@ -577,13 +577,19 @@
 
     const formData = new FormData(form);
     
+    // ✅ Helper pour nettoyer les champs optionnels
+    const getOptionalField = (fieldName: string): string | undefined => {
+      const value = sanitizeInput(formData.get(fieldName) as string);
+      return value && value.trim() !== '' ? value : undefined;
+    };
+    
     const data = {
       name: sanitizeInput(formData.get('name') as string),
       email: sanitizeInput(formData.get('email') as string),
-      phone: sanitizeInput(formData.get('phone') as string) || undefined,
+      phone: getOptionalField('phone'),
       service: sanitizeInput(formData.get('service') as string),
-      budget: sanitizeInput(formData.get('budget') as string) || undefined,
-      message: sanitizeInput(formData.get('message') as string) || undefined,
+      budget: getOptionalField('budget'), // ✅ Ne pas envoyer si vide
+      message: getOptionalField('message'), // ✅ Ne pas envoyer si vide
       honey: formData.get('honey') as string || '',
       timestamp: parseInt(formData.get('timestamp') as string || '0'),
     };
@@ -633,6 +639,10 @@
           budget: data.budget,
         });
       }
+
+      setTimeout(() => {
+        successMsg.style.display = 'none';
+      }, 10000);
 
     } catch (error: any) {
       console.error('❌ Erreur:', error);

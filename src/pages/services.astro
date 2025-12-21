@@ -1,5 +1,4 @@
 ---
-import '@/styles/global.css'
 import BaseLayout from '@layouts/Layout.astro';
 import Service from '@/components/Services.astro';
 
@@ -33,16 +32,6 @@ const structuredData = {
   <section class="services-list">
     <div class="container">
       <Service client:load />
-    </div>
-  </section>
-  
-  <section class="cta-section">
-    <div class="container">
-      <h2>Besoin d'un service informatique ?</h2>
-      <p>Devis gratuit et sans engagement</p>
-      <div class="cta-buttons">
-        <a href="/devis" class="btn-primary">Demander un devis</a>
-      </div>
     </div>
   </section>
 </BaseLayout>

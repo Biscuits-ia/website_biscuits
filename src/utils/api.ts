@@ -1,5 +1,8 @@
+// src/utils/api.ts
+
+// ✅ Timeout réduit à 5 secondes
 const API_URL = import.meta.env.PUBLIC_API_URL || 'https://biscuits-admin-main-1a6oe6.laravel.cloud';
-const REQUEST_TIMEOUT = 5000;
+const REQUEST_TIMEOUT = 5000; // ✅ 5 secondes au lieu de 15
 
 interface ContactData {
   name: string;
@@ -18,8 +21,8 @@ interface DevisData {
   service: string;
   budget?: string;
   message?: string;
-  honey?: string;
-  timestamp?: number;
+  honey?: string;     // ✅ Ajouté pour anti-spam
+  timestamp?: number; // ✅ Ajouté pour anti-spam
 }
 
 interface ApiResponse<T = unknown> {

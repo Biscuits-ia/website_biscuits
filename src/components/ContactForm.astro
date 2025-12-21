@@ -374,13 +374,10 @@ import { SERVICES_CONFIG, EUROPE_COUNTRIES } from "@/utils/formValidation";
 <script>
   import { gsap } from 'gsap';
   import { ScrollTrigger } from 'gsap/ScrollTrigger';
+  import { submitContact } from '@/utils/api'; // ✅ Utiliser la fonction centralisée
 
   gsap.registerPlugin(ScrollTrigger);
 
-  // ✅ Configuration CORRIGÉE
-  const API_BASE_URL = import.meta.env.PUBLIC_API_URL || 'https://biscuits-admin-main-1a6oe6.laravel.cloud';
-  const API_ENDPOINT = `${API_BASE_URL}/api/contacts`; // ✅ PAS de /v1
-  const API_TIMEOUT = 15000;
   const DEBOUNCE_DELAY = 300;
   
   // Elements
@@ -396,23 +393,6 @@ import { SERVICES_CONFIG, EUROPE_COUNTRIES } from "@/utils/formValidation";
   // ✅ Initialiser le timestamp à l'ouverture de la page
   if (timestampInput) {
     timestampInput.value = Math.floor(Date.now() / 1000).toString();
-  }
-
-  // Types
-  interface ContactFormData {
-    name: string;
-    email: string;
-    country: string;
-    service: string;
-    message: string;
-    honey?: string; // ✅ CORRIGÉ : "honey" au lieu de "website"
-    timestamp?: number;
-  }
-
-  interface ApiResponse {
-    success: boolean;
-    message: string;
-    id?: number;
   }
 
   // Animations
@@ -543,72 +523,6 @@ import { SERVICES_CONFIG, EUROPE_COUNTRIES } from "@/utils/formValidation";
     }
   };
 
-  // API
-  const fetchWithTimeout = async (
-    url: string, 
-    options: RequestInit, 
-    timeout: number = API_TIMEOUT
-  ): Promise<Response> => {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), timeout);
-
-    try {
-      const response = await fetch(url, {
-        ...options,
-        signal: controller.signal,
-      });
-      clearTimeout(timeoutId);
-      return response;
-    } catch (error) {
-      clearTimeout(timeoutId);
-      if ((error as Error).name === 'AbortError') {
-        throw new Error('La requête a expiré. Veuillez réessayer.');
-      }
-      throw error;
-    }
-  };
-
-  const sendToApi = async (data: ContactFormData): Promise<ApiResponse> => {
-    console.log('📤 Envoi vers:', API_ENDPOINT);
-    console.log('📦 Données:', data);
-
-    const response = await fetchWithTimeout(
-      API_ENDPOINT,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-        body: JSON.stringify(data),
-      },
-      API_TIMEOUT
-    );
-
-    console.log('📥 Statut réponse:', response.status);
-
-    const result: ApiResponse = await response.json();
-    console.log('📋 Réponse complète:', result);
-
-    if (!response.ok) {
-      if (response.status === 429) {
-        throw new Error('Trop de tentatives. Veuillez patienter quelques instants.');
-      }
-
-      if (response.status === 422) {
-        throw new Error(result.message || 'Erreur de validation');
-      }
-
-      if (response.status >= 500) {
-        throw new Error('Erreur serveur. Veuillez réessayer plus tard.');
-      }
-
-      throw new Error(result.message || 'Une erreur est survenue');
-    }
-
-    return result;
-  };
-
   // Event listeners
   const setupFieldValidation = (): void => {
     const fields = form.querySelectorAll("input:not([type='hidden']):not(.honeypot), textarea, select");
@@ -642,24 +556,23 @@ import { SERVICES_CONFIG, EUROPE_COUNTRIES } from "@/utils/formValidation";
 
     const formData = new FormData(form);
     
-    // ✅ Construction des données avec les bons noms de champs
-    const data: ContactFormData = {
+    // Construction des données
+    const data = {
       name: sanitizeInput(formData.get("name") as string),
       email: sanitizeInput(formData.get("email") as string),
       country: sanitizeInput(formData.get("country") as string),
       service: sanitizeInput(formData.get("service") as string),
       message: sanitizeInput(formData.get("message") as string),
-      honey: formData.get("honey") as string || '', // ✅ honeypot
-      timestamp: parseInt(formData.get("timestamp") as string || '0'), // ✅ timestamp
+      honey: formData.get("honey") as string || '',
+      timestamp: parseInt(formData.get("timestamp") as string || '0'),
     };
 
     // Validation côté client
     let hasErrors = false;
-    const fieldsToValidate: Array<keyof Pick<ContactFormData, 'name' | 'email' | 'country' | 'service' | 'message'>> = 
-      ['name', 'email', 'country', 'service', 'message'];
+    const fieldsToValidate = ['name', 'email', 'country', 'service', 'message'] as const;
     
     fieldsToValidate.forEach((field) => {
-      const error = validateField(field, data[field] as string);
+      const error = validateField(field, data[field]);
       if (error) {
         showError(field, error);
         hasErrors = true;
@@ -677,18 +590,18 @@ import { SERVICES_CONFIG, EUROPE_COUNTRIES } from "@/utils/formValidation";
     submitBtn.setAttribute("aria-busy", "true");
 
     try {
-      await sendToApi(data);
+      // ✅ Utiliser la fonction API centralisée
+      await submitContact(data);
 
       successMsg.style.display = "flex";
       form.reset();
       
-      // ✅ Réinitialiser le timestamp après envoi
+      // Réinitialiser le timestamp
       if (timestampInput) {
         timestampInput.value = Math.floor(Date.now() / 1000).toString();
       }
       
       updateCharCount();
-      
       successMsg.scrollIntoView({ behavior: "smooth", block: "nearest" });
 
       // Analytics
@@ -703,13 +616,10 @@ import { SERVICES_CONFIG, EUROPE_COUNTRIES } from "@/utils/formValidation";
         successMsg.style.display = "none";
       }, 10000);
 
-    } catch (error) {
-      console.error('❌ Erreur lors de l\'envoi:', error);
+    } catch (error: any) {
+      console.error('❌ Erreur:', error);
       
-      errorText.textContent = error instanceof Error 
-        ? error.message 
-        : 'Une erreur inattendue est survenue';
-      
+      errorText.textContent = error?.message || 'Une erreur inattendue est survenue';
       errorMsg.style.display = "flex";
       errorMsg.scrollIntoView({ behavior: "smooth", block: "nearest" });
 

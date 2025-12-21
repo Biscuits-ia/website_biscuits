@@ -86,8 +86,22 @@ import { SERVICES_CONFIG, EUROPE_COUNTRIES } from "@/utils/formValidation";
       <span class="error-message" role="alert" aria-live="polite"></span>
     </div>
 
-    <!-- Honeypot -->
-    <input type="text" name="website" tabindex="-1" autocomplete="off" class="honeypot" aria-hidden="true" />
+    <!-- Honeypot (anti-spam) -->
+    <input 
+      type="text" 
+      name="honey" 
+      tabindex="-1" 
+      autocomplete="off" 
+      class="honeypot" 
+      aria-hidden="true" 
+    />
+
+    <!-- Timestamp (anti-spam) -->
+    <input 
+      type="hidden" 
+      name="timestamp" 
+      id="form-timestamp"
+    />
 
     <!-- Submit -->
     <button type="submit" id="submit-btn" class="submit-btn" data-reveal="submit">
@@ -363,9 +377,9 @@ import { SERVICES_CONFIG, EUROPE_COUNTRIES } from "@/utils/formValidation";
 
   gsap.registerPlugin(ScrollTrigger);
 
-  // Configuration
-  const API_BASE_URL = import.meta.env.PUBLIC_API_URL || 'https://biscuits-admin-main-1a6oe6.laravel.cloud/';
-  const API_ENDPOINT = `${API_BASE_URL}/api/v1/contacts`;
+  // ✅ Configuration CORRIGÉE
+  const API_BASE_URL = import.meta.env.PUBLIC_API_URL || 'https://biscuits-admin-main-1a6oe6.laravel.cloud';
+  const API_ENDPOINT = `${API_BASE_URL}/api/contacts`; // ✅ PAS de /v1
   const API_TIMEOUT = 15000;
   const DEBOUNCE_DELAY = 300;
   
@@ -377,6 +391,12 @@ import { SERVICES_CONFIG, EUROPE_COUNTRIES } from "@/utils/formValidation";
   const errorText = document.getElementById("error-text") as HTMLSpanElement;
   const messageTextarea = document.getElementById("message") as HTMLTextAreaElement;
   const charCount = document.querySelector(".char-count") as HTMLSpanElement;
+  const timestampInput = document.getElementById("form-timestamp") as HTMLInputElement;
+
+  // ✅ Initialiser le timestamp à l'ouverture de la page
+  if (timestampInput) {
+    timestampInput.value = Math.floor(Date.now() / 1000).toString();
+  }
 
   // Types
   interface ContactFormData {
@@ -385,7 +405,8 @@ import { SERVICES_CONFIG, EUROPE_COUNTRIES } from "@/utils/formValidation";
     country: string;
     service: string;
     message: string;
-    website?: string;
+    honey?: string; // ✅ CORRIGÉ : "honey" au lieu de "website"
+    timestamp?: number;
   }
 
   interface ApiResponse {
@@ -548,6 +569,9 @@ import { SERVICES_CONFIG, EUROPE_COUNTRIES } from "@/utils/formValidation";
   };
 
   const sendToApi = async (data: ContactFormData): Promise<ApiResponse> => {
+    console.log('📤 Envoi vers:', API_ENDPOINT);
+    console.log('📦 Données:', data);
+
     const response = await fetchWithTimeout(
       API_ENDPOINT,
       {
@@ -561,11 +585,18 @@ import { SERVICES_CONFIG, EUROPE_COUNTRIES } from "@/utils/formValidation";
       API_TIMEOUT
     );
 
+    console.log('📥 Statut réponse:', response.status);
+
     const result: ApiResponse = await response.json();
+    console.log('📋 Réponse complète:', result);
 
     if (!response.ok) {
       if (response.status === 429) {
         throw new Error('Trop de tentatives. Veuillez patienter quelques instants.');
+      }
+
+      if (response.status === 422) {
+        throw new Error(result.message || 'Erreur de validation');
       }
 
       if (response.status >= 500) {
@@ -610,18 +641,22 @@ import { SERVICES_CONFIG, EUROPE_COUNTRIES } from "@/utils/formValidation";
     clearAllErrors();
 
     const formData = new FormData(form);
+    
+    // ✅ Construction des données avec les bons noms de champs
     const data: ContactFormData = {
       name: sanitizeInput(formData.get("name") as string),
       email: sanitizeInput(formData.get("email") as string),
       country: sanitizeInput(formData.get("country") as string),
       service: sanitizeInput(formData.get("service") as string),
       message: sanitizeInput(formData.get("message") as string),
-      website: formData.get("website") as string,
+      honey: formData.get("honey") as string || '', // ✅ honeypot
+      timestamp: parseInt(formData.get("timestamp") as string || '0'), // ✅ timestamp
     };
 
     // Validation côté client
     let hasErrors = false;
-    const fieldsToValidate: Array<keyof ContactFormData> = ['name', 'email', 'country', 'service', 'message'];
+    const fieldsToValidate: Array<keyof Pick<ContactFormData, 'name' | 'email' | 'country' | 'service' | 'message'>> = 
+      ['name', 'email', 'country', 'service', 'message'];
     
     fieldsToValidate.forEach((field) => {
       const error = validateField(field, data[field] as string);
@@ -646,6 +681,12 @@ import { SERVICES_CONFIG, EUROPE_COUNTRIES } from "@/utils/formValidation";
 
       successMsg.style.display = "flex";
       form.reset();
+      
+      // ✅ Réinitialiser le timestamp après envoi
+      if (timestampInput) {
+        timestampInput.value = Math.floor(Date.now() / 1000).toString();
+      }
+      
       updateCharCount();
       
       successMsg.scrollIntoView({ behavior: "smooth", block: "nearest" });
@@ -663,7 +704,7 @@ import { SERVICES_CONFIG, EUROPE_COUNTRIES } from "@/utils/formValidation";
       }, 10000);
 
     } catch (error) {
-      console.error('Erreur lors de l\'envoi:', error);
+      console.error('❌ Erreur lors de l\'envoi:', error);
       
       errorText.textContent = error instanceof Error 
         ? error.message 

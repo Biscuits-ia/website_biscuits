@@ -1,5 +1,5 @@
 const API_URL = import.meta.env.PUBLIC_API_URL || 'https://biscuits-admin-main-1a6oe6.laravel.cloud';
-const REQUEST_TIMEOUT = 15000; // 15 secondes (plus long pour les connexions lentes)
+const REQUEST_TIMEOUT = 5000; // ✅ 5 secondes au lieu de 15
 
 interface ContactData {
   name: string;
@@ -39,7 +39,7 @@ class ApiError extends Error {
 }
 
 /**
- * Fonction fetch avec timeout et meilleure gestion d'erreurs
+ * Fonction fetch avec timeout et mesure de performance
  */
 async function fetchWithTimeout(
   url: string,
@@ -49,37 +49,49 @@ async function fetchWithTimeout(
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeout);
 
+  // ✅ Mesure de performance
+  const startTime = performance.now();
+
   try {
     console.log('🌐 Requête vers:', url);
-    console.log('📦 Options:', {
-      method: options.method,
-      headers: options.headers,
-      body: options.body ? '(données présentes)' : '(pas de body)',
-    });
+    console.log('⏱️ Timeout configuré:', timeout + 'ms');
 
     const response = await fetch(url, {
       ...options,
       signal: controller.signal,
     });
 
+    clearTimeout(timeoutId);
+
+    // ✅ Log du temps de réponse
+    const duration = performance.now() - startTime;
+    console.log(`⏱️ Temps de réponse: ${duration.toFixed(0)}ms`);
+    
+    if (duration > 2000) {
+      console.warn(`🐌 Requête lente détectée: ${duration.toFixed(0)}ms`);
+    }
+
     console.log('📥 Réponse:', {
       status: response.status,
       statusText: response.statusText,
       ok: response.ok,
+      duration: `${duration.toFixed(0)}ms`,
     });
 
-    clearTimeout(timeoutId);
     return response;
 
   } catch (error) {
     clearTimeout(timeoutId);
     
+    const duration = performance.now() - startTime;
+    
     if (error instanceof Error && error.name === 'AbortError') {
-      console.error('⏱️ Timeout dépassé');
-      throw new ApiError('La requête a expiré. Vérifiez votre connexion.', 408);
+      console.error(`⏱️ Timeout après ${duration.toFixed(0)}ms`);
+      throw new ApiError('La requête a expiré. Le serveur met trop de temps à répondre.', 408);
     }
 
     console.error('❌ Erreur réseau:', error);
+    console.error(`⏱️ Échec après ${duration.toFixed(0)}ms`);
     throw error;
   }
 }
@@ -93,7 +105,7 @@ async function parseJsonResponse<T = unknown>(response: Response): Promise<ApiRe
   if (!contentType?.includes('application/json')) {
     console.error('❌ Réponse non-JSON reçue:', contentType);
     const text = await response.text();
-    console.error('📄 Contenu:', text.substring(0, 500));
+    console.error('📄 Contenu (premiers 500 chars):', text.substring(0, 500));
     
     throw new ApiError(
       'Le serveur a renvoyé une réponse invalide.',
@@ -115,6 +127,8 @@ async function parseJsonResponse<T = unknown>(response: Response): Promise<ApiRe
  * Envoyer un contact
  */
 export async function submitContact(data: ContactData): Promise<ApiResponse> {
+  const startTime = performance.now();
+
   try {
     // ✅ Ajouter timestamp automatiquement
     const payload: ContactData = {
@@ -137,7 +151,6 @@ export async function submitContact(data: ContactData): Promise<ApiResponse> {
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
-          // ✅ Pas besoin d'Origin, le navigateur l'ajoute automatiquement
         },
         body: JSON.stringify(payload),
       }
@@ -176,10 +189,15 @@ export async function submitContact(data: ContactData): Promise<ApiResponse> {
       );
     }
 
-    console.log('✅ Contact envoyé avec succès');
+    const totalDuration = performance.now() - startTime;
+    console.log(`✅ Contact envoyé avec succès en ${totalDuration.toFixed(0)}ms`);
+    
     return result;
 
   } catch (error) {
+    const totalDuration = performance.now() - startTime;
+    console.error(`❌ Erreur après ${totalDuration.toFixed(0)}ms`);
+    
     if (error instanceof ApiError) {
       throw error;
     }
@@ -193,7 +211,16 @@ export async function submitContact(data: ContactData): Promise<ApiResponse> {
  * Envoyer un devis
  */
 export async function submitDevis(data: DevisData): Promise<ApiResponse> {
+  const startTime = performance.now();
+
   try {
+    // ✅ Ajouter timestamp et honeypot
+    const payload = {
+      ...data,
+      honey: '',
+      timestamp: Math.floor(Date.now() / 1000),
+    };
+
     console.log('📤 Envoi devis:', {
       name: data.name,
       email: data.email,
@@ -208,7 +235,7 @@ export async function submitDevis(data: DevisData): Promise<ApiResponse> {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify(payload),
       }
     );
 
@@ -244,10 +271,15 @@ export async function submitDevis(data: DevisData): Promise<ApiResponse> {
       );
     }
 
-    console.log('✅ Devis envoyé avec succès');
+    const totalDuration = performance.now() - startTime;
+    console.log(`✅ Devis envoyé avec succès en ${totalDuration.toFixed(0)}ms`);
+    
     return result;
 
   } catch (error) {
+    const totalDuration = performance.now() - startTime;
+    console.error(`❌ Erreur après ${totalDuration.toFixed(0)}ms`);
+    
     if (error instanceof ApiError) {
       throw error;
     }
@@ -261,6 +293,8 @@ export async function submitDevis(data: DevisData): Promise<ApiResponse> {
  * Fonction helper pour vérifier la santé de l'API
  */
 export async function checkApiHealth(): Promise<boolean> {
+  const startTime = performance.now();
+  
   try {
     const response = await fetchWithTimeout(
       `${API_URL}/api/health`,
@@ -270,12 +304,16 @@ export async function checkApiHealth(): Promise<boolean> {
           'Accept': 'application/json',
         },
       },
-      5000 // Timeout court pour le health check
+      3000 // Timeout court pour le health check
     );
+
+    const duration = performance.now() - startTime;
+    console.log(`🏥 Health check: ${response.ok ? 'OK' : 'FAIL'} (${duration.toFixed(0)}ms)`);
 
     return response.ok;
   } catch (error) {
-    console.error('❌ API non disponible:', error);
+    const duration = performance.now() - startTime;
+    console.error(`❌ API non disponible (${duration.toFixed(0)}ms):`, error);
     return false;
   }
 }

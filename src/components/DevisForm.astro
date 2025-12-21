@@ -1,178 +1,522 @@
 ---
 ---
 
-<div class="devis-form">
-  <h2>Demander un devis</h2>
-  <form id="devisForm">
+<div class="devis-wrapper">
+  <form class="devis-form" id="devis-form" novalidate>
+    <h2 class="form-title">Demander un devis</h2>
+    
     <div class="form-group">
-      <label for="name">Nom complet *</label>
-      <input type="text" id="name" name="name" required>
+      <label for="name">Nom complet <span class="required">*</span></label>
+      <input 
+        type="text" 
+        id="name" 
+        name="name" 
+        required
+        maxlength="100"
+        autocomplete="name"
+        placeholder="Marie Dupont"
+      />
+      <span class="error-message" role="alert" aria-live="polite"></span>
     </div>
     
     <div class="form-group">
-      <label for="email">Email *</label>
-      <input type="email" id="email" name="email" required>
+      <label for="email">Email <span class="required">*</span></label>
+      <input 
+        type="email" 
+        id="email" 
+        name="email" 
+        required
+        maxlength="255"
+        autocomplete="email"
+        placeholder="marie@exemple.fr"
+      />
+      <span class="error-message" role="alert" aria-live="polite"></span>
     </div>
     
     <div class="form-group">
-      <label for="service">Service souhaité *</label>
+      <label for="phone">Téléphone</label>
+      <input 
+        type="tel" 
+        id="phone" 
+        name="phone"
+        maxlength="20"
+        autocomplete="tel"
+        placeholder="+33 6 12 34 56 78"
+      />
+      <span class="error-message" role="alert" aria-live="polite"></span>
+    </div>
+    
+    <div class="form-group">
+      <label for="service">Service souhaité <span class="required">*</span></label>
       <select id="service" name="service" required>
         <option value="">Sélectionner...</option>
         <option value="site-vitrine">Site vitrine</option>
         <option value="e-commerce">E-commerce</option>
         <option value="application">Application web</option>
         <option value="seo">Référencement SEO</option>
+        <option value="ia">Solution IA</option>
+        <option value="consulting">Consulting</option>
         <option value="autre">Autre</option>
       </select>
+      <span class="error-message" role="alert" aria-live="polite"></span>
     </div>
     
     <div class="form-group">
       <label for="budget">Budget estimé</label>
-      <input type="text" id="budget" name="budget" placeholder="Ex: 1000-5000€">
+      <input 
+        type="text" 
+        id="budget" 
+        name="budget" 
+        placeholder="Ex: 1000-5000€"
+        maxlength="50"
+      />
+      <span class="error-message" role="alert" aria-live="polite"></span>
     </div>
     
     <div class="form-group">
       <label for="message">Détails du projet</label>
-      <textarea id="message" name="message" rows="5"></textarea>
+      <textarea 
+        id="message" 
+        name="message" 
+        rows="5"
+        maxlength="2000"
+        placeholder="Décrivez votre projet..."
+      ></textarea>
+      <span class="char-count">0 / 2000</span>
+      <span class="error-message" role="alert" aria-live="polite"></span>
     </div>
+
+    <!-- Honeypot (anti-spam) -->
+    <input 
+      type="text" 
+      name="honey" 
+      tabindex="-1" 
+      autocomplete="off" 
+      class="honeypot" 
+      aria-hidden="true" 
+    />
+
+    <!-- Timestamp (anti-spam) -->
+    <input 
+      type="hidden" 
+      name="timestamp" 
+      id="devis-timestamp"
+    />
     
-    <button type="submit" class="submit-btn">Envoyer la demande</button>
+    <button type="submit" class="submit-btn" id="submit-btn">
+      <span class="btn-text">Envoyer la demande</span>
+      <span class="btn-loader"></span>
+    </button>
     
-    <div id="result" class="result"></div>
+    <div class="alert alert-success" id="success-message" role="status">
+      <svg class="alert-icon" viewBox="0 0 24 24">
+        <path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" fill="none"/>
+      </svg>
+      <span>Demande envoyée avec succès ! Nous vous répondrons dans les 24 heures.</span>
+    </div>
+
+    <div class="alert alert-error" id="error-message" role="alert">
+      <svg class="alert-icon" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" fill="none" />
+        <path d="M12 8v4m0 4h.01" stroke="currentColor" stroke-width="2" />
+      </svg>
+      <span id="error-text">Une erreur est survenue. Veuillez réessayer.</span>
+    </div>
   </form>
 </div>
 
 <style>
-  .devis-form {
-    max-width: 600px;
-    margin: 2rem auto;
-    padding: 2rem;
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  .devis-wrapper {
+    display: grid;
+    place-items: center;
+    padding: 4rem 1rem;
   }
-  
-  h2 {
-    margin-bottom: 1.5rem;
-    color: #111;
+
+  .devis-form {
+    width: min(100%, 42rem);
+    padding: 2.5rem;
+    background: var(--color-bg-alt, white);
+    border: 1px solid var(--color-border, #e5e7eb);
+    border-radius: 1rem;
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  }
+
+  .form-title {
+    text-align: center;
+    font-weight: 700;
+    font-size: 1.875rem;
+    color: var(--color-text, #111);
+    margin-bottom: 2rem;
   }
   
   .form-group {
-    margin-bottom: 1.25rem;
+    margin-bottom: 1.5rem;
   }
   
-  label {
+  .form-group label {
     display: block;
     margin-bottom: 0.5rem;
-    font-weight: 500;
-    color: #333;
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--color-text-light, #333);
+  }
+
+  .required {
+    color: var(--color-danger, #ef4444);
   }
   
   input, select, textarea {
     width: 100%;
-    padding: 0.75rem;
-    border: 1px solid #ddd;
-    border-radius: 4px;
+    padding: 0.875rem;
+    border: 1px solid var(--color-border, #ddd);
+    border-radius: 0.5rem;
     font-size: 1rem;
     font-family: inherit;
+    transition: all 0.2s;
+    background: var(--color-bg, white);
+    color: var(--color-text, #111);
   }
   
   input:focus, select:focus, textarea:focus {
     outline: none;
-    border-color: #2563eb;
+    border-color: var(--color-primary, #2563eb);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+  }
+
+  textarea {
+    resize: vertical;
+    min-height: 120px;
+  }
+
+  .char-count {
+    display: block;
+    margin-top: 0.5rem;
+    font-size: 0.875rem;
+    text-align: right;
+    color: var(--color-text-light, #666);
+  }
+
+  .error-message {
+    display: block;
+    color: var(--color-danger, #ef4444);
+    font-size: 0.875rem;
+    margin-top: 0.5rem;
+    min-height: 1.25rem;
+  }
+
+  .form-group:not(.error) .error-message {
+    visibility: hidden;
+  }
+
+  .form-group.error input,
+  .form-group.error select,
+  .form-group.error textarea {
+    border-color: var(--color-danger, #ef4444);
+    background-color: rgba(239, 68, 68, 0.05);
+  }
+
+  .honeypot {
+    position: absolute !important;
+    left: -9999px !important;
+    width: 1px !important;
+    height: 1px !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
   }
   
   .submit-btn {
+    position: relative;
     width: 100%;
-    padding: 1rem;
-    background: #2563eb;
+    padding: 1rem 2rem;
+    background: linear-gradient(135deg, var(--color-primary, #2563eb), var(--color-primary-dark, #1e40af));
     color: white;
     border: none;
-    border-radius: 4px;
-    font-size: 1rem;
-    font-weight: 500;
+    border-radius: 0.5rem;
+    font-size: 1.1rem;
+    font-weight: 600;
     cursor: pointer;
-    transition: background 0.2s;
+    transition: all 0.3s;
+    overflow: hidden;
   }
   
-  .submit-btn:hover {
-    background: var(--color-primary);
+  .submit-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(37, 99, 235, 0.3);
   }
   
   .submit-btn:disabled {
-    background: #94a3b8;
+    opacity: 0.6;
     cursor: not-allowed;
   }
-  
-  .result {
-    margin-top: 1rem;
-    padding: 1rem;
-    border-radius: 4px;
+
+  .submit-btn.loading .btn-text {
+    opacity: 0;
+  }
+
+  .btn-loader {
     display: none;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 24px;
+    height: 24px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+  }
+
+  .submit-btn.loading .btn-loader {
+    display: block;
+  }
+
+  @keyframes spin {
+    to { transform: translate(-50%, -50%) rotate(360deg); }
   }
   
-  .result.success {
+  .alert {
+    display: none;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 1.5rem;
+    padding: 1.25rem;
+    border-radius: 0.5rem;
+    font-size: 0.95rem;
+    animation: slideDown 0.3s ease-out;
+  }
+
+  @keyframes slideDown {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .alert-icon {
+    width: 1.5rem;
+    height: 1.5rem;
+    flex-shrink: 0;
+  }
+  
+  .alert.alert-success {
+    display: flex;
     background: #dcfce7;
     color: #166534;
-    display: block;
+    border: 1px solid #22c55e;
   }
   
-  .result.error {
+  .alert.alert-error {
+    display: flex;
     background: #fee2e2;
     color: #991b1b;
-    display: block;
+    border: 1px solid #ef4444;
+  }
+
+  @media (max-width: 768px) {
+    .devis-form {
+      padding: 2rem 1.5rem;
+    }
   }
 </style>
 
 <script>
   import { submitDevis } from '@/utils/api';
 
-  const form = document.getElementById('quote-form') as HTMLFormElement;
+  const form = document.getElementById('devis-form') as HTMLFormElement;
   const submitBtn = document.getElementById('submit-btn') as HTMLButtonElement;
-  const btnText = document.getElementById('btn-text') as HTMLSpanElement;
-  const btnLoading = document.getElementById('btn-loading') as HTMLSpanElement;
-  const formMessage = document.getElementById('form-message') as HTMLDivElement;
+  const successMsg = document.getElementById('success-message') as HTMLDivElement;
+  const errorMsg = document.getElementById('error-message') as HTMLDivElement;
+  const errorText = document.getElementById('error-text') as HTMLSpanElement;
+  const messageTextarea = document.getElementById('message') as HTMLTextAreaElement;
+  const charCount = document.querySelector('.char-count') as HTMLSpanElement;
+  const timestampInput = document.getElementById('devis-timestamp') as HTMLInputElement;
 
-  form.addEventListener('submit', async (e) => {
+  // ✅ Initialiser le timestamp
+  if (timestampInput) {
+    timestampInput.value = Math.floor(Date.now() / 1000).toString();
+  }
+
+  // Validation
+  const sanitizeInput = (value: string): string => {
+    if (!value) return '';
+    return value.trim().replace(/[<>]/g, '').slice(0, 5000);
+  };
+
+  const validateField = (name: string, value: string): string | null => {
+    switch (name) {
+      case 'name':
+        if (!value || value.trim() === '') return 'Ce champ est obligatoire';
+        if (value.length < 2) return 'Le nom doit contenir au moins 2 caractères';
+        if (value.length > 100) return 'Le nom ne peut pas dépasser 100 caractères';
+        break;
+
+      case 'email':
+        if (!value || value.trim() === '') return 'Ce champ est obligatoire';
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(value)) return 'Email invalide';
+        break;
+
+      case 'phone':
+        if (value && value.length < 8) return 'Numéro de téléphone invalide';
+        break;
+
+      case 'service':
+        if (!value || value.trim() === '') return 'Veuillez sélectionner un service';
+        break;
+
+      case 'message':
+        if (value && value.length > 2000) return 'Le message ne peut pas dépasser 2000 caractères';
+        break;
+    }
+    return null;
+  };
+
+  // UI helpers
+  const showError = (fieldName: string, message: string): void => {
+    const field = document.getElementById(fieldName)?.closest('.form-group');
+    if (!field) return;
+
+    field.classList.add('error');
+    const errorSpan = field.querySelector('.error-message');
+    if (errorSpan) errorSpan.textContent = message;
+  };
+
+  const clearError = (fieldName: string): void => {
+    const field = document.getElementById(fieldName)?.closest('.form-group');
+    if (!field) return;
+
+    field.classList.remove('error');
+    const errorSpan = field.querySelector('.error-message');
+    if (errorSpan) errorSpan.textContent = '';
+  };
+
+  const clearAllErrors = (): void => {
+    document.querySelectorAll('.form-group.error').forEach((field) => {
+      field.classList.remove('error');
+      const errorSpan = field.querySelector('.error-message');
+      if (errorSpan) errorSpan.textContent = '';
+    });
+  };
+
+  const updateCharCount = (): void => {
+    if (!messageTextarea || !charCount) return;
+    
+    const length = messageTextarea.value.length;
+    charCount.textContent = `${length} / 2000`;
+    
+    if (length > 1900) {
+      charCount.style.color = 'var(--color-danger, #ef4444)';
+    } else if (length > 1500) {
+      charCount.style.color = 'var(--color-warning, #f59e0b)';
+    } else {
+      charCount.style.color = '';
+    }
+  };
+
+  // Field validation
+  const setupFieldValidation = (): void => {
+    const fields = form.querySelectorAll('input:not([type="hidden"]):not(.honeypot), textarea, select');
+
+    fields.forEach((field) => {
+      const input = field as HTMLInputElement;
+
+      input.addEventListener('blur', () => {
+        const sanitized = sanitizeInput(input.value);
+        const error = validateField(input.name, sanitized);
+        error ? showError(input.name, error) : clearError(input.name);
+      });
+
+      input.addEventListener('input', () => {
+        clearError(input.name);
+      });
+    });
+  };
+
+  // Form submission
+  form.addEventListener('submit', async (e: Event) => {
     e.preventDefault();
 
-    // Hide previous messages
-    formMessage.style.display = 'none';
-    formMessage.className = '';
-
-    // Disable button
-    submitBtn.disabled = true;
-    btnText.style.display = 'none';
-    btnLoading.style.display = 'inline';
+    successMsg.style.display = 'none';
+    errorMsg.style.display = 'none';
+    clearAllErrors();
 
     const formData = new FormData(form);
+    
     const data = {
-      name: formData.get('name') as string,
-      email: formData.get('email') as string,
-      phone: formData.get('phone') as string,
-      service: formData.get('service') as string,
-      message: formData.get('message') as string,
+      name: sanitizeInput(formData.get('name') as string),
+      email: sanitizeInput(formData.get('email') as string),
+      phone: sanitizeInput(formData.get('phone') as string) || undefined,
+      service: sanitizeInput(formData.get('service') as string),
+      budget: sanitizeInput(formData.get('budget') as string) || undefined,
+      message: sanitizeInput(formData.get('message') as string) || undefined,
+      honey: formData.get('honey') as string || '',
+      timestamp: parseInt(formData.get('timestamp') as string || '0'),
     };
 
-    try {
-      const response = await submitDevis(data);
-
-      if (response.success) {
-        formMessage.textContent = response.message || 'Demande envoyée avec succès !';
-        formMessage.className = 'success';
-        formMessage.style.display = 'block';
-        form.reset();
-      } else {
-        throw new Error(response.message || 'Erreur inconnue');
+    // Validation
+    let hasErrors = false;
+    const requiredFields = ['name', 'email', 'service'] as const;
+    
+    requiredFields.forEach((field) => {
+      const error = validateField(field, data[field] as string);
+      if (error) {
+        showError(field, error);
+        hasErrors = true;
       }
-    } catch (error) {
-      formMessage.textContent = error instanceof Error ? error.message : 'Erreur lors de l\'envoi';
-      formMessage.className = 'error';
-      formMessage.style.display = 'block';
+    });
+
+    if (hasErrors) {
+      const firstError = document.querySelector('.form-group.error input, .form-group.error select') as HTMLInputElement;
+      firstError?.focus();
+      return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.classList.add('loading');
+
+    try {
+      await submitDevis(data);
+
+      successMsg.style.display = 'flex';
+      form.reset();
+      
+      // Réinitialiser le timestamp
+      if (timestampInput) {
+        timestampInput.value = Math.floor(Date.now() / 1000).toString();
+      }
+      
+      if (messageTextarea && charCount) {
+        updateCharCount();
+      }
+
+      successMsg.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+      setTimeout(() => {
+        successMsg.style.display = 'none';
+      }, 10000);
+
+    } catch (error: any) {
+      console.error('❌ Erreur:', error);
+      
+      errorText.textContent = error?.message || 'Une erreur inattendue est survenue';
+      errorMsg.style.display = 'flex';
+      errorMsg.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
     } finally {
       submitBtn.disabled = false;
-      btnText.style.display = 'inline';
-      btnLoading.style.display = 'none';
+      submitBtn.classList.remove('loading');
     }
   });
+
+  // Initialize
+  setupFieldValidation();
+  if (messageTextarea) {
+    messageTextarea.addEventListener('input', updateCharCount);
+    updateCharCount();
+  }
 </script>

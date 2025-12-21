@@ -343,7 +343,7 @@ const structuredData = {
       }
 
       if (response.status >= 500) {
-        throw new Error('Erreur serveur. Veuillez réessayer plus tard.');
+        throw new Error('Nous ne pouvons pas accepter de devis actuellement.');
       }
 
       throw new Error(result.message || 'Une erreur est survenue');

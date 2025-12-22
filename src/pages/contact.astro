@@ -36,22 +36,8 @@ const structuredData = {
           <p class="form-intro text-center">
             Remplissez ce formulaire et nous vous répondrons dans les plus brefs délais.
           </p>
-          <div class="background">
           <ContactForm />
-          </div>
-        </div>
-
-
-          <div class="info-card">
-            <h3>📧 Par Email</h3>
-            <p>Pour toute demande non urgente</p>
-            <a href="mailto:contact@biscuits-dev.com" class="contact-link-big">
-              contact@biscuits-dev.com
-            </a>
-            <p class="availability">
-              Réponse sous 48h ouvrées
-            </p>
-          </div>
+        </div>  
 
   <section class="contact-faq">
     <div class="container">
@@ -73,22 +59,7 @@ const structuredData = {
             Vous ne payez que si vous acceptez notre proposition.
           </p>
         </details>
-
-        <details class="faq-item">
-          <summary>Puis-je prendre rendez-vous en ligne ?</summary>
-          <p>
-            Oui, utilisez le formulaire de contact en précisant vos disponibilités. 
-            Nous vous proposerons des créneaux horaires adaptés.
-          </p>
-        </details>
-
-        <details class="faq-item">
-          <summary>Intervenez-vous en urgence ?</summary>
-          <p>
-            Oui, pour les urgences professionnelles, nous pouvons intervenir rapidement, 
-            parfois le jour même. Appelez-nous pour discuter de votre situation.
-          </p>
-        </details>
+        
       </div>
     </div>
   </section>
@@ -142,7 +113,6 @@ const structuredData = {
   }
 
   .info-card {
-    background: var(--color-bg-alt);
     padding: var(--spacing-xl);
     border-radius: var(--radius-lg);
     border-left: 4px solid var(--color-primary);
@@ -247,11 +217,6 @@ const structuredData = {
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: var(--spacing-lg);
     margin-top: var(--spacing-2xl);
-  }
-
-  .background {
-    border-radius: 10px;
-    background-color: var(--color-primary);
   }
 
   .faq-item {

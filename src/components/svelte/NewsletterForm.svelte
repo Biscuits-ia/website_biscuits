@@ -68,3 +68,123 @@
     </p>
   </div>
 </div>
+
+<style>
+  /* Container */
+.newsletter-container {
+  display: flex;
+  justify-content: center;
+  padding: var(--spacing-2xl) var(--spacing-md);
+}
+
+.newsletter-content {
+  width: 100%;
+  max-width: 420px;
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-xl);
+  padding: var(--spacing-xl);
+  box-shadow: var(--shadow-md);
+  text-align: center;
+}
+
+/* Icon */
+.newsletter-icon {
+  font-size: 2.5rem;
+  margin-bottom: var(--spacing-sm);
+}
+
+/* Texts */
+.newsletter-title {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text);
+  margin-bottom: var(--spacing-xs);
+}
+
+.newsletter-description {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-light);
+  margin-bottom: var(--spacing-lg);
+}
+
+/* Form */
+.newsletter-form {
+  display: flex;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-md);
+}
+
+.newsletter-input {
+  flex: 1;
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: var(--color-bg-alt);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text);
+  font-size: var(--font-size-sm);
+  transition: border-color var(--transition-fast),
+              box-shadow var(--transition-fast);
+}
+
+.newsletter-input::placeholder {
+  color: var(--color-text-light);
+}
+
+.newsletter-input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px oklch(60% 0.11 59 / 0.25);
+}
+
+/* Button */
+.newsletter-button {
+  padding: var(--spacing-sm) var(--spacing-lg);
+  background: linear-gradient(
+    135deg,
+    var(--color-primary),
+    var(--color-secondary)
+  );
+  border: none;
+  border-radius: var(--radius-md);
+  color: #000;
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  transition: transform var(--transition-fast),
+              box-shadow var(--transition-fast),
+              opacity var(--transition-fast);
+}
+
+.newsletter-button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-glow);
+}
+
+.newsletter-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Message */
+.newsletter-message {
+  font-size: var(--font-size-sm);
+  margin-top: var(--spacing-sm);
+}
+
+.newsletter-message.success {
+  color: var(--color-success);
+}
+
+.newsletter-message.error {
+  color: var(--color-danger);
+}
+
+/* Privacy */
+.newsletter-privacy {
+  margin-top: var(--spacing-md);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-light);
+}
+
+</style>

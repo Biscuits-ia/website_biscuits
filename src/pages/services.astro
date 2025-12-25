@@ -1,0 +1,239 @@
+---
+import BaseLayout from '@/layouts/Layout.astro';
+
+const structuredData = {
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  "name": "Biscuits Dev – Services & Outils pour Développeurs",
+  "description": "Solutions, automatisations et outils pour développeurs et startups tech.",
+  "url": "https://biscuits.dev/services",
+  "publisher": {
+    "@type": "Organization",
+    "name": "Biscuits AI",
+    "url": "https://biscuits.dev",
+    "logo": "https://biscuits.dev/logo.webp"
+  }
+};
+---
+
+<BaseLayout
+  title="Services & Outils pour Développeurs et Startups Tech"
+  description="Découvrez nos services, automatisations et outils pour booster vos projets de développement et IA."
+  structuredData={structuredData}
+>
+<section class="overview-section">
+    <div class="container">
+      <h2>Pourquoi choisir Biscuits Dev ?</h2>
+      <p>
+        Biscuits Dev fournit un écosystème complet d’outils et services pour les développeurs et startups tech.
+        Que vous soyez en phase de prototypage ou en production, nous vous aidons à accélérer vos projets avec des solutions fiables et scalables.
+      </p>
+      <ul>
+        <li>Expertise IA et automatisations avancées</li>
+        <li>Starter kits et templates prêts à l'emploi</li>
+        <li>Consulting technique et architecture solide</li>
+        <li>Support et maintenance proactifs</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- Section 2 : Services détaillés -->
+  <section class="services-detailed">
+    <div class="container">
+
+      <article class="service-item">
+        <h3>1. Agents & Automatisations IA</h3>
+        <p class="lead">
+          Créez des workflows intelligents et des agents sur mesure qui automatisent vos tâches répétitives et optimisent vos processus.
+        </p>
+        <h4>Fonctionnalités clés :</h4>
+        <ul>
+          <li>Agents conversationnels pour support ou gestion interne</li>
+          <li>Automatisations IA pour tâches récurrentes</li>
+          <li>RAG (Retrieval-Augmented Generation) et intégration GPT/Claude/Mistral</li>
+          <li>Scripts personnalisés et intégration à vos systèmes existants</li>
+        </ul>
+        <h4>Cas d’usage :</h4>
+        <ul>
+          <li>Support client autonome sur Discord ou site web</li>
+          <li>Analyse et traitement automatique de données</li>
+          <li>Alertes intelligentes pour votre infrastructure ou vos projets</li>
+        </ul>
+      </article>
+
+      <article class="service-item">
+        <h3>2. Starter Kits & Templates</h3>
+        <p class="lead">
+          Démarrez vos projets plus vite avec nos bases techniques prêtes à l’emploi, codées proprement et facilement extensibles.
+        </p>
+        <h4>Inclus :</h4>
+        <ul>
+          <li>Starter kits SaaS avec authentification et paiements intégrés</li>
+          <li>Templates front modernes et responsives</li>
+          <li>Exemples d’API et intégrations prêtes à l’emploi</li>
+          <li>Guides pour structurer votre projet rapidement</li>
+        </ul>
+        <h4>Avantages :</h4>
+        <ul>
+          <li>Économie de temps sur le setup initial</li>
+          <li>Réduction des erreurs courantes</li>
+          <li>Code propre et maintenable</li>
+        </ul>
+      </article>
+
+      <article class="service-item">
+        <h3>3. Intégrations & Automatisations</h3>
+        <p class="lead">
+          Connectez vos systèmes, automatisez vos workflows et gagnez en fiabilité et productivité.
+        </p>
+        <h4>Fonctionnalités :</h4>
+        <ul>
+          <li>Webhooks et API pour connecter vos services</li>
+          <li>Workers et jobs programmés pour automatisations avancées</li>
+          <li>Monitoring et alertes pour suivre l’état de vos systèmes</li>
+          <li>Documentation et support pour intégrer facilement nos solutions</li>
+        </ul>
+        <h4>Exemples :</h4>
+        <ul>
+          <li>Synchronisation automatique entre CRM et outils internes</li>
+          <li>Automatisation des déploiements ou backups</li>
+          <li>Alertes et rapports personnalisés sur vos systèmes</li>
+        </ul>
+      </article>
+
+      <article class="service-item">
+        <h3>4. Consulting & Architecture</h3>
+        <p class="lead">
+          Nos experts vous accompagnent dans vos choix techniques et la conception d’architectures robustes et évolutives.
+        </p>
+        <h4>Services :</h4>
+        <ul>
+          <li>Audit technique de vos projets</li>
+          <li>Conseil sur stack technologique, performances et scalabilité</li>
+          <li>Design sécurisé et optimisé pour la production</li>
+          <li>Planification et roadmap technique sur mesure</li>
+        </ul>
+        <h4>Pourquoi c’est important :</h4>
+        <ul>
+          <li>Réduction des risques techniques</li>
+          <li>Évolutivité et maintenabilité garanties</li>
+          <li>Optimisation du coût et des ressources</li>
+        </ul>
+      </article>
+
+      <article class="service-item">
+        <h3>5. Support & Maintenance</h3>
+        <p class="lead">
+          Nous assurons le suivi, la maintenance et le support de vos projets pour garantir leur stabilité et leur performance.
+        </p>
+        <h4>Inclut :</h4>
+        <ul>
+          <li>Bug fixing et correctifs rapides</li>
+          <li>Mises à jour régulières de vos systèmes</li>
+          <li>Optimisation et monitoring proactif</li>
+          <li>Assistance technique réactive pour vos équipes</li>
+        </ul>
+      </article>
+
+    </div>
+  </section>
+
+  <!-- Section CTA -->
+  <section class="cta-section">
+    <div class="container">
+      <h2>Prêt à booster vos projets ?</h2>
+      <p>
+        Contactez-nous dès aujourd’hui et découvrez comment Biscuits Dev peut accélérer votre développement et automatiser vos workflows.
+      </p>
+      <a href="/contact" class="cta-button">Contactez-nous</a>
+    </div>
+  </section>
+
+</BaseLayout>
+
+<style >
+.overview-section h2,
+.services-detailed h2,
+.cta-section h2 {
+  font-size: clamp(4rem, 6vw, 3.5rem);
+  text-align: center;
+  padding: 2rem;
+  margin-bottom: 1rem;
+  margin-top: 2rem;
+}
+
+.overview-section p,
+.services-detailed p.lead,
+.cta-section p {
+  color: #e5e7eb;
+  text-align: center;
+  font-size: clamp(1rem, 2.5vw, 1.25rem);
+  margin-bottom: 1rem;
+}
+
+.overview-section ul,
+.services-detailed ul {
+  padding: 1.2rem 0;
+  padding-left: 1.25rem;
+  margin-bottom: 2rem;
+  font-size: clamp(1rem, 2.5vw, 1.125rem);
+  color: #9ca3af;
+  list-style-type: disc;
+}
+
+.service-item {
+  background: linear-gradient(180deg, #0f0f0f, #0a0a0a);
+  border: 1px solid #1f1f1f;
+  border-radius: 14px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+}
+
+.service-item h3 {
+  color: #fff;
+  margin-bottom: 0.75rem;
+  font-size: clamp(1.5rem, 3vw, 2rem);
+}
+
+.service-item p.lead {
+  color: #d1d5db;
+  margin-bottom: 1.5rem;
+  font-size: clamp(1rem, 2.5vw, 1.125rem);
+}
+
+.service-item li {
+  margin-bottom: 0.2rem;
+  margin-left: 0.5rem;
+  color: #9ca3af;
+  line-height: 1.5;
+}
+
+.service-item h4 {
+  color: var(--color-primary);
+  margin-top: 0.5rem;
+  font-size: clamp(1.25rem, 2.5vw, 1.5rem);
+}
+
+.cta-section {
+  text-align: center;
+  padding: 3rem 1rem;
+  background: var(--color-gray-800);
+  border-top: 1px solid var(--color-gray-200);
+}
+
+.cta-button {
+  display: inline-block;
+  padding: 0.75rem 2rem;
+  margin-top: 1rem;
+  background-color: var(--color-primary);
+  color: var(--color-gray-100);
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: background 0.2s ease;
+}
+
+.cta-button:hover {
+  background-color: var(--color-primary-dark);
+}
+</style>

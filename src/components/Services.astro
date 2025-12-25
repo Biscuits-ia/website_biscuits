@@ -5,7 +5,7 @@ interface Service {
   description: string;
   icon: string;
   details: string[];
-  zone: 'france' | 'global';
+  zone: 'AI intégrer' | 'Europe' | 'automatisation';
 }
 
 const services: Service[] = [
@@ -20,7 +20,7 @@ const services: Service[] = [
       'Starter Kit SaaS Supabase complet',
       'Code structuré, optimisé et scalable'
     ],
-    zone: 'global'
+    zone: 'AI intégrer'
   },
   {
     id: 'solutions-ia',
@@ -33,7 +33,7 @@ const services: Service[] = [
       'Chatbots IA avancés',
       'IA pour workflows développeurs'
     ],
-    zone: 'global'
+    zone: 'automatisation'
   },
   {
     id: 'consulting-ia',
@@ -46,7 +46,7 @@ const services: Service[] = [
       'Architecture logicielle',
       'Accompagnement projet IA'
     ],
-    zone: 'france'
+    zone: 'Europe'
   },
   {
     id: 'automation',
@@ -59,14 +59,20 @@ const services: Service[] = [
       'Scripts dev intelligents',
       'Intégrations web & SaaS'
     ],
-    zone: 'global'
+    zone: 'AI intégrer'
   }
 ];
-
-function getZoneBadge(zone: Service['zone']) {
-  return zone === 'france' 
-    ? { text: 'Disponible en France', color: 'var(--color-primary)' }
-    : { text: 'Disponible partout', color: 'var(--color-first)' };
+function getZoneBadge(zone: string) {
+  switch (zone) {
+    case 'AI intégrer':
+      return { text: 'AI intégrer', color: 'linear-gradient(90deg, oklch(60.201% 0.11053 58.986), oklch(37.619% 0.07877 44.64))' };
+    case 'Europe':
+      return { text: 'Europe', color: 'linear-gradient(0deg, oklch(60.201% 0.11053 58.986), oklch(37.619% 0.07877 44.64))' };
+    case 'automatisation':
+      return { text: 'Automatisation', color: 'linear-gradient(190deg, oklch(60.201% 0.11053 58.986), oklch(37.619% 0.07877 44.64))' };
+    default:
+      return { text: zone, color: '#ccc' };
+  }
 }
 ---
 

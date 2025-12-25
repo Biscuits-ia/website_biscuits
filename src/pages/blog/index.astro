@@ -267,8 +267,6 @@ const structuredData = {
 </Layout>
 
 <style>
-/* Corrections des bugs CSS */
-
 .blog-wrapper {
   min-height: 100vh;
   background: var(--color-dark-bg, #0d0d0d);
@@ -320,6 +318,11 @@ const structuredData = {
   max-width: 900px;
   margin: 0 auto;
   text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 2rem;
 }
 
 .hero-title {
@@ -352,11 +355,11 @@ const structuredData = {
 }
 
 .hero-description {
-  font-size: 1.25rem;
-  color: var(--color-text-light, rgba(255, 255, 255, 0.6));
-  max-width: 600px;
+  font-size: 2.75rem;
+  color: var(--color-gray-200);
+  max-width: 700px;
   margin: 0 auto 3rem;
-  line-height: 1.7;
+  text-align: center;
 }
 
 .stats-grid {

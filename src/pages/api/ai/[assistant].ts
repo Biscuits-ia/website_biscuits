@@ -30,7 +30,7 @@ export const POST: APIRoute = async ({ params, request }) => {
     }
 
     // Appel à l'API Laravel
-    const laravelApiUrl = import.meta.env.LARAVEL_API_URL || 'http://localhost:8000';
+    const laravelApiUrl = import.meta.env.LARAVEL_API_URL || 'https://biscuits-admin-main-1a6oe6.laravel.cloudZ';
     const response = await fetch(`${laravelApiUrl}/api/ai/${assistant}`, {
       method: 'POST',
       headers: {

@@ -1,6 +1,3 @@
-// src/utils/api.ts
-
-// ✅ Timeout réduit à 5 secondes
 const API_URL = import.meta.env.PUBLIC_API_URL || 'https://biscuits-admin-main-1a6oe6.laravel.cloud';
 const REQUEST_TIMEOUT = 2000; // 2 secondes
 
@@ -43,9 +40,6 @@ class ApiError extends Error {
   }
 }
 
-/**
- * Fonction fetch avec timeout et mesure de performance
- */
 async function fetchWithTimeout(
   url: string,
   options: RequestInit,
@@ -101,9 +95,6 @@ async function fetchWithTimeout(
   }
 }
 
-/**
- * Parser la réponse JSON avec gestion d'erreurs
- */
 async function parseJsonResponse<T = unknown>(response: Response): Promise<ApiResponse<T>> {
   const contentType = response.headers.get('content-type');
   
@@ -128,9 +119,6 @@ async function parseJsonResponse<T = unknown>(response: Response): Promise<ApiRe
   }
 }
 
-/**
- * Envoyer un contact
- */
 export async function submitContact(data: ContactData): Promise<ApiResponse> {
   const startTime = performance.now();
 
@@ -163,7 +151,6 @@ export async function submitContact(data: ContactData): Promise<ApiResponse> {
     const result = await parseJsonResponse(response);
 
     if (!response.ok) {
-      // Gestion spécifique des erreurs HTTP
       if (response.status === 429) {
         throw new ApiError(
           'Trop de demandes. Veuillez patienter quelques instants.',

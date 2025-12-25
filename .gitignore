@@ -18,12 +18,3 @@ pnpm-debug.log*
 
 # jetbrains setting folder
 .idea/
-
-# Local Netlify folder
-.netlify
-
-# Backend
-backend/
-API/
-BiscuitsAI Core/
-BiscuitsPulse/

@@ -1,0 +1,19 @@
+---
+import BaseLayout from '@layouts/Layout.astro';
+
+const structuredData = {
+"@context": "https://schema.org",
+  "@type": "EquipePage",
+  "name": "Equipe de Biscuits AI",
+  "description": "Voici l'équipe derrière Biscuits AI.",
+  "url": "https://biscuits.dev/equipe"
+};
+---
+
+<BaseLayout
+  title="Contact - Biscuits du Dev | Devis Gratuit"
+  description="Contactez nous pour vos besoins"
+  structuredData={structuredData}
+>
+
+</layouts>

@@ -33,67 +33,71 @@
   }
 
   const sendMessage = async () => {
-    if (!input.trim() || loading) return;
+  if (!input.trim() || loading) return;
 
-    const userMessage = input.trim();
+  const userMessage = input.trim();
+  messages = [
+    ...messages,
+    { 
+      role: "user", 
+      content: userMessage,
+      timestamp: new Date().toISOString()
+    },
+  ];
+
+  input = "";
+  loading = true;
+
+  try {
+    // ✅ Appel direct à Laravel (change l'URL selon ton environnement)
+    const laravelUrl = import.meta.env.PUBLIC_LARAVEL_API_URL || 'http://localhost:8000';
+    
+    const res = await fetch(`${laravelUrl}/api/ai/${assistant}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "X-Requested-With": "XMLHttpRequest",
+      },
+      body: JSON.stringify({
+        message: userMessage,
+        conversation_id: conversationId,
+      }),
+    });
+
+    if (!res.ok) {
+      throw new Error(`Erreur ${res.status}`);
+    }
+
+    const data = await res.json();
+    conversationId = data.conversation_id;
+
     messages = [
       ...messages,
       { 
-        role: "user", 
-        content: userMessage,
+        role: "assistant", 
+        content: data.reply,
         timestamp: new Date().toISOString()
       },
     ];
 
-    input = "";
-    loading = true;
-
-    try {
-      const res = await fetch(`/api/ai/${assistant}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Accept": "application/json",
-        },
-        body: JSON.stringify({
-          message: userMessage,
-          conversation_id: conversationId,
-        }),
-      });
-
-      if (!res.ok) {
-        throw new Error(`Erreur ${res.status}`);
-      }
-
-      const data = await res.json();
-      conversationId = data.conversation_id;
-
-      messages = [
-        ...messages,
-        { 
-          role: "assistant", 
-          content: data.reply,
-          timestamp: new Date().toISOString()
-        },
-      ];
-
-      if (!isOpen) {
-        hasUnread = true;
-      }
-
-    } catch (e) {
-      messages = [
-        ...messages,
-        {
-          role: "assistant",
-          content: "❌ Désolé, une erreur est survenue. Réessayez dans quelques instants.",
-          timestamp: new Date().toISOString()
-        },
-      ];
-    } finally {
-      loading = false;
+    if (!isOpen) {
+      hasUnread = true;
     }
-  };
+
+  } catch (e) {
+    messages = [
+      ...messages,
+      {
+        role: "assistant",
+        content: "❌ Désolé, une erreur est survenue. Réessayez dans quelques instants.",
+        timestamp: new Date().toISOString()
+      },
+    ];
+  } finally {
+    loading = false;
+  }
+};
 
   const assistantConfig = {
     support: { name: "Assistant Support", emoji: "🥞" },

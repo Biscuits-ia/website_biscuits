@@ -50,7 +50,7 @@
 
   try {
     // ✅ Appel direct à Laravel (change l'URL selon ton environnement)
-    const laravelUrl = import.meta.env.PUBLIC_LARAVEL_API_URL || 'http://localhost:8000';
+    const laravelUrl = import.meta.env.PUBLIC_LARAVEL_API_URL;
     
     const res = await fetch(`${laravelUrl}/api/ai/${assistant}`, {
       method: "POST",

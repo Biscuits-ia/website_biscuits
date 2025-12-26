@@ -7,7 +7,11 @@ dist/
 # dependencies
 node_modules/
 
+# Fichier à ne montrer pas dans mettre en prod temporaire
+
 src/pages/solution.astro
+src/components/svelte/ChatClient.svelte
+
 
 # logs
 npm-debug.log*

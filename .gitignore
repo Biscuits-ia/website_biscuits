@@ -11,8 +11,6 @@ node_modules/
 
 src/pages/solution.astro
 src/components/svelte/ChatClient.svelte
-
-
 # logs
 npm-debug.log*
 yarn-debug.log*

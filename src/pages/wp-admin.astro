@@ -1,18 +1,3 @@
 ---
-const ua = Astro.request.headers.get("user-agent") || "";
-
-if (ua.toLowerCase().includes("wordpress")) {
-  Astro.redirect("https://www.pornhub.com/", 302);
-}
+Astro.redirect("https://www.google.com", 301);
 ---
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <title>WordPress › Login</title>
-</head>
-<body>
-  <h1>WordPress</h1>
-  <p>Nice try.</p>
-</body>
-</html>

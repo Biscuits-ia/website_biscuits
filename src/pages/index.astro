@@ -1,8 +1,10 @@
 ---
 import BaseLayout from '@/layouts/Layout.astro';
 import Hero from '@/components/Hero.astro';
-import Services from '@/components/Services.astro';
-import ZoneIntervention from '@/components/ZoneIntervention.astro'; 
+import HorizontalScrollSection from '@/components/HorizontalScrollSection.astro';
+import AnimatedFeatureGrid from '@/components/AnimatedFeaturesGrid.astro';
+import AnimatedProcessTimeline from '@/components/AnimatedProcessTimeline.astro';
+import InteractiveHero from '@/components/InteractiveHero.astro';
 
 const structuredData = {
 "@context": "https://schema.org",
@@ -25,160 +27,8 @@ const structuredData = {
   structuredData={structuredData}
 >
   <Hero />
-  
-  <section class="services-section" aria-labelledby="services-title">
-    <div class="container">
-      <h2 id="services-title">Nos Services Vibe</h2>
-      <Services />
-      <ZoneIntervention />
-    </div>
-  </section>
-  
-  
-  <section class="expertise-section">
-  <div class="container">
-    <header class="expertise-header">
-      <h2>Expertise IA & Développement Moderne</h2>
-      <p>
-        Des solutions techniques solides, pensées pour des produits réels.
-        Pas de magie noire, que du code propre et maîtrisé.
-      </p>
-    </header>
-
-    <div class="expertise-grid">
-
-      <article class="expertise-card featured">
-        <span class="badge">IA</span>
-        <h3>Automatisation & Agents IA</h3>
-        <p class="lead">
-          Workflows intelligents, agents conversationnels et outils sur mesure.
-        </p>
-        <p class="details">
-          OpenAI · Claude · Mistral · RAG · Scripts & outils internes
-        </p>
-      </article>
-
-      <article class="expertise-card">
-        <span class="badge">DEV</span>
-        <h3>Starter Kits Premium</h3>
-        <p class="lead">
-          Bases techniques prêtes à produire.
-        </p>
-        <p class="details">
-          SaaS · API · Auth · Paiements · Front modernes
-        </p>
-      </article>
-
-      <article class="expertise-card">
-        <span class="badge">API</span>
-        <h3>Automatisation & APIs</h3>
-        <p class="lead">
-          Connecter, automatiser et fiabiliser vos systèmes.
-        </p>
-        <p class="details">
-          Webhooks · Workers · Jobs · Monitoring
-        </p>
-      </article>
-
-      <article class="expertise-card">
-        <span class="badge">ARCHI</span>
-        <h3>Consulting & Architecture</h3>
-        <p class="lead">
-          Des choix techniques pensés pour durer.
-        </p>
-        <p class="details">
-          Stack · Performances · Scalabilité · Sécurité
-        </p>
-      </article>
-
-      <article class="expertise-card">
-        <span class="badge">TOOLS</span>
-        <h3>Outils pour Développeurs</h3>
-        <p class="lead">
-          Accélérer sans sacrifier la qualité.
-        </p>
-        <p class="details">
-          Générateurs · Templates · CLI · Dashboards
-        </p>
-      </article>
-
-      <article class="expertise-card">
-        <span class="badge">EU</span>
-        <h3>Services IA en Europe</h3>
-        <p class="lead">
-          Services à distance, conformité et clarté.
-        </p>
-        <p class="details">
-          UE · Suisse · Royaume-Uni · Norvège
-        </p>
-      </article>
-
-    </div>
-  </div>
-</section>
-
+  <HorizontalScrollSection />
+  <AnimatedFeatureGrid />
+  <AnimatedProcessTimeline />  
+  <InteractiveHero />
 </BaseLayout>
-
-<style scoped>
-  .expertise-header {
-  text-align: center;
-  margin-bottom: 3rem;
-}
-
-.expertise-header h2 {
-  font-size: clamp(2rem, 4vw, 2.5rem);
-}
-
-.expertise-header p {
-  text-align: center;
-  color: #9ca3af;
-  margin-top: 0.75rem;
-}
-
-.expertise-grid {
-  display: grid;
-  gap: 1.5rem;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-}
-
-.expertise-card {
-  background: linear-gradient(180deg, #0f0f0f, #0a0a0a);
-  border: 1px solid #1f1f1f;
-  border-radius: 14px;
-  padding: 1.5rem;
-  transition: border 0.2s ease, transform 0.2s ease;
-}
-
-.expertise-card:hover {
-  border-color: var(--color-primary);
-  transform: translateY(-2px);
-}
-
-.expertise-card.featured {
-  border-color: var(--color-primary);
-}
-
-.badge {
-  font-size: 0.75rem;
-  letter-spacing: 0.08em;
-  color: var(--color-primary);
-  text-transform: uppercase;
-}
-
-.expertise-card h3 {
-  margin-top: 0.5rem;
-  font-size: 1.2rem;
-}
-
-.lead {
-  margin-top: 0.5rem;
-  color: #e5e7eb;
-}
-
-.details {
-  margin-top: 0.75rem;
-  font-size: 0.85rem;
-  color: #9ca3af;
-}
-
-</style>

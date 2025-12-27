@@ -1,0 +1,589 @@
+---
+/**
+ * Hero section interactive avec animations de particules et effets 3D
+ */
+
+// CORRECTION 1 : Renommer HeroProps en Props pour qu'Astro l'utilise automatiquement
+interface Props {
+  title?: string;
+  subtitle?: string;
+  ctaPrimary?: { text: string; href: string };
+  ctaSecondary?: { text: string; href: string };
+}
+
+const {
+  title = "Créez le futur avec l'IA",
+  subtitle = "Solutions intelligentes, automatisations avancées et starter kits pour développeurs modernes",
+  ctaPrimary = { text: "Démarrer un projet", href: "/devis" },
+  ctaSecondary = { text: "Explorer nos services", href: "/services" }
+} = Astro.props;
+---
+
+<section class="interactive-hero" data-hero-section>
+  <canvas id="particles-canvas" aria-hidden="true"></canvas>
+  
+  <div class="orbs" aria-hidden="true">
+    <div class="orb orb-1" data-orb="1"></div>
+    <div class="orb orb-2" data-orb="2"></div>
+    <div class="orb orb-3" data-orb="3"></div>
+  </div>
+
+  <div class="hero-content">
+    <div class="hero-badge" data-badge>
+      <span class="badge-icon">✨</span>
+      <span class="badge-text">Nouveau : IA + Automation</span>
+    </div>
+
+    <h1 class="hero-title" data-title>
+      {title.split(' ').map((word: string, i: number) => (
+        <span class="title-word" data-word={i}>{word} </span>
+      ))}
+    </h1>
+
+    <p class="hero-subtitle" data-subtitle>
+      {subtitle}
+    </p>
+
+    <div class="hero-stats" data-stats>
+      <div class="stat-item">
+        <span class="stat-number" data-counter="50">0</span>
+        <span class="stat-label">Projets livrés</span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-item">
+        <span class="stat-number" data-counter="95">0</span>
+        <span class="stat-suffix">%</span>
+        <span class="stat-label">Satisfaction client</span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-item">
+        <span class="stat-number" data-counter="24">0</span>
+        <span class="stat-suffix">h</span>
+        <span class="stat-label">Réponse moyenne</span>
+      </div>
+    </div>
+
+    <div class="hero-ctas" data-ctas>
+      <a href={ctaPrimary.href} class="cta-primary">
+        <span class="cta-text">{ctaPrimary.text}</span>
+        <span class="cta-arrow">→</span>
+      </a>
+      <a href={ctaSecondary.href} class="cta-secondary">
+        <span class="cta-text">{ctaSecondary.text}</span>
+        <span class="cta-icon">🔍</span>
+      </a>
+    </div>
+
+    <div class="scroll-indicator" data-scroll-indicator>
+      <span class="scroll-text">Scroll</span>
+      <span class="scroll-icon">↓</span>
+    </div>
+  </div>
+</section>
+
+<style>
+  .interactive-hero {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem 2rem;
+    background: #000;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Particles canvas */
+  #particles-canvas {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  /* Animated orbs */
+  .orbs {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.3;
+    animation: float 20s ease-in-out infinite;
+  }
+
+  .orb-1 {
+    width: 500px;
+    height: 500px;
+    background: var(--color-primary);
+    top: -10%;
+    left: -10%;
+    animation-delay: 0s;
+  }
+
+  .orb-2 {
+    width: 400px;
+    height: 400px;
+    background: var(--color-secondary);
+    top: 20%;
+    right: -5%;
+    animation-delay: -7s;
+  }
+
+  .orb-3 {
+    width: 450px;
+    height: 450px;
+    background: var(--color-first);
+    bottom: -10%;
+    left: 30%;
+    animation-delay: -14s;
+  }
+
+  @keyframes float {
+    0%, 100% {
+      transform: translate(0, 0) scale(1);
+    }
+    33% {
+      transform: translate(30px, -30px) scale(1.1);
+    }
+    66% {
+      transform: translate(-20px, 20px) scale(0.9);
+    }
+  }
+
+  /* Content */
+  .hero-content {
+    max-width: 900px;
+    text-align: center;
+    position: relative;
+    z-index: 2;
+  }
+
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1.5rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--color-primary);
+    border-radius: 50px;
+    margin-bottom: 2.5rem;
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+  }
+
+  .hero-badge:hover {
+    background: rgba(255, 255, 255, 0.08);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px var(--color-primary);
+  }
+
+  .badge-icon {
+    font-size: 1.25rem;
+  }
+
+  .badge-text {
+    color: var(--color-primary-light);
+    font-weight: 600;
+    font-size: 0.95rem;
+  }
+
+  .hero-title {
+    font-size: clamp(3rem, 8vw, 6rem);
+    font-weight: 900;
+    color: var(--color-primary-light);
+    margin-bottom: 2rem;
+    line-height: 1.1;
+  }
+
+  .title-word {
+    display: inline-block;
+    background: linear-gradient(135deg, 
+      var(--color-primary-light), 
+      var(--color-first), 
+      var(--color-secondary)
+    );
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: shimmer 3s ease-in-out infinite;
+    background-size: 200% auto;
+  }
+
+  @keyframes shimmer {
+    0%, 100% { background-position: 0% center; }
+    50% { background-position: 100% center; }
+  }
+
+  .hero-subtitle {
+    font-size: clamp(1.1rem, 2.5vw, 1.5rem);
+    color: #9ca3af;
+    line-height: 1.7;
+    margin-bottom: 3rem;
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  /* Stats */
+  .hero-stats {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem;
+    margin-bottom: 3rem;
+    padding: 2rem;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    backdrop-filter: blur(10px);
+  }
+
+  .stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .stat-number {
+    font-size: 2.5rem;
+    font-weight: 900;
+    color: var(--color-first);
+    line-height: 1;
+  }
+
+  .stat-suffix {
+    font-size: 1.75rem;
+    font-weight: 900;
+    color: var(--color-first);
+    opacity: 0.8;
+  }
+
+  .stat-label {
+    font-size: 0.9rem;
+    color: #9ca3af;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  .stat-divider {
+    width: 1px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.2);
+  }
+
+  /* CTAs */
+  .hero-ctas {
+    display: flex;
+    gap: 1.5rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 4rem;
+  }
+
+  .cta-primary,
+  .cta-secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1.25rem 2.5rem;
+    border-radius: 50px;
+    font-weight: 700;
+    font-size: 1.1rem;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .cta-primary {
+    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    color: #000;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  }
+
+  .cta-primary::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, var(--color-secondary), var(--color-first));
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .cta-primary:hover::before {
+    opacity: 1;
+  }
+
+  .cta-primary:hover {
+    transform: translateY(-4px) scale(1.05);
+    box-shadow: 0 20px 60px var(--color-primary);
+  }
+
+  .cta-secondary {
+    background: rgba(255, 255, 255, 0.05);
+    border: 2px solid var(--color-primary);
+    color: var(--color-primary-light);
+  }
+
+  .cta-secondary:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateY(-4px);
+  }
+
+  .cta-text,
+  .cta-arrow,
+  .cta-icon {
+    position: relative;
+    z-index: 1;
+  }
+
+  .cta-arrow,
+  .cta-icon {
+    font-size: 1.5rem;
+    transition: transform 0.3s ease;
+  }
+
+  .cta-primary:hover .cta-arrow {
+    transform: translateX(5px);
+  }
+
+  .cta-secondary:hover .cta-icon {
+    transform: scale(1.2);
+  }
+
+  /* Scroll indicator */
+  .scroll-indicator {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    color: #9ca3af;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    animation: bounce 2s ease-in-out infinite;
+  }
+
+  .scroll-icon {
+    font-size: 1.5rem;
+    animation: bounce 2s ease-in-out infinite;
+    animation-delay: 0.1s;
+  }
+
+  @keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(10px); }
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .interactive-hero {
+      padding: 3rem 1.5rem;
+    }
+
+    .hero-stats {
+      flex-direction: column;
+      gap: 1.5rem;
+      padding: 1.5rem;
+    }
+
+    .stat-divider {
+      width: 80%;
+      height: 1px;
+    }
+
+    .hero-ctas {
+      flex-direction: column;
+      width: 100%;
+    }
+
+    .cta-primary,
+    .cta-secondary {
+      width: 100%;
+      justify-content: center;
+    }
+
+    .orb {
+      display: none;
+    }
+  }
+</style>
+
+<script>
+  import { gsap } from 'gsap';
+
+  const shouldReduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // Particles animation
+  const canvas = document.getElementById('particles-canvas') as HTMLCanvasElement;
+  const ctx = canvas?.getContext('2d');
+
+  if (canvas && ctx && !shouldReduce) {
+    const context = ctx; 
+
+    let particles: Array<{
+      x: number;
+      y: number;
+      vx: number;
+      vy: number;
+      size: number;
+      opacity: number;
+    }> = [];
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+
+    function createParticles() {
+      particles = [];
+      const particleCount = Math.min(Math.floor((canvas.width * canvas.height) / 10000), 100);
+      
+      for (let i = 0; i < particleCount; i++) {
+        particles.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          vx: (Math.random() - 0.5) * 0.5,
+          vy: (Math.random() - 0.5) * 0.5,
+          size: Math.random() * 2 + 1,
+          opacity: Math.random() * 0.5 + 0.2,
+        });
+      }
+    }
+
+    function animate() {
+      context.clearRect(0, 0, canvas.width, canvas.height);
+
+      particles.forEach((particle) => {
+        particle.x += particle.vx;
+        particle.y += particle.vy;
+
+        if (particle.x < 0 || particle.x > canvas.width) particle.vx *= -1;
+        if (particle.y < 0 || particle.y > canvas.height) particle.vy *= -1;
+
+        context.beginPath();
+        context.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+        context.fillStyle = `rgba(255, 255, 255, ${particle.opacity})`;
+        context.fill();
+      });
+
+      // Draw connections
+      particles.forEach((p1, i) => {
+        particles.slice(i + 1).forEach((p2) => {
+          const dx = p1.x - p2.x;
+          const dy = p1.y - p2.y;
+          const distance = Math.sqrt(dx * dx + dy * dy);
+
+          if (distance < 120) {
+            context.beginPath();
+            context.moveTo(p1.x, p1.y);
+            context.lineTo(p2.x, p2.y);
+            context.strokeStyle = `rgba(255, 255, 255, ${(1 - distance / 120) * 0.2})`;
+            context.lineWidth = 1;
+            context.stroke();
+          }
+        });
+      });
+
+      requestAnimationFrame(animate);
+    }
+
+    resizeCanvas();
+    createParticles();
+    animate();
+
+    window.addEventListener('resize', () => {
+      resizeCanvas();
+      createParticles();
+    });
+  }
+
+  // GSAP Animations
+  if (!shouldReduce) {
+    const tl = gsap.timeline({ delay: 0.3 });
+
+    // Badge
+    tl.from('[data-badge]', {
+      opacity: 0,
+      y: -30,
+      duration: 0.8,
+      ease: 'back.out(1.5)',
+    });
+
+    // Title words
+    tl.from('[data-word]', {
+      opacity: 0,
+      y: 50,
+      stagger: 0.1,
+      duration: 0.8,
+      ease: 'power3.out',
+    }, '-=0.4');
+
+    // Subtitle
+    tl.from('[data-subtitle]', {
+      opacity: 0,
+      y: 30,
+      duration: 0.8,
+    }, '-=0.3');
+
+    // Stats
+    tl.from('[data-stats]', {
+      opacity: 0,
+      scale: 0.9,
+      duration: 0.8,
+    }, '-=0.2');
+
+    // Counter animation
+    const counters = document.querySelectorAll<HTMLElement>('[data-counter]');
+    counters.forEach((counter) => {
+      const target = parseInt(counter.dataset.counter ?? '0', 10);
+      const obj = { value: 0 };
+
+      tl.to(obj, {
+        value: target,
+        duration: 2,
+        ease: 'power2.out',
+        onUpdate: () => {
+          counter.textContent = Math.round(obj.value).toString();
+        },
+      }, '-=1');
+    });
+
+    // CTAs
+    tl.from('[data-ctas]', {
+      opacity: 0,
+      y: 30,
+      duration: 0.8,
+    }, '-=1');
+
+    // Scroll indicator
+    tl.from('[data-scroll-indicator]', {
+      opacity: 0,
+      duration: 0.8,
+    }, '-=0.5');
+
+    // Orbs parallax on mouse move
+    document.addEventListener('mousemove', (e) => {
+      const orbs = document.querySelectorAll<HTMLElement>('[data-orb]');
+      orbs.forEach((orb) => {
+        const speed = parseFloat(orb.dataset.orb ?? '1') * 0.02;
+        const x = (e.clientX - window.innerWidth / 2) * speed;
+        const y = (e.clientY - window.innerHeight / 2) * speed;
+
+        gsap.to(orb, {
+          x,
+          y,
+          duration: 1,
+          ease: 'power2.out',
+        });
+      });
+    });
+  }
+</script>

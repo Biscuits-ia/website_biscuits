@@ -1,0 +1,460 @@
+---
+/**
+ * Grille de fonctionnalités avec animations 3D et interactions avancées
+ */
+
+interface Feature {
+  icon: string;
+  title: string;
+  description: string;
+  tags: string[];
+  gradient: string;
+}
+
+const features: Feature[] = [
+  {
+    icon: "🎨",
+    title: "Design System",
+    description: "Composants réutilisables avec Tailwind CSS et design tokens cohérents",
+    tags: ["UI/UX", "Components", "Tokens"],
+    gradient: "from-primary to-secondary"
+  },
+  {
+    icon: "⚡",
+    title: "Performance",
+    description: "Optimisé pour des temps de chargement ultra-rapides et Core Web Vitals",
+    tags: ["Speed", "Optimization", "SEO"],
+    gradient: "from-secondary to-first"
+  },
+  {
+    icon: "🔒",
+    title: "Sécurité",
+    description: "Protection avancée avec authentification robuste et chiffrement",
+    tags: ["Auth", "Encryption", "RGPD"],
+    gradient: "from-first to-primary"
+  },
+  {
+    icon: "📊",
+    title: "Analytics",
+    description: "Tableaux de bord complets avec insights et métriques en temps réel",
+    tags: ["Metrics", "Reports", "AI"],
+    gradient: "from-primary to-first"
+  },
+  {
+    icon: "🔧",
+    title: "API Modern",
+    description: "RESTful et GraphQL avec documentation interactive complète",
+    tags: ["REST", "GraphQL", "Docs"],
+    gradient: "from-secondary to-primary"
+  },
+  {
+    icon: "🚀",
+    title: "CI/CD",
+    description: "Déploiement automatisé avec tests et rollback instantané",
+    tags: ["Deploy", "Tests", "Automation"],
+    gradient: "from-first to-secondary"
+  }
+];
+---
+
+<section class="features-section" data-features-section>
+  <div class="container">
+    <div class="section-header">
+      <h2 class="section-title" data-title-reveal>
+        Fonctionnalités Avancées
+      </h2>
+      <p class="section-subtitle" data-subtitle-reveal>
+        Tout ce dont vous avez besoin pour construire des applications modernes
+      </p>
+    </div>
+
+    <div class="features-grid">
+      {features.map((feature, index) => (
+        <article 
+          class="feature-card" 
+          data-feature-card
+          data-index={index}
+          data-gradient={feature.gradient}
+        >
+          <div class="card-glow"></div>
+          <div class="card-content">
+            <div class="feature-icon" data-icon-float>
+              {feature.icon}
+            </div>
+            <h3 class="feature-title">{feature.title}</h3>
+            <p class="feature-description">{feature.description}</p>
+            <div class="feature-tags">
+              {feature.tags.map((tag, i) => (
+                <span class="tag" data-tag-index={i}>{tag}</span>
+              ))}
+            </div>
+          </div>
+          <div class="card-overlay"></div>
+        </article>
+      ))}
+    </div>
+
+    <!-- Decorative elements -->
+    <div class="grid-lines" aria-hidden="true">
+      <div class="line line-horizontal"></div>
+      <div class="line line-vertical"></div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .features-section {
+    padding: 8rem 2rem;
+    background: #000;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .features-section::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: 
+      radial-gradient(circle at 20% 30%, var(--color-primary-dark), transparent 50%),
+      radial-gradient(circle at 80% 70%, var(--color-secondary), transparent 50%);
+    opacity: 0.2;
+    pointer-events: none;
+  }
+
+  .container {
+    max-width: 1400px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 2;
+  }
+
+  .section-header {
+    text-align: center;
+    margin-bottom: 5rem;
+  }
+
+  .section-title {
+    font-size: clamp(2.5rem, 6vw, 4.5rem);
+    font-weight: 900;
+    color: var(--color-primary-light);
+    margin-bottom: 1.5rem;
+    background: linear-gradient(135deg, var(--color-primary-light), var(--color-primary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .section-subtitle {
+    font-size: clamp(1.1rem, 2vw, 1.5rem);
+    color: #9ca3af;
+    max-width: 700px;
+    margin: 0 auto;
+    line-height: 1.6;
+  }
+
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 2.5rem;
+    perspective: 1000px;
+  }
+
+  .feature-card {
+    background: rgba(15, 15, 15, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 24px;
+    padding: 2.5rem;
+    position: relative;
+    overflow: hidden;
+    transform-style: preserve-3d;
+    transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+    backdrop-filter: blur(10px);
+  }
+
+  .feature-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    border-radius: 24px;
+  }
+
+  .feature-card:hover::before {
+    opacity: 0.05;
+  }
+
+  .card-glow {
+    position: absolute;
+    inset: -2px;
+    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    border-radius: 24px;
+    opacity: 0;
+    filter: blur(20px);
+    transition: opacity 0.4s ease;
+    z-index: -1;
+  }
+
+  .feature-card:hover .card-glow {
+    opacity: 0.4;
+  }
+
+  .feature-card:hover {
+    transform: translateY(-8px) rotateX(2deg);
+    border-color: var(--color-primary);
+    box-shadow: 
+      0 20px 60px rgba(0, 0, 0, 0.4),
+      0 0 40px var(--color-primary);
+  }
+
+  .card-content {
+    position: relative;
+    z-index: 2;
+  }
+
+  .feature-icon {
+    font-size: 3.5rem;
+    margin-bottom: 1.5rem;
+    display: inline-block;
+    filter: drop-shadow(0 4px 12px var(--color-primary));
+    transition: transform 0.3s ease;
+  }
+
+  .feature-card:hover .feature-icon {
+    transform: scale(1.1) rotateZ(5deg);
+  }
+
+  .feature-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--color-primary-light);
+    margin-bottom: 1rem;
+    transition: color 0.3s ease;
+  }
+
+  .feature-card:hover .feature-title {
+    color: var(--color-first);
+  }
+
+  .feature-description {
+    color: #d1d5db;
+    line-height: 1.7;
+    margin-bottom: 1.5rem;
+    font-size: 1rem;
+  }
+
+  .feature-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  .tag {
+    padding: 0.5rem 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 50px;
+    font-size: 0.85rem;
+    color: var(--color-primary);
+    font-weight: 600;
+    transition: all 0.3s ease;
+  }
+
+  .feature-card:hover .tag {
+    background: var(--color-primary);
+    color: #000;
+    transform: translateY(-2px);
+  }
+
+  .card-overlay {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%), 
+                rgba(255, 255, 255, 0.1), 
+                transparent 50%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+  }
+
+  .feature-card:hover .card-overlay {
+    opacity: 1;
+  }
+
+  /* Grid lines decoration */
+  .grid-lines {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .line {
+    position: absolute;
+    background: linear-gradient(90deg, 
+      transparent, 
+      var(--color-primary), 
+      transparent);
+    opacity: 0.1;
+  }
+
+  .line-horizontal {
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 1px;
+    animation: slideHorizontal 8s ease-in-out infinite;
+  }
+
+  .line-vertical {
+    left: 50%;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    animation: slideVertical 8s ease-in-out infinite;
+  }
+
+  @keyframes slideHorizontal {
+    0%, 100% { transform: translateX(-100%); }
+    50% { transform: translateX(100%); }
+  }
+
+  @keyframes slideVertical {
+    0%, 100% { transform: translateY(-100%); }
+    50% { transform: translateY(100%); }
+  }
+
+  @media (max-width: 768px) {
+    .features-section {
+      padding: 4rem 1.5rem;
+    }
+
+    .features-grid {
+      grid-template-columns: 1fr;
+      gap: 2rem;
+    }
+
+    .section-header {
+      margin-bottom: 3rem;
+    }
+  }
+</style>
+
+<script>
+  import { gsap } from 'gsap';
+  import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  const shouldReduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  if (!shouldReduce) {
+    // Title reveal
+    const title = document.querySelector<HTMLElement>('[data-title-reveal]');
+    if (title) {
+      gsap.from(title, {
+        opacity: 0,
+        y: 50,
+        duration: 1,
+        scrollTrigger: {
+          trigger: title,
+          start: 'top 80%',
+        },
+      });
+    }
+
+    // Subtitle reveal
+    const subtitle = document.querySelector<HTMLElement>('[data-subtitle-reveal]');
+    if (subtitle) {
+      gsap.from(subtitle, {
+        opacity: 0,
+        y: 30,
+        duration: 0.8,
+        delay: 0.2,
+        scrollTrigger: {
+          trigger: subtitle,
+          start: 'top 80%',
+        },
+      });
+    }
+
+    // Feature cards animation
+    const cards = document.querySelectorAll<HTMLElement>('[data-feature-card]');
+    cards.forEach((card, index) => {
+      // Entry animation
+      gsap.from(card, {
+        opacity: 0,
+        y: 80,
+        rotateX: -15,
+        scale: 0.9,
+        duration: 1,
+        delay: index * 0.1,
+        ease: 'back.out(1.2)',
+        scrollTrigger: {
+          trigger: card,
+          start: 'top 85%',
+        },
+      });
+
+      // 3D tilt on mouse move
+      card.addEventListener('mousemove', (e: MouseEvent) => {
+        const rect = card.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        const centerX = rect.width / 2;
+        const centerY = rect.height / 2;
+        
+        const rotateX = ((y - centerY) / centerY) * -8;
+        const rotateY = ((x - centerX) / centerX) * 8;
+
+        // Update overlay position
+        const mouseX = (x / rect.width) * 100;
+        const mouseY = (y / rect.height) * 100;
+        card.style.setProperty('--mouse-x', `${mouseX}%`);
+        card.style.setProperty('--mouse-y', `${mouseY}%`);
+
+        gsap.to(card, {
+          rotateX,
+          rotateY,
+          duration: 0.3,
+          ease: 'power2.out',
+        });
+      });
+
+      card.addEventListener('mouseleave', () => {
+        gsap.to(card, {
+          rotateX: 0,
+          rotateY: 0,
+          duration: 0.5,
+          ease: 'power2.out',
+        });
+      });
+
+      // Tags stagger animation
+      const tags = card.querySelectorAll<HTMLElement>('[data-tag-index]');
+      gsap.from(tags, {
+        opacity: 0,
+        scale: 0.8,
+        stagger: 0.05,
+        duration: 0.4,
+        scrollTrigger: {
+          trigger: card,
+          start: 'top 75%',
+        },
+      });
+    });
+
+    // Floating icons
+    const icons = document.querySelectorAll<HTMLElement>('[data-icon-float]');
+    icons.forEach((icon) => {
+      gsap.to(icon, {
+        y: -10,
+        duration: 2,
+        repeat: -1,
+        yoyo: true,
+        ease: 'sine.inOut',
+      });
+    });
+  }
+</script>

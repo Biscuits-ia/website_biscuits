@@ -196,7 +196,6 @@ h2 {
 }
 
 section {
-  padding-block: var(--spacing-4xl);
   position: relative;
 }
 

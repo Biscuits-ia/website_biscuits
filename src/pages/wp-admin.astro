@@ -1,3 +1,9 @@
 ---
-Astro.redirect("https://www.google.com", 301);
+console.log("wp-admin accessed", Astro.clientAddress);
 ---
+
+<h1>WordPress</h1>
+<form>
+  <input placeholder="Username">
+  <input placeholder="Password" type="password">
+</form>

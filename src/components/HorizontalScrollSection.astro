@@ -712,22 +712,6 @@ const stats: Stat[] = [
       });
     });
 
-    // Stagger features
-    panels.forEach((panel) => {
-      const features = panel.querySelectorAll<HTMLElement>('[data-stagger]');
-      gsap.from(features, {
-        opacity: 0,
-        y: 30,
-        stagger: 0.1,
-        duration: 0.8,
-        scrollTrigger: {
-          trigger: panel,
-          start: window.innerWidth > 768 ? 'left center' : 'top 80%',
-          horizontal: window.innerWidth > 768,
-        },
-      });
-    });
-
     // Stats animation
     const statCards = querySelectorAll<HTMLElement>('[data-morph]');
     statCards.forEach((card, i) => {

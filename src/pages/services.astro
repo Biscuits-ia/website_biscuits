@@ -21,14 +21,14 @@ const structuredData = {
   description="Découvrez nos services, automatisations et outils pour booster vos projets de développement et IA."
   structuredData={structuredData}
 >
-<section class="overview-section">
+  <section class="overview-section" data-section>
     <div class="container">
-      <h2>Pourquoi choisir Biscuits Dev ?</h2>
-      <p>
-        Biscuits Dev fournit un écosystème complet d’outils et services pour les développeurs et startups tech.
+      <h2 data-fade-in>Pourquoi choisir Biscuits Dev ?</h2>
+      <p data-fade-in data-delay="100">
+        Biscuits Dev fournit un écosystème complet d'outils et services pour les développeurs et startups tech.
         Que vous soyez en phase de prototypage ou en production, nous vous aidons à accélérer vos projets avec des solutions fiables et scalables.
       </p>
-      <ul>
+      <ul data-fade-in data-delay="200">
         <li>Expertise IA et automatisations avancées</li>
         <li>Starter kits et templates prêts à l'emploi</li>
         <li>Consulting technique et architecture solide</li>
@@ -37,12 +37,11 @@ const structuredData = {
     </div>
   </section>
 
-  <!-- Section 2 : Services détaillés -->
-  <section class="services-detailed">
+  <section class="services-detailed" data-section>
     <div class="container">
-
-      <article class="service-item">
-        <h3>1. Agents & Automatisations IA</h3>
+      <article class="service-item" data-service-card="0">
+        <div class="service-number">01</div>
+        <h3>Agents & Automatisations IA</h3>
         <p class="lead">
           Créez des workflows intelligents et des agents sur mesure qui automatisent vos tâches répétitives et optimisent vos processus.
         </p>
@@ -53,7 +52,7 @@ const structuredData = {
           <li>RAG (Retrieval-Augmented Generation) et intégration GPT/Claude/Mistral</li>
           <li>Scripts personnalisés et intégration à vos systèmes existants</li>
         </ul>
-        <h4>Cas d’usage :</h4>
+        <h4>Cas d'usage :</h4>
         <ul>
           <li>Support client autonome sur Discord ou site web</li>
           <li>Analyse et traitement automatique de données</li>
@@ -61,16 +60,17 @@ const structuredData = {
         </ul>
       </article>
 
-      <article class="service-item">
-        <h3>2. Starter Kits & Templates</h3>
+      <article class="service-item" data-service-card="1">
+        <div class="service-number">02</div>
+        <h3>Starter Kits & Templates</h3>
         <p class="lead">
-          Démarrez vos projets plus vite avec nos bases techniques prêtes à l’emploi, codées proprement et facilement extensibles.
+          Démarrez vos projets plus vite avec nos bases techniques prêtes à l'emploi, codées proprement et facilement extensibles.
         </p>
         <h4>Inclus :</h4>
         <ul>
           <li>Starter kits SaaS avec authentification et paiements intégrés</li>
           <li>Templates front modernes et responsives</li>
-          <li>Exemples d’API et intégrations prêtes à l’emploi</li>
+          <li>Exemples d'API et intégrations prêtes à l'emploi</li>
           <li>Guides pour structurer votre projet rapidement</li>
         </ul>
         <h4>Avantages :</h4>
@@ -81,8 +81,9 @@ const structuredData = {
         </ul>
       </article>
 
-      <article class="service-item">
-        <h3>3. Intégrations & Automatisations</h3>
+      <article class="service-item" data-service-card="2">
+        <div class="service-number">03</div>
+        <h3>Intégrations & Automatisations</h3>
         <p class="lead">
           Connectez vos systèmes, automatisez vos workflows et gagnez en fiabilité et productivité.
         </p>
@@ -90,7 +91,7 @@ const structuredData = {
         <ul>
           <li>Webhooks et API pour connecter vos services</li>
           <li>Workers et jobs programmés pour automatisations avancées</li>
-          <li>Monitoring et alertes pour suivre l’état de vos systèmes</li>
+          <li>Monitoring et alertes pour suivre l'état de vos systèmes</li>
           <li>Documentation et support pour intégrer facilement nos solutions</li>
         </ul>
         <h4>Exemples :</h4>
@@ -101,10 +102,11 @@ const structuredData = {
         </ul>
       </article>
 
-      <article class="service-item">
-        <h3>4. Consulting & Architecture</h3>
+      <article class="service-item" data-service-card="3">
+        <div class="service-number">04</div>
+        <h3>Consulting & Architecture</h3>
         <p class="lead">
-          Nos experts vous accompagnent dans vos choix techniques et la conception d’architectures robustes et évolutives.
+          Nos experts vous accompagnent dans vos choix techniques et la conception d'architectures robustes et évolutives.
         </p>
         <h4>Services :</h4>
         <ul>
@@ -113,7 +115,7 @@ const structuredData = {
           <li>Design sécurisé et optimisé pour la production</li>
           <li>Planification et roadmap technique sur mesure</li>
         </ul>
-        <h4>Pourquoi c’est important :</h4>
+        <h4>Pourquoi c'est important :</h4>
         <ul>
           <li>Réduction des risques techniques</li>
           <li>Évolutivité et maintenabilité garanties</li>
@@ -121,8 +123,9 @@ const structuredData = {
         </ul>
       </article>
 
-      <article class="service-item">
-        <h3>5. Support & Maintenance</h3>
+      <article class="service-item" data-service-card="4">
+        <div class="service-number">05</div>
+        <h3>Support & Maintenance</h3>
         <p class="lead">
           Nous assurons le suivi, la maintenance et le support de vos projets pour garantir leur stabilité et leur performance.
         </p>
@@ -134,107 +137,239 @@ const structuredData = {
           <li>Assistance technique réactive pour vos équipes</li>
         </ul>
       </article>
-
     </div>
   </section>
 
-  <!-- Section CTA -->
-  <section class="cta-section">
+  <section class="cta-section" data-fade-in>
     <div class="container">
       <h2>Prêt à booster vos projets ?</h2>
       <p>
-        Contactez-nous dès aujourd’hui et découvrez comment Biscuits Dev peut accélérer votre développement et automatiser vos workflows.
+        Contactez-nous dès aujourd'hui et découvrez comment Biscuits Dev peut accélérer votre développement et automatiser vos workflows.
       </p>
       <a href="/contact" class="cta-button">Contactez-nous</a>
     </div>
   </section>
-
 </BaseLayout>
 
-<style >
-.overview-section h2,
-.services-detailed h2,
-.cta-section h2 {
-  font-size: clamp(4rem, 6vw, 3.5rem);
-  text-align: center;
-  padding: 2rem;
-  margin-bottom: 1rem;
-  margin-top: 2rem;
-}
+<style>
+  /* Base */
+  .overview-section,
+  .services-detailed,
+  .cta-section {
+    position: relative;
+  }
 
-.overview-section p,
-.services-detailed p.lead,
-.cta-section p {
-  color: #e5e7eb;
-  text-align: center;
-  font-size: clamp(1rem, 2.5vw, 1.25rem);
-  margin-bottom: 1rem;
-}
+  .overview-section h2,
+  .cta-section h2 {
+    font-size: clamp(2.5rem, 5vw, 4rem);
+    text-align: center;
+    padding: 2rem;
+    margin-bottom: 1rem;
+    margin-top: 2rem;
+  }
 
-.overview-section ul,
-.services-detailed ul {
-  padding: 1.2rem 0;
-  padding-left: 1.25rem;
-  margin-bottom: 2rem;
-  font-size: clamp(1rem, 2.5vw, 1.125rem);
-  color: #9ca3af;
-  list-style-type: disc;
-}
+  .overview-section p,
+  .cta-section p {
+    color: #e5e7eb;
+    text-align: center;
+    font-size: clamp(1rem, 2.5vw, 1.25rem);
+    margin-bottom: 1rem;
+  }
 
-.service-item {
-  background: linear-gradient(180deg, #0f0f0f, #0a0a0a);
-  border: 1px solid #1f1f1f;
-  border-radius: 14px;
-  padding: 2rem;
-  margin-bottom: 2rem;
-}
+  .overview-section ul {
+    padding: 1.2rem 0;
+    padding-left: 1.25rem;
+    margin-bottom: 2rem;
+    font-size: clamp(1rem, 2.5vw, 1.125rem);
+    color: #9ca3af;
+    list-style-type: disc;
+  }
 
-.service-item h3 {
-  color: #fff;
-  text-align: center;
-  margin-bottom: 0.75rem;
-  font-size: clamp(1.5rem, 3vw, 2rem);
-}
+  /* Service cards */
+  .service-item {
+    background: linear-gradient(135deg, rgba(15, 15, 15, 0.8), rgba(10, 10, 10, 0.9));
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    padding: 2.5rem;
+    margin-bottom: 2rem;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.4s ease;
+  }
 
-.service-item p.lead {
-  color: #d1d5db;
-  margin-bottom: 2.5rem;
-  font-size: clamp(1rem, 2.5vw, 1.125rem);
-}
+  .service-item::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at top right, var(--color-primary), transparent 70%);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+  }
 
-.service-item li {
-  margin-bottom: 0.2rem;
-  margin-left: 0.5rem;
-  color: #9ca3af;
-  line-height: 1.5;
-}
+  .service-item:hover {
+    border-color: var(--color-primary);
+    transform: translateY(-5px);
+    box-shadow: 0 20px 60px rgba(246, 118, 59, 0.3);
+  }
 
-.service-item h4 {
-  color: var(--color-primary);
-  margin-top: 0.5rem;
-  font-size: clamp(1.25rem, 2.5vw, 1.5rem);
-}
+  .service-item:hover::before {
+    opacity: 0.1;
+  }
 
-.cta-section {
-  text-align: center;
-  padding: 3rem 1rem;
-  background: var(--color-gray-800);
-  border-top: 1px solid var(--color-gray-200);
-}
+  .service-number {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    font-size: 5rem;
+    font-weight: 900;
+    color: var(--color-primary);
+    opacity: 0.1;
+    pointer-events: none;
+  }
 
-.cta-button {
-  display: inline-block;
-  padding: 0.75rem 2rem;
-  margin-top: 1rem;
-  background-color: var(--color-primary);
-  color: var(--color-gray-100);
-  border-radius: 8px;
-  text-decoration: none;
-  font-weight: 600;
-  transition: background 0.2s ease;
-}
+  .service-item h3 {
+    color: #fff;
+    margin-bottom: 1rem;
+    font-size: clamp(1.75rem, 3vw, 2.25rem);
+    position: relative;
+  }
 
-.cta-button:hover {
-  background-color: var(--color-primary-dark);
-}
+  .service-item p.lead {
+    color: #d1d5db;
+    margin-bottom: 2rem;
+    font-size: clamp(1rem, 2.5vw, 1.125rem);
+    line-height: 1.7;
+  }
+
+  .service-item ul {
+    padding-left: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .service-item li {
+    margin-bottom: 0.5rem;
+    color: #9ca3af;
+    line-height: 1.6;
+    position: relative;
+  }
+
+  .service-item li::before {
+    content: '→';
+    position: absolute;
+    left: -1.5rem;
+    color: var(--color-primary);
+    font-weight: bold;
+  }
+
+  .service-item h4 {
+    color: var(--color-primary);
+    margin: 1.5rem 0 1rem;
+    font-size: clamp(1.25rem, 2.5vw, 1.5rem);
+  }
+
+  /* CTA */
+  .cta-section {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: linear-gradient(135deg, rgba(15, 15, 15, 0.8), rgba(10, 10, 10, 0.9));
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    margin-top: 4rem;
+  }
+
+  .cta-button {
+    display: inline-block;
+    padding: 1.25rem 3rem;
+    margin-top: 1.5rem;
+    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    color: #fff;
+    border-radius: 12px;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 1.1rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 10px 30px rgba(246, 118, 59, 0.3);
+  }
+
+  .cta-button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 40px rgba(246, 118, 59, 0.5);
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .service-item {
+      padding: 2rem 1.5rem;
+    }
+
+    .service-number {
+      font-size: 3rem;
+    }
+  }
 </style>
+
+<script>
+  function initServicesAnimations() {
+    // Check reduced motion
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      return;
+    }
+
+    // Intersection Observer pour les animations au scroll
+    const observerOptions = {
+      threshold: 0.1,
+      rootMargin: '0px 0px -100px 0px'
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('animate-in');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, observerOptions);
+
+    // Fade in elements
+    document.querySelectorAll('[data-fade-in]').forEach((el) => {
+      const delay = parseInt(el.getAttribute('data-delay') || '0', 10);
+      (el as HTMLElement).style.opacity = '0';
+      (el as HTMLElement).style.transform = 'translateY(30px)';
+      (el as HTMLElement).style.transition = `all 0.8s ease ${delay}ms`;
+      observer.observe(el);
+    });
+
+    // Service cards avec stagger
+    document.querySelectorAll('[data-service-card]').forEach((el, index) => {
+      (el as HTMLElement).style.opacity = '0';
+      (el as HTMLElement).style.transform = 'translateY(50px) scale(0.95)';
+      (el as HTMLElement).style.transition = `all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) ${index * 100}ms`;
+      observer.observe(el);
+    });
+
+    // Effet de parallaxe simple sur les service numbers
+    window.addEventListener('scroll', () => {
+      const scrolled = window.scrollY;
+      document.querySelectorAll('.service-number').forEach((num, index) => {
+        (num as HTMLElement).style.transform = `translateY(${scrolled * 0.05 * (index + 1)}px)`;
+      });
+    }, { passive: true });
+  }
+
+  // Style pour les éléments animés
+  const style = document.createElement('style');
+  style.textContent = `
+    [data-fade-in].animate-in,
+    [data-service-card].animate-in {
+      opacity: 1 !important;
+      transform: translateY(0) scale(1) !important;
+    }
+  `;
+  document.head.appendChild(style);
+
+  // Init
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initServicesAnimations);
+  } else {
+    initServicesAnimations();
+  }
+</script>

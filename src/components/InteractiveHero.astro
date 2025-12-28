@@ -1,15 +1,7 @@
 ---
 /**
- * Hero section interactive avec animations de particules et effets 3D
+ * Hero section optimisé - Particules désactivées sur mobile et devices bas de gamme
  */
-
-// CORRECTION 1 : Renommer HeroProps en Props pour qu'Astro l'utilise automatiquement
-interface Props {
-  title?: string;
-  subtitle?: string;
-  ctaPrimary?: { text: string; href: string };
-  ctaSecondary?: { text: string; href: string };
-}
 
 const {
   title = "Créez le futur avec l'IA",
@@ -20,14 +12,13 @@ const {
 ---
 
 <section class="interactive-hero" data-hero-section>
-  <canvas id="particles-canvas" aria-hidden="true"></canvas>
+  <!-- Canvas for particles (hidden on mobile/low-end) -->
+  <canvas id="particles-canvas" aria-hidden="true" data-particles></canvas>
   
-  <div class="orbs" aria-hidden="true">
-    <div class="orb orb-1" data-orb="1"></div>
-    <div class="orb orb-2" data-orb="2"></div>
-    <div class="orb orb-3" data-orb="3"></div>
-  </div>
+  <!-- Simplified gradient background (fallback) -->
+  <div class="gradient-bg" aria-hidden="true"></div>
 
+  <!-- Content -->
   <div class="hero-content">
     <div class="hero-badge" data-badge>
       <span class="badge-icon">✨</span>
@@ -91,9 +82,12 @@ const {
     background: #000;
     position: relative;
     overflow: hidden;
+    /* Performance optimizations */
+    contain: layout style paint;
+    will-change: auto;
   }
 
-  /* Particles canvas */
+  /* Particles canvas - hidden on mobile */
   #particles-canvas {
     position: absolute;
     inset: 0;
@@ -101,59 +95,22 @@ const {
     z-index: 1;
   }
 
-  /* Animated orbs */
-  .orbs {
+  @media (max-width: 768px) {
+    #particles-canvas {
+      display: none;
+    }
+  }
+
+  /* Gradient background fallback */
+  .gradient-bg {
     position: absolute;
     inset: 0;
     pointer-events: none;
-    z-index: 1;
-  }
-
-  .orb {
-    position: absolute;
-    border-radius: 50%;
-    filter: blur(80px);
-    opacity: 0.3;
-    animation: float 20s ease-in-out infinite;
-  }
-
-  .orb-1 {
-    width: 500px;
-    height: 500px;
-    background: var(--color-primary);
-    top: -10%;
-    left: -10%;
-    animation-delay: 0s;
-  }
-
-  .orb-2 {
-    width: 400px;
-    height: 400px;
-    background: var(--color-secondary);
-    top: 20%;
-    right: -5%;
-    animation-delay: -7s;
-  }
-
-  .orb-3 {
-    width: 450px;
-    height: 450px;
-    background: var(--color-first);
-    bottom: -10%;
-    left: 30%;
-    animation-delay: -14s;
-  }
-
-  @keyframes float {
-    0%, 100% {
-      transform: translate(0, 0) scale(1);
-    }
-    33% {
-      transform: translate(30px, -30px) scale(1.1);
-    }
-    66% {
-      transform: translate(-20px, 20px) scale(0.9);
-    }
+    z-index: 0;
+    background: 
+      radial-gradient(circle at 20% 30%, var(--color-primary-dark), transparent 50%),
+      radial-gradient(circle at 80% 70%, var(--color-secondary), transparent 50%);
+    opacity: 0.2;
   }
 
   /* Content */
@@ -174,11 +131,10 @@ const {
     border-radius: 50px;
     margin-bottom: 2.5rem;
     backdrop-filter: blur(10px);
-    transition: all 0.3s ease;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
   }
 
   .hero-badge:hover {
-    background: rgba(255, 255, 255, 0.08);
     transform: translateY(-2px);
     box-shadow: 0 10px 30px var(--color-primary);
   }
@@ -211,8 +167,12 @@ const {
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
-    animation: shimmer 3s ease-in-out infinite;
     background-size: 200% auto;
+  }
+
+  /* Animation désactivée par défaut, activée via JS si performant */
+  .title-word.animated {
+    animation: shimmer 3s ease-in-out infinite;
   }
 
   @keyframes shimmer {
@@ -297,7 +257,7 @@ const {
     font-weight: 700;
     font-size: 1.1rem;
     text-decoration: none;
-    transition: all 0.3s ease;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
     position: relative;
     overflow: hidden;
   }
@@ -308,21 +268,8 @@ const {
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
   }
 
-  .cta-primary::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(135deg, var(--color-secondary), var(--color-first));
-    opacity: 0;
-    transition: opacity 0.3s ease;
-  }
-
-  .cta-primary:hover::before {
-    opacity: 1;
-  }
-
   .cta-primary:hover {
-    transform: translateY(-4px) scale(1.05);
+    transform: translateY(-4px);
     box-shadow: 0 20px 60px var(--color-primary);
   }
 
@@ -337,27 +284,6 @@ const {
     transform: translateY(-4px);
   }
 
-  .cta-text,
-  .cta-arrow,
-  .cta-icon {
-    position: relative;
-    z-index: 1;
-  }
-
-  .cta-arrow,
-  .cta-icon {
-    font-size: 1.5rem;
-    transition: transform 0.3s ease;
-  }
-
-  .cta-primary:hover .cta-arrow {
-    transform: translateX(5px);
-  }
-
-  .cta-secondary:hover .cta-icon {
-    transform: scale(1.2);
-  }
-
   /* Scroll indicator */
   .scroll-indicator {
     display: flex;
@@ -368,13 +294,10 @@ const {
     font-size: 0.9rem;
     text-transform: uppercase;
     letter-spacing: 0.15em;
-    animation: bounce 2s ease-in-out infinite;
   }
 
-  .scroll-icon {
-    font-size: 1.5rem;
+  .scroll-indicator.animated .scroll-icon {
     animation: bounce 2s ease-in-out infinite;
-    animation-delay: 0.1s;
   }
 
   @keyframes bounce {
@@ -409,24 +332,36 @@ const {
       width: 100%;
       justify-content: center;
     }
-
-    .orb {
-      display: none;
-    }
   }
 </style>
 
 <script>
   import { gsap } from 'gsap';
+  import { 
+    rafThrottle, 
+    isLowEndDevice, 
+    isMobile, 
+    shouldReduceAnimations,
+    FPSMonitor,
+    addPassiveEventListener
+  } from '@/animations/utils/performance-utils';
 
-  const shouldReduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const shouldReduce = shouldReduceAnimations();
+  const isLowEnd = isLowEndDevice();
+  const mobile = isMobile();
 
-  // Particles animation
+  // ===== OPTIMIZED PARTICLES =====
   const canvas = document.getElementById('particles-canvas') as HTMLCanvasElement;
-  const ctx = canvas?.getContext('2d');
+  
+  if (canvas && !shouldReduce && !mobile && !isLowEnd) {
+    const ctx = canvas.getContext('2d', { 
+      alpha: true,
+      desynchronized: true // Performance boost
+    });
 
-  if (canvas && ctx && !shouldReduce) {
-    const context = ctx; 
+    if (!ctx) {
+      canvas.style.display = 'none';
+    } else {
 
     let particles: Array<{
       x: number;
@@ -437,118 +372,173 @@ const {
       opacity: number;
     }> = [];
 
+    let rafId: number | null = null;
+    const MAX_PARTICLES = 50; // Réduit de 100 à 50
+    const CONNECTION_DISTANCE = 100; // Réduit de 120 à 100
+
     function resizeCanvas() {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
+      const dpr = Math.min(window.devicePixelRatio || 1, 2); // Max 2x
+      canvas.width = window.innerWidth * dpr;
+      canvas.height = window.innerHeight * dpr;
+      canvas.style.width = `${window.innerWidth}px`;
+      canvas.style.height = `${window.innerHeight}px`;
+      ctx!.scale(dpr, dpr);
     }
 
     function createParticles() {
       particles = [];
-      const particleCount = Math.min(Math.floor((canvas.width * canvas.height) / 10000), 100);
+      const particleCount = Math.min(
+        Math.floor((canvas.width * canvas.height) / 20000),
+        MAX_PARTICLES
+      );
       
       for (let i = 0; i < particleCount; i++) {
         particles.push({
-          x: Math.random() * canvas.width,
-          y: Math.random() * canvas.height,
-          vx: (Math.random() - 0.5) * 0.5,
-          vy: (Math.random() - 0.5) * 0.5,
-          size: Math.random() * 2 + 1,
-          opacity: Math.random() * 0.5 + 0.2,
+          x: Math.random() * window.innerWidth,
+          y: Math.random() * window.innerHeight,
+          vx: (Math.random() - 0.5) * 0.3, // Réduit la vitesse
+          vy: (Math.random() - 0.5) * 0.3,
+          size: Math.random() * 1.5 + 0.5, // Particules plus petites
+          opacity: Math.random() * 0.4 + 0.1,
         });
       }
     }
 
-    function animate() {
-      context.clearRect(0, 0, canvas.width, canvas.height);
+    let lastFrameTime = 0;
+    const TARGET_FPS = 60;
+    const FRAME_DURATION = 1000 / TARGET_FPS;
 
-      particles.forEach((particle) => {
-        particle.x += particle.vx;
-        particle.y += particle.vy;
+    function animate(currentTime: number) {
+      // Throttle to 60fps max
+      if (currentTime - lastFrameTime < FRAME_DURATION) {
+        rafId = requestAnimationFrame(animate);
+        return;
+      }
+      lastFrameTime = currentTime;
 
-        if (particle.x < 0 || particle.x > canvas.width) particle.vx *= -1;
-        if (particle.y < 0 || particle.y > canvas.height) particle.vy *= -1;
+      ctx!.clearRect(0, 0, window.innerWidth, window.innerHeight);
 
-        context.beginPath();
-        context.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
-        context.fillStyle = `rgba(255, 255, 255, ${particle.opacity})`;
-        context.fill();
-      });
+      // Update and draw particles
+      for (let i = 0; i < particles.length; i++) {
+        const p = particles[i];
+        if (!p) continue;
+        
+        p.x += p.vx;
+        p.y += p.vy;
 
-      // Draw connections
-      particles.forEach((p1, i) => {
-        particles.slice(i + 1).forEach((p2) => {
+        if (p.x < 0 || p.x > window.innerWidth) p.vx *= -1;
+        if (p.y < 0 || p.y > window.innerHeight) p.vy *= -1;
+
+        ctx!.beginPath();
+        ctx!.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx!.fillStyle = `rgba(255, 255, 255, ${p.opacity})`;
+        ctx!.fill();
+      }
+
+      // Draw connections (optimized - skip some checks)
+      for (let i = 0; i < particles.length; i++) {
+        const p1 = particles[i];
+        if (!p1) continue;
+        
+        // Check only with next 3 particles instead of all
+        for (let j = i + 1; j < Math.min(i + 4, particles.length); j++) {
+          const p2 = particles[j];
+          if (!p2) continue;
+          
           const dx = p1.x - p2.x;
           const dy = p1.y - p2.y;
-          const distance = Math.sqrt(dx * dx + dy * dy);
+          const distSq = dx * dx + dy * dy; // Avoid sqrt
 
-          if (distance < 120) {
-            context.beginPath();
-            context.moveTo(p1.x, p1.y);
-            context.lineTo(p2.x, p2.y);
-            context.strokeStyle = `rgba(255, 255, 255, ${(1 - distance / 120) * 0.2})`;
-            context.lineWidth = 1;
-            context.stroke();
+          if (distSq < CONNECTION_DISTANCE * CONNECTION_DISTANCE) {
+            const dist = Math.sqrt(distSq);
+            ctx!.beginPath();
+            ctx!.moveTo(p1.x, p1.y);
+            ctx!.lineTo(p2.x, p2.y);
+            ctx!.strokeStyle = `rgba(255, 255, 255, ${(1 - dist / CONNECTION_DISTANCE) * 0.15})`;
+            ctx!.lineWidth = 0.5;
+            ctx!.stroke();
           }
-        });
-      });
+        }
+      }
 
-      requestAnimationFrame(animate);
+      rafId = requestAnimationFrame(animate);
     }
 
     resizeCanvas();
     createParticles();
-    animate();
+    rafId = requestAnimationFrame(animate);
 
-    window.addEventListener('resize', () => {
+    // Throttled resize
+    const handleResize = rafThrottle(() => {
       resizeCanvas();
       createParticles();
     });
-  }
 
-  // GSAP Animations
-  if (!shouldReduce) {
-    const tl = gsap.timeline({ delay: 0.3 });
+    addPassiveEventListener(window, 'resize', handleResize);
 
-    // Badge
-    tl.from('[data-badge]', {
-      opacity: 0,
-      y: -30,
-      duration: 0.8,
-      ease: 'back.out(1.5)',
+    // Pause when not visible
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden && rafId) {
+        cancelAnimationFrame(rafId);
+        rafId = null;
+      } else if (!document.hidden && !rafId) {
+        rafId = requestAnimationFrame(animate);
+      }
     });
 
-    // Title words
-    tl.from('[data-word]', {
-      opacity: 0,
-      y: 50,
-      stagger: 0.1,
-      duration: 0.8,
-      ease: 'power3.out',
-    }, '-=0.4');
+    // Cleanup
+    document.addEventListener('astro:before-preparation', () => {
+      if (rafId) cancelAnimationFrame(rafId);
+    });
+    }
+  } else if (canvas) {
+    // Hide canvas if particles disabled
+    canvas.style.display = 'none';
+  }
 
-    // Subtitle
-    tl.from('[data-subtitle]', {
-      opacity: 0,
-      y: 30,
-      duration: 0.8,
-    }, '-=0.3');
+  // ===== GSAP ANIMATIONS (OPTIMIZED) =====
+  if (!shouldReduce) {
+    const fpsMonitor = new FPSMonitor();
+    fpsMonitor.start();
 
-    // Stats
-    tl.from('[data-stats]', {
-      opacity: 0,
-      scale: 0.9,
-      duration: 0.8,
-    }, '-=0.2');
+    // Check FPS after 2 seconds
+    setTimeout(() => {
+      const isPerformant = fpsMonitor.isPerformant();
+      fpsMonitor.stop();
+
+      // Enable animations only if performant
+      if (isPerformant) {
+        document.querySelectorAll('.title-word').forEach((word) => {
+          word.classList.add('animated');
+        });
+
+        const scrollIndicator = document.querySelector('[data-scroll-indicator]');
+        if (scrollIndicator) {
+          scrollIndicator.classList.add('animated');
+        }
+      }
+    }, 2000);
+
+    const tl = gsap.timeline({ 
+      delay: 0.3,
+      defaults: { ease: 'power3.out' }
+    });
+
+    // Optimized animations - batch similar elements
+    tl.from('[data-badge]', { opacity: 0, y: -20, duration: 0.6 })
+      .from('[data-word]', { opacity: 0, y: 30, stagger: 0.08, duration: 0.5 }, '-=0.3')
+      .from('[data-subtitle]', { opacity: 0, y: 20, duration: 0.5 }, '-=0.2')
+      .from('[data-stats]', { opacity: 0, scale: 0.95, duration: 0.5 }, '-=0.1');
 
     // Counter animation
     const counters = document.querySelectorAll<HTMLElement>('[data-counter]');
     counters.forEach((counter) => {
-      const target = parseInt(counter.dataset.counter ?? '0', 10);
+      const target = parseInt(counter.dataset['counter'] ?? '0', 10);
       const obj = { value: 0 };
 
       tl.to(obj, {
         value: target,
-        duration: 2,
+        duration: 1.5,
         ease: 'power2.out',
         onUpdate: () => {
           counter.textContent = Math.round(obj.value).toString();
@@ -556,34 +546,7 @@ const {
       }, '-=1');
     });
 
-    // CTAs
-    tl.from('[data-ctas]', {
-      opacity: 0,
-      y: 30,
-      duration: 0.8,
-    }, '-=1');
-
-    // Scroll indicator
-    tl.from('[data-scroll-indicator]', {
-      opacity: 0,
-      duration: 0.8,
-    }, '-=0.5');
-
-    // Orbs parallax on mouse move
-    document.addEventListener('mousemove', (e) => {
-      const orbs = document.querySelectorAll<HTMLElement>('[data-orb]');
-      orbs.forEach((orb) => {
-        const speed = parseFloat(orb.dataset.orb ?? '1') * 0.02;
-        const x = (e.clientX - window.innerWidth / 2) * speed;
-        const y = (e.clientY - window.innerHeight / 2) * speed;
-
-        gsap.to(orb, {
-          x,
-          y,
-          duration: 1,
-          ease: 'power2.out',
-        });
-      });
-    });
+    tl.from('[data-ctas]', { opacity: 0, y: 20, duration: 0.5 }, '-=0.8')
+      .from('[data-scroll-indicator]', { opacity: 0, duration: 0.5 }, '-=0.3');
   }
 </script>

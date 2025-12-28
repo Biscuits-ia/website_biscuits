@@ -456,5 +456,9 @@ const features: Feature[] = [
         ease: 'sine.inOut',
       });
     });
+
+    document.addEventListener('astro:before-preparation', () => {
+      ScrollTrigger.getAll().forEach(t => t.kill());
+    });
   }
 </script>

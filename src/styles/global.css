@@ -116,7 +116,6 @@ html {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   scroll-behavior: smooth;
   -webkit-text-size-adjust: 100%;
-  /* Smooth scrolling natif */
   scroll-padding-top: 80px;
 }
 

@@ -7,39 +7,8 @@ const structuredData = {
   "@type": "OfferCatalog",
   "name": "Tarifs Biscuits AI – Solutions IA",
   "url": "https://biscuits.dev/tarifs",
-  "itemListElement": [
-    {
-      "@type": "Service",
-      "name": "Assistant IA personnalisé",
-      "offers": {
-        "@type": "Offer",
-        "priceCurrency": "EUR",
-        "price": "900"
-      }
-    },
-    {
-      "@type": "Service",
-      "name": "Automatisation de workflows IA",
-      "offers": {
-        "@type": "Offer",
-        "priceCurrency": "EUR",
-        "price": "800"
-      }
-    },
-    {
-      "@type": "Service",
-      "name": "Développement SaaS IA",
-      "offers": {
-        "@type": "Offer",
-        "priceCurrency": "EUR",
-        "price": "3000"
-      }
-    }
-  ]
 };
-
 ---
-
 
 <BaseLayout
   title="Tarifs Solutions IA & Automatisation | Biscuits IA"
@@ -48,713 +17,557 @@ const structuredData = {
 >
   <section class="tarifs-hero">
     <div class="container">
-      <h1>Nos Tarifs</h1>
-      <p class="hero-subtitle">
+      <h1 data-hero-title>Nos Tarifs</h1>
+      <p class="hero-subtitle" data-hero-subtitle>
         Tarification claire pour vos projets IA. Étude et devis gratuits.
       </p>
-      <div class="hero-badges">
+      <div class="hero-badges" data-hero-badges>
         <span class="badge">💯 Aucun frais caché</span>
         <span class="badge">📋 Devis détaillé gratuit</span>
         <span class="badge">🌍 100% remote</span>
-
       </div>
     </div>
   </section>
 
   <section class="tarifs-main">
     <div class="container">
-      <!-- Dépannage -->
-      <div class="service-pricing">
-        <div class="service-pricing">
-  <div class="pricing-header">
-    <h2>🤖 Assistants IA personnalisés</h2>
-    <p>Conception et déploiement d’agents IA adaptés à vos besoins métiers</p>
-  </div>
-
-  <div class="pricing-table">
-    <div class="pricing-row header">
-      <div class="col-service">Prestation</div>
-      <div class="col-price">Tarif HT</div>
-      <div class="col-duration">Délai</div>
-    </div>
-
-    <div class="pricing-row">
-      <div class="col-service">
-        <strong>Étude & cadrage IA</strong>
-        <small>Analyse du besoin, cas d’usage, faisabilité</small>
-      </div>
-      <div class="col-price highlight">Gratuit</div>
-      <div class="col-duration">30–45 min</div>
-    </div>
-
-    <div class="pricing-row">
-      <div class="col-service">
-        <strong>Assistant IA simple</strong>
-        <small>FAQ, support, agent interne</small>
-      </div>
-      <div class="col-price">À partir de 900€</div>
-      <div class="col-duration">4–7 jours</div>
-    </div>
-
-    <div class="pricing-row">
-      <div class="col-service">
-        <strong>Assistant IA avancé</strong>
-        <small>Multi-sources, logique métier, API</small>
-      </div>
-      <div class="col-price">À partir de 2 300€</div>
-      <div class="col-duration">2-3 semaines</div>
-    </div>
-  </div>
-</div>
-
-
-      <!-- Serveur Linux -->
-      <div class="service-pricing">
-  <div class="pricing-header">
-    <h2>⚙️ Automatisation de workflows</h2>
-    <p>Gagnez du temps en automatisant vos processus avec l’IA</p>
-  </div>
-
-  <div class="pricing-packages">
-    <div class="package-card">
-      <h3>Workflow simple</h3>
-      <div class="package-price">
-        <span class="amount">600€</span>
-        <span class="period">HT</span>
-      </div>
-      <ul>
-        <li>Automatisation d’une tâche</li>
-        <li>IA + règles simples</li>
-        <li>Tests & mise en production</li>
-        <li>Documentation</li>
-      </ul>
-    </div>
-
-    <div class="package-card featured">
-      <div class="package-badge">Populaire</div>
-      <h3>Workflow avancé</h3>
-      <div class="package-price">
-        <span class="amount">1700€</span>
-        <span class="period">HT</span>
-      </div>
-      <ul>
-        <li>Multi-étapes</li>
-        <li>IA + APIs externes</li>
-        <li>Logs & monitoring</li>
-        <li>Formation 1h</li>
-      </ul>
-    </div>
-
-    <div class="package-card">
-      <h3>Automatisation sur mesure</h3>
-      <div class="package-price">
-        <span class="amount">Sur devis</span>
-      </div>
-      <ul>
-        <li>Processus complexes</li>
-        <li>Connexion SI / SaaS</li>
-        <li>Maintenance optionnelle</li>
-      </ul>
-    </div>
-  </div>
-</div>
-
-
-      <!-- NAS -->
-      <div class="service-pricing">
+      
+      <!-- Assistants IA -->
+      <div class="service-pricing" data-pricing-section="0">
         <div class="pricing-header">
-          <h2>🧩 Outils IA & SaaS</h2>
-          <p>Création d’outils intelligents et de solutions SaaS basées sur l’IA</p>
-        </div>
-
-        <div class="pricing-packages">
-          <div class="package-card">
-            <h3>Outil IA simple</h3>
-            <div class="package-price">
-              <span class="amount">700€</span>
-              <span class="period">HT</span>
-            </div>
-            <ul>
-              <li>  Installation Fonctionnalité IA ciblée</li>
-              <li>  Interface simple</li>
-              <li>  Connexion API</li>
-              <li>  Déploiement initial</li>
-              <li>  Documentation</li>
-            </ul>
-            <p class="duration-note">⏱️ Environ 2h</p>
-          </div>
-
-          <div class="package-card featured">
-            <div class="package-badge">Recommandé</div>
-            <h3>SaaS IA</h3>
-            <div class="package-price">
-              <span class="amount">5000€</span>
-              <span class="period">HT</span>
-            </div>
-            <ul>
-              <li>  Backend + IA</li>
-              <li>  Authentification</li>
-              <li>  API & intégrations</li>
-              <li>  Architecture scalable</li>
-              <li>  Accompagnement initial</li>
-            </ul>
-            <p class="duration-note">⏱️ Environ 4-5h</p>
-          </div>
-
-          <div class="package-card">
-            <h3>Solution IA sur mesure</h3>
-            <div class="package-price">
-              <span class="amount">Sur devis</span>
-            </div>
-            <ul>
-              <li>  Architecture personnalisée</li>
-              <li>  Intégration SI / SaaS</li>
-              <li>  Scalabilité avancée</li>
-              <li>  Monitoring IA</li>
-              <li>  Évolutions continues</li>
-            </ul>
-          </div>
-        </div>
-      </div>
-
-      <!-- Audit & Conseil -->
-      <div class="service-pricing">
-        <div class="pricing-header">
-          <h2>🔍 Audit & Conseil</h2>
-          <p>Analyse et recommandations pour vos projets IA et automatisations</p>
+          <h2>🤖 Assistants IA personnalisés</h2>
+          <p>Conception et déploiement d'agents IA adaptés à vos besoins métiers</p>
         </div>
 
         <div class="pricing-table">
           <div class="pricing-row header">
             <div class="col-service">Prestation</div>
             <div class="col-price">Tarif HT</div>
-            <div class="col-duration">Durée</div>
+            <div class="col-duration">Délai</div>
           </div>
 
           <div class="pricing-row">
             <div class="col-service">
-              <strong>Audit de sécurité</strong>
-              <small>Analyse vulnérabilités + rapport</small>
+              <strong>Étude & cadrage IA</strong>
+              <small>Analyse du besoin, cas d'usage, faisabilité</small>
             </div>
-            <div class="col-price">À partir de 1200€</div>
-            <div class="col-duration">2-3 jours</div>
+            <div class="col-price highlight">Gratuit</div>
+            <div class="col-duration">30–45 min</div>
           </div>
 
           <div class="pricing-row">
             <div class="col-service">
-              <strong>Audit IA & automatisation</strong>
-              <small>Analyse des usages, données et opportunités IA</small>
+              <strong>Assistant IA simple</strong>
+              <small>FAQ, support, agent interne</small>
             </div>
-            <div class="col-price">À partir de 4100€</div>
-            <div class="col-duration">5-6 jours</div>
+            <div class="col-price">À partir de 900€</div>
+            <div class="col-duration">4–7 jours</div>
           </div>
 
           <div class="pricing-row">
             <div class="col-service">
-              <strong>Conseil technique</strong>
-              <small>Accompagnement projet</small>
+              <strong>Assistant IA avancé</strong>
+              <small>Multi-sources, logique métier, API</small>
             </div>
-            <div class="col-price">70€/h</div>
-            <div class="col-duration">Selon besoin</div>
+            <div class="col-price">À partir de 2 300€</div>
+            <div class="col-duration">2-3 semaines</div>
           </div>
         </div>
       </div>
 
-      <!-- Support & Maintenance -->
-      <div class="service-pricing">
+      <!-- Automatisation -->
+      <div class="service-pricing" data-pricing-section="1">
         <div class="pricing-header">
-          <h2>🛠️ Accompagnement & évolutions IA</h2>
-          <p>Suivi, amélioration et évolution de vos solutions IA</p>
+          <h2>⚙️ Automatisation de workflows</h2>
+          <p>Gagnez du temps en automatisant vos processus avec l'IA</p>
         </div>
 
         <div class="pricing-packages">
-          <div class="package-card">
-            <h3>Support Ponctuel</h3>
+          <div class="package-card" data-package="0">
+            <h3>Workflow simple</h3>
             <div class="package-price">
-              <span class="amount">70€/h HT</span>
+              <span class="amount">600€</span>
+              <span class="period">HT</span>
             </div>
             <ul>
-              <li>  Assistance IA à la demande</li>
-              <li>  Support à distance</li>
+              <li>Automatisation d'une tâche</li>
+              <li>IA + règles simples</li>
+              <li>Tests & mise en production</li>
+              <li>Documentation</li>
             </ul>
           </div>
 
-          <div class="package-card">
-            <h3>Contrat 10h/mois</h3>
+          <div class="package-card featured" data-package="1">
+            <div class="package-badge">Populaire</div>
+            <h3>Workflow avancé</h3>
             <div class="package-price">
-              <span class="amount">780€</span>
-              <span class="period">HT/mois</span>
+              <span class="amount">1700€</span>
+              <span class="period">HT</span>
             </div>
             <ul>
-              <li>  10h d'intervention/mois</li>
-              <li>  Report heures non utilisées</li>
-              <li>  Priorité interventions</li>
-              <li>  Support email prioritaire</li>
-              <li>  Maintenance préventive</li>
+              <li>Multi-étapes</li>
+              <li>IA + APIs externes</li>
+              <li>Logs & monitoring</li>
+              <li>Formation 1h</li>
             </ul>
           </div>
 
-          <div class="package-card featured">
-            <div class="package-badge">Optimal PME</div>
-            <h3>Contrat 20h/mois</h3>
+          <div class="package-card" data-package="2">
+            <h3>Automatisation sur mesure</h3>
             <div class="package-price">
-              <span class="amount">1599€</span>
-              <span class="period">HT/mois</span>
+              <span class="amount">Sur devis</span>
             </div>
             <ul>
-              <li>  20h d'intervention/mois</li>
-              <li>  Support prioritaire</li>
-              <li>  Optimisation des modèles IA</li>
-              <li>  Suivi des performances</li>
-              <li>  Améliorations continues</li>
+              <li>Processus complexes</li>
+              <li>Connexion SI / SaaS</li>
+              <li>Maintenance optionnelle</li>
             </ul>
           </div>
         </div>
       </div>
 
-      <!-- Notes importantes -->
-      <div class="pricing-notes">
-  <h2>ℹ️ Informations importantes</h2>
-  
-  <div class="notes-grid">
-    <div class="note-card">
-      <h3>🌍 Travail à distance</h3>
-      <p>
-        Tous les projets Biscuits IA sont réalisés <strong>100 % à distance</strong>,
-        sans contrainte géographique.
-      </p>
-    </div>
+      <!-- FAQ -->
+      <div class="tarifs-faq" data-faq-section>
+        <h2>Questions fréquentes</h2>
+        
+        <details class="faq-item" data-faq="0">
+          <summary>Comment se déroule un projet Biscuits IA ?</summary>
+          <p>
+            Chaque projet commence par une phase de cadrage gratuite afin de définir
+            précisément vos besoins et la solution IA la plus adaptée.
+          </p>
+        </details>
 
-    <div class="note-card">
-      <h3>🤖 Solutions sur mesure</h3>
-      <p>
-        Chaque solution IA est conçue spécifiquement selon votre besoin.
-        Les tarifs peuvent évoluer en fonction de la complexité du projet.
-      </p>
-    </div>
+        <details class="faq-item" data-faq="1">
+          <summary>Les tarifs sont-ils fixes ?</summary>
+          <p>
+            Les tarifs affichés sont indicatifs. Un devis personnalisé est établi
+            en fonction de la complexité et des objectifs du projet.
+          </p>
+        </details>
 
-    <div class="note-card">
-      <h3>⏱️ Délais & planning</h3>
-      <p>
-        Les délais sont définis dès la phase de cadrage et respectés tout au long
-        du projet avec des points d’avancement réguliers.
-      </p>
-    </div>
+        <details class="faq-item" data-faq="2">
+          <summary>Travaillez-vous uniquement à distance ?</summary>
+          <p>
+            Oui, tous les projets sont réalisés à distance, ce qui permet plus de
+            flexibilité et de réactivité.
+          </p>
+        </details>
 
-    <div class="note-card">
-      <h3>💳 Facturation</h3>
-      <p>
-        Facturation claire et détaillée. Paiement par virement bancaire.
-        Possibilité de paiement échelonné selon le projet.
-      </p>
-    </div>
+        <details class="faq-item" data-faq="3">
+          <summary>Proposez-vous un accompagnement après livraison ?</summary>
+          <p>
+            Oui, un accompagnement et des évolutions peuvent être proposés via des
+            forfaits ou abonnements adaptés.
+          </p>
+        </details>
 
-    <div class="note-card">
-      <h3>🔐 Confidentialité</h3>
-      <p>
-        Vos données et informations sont traitées avec la plus grande confidentialité.
-        Des accords de confidentialité (NDA) peuvent être mis en place.
-      </p>
-    </div>
-
-    <div class="note-card">
-      <h3>🚀 Évolutivité</h3>
-      <p>
-        Les solutions livrées sont pensées pour évoluer dans le temps :
-        améliorations, nouvelles fonctionnalités et montée en charge.
-      </p>
-    </div>
-  </div>
-</div>
-
+        <details class="faq-item" data-faq="4">
+          <summary>Mes données sont-elles en sécurité ?</summary>
+          <p>
+            Oui. La confidentialité et la sécurité des données sont une priorité
+            dans tous les projets Biscuits IA.
+          </p>
+        </details>
       </div>
-
-      <!-- FAQ Tarifs -->
-      <div class="tarifs-faq">
-  <h2>Questions fréquentes</h2>
-  
-  <details class="faq-item">
-    <summary>Comment se déroule un projet Biscuits IA ?</summary>
-    <p>
-      Chaque projet commence par une phase de cadrage gratuite afin de définir
-      précisément vos besoins et la solution IA la plus adaptée.
-    </p>
-  </details>
-
-  <details class="faq-item">
-    <summary>Les tarifs sont-ils fixes ?</summary>
-    <p>
-      Les tarifs affichés sont indicatifs. Un devis personnalisé est établi
-      en fonction de la complexité et des objectifs du projet.
-    </p>
-  </details>
-
-  <details class="faq-item">
-    <summary>Travaillez-vous uniquement à distance ?</summary>
-    <p>
-      Oui, tous les projets sont réalisés à distance, ce qui permet plus de
-      flexibilité et de réactivité.
-    </p>
-  </details>
-
-  <details class="faq-item">
-    <summary>Proposez-vous un accompagnement après livraison ?</summary>
-    <p>
-      Oui, un accompagnement et des évolutions peuvent être proposés via des
-      forfaits ou abonnements adaptés.
-    </p>
-  </details>
-
-  <details class="faq-item">
-    <summary>Mes données sont-elles en sécurité ?</summary>
-    <p>
-      Oui. La confidentialité et la sécurité des données sont une priorité
-      dans tous les projets Biscuits IA.
-    </p>
-  </details>
-</div>
 
     </div>
   </section>
 </BaseLayout>
 
 <style>
+  /* Hero */
   .tarifs-hero {
-    color: var(--color-bg);
-    padding: var(--spacing-4xl) 0;
+    padding: 6rem 2rem 4rem;
     text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .tarifs-hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at center, var(--color-primary), transparent 70%);
+    opacity: 0.1;
   }
 
   .tarifs-hero h1 {
-    font-size: var(--font-size-5xl);
-    margin-bottom: var(--spacing-md);
-    color: var(--color-bg);
+    font-size: clamp(2.5rem, 6vw, 5rem);
+    margin-bottom: 1.5rem;
+    font-weight: 900;
   }
 
   .hero-subtitle {
-    font-size: var(--font-size-xl);
-    opacity: 0.95;
-    margin-bottom: var(--spacing-xl);
-    color: var(--color-gray-100);
+    font-size: clamp(1.1rem, 2vw, 1.5rem);
+    opacity: 0.9;
+    margin-bottom: 2rem;
+    color: #d1d5db;
   }
 
   .hero-badges {
     display: flex;
-    gap: var(--spacing-md);
+    gap: 1rem;
     justify-content: center;
     flex-wrap: wrap;
   }
 
   .badge {
-    background: rgba(255, 255, 255, 0.2);
-    padding: var(--spacing-sm) var(--spacing-lg);
-    border-radius: var(--radius-full);
-    color: var(--color-gray-100);
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-semibold);
+    background: rgba(255, 255, 255, 0.1);
+    padding: 0.75rem 1.5rem;
+    border-radius: 50px;
+    font-size: 0.95rem;
+    font-weight: 600;
     backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.3s ease;
   }
 
+  .badge:hover {
+    background: rgba(255, 255, 255, 0.15);
+    transform: translateY(-2px);
+  }
+
+  /* Main */
   .tarifs-main {
-    padding: var(--spacing-4xl) 0;
+    padding: 4rem 2rem;
   }
 
   .service-pricing {
-    margin-bottom: var(--spacing-4xl);
+    margin-bottom: 6rem;
+    position: relative;
   }
 
   .pricing-header {
     text-align: center;
-    margin-bottom: var(--spacing-2xl);
+    margin-bottom: 3rem;
   }
 
   .pricing-header h2 {
-    font-size: var(--font-size-3xl);
-    margin-bottom: var(--spacing-sm);
+    font-size: clamp(2rem, 4vw, 3rem);
+    margin-bottom: 1rem;
   }
 
   .pricing-header p {
-    color: var(--color-text-light);
-    font-size: var(--font-size-lg);
+    color: #9ca3af;
+    font-size: 1.1rem;
   }
 
+  /* Tables */
   .pricing-table {
-    background: var(--color-bg);
-    border-radius: var(--radius-lg);
+    background: rgba(15, 15, 15, 0.6);
+    border-radius: 20px;
     overflow: hidden;
-    box-shadow: var(--shadow-md);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
   }
 
   .pricing-row {
     display: grid;
     grid-template-columns: 2fr 1fr 1fr;
-    gap: var(--spacing-md);
-    padding: var(--spacing-lg);
-    border-bottom: 1px solid var(--color-border);
+    gap: 1.5rem;
+    padding: 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     align-items: center;
+    transition: background 0.3s ease;
   }
 
-  .pricing-row:last-child {
-    border-bottom: none;
+  .pricing-row:hover:not(.header) {
+    background: rgba(255, 255, 255, 0.03);
   }
 
   .pricing-row.header {
-    background: var(--color-bg-alt);
-    font-weight: var(--font-weight-bold);
+    background: rgba(246, 118, 59, 0.1);
+    font-weight: 700;
   }
 
   .col-service strong {
     display: block;
-    margin-bottom: var(--spacing-xs);
+    margin-bottom: 0.5rem;
+    color: #fff;
   }
 
   .col-service small {
-    color: var(--color-text-light);
-    font-size: var(--font-size-sm);
+    color: #9ca3af;
+    font-size: 0.9rem;
   }
 
   .col-price {
-    font-size: var(--font-size-xl);
-    font-weight: var(--font-weight-bold);
+    font-size: 1.5rem;
+    font-weight: 800;
     color: var(--color-primary);
     text-align: center;
   }
 
   .col-price.highlight {
-    color: var(--color-success);
-    font-size: var(--font-size-2xl);
+    color: var(--color-first);
+    font-size: 1.75rem;
   }
 
   .col-duration {
     text-align: center;
-    color: var(--color-text-light);
+    color: #9ca3af;
   }
 
+  /* Packages */
   .pricing-packages {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: var(--spacing-xl);
-    margin-top: var(--spacing-2xl);
+    gap: 2rem;
   }
 
   .package-card {
-    background: var(--color-bg-alt);
-    padding: var(--spacing-xl);
-    border-radius: var(--radius-lg);
-    border: 2px solid var(--color-border);
+    background: rgba(15, 15, 15, 0.6);
+    padding: 2.5rem 2rem;
+    border-radius: 20px;
+    border: 2px solid rgba(255, 255, 255, 0.1);
     position: relative;
-    transition: all var(--transition-base);
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    backdrop-filter: blur(10px);
+  }
+
+  .package-card:hover {
+    transform: translateY(-10px) scale(1.02);
+    border-color: var(--color-primary);
+    box-shadow: 0 20px 60px rgba(246, 118, 59, 0.3);
   }
 
   .package-card.featured {
     border-color: var(--color-primary);
-    transform: scale(1.05);
-    box-shadow: var(--shadow-xl);
-  }
-
-  .package-card:hover {
-    transform: translateY(-8px);
-    box-shadow: var(--shadow-xl);
-  }
-
-  .package-card.featured:hover {
-    transform: scale(1.05) translateY(-8px);
+    background: rgba(246, 118, 59, 0.05);
   }
 
   .package-badge {
     position: absolute;
-    top: -12px;
-    right: var(--spacing-xl);
-    background: var(--color-primary);
-    color: var(--color-bg);
-    padding: var(--spacing-xs) var(--spacing-md);
-    border-radius: var(--radius-full);
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-bold);
+    top: -15px;
+    right: 2rem;
+    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    color: #fff;
+    padding: 0.5rem 1.5rem;
+    border-radius: 50px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    box-shadow: 0 10px 30px rgba(246, 118, 59, 0.4);
   }
 
   .package-card h3 {
-    font-size: var(--font-size-2xl);
+    font-size: 1.75rem;
     text-align: center;
-    margin-bottom: var(--spacing-lg);
+    margin-bottom: 1.5rem;
   }
 
   .package-price {
     text-align: center;
-    margin-bottom: var(--spacing-xl);
-    padding-bottom: var(--spacing-xl);
-    border-bottom: 2px solid var(--color-border);
+    margin-bottom: 2rem;
+    padding-bottom: 2rem;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.1);
   }
 
   .package-price .amount {
     display: block;
-    font-size: var(--font-size-4xl);
-    font-weight: var(--font-weight-extrabold);
-    color: var(--color-primary);
-    margin-bottom: var(--spacing-xs);
+    font-size: 3rem;
+    font-weight: 900;
+    color: var(--color-first);
+    margin-bottom: 0.5rem;
   }
 
   .package-price .period {
-    font-size: var(--font-size-sm);
-    color: var(--color-text-light);
+    font-size: 0.9rem;
+    color: #9ca3af;
   }
 
   .package-card ul {
     list-style: none;
     padding: 0;
-    margin-bottom: var(--spacing-lg);
   }
 
   .package-card li {
-    padding: var(--spacing-sm) 0;
+    padding: 0.75rem 0;
     line-height: 1.6;
+    color: #d1d5db;
+    position: relative;
+    padding-left: 1.5rem;
   }
 
-  .duration-note {
-    text-align: center;
-    color: var(--color-text-light);
-    font-size: var(--font-size-sm);
-    margin-top: var(--spacing-md);
-    padding-top: var(--spacing-md);
-    border-top: 1px solid var(--color-border);
+  .package-card li::before {
+    content: '✓';
+    position: absolute;
+    left: 0;
+    color: var(--color-first);
+    font-weight: bold;
   }
 
-  .pricing-notes {
-    margin: var(--spacing-4xl) 0;
-    padding: var(--spacing-4xl) 0;
-    background: var(--color-bg-alt);
-    border-radius: var(--radius-xl);
-  }
-
-  .pricing-notes h2 {
-    text-align: center;
-    margin-bottom: var(--spacing-2xl);
-  }
-
-  .notes-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: var(--spacing-xl);
-  }
-
-  .note-card {
-    background: var(--color-bg);
-    padding: var(--spacing-xl);
-    border-radius: var(--radius-lg);
-    border-left: 4px solid var(--color-primary);
-  }
-
-  .note-card h3 {
-    font-size: var(--font-size-xl);
-    margin-bottom: var(--spacing-md);
-  }
-
-  .note-card p {
-    line-height: 1.7;
-    color: var(--color-text-light);
-  }
-
+  /* FAQ */
   .tarifs-faq {
-    max-width: 800px;
-    margin: var(--spacing-4xl) auto;
+    max-width: 900px;
+    margin: 4rem auto;
   }
 
   .tarifs-faq h2 {
     text-align: center;
-    margin-bottom: var(--spacing-2xl);
+    font-size: clamp(2rem, 4vw, 3rem);
+    margin-bottom: 3rem;
   }
 
   .faq-item {
-    background: var(--color-bg-alt);
-    margin-bottom: var(--spacing-md);
-    border-radius: var(--radius-md);
+    background: rgba(15, 15, 15, 0.6);
+    margin-bottom: 1rem;
+    border-radius: 12px;
     border-left: 3px solid var(--color-primary);
+    backdrop-filter: blur(10px);
+    overflow: hidden;
+    transition: all 0.3s ease;
+  }
+
+  .faq-item:hover {
+    background: rgba(15, 15, 15, 0.8);
+    transform: translateX(5px);
   }
 
   .faq-item summary {
-    padding: var(--spacing-lg);
+    padding: 1.5rem;
     cursor: pointer;
-    font-weight: var(--font-weight-semibold);
-    font-size: var(--font-size-lg);
+    font-weight: 600;
+    font-size: 1.1rem;
     list-style: none;
+    transition: color 0.3s ease;
+  }
+
+  .faq-item summary:hover {
+    color: var(--color-primary);
   }
 
   .faq-item summary::before {
     content: '▶';
     display: inline-block;
-    margin-right: var(--spacing-sm);
-    transition: transform var(--transition-fast);
+    margin-right: 1rem;
+    transition: transform 0.3s ease;
+    color: var(--color-primary);
   }
 
   .faq-item[open] summary::before {
     transform: rotate(90deg);
   }
+
   .faq-item p {
-    padding: 0 var(--spacing-lg) var(--spacing-lg);
-    color: var(--color-text-light);
+    padding: 0 1.5rem 1.5rem;
+    color: #9ca3af;
     line-height: 1.7;
   }
 
-  .tarifs-cta {
-    text-align: center;
-    padding: var(--spacing-4xl);
-    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
-    color: var(--color-bg);
-    border-radius: var(--radius-xl);
-    margin-top: var(--spacing-4xl);
-  }
-
-  .tarifs-cta h2 {
-    color: var(--color-bg);
-    margin-bottom: var(--spacing-md);
-  }
-
-  .tarifs-cta p {
-    font-size: var(--font-size-xl);
-    margin-bottom: var(--spacing-xl);
-    opacity: 0.95;
-  }
-
-  .cta-buttons {
-    display: flex;
-    gap: var(--spacing-md);
-    justify-content: center;
-    flex-wrap: wrap;
-  }
-
-  @media (max-width: 1024px) {
-    .pricing-packages,
-    .notes-grid {
-      grid-template-columns: 1fr;
-    }
-
-    .package-card.featured {
-      transform: none;
-    }
-  }
-
+  /* Responsive */
   @media (max-width: 768px) {
-    .tarifs-hero h1 {
-      font-size: var(--font-size-3xl);
-    }
-
     .pricing-row {
       grid-template-columns: 1fr;
       text-align: center;
     }
 
+    .pricing-packages {
+      grid-template-columns: 1fr;
+    }
+
     .col-service small {
       display: block;
-      margin-top: var(--spacing-xs);
-    }
-
-    .cta-buttons {
-      flex-direction: column;
-    }
-
-    .btn-primary,
-    .btn-secondary {
-      width: 100%;
+      margin-top: 0.5rem;
     }
   }
 </style>
+
+<script>
+  function initPricingAnimations() {
+    // Check reduced motion
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      return;
+    }
+
+    // Observer avec seuil plus bas
+    const observerOptions = {
+      threshold: 0.1,
+      rootMargin: '0px 0px -50px 0px'
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('animate-in');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, observerOptions);
+
+    // Hero animations
+    const heroTitle = document.querySelector('[data-hero-title]');
+    const heroSubtitle = document.querySelector('[data-hero-subtitle]');
+    const heroBadges = document.querySelector('[data-hero-badges]');
+
+    if (heroTitle) {
+      (heroTitle as HTMLElement).style.opacity = '0';
+      (heroTitle as HTMLElement).style.transform = 'translateY(30px)';
+      (heroTitle as HTMLElement).style.transition = 'all 0.8s ease 200ms';
+      setTimeout(() => heroTitle.classList.add('animate-in'), 100);
+    }
+
+    if (heroSubtitle) {
+      (heroSubtitle as HTMLElement).style.opacity = '0';
+      (heroSubtitle as HTMLElement).style.transform = 'translateY(20px)';
+      (heroSubtitle as HTMLElement).style.transition = 'all 0.8s ease 400ms';
+      setTimeout(() => heroSubtitle.classList.add('animate-in'), 100);
+    }
+
+    if (heroBadges) {
+      const badges = heroBadges.querySelectorAll('.badge');
+      badges.forEach((badge, i) => {
+        (badge as HTMLElement).style.opacity = '0';
+        (badge as HTMLElement).style.transform = 'translateY(20px)';
+        (badge as HTMLElement).style.transition = `all 0.6s ease ${600 + i * 100}ms`;
+        setTimeout(() => badge.classList.add('animate-in'), 100);
+      });
+    }
+
+    // Pricing sections
+    document.querySelectorAll('[data-pricing-section]').forEach((section, index) => {
+      (section as HTMLElement).style.opacity = '0';
+      (section as HTMLElement).style.transform = 'translateY(50px)';
+      (section as HTMLElement).style.transition = `all 0.8s ease ${index * 100}ms`;
+      observer.observe(section);
+    });
+
+    // Package cards avec scale
+    document.querySelectorAll('[data-package]').forEach((card, index) => {
+      (card as HTMLElement).style.opacity = '0';
+      (card as HTMLElement).style.transform = 'scale(0.9) translateY(30px)';
+      (card as HTMLElement).style.transition = `all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) ${index * 100}ms`;
+      observer.observe(card);
+    });
+
+    // FAQ items
+    document.querySelectorAll('[data-faq]').forEach((item, index) => {
+      (item as HTMLElement).style.opacity = '0';
+      (item as HTMLElement).style.transform = 'translateX(-30px)';
+      (item as HTMLElement).style.transition = `all 0.6s ease ${index * 80}ms`;
+      observer.observe(item);
+    });
+  }
+
+  // Style pour les animations
+  const style = document.createElement('style');
+  style.textContent = `
+    [data-hero-title].animate-in,
+    [data-hero-subtitle].animate-in,
+    .badge.animate-in,
+    [data-pricing-section].animate-in,
+    [data-package].animate-in,
+    [data-faq].animate-in {
+      opacity: 1 !important;
+      transform: translateY(0) translateX(0) scale(1) !important;
+    }
+  `;
+  document.head.appendChild(style);
+
+  // Init
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initPricingAnimations);
+  } else {
+    initPricingAnimations();
+  }
+</script>

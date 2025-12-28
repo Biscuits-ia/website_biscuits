@@ -1,3 +1,7 @@
+---
+import ThemeToggle from '@/components/ThemeToggle.astro';
+---
+
 <header class="site-header" data-header>
   <div class="header-container">
     <div class="logo-section">
@@ -9,7 +13,7 @@
       </a>
     </div>
 
-    <button 
+    <button  
       class="mobile-menu-toggle" 
       aria-label="Ouvrir le menu"
       aria-expanded="false"
@@ -30,6 +34,10 @@
             <span>Devis gratuit</span>
           </a>
         </li>
+        
+      <div class="nav-actions">
+            <ThemeToggle />
+          </div>
       </ul>
     </nav>
   </div>
@@ -45,15 +53,15 @@
   position: fixed;
   inset: 0 0 auto 0;
   z-index: 1000;
-  background: var(--glass-bg, rgba(255, 255, 255, 0.05));
-  backdrop-filter: var(--glass-blur, blur(10px));
-  border-bottom: 1px solid var(--glass-border, rgba(255, 255, 255, 0.1));
-  transition: all var(--transition-base, 0.3s ease);
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  border-bottom: 1px solid var(--glass-border);
+  transition: all var(--transition-base);
 }
 
 .site-header.scrolled {
-  background: rgba(13, 13, 13, 0.95);
-  box-shadow: var(--shadow-md, 0 4px 12px rgba(0, 0, 0, 0.4));
+  background: var(--color-bg-elevated);
+  box-shadow: var(--shadow-md);
 }
 
 .site-header.header-hidden {
@@ -62,7 +70,7 @@
 
 /* === CONTAINER === */
 .header-container {
-  max-width: var(--container-2xl, 1400px);
+  max-width: var(--container-2xl);
   margin-inline: auto;
   padding-inline: clamp(1rem, 3vw, 1.5rem);
   display: flex;
@@ -75,7 +83,7 @@
   display: flex;
   align-items: center;
   gap: clamp(0.75rem, 2vw, 1rem);
-  transition: transform var(--transition-fast, 0.2s ease);
+  transition: transform var(--transition-fast);
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -97,7 +105,7 @@
 
 .logo-text strong {
   font-size: clamp(1.25rem, 3vw, 1.5rem);
-  background: linear-gradient(135deg, var(--color-primary, oklch(70.716% 0.17277 43.29)), var(--color-first, oklch(73.847% 0.14656 42.001)));
+  background: linear-gradient(135deg, var(--color-primary), var(--color-first));
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -105,7 +113,7 @@
 
 .logo-text small {
   font-size: clamp(0.75rem, 2vw, 0.875rem);
-  color: var(--color-text-light, rgba(255, 255, 255, 0.6));
+  color: var(--color-text-light);
 }
 
 /* === HAMBURGER MENU === */
@@ -127,8 +135,8 @@
   display: block;
   width: 28px;
   height: 2px;
-  background: var(--color-text, rgba(255, 255, 255, 0.9));
-  transition: all var(--transition-base, 0.3s ease);
+  background: var(--color-text);
+  transition: all var(--transition-base);
   border-radius: 2px;
 }
 
@@ -176,11 +184,11 @@
 }
 
 .main-nav a {
-  color: var(--color-text-light, rgba(255, 255, 255, 0.6));
-  font-weight: var(--font-weight-medium, 500);
+  color: var(--color-text-light);
+  font-weight: var(--font-weight-medium);
   position: relative;
   padding: 0.5rem 0;
-  transition: color var(--transition-fast, 0.2s ease);
+  transition: color var(--transition-fast);
   -webkit-tap-highlight-color: transparent;
   text-decoration: none;
 }
@@ -192,13 +200,13 @@
   left: 50%;
   width: 0;
   height: 2px;
-  background: var(--color-primary, oklch(72.218% 0.16534 47.931));
+  background: var(--color-primary);
   transform: translateX(-50%);
-  transition: width var(--transition-base, 0.3s ease);
+  transition: width var(--transition-base);
 }
 
 .main-nav a:hover {
-  color: var(--color-text, rgba(255, 255, 255, 0.9));
+  color: var(--color-text);
 }
 
 .main-nav a:hover::before {
@@ -225,26 +233,26 @@
   justify-content: center;
   gap: 0.75rem;
   padding: 0.75rem 1.5rem;
-  background: linear-gradient(135deg, var(--color-primary, oklch(70.716% 0.17277 43.29)), var(--color-primary-dark, oklch(70.261% 0.16326 53.745)));
-  color: #fff !important;
-  border-radius: var(--radius-lg, 12px);
-  font-weight: var(--font-weight-semibold, 600);
-  transition: all var(--transition-base, 0.3s ease);
-  box-shadow: 0 0 20px oklch(75.632% 0.15376 59.288 / 0.3);
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+  color: var(--color-primary-light) !important;
+  border-radius: var(--radius-lg);
+  font-weight: var(--font-weight-semibold);
+  transition: all var(--transition-base);
+  box-shadow: var(--shadow-glow);
   text-decoration: none;
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
-  min-height: 44px; /* Accessibilité mobile */
+  min-height: 44px;
 }
 
 .cta-button:hover {
   transform: translateY(-2px);
-  box-shadow: 0 0 30px oklch(73.159% 0.16141 50.968 / 0.5);
-  color: #fff !important;
+  box-shadow: var(--shadow-glow-hover);
+  color: var(--color-primary-light) !important;
 }
 
 .cta-button svg {
-  transition: transform var(--transition-fast, 0.2s ease);
+  transition: transform var(--transition-fast);
   flex-shrink: 0;
 }
 
@@ -275,10 +283,10 @@
     position: fixed;
     inset: 0 -100% 0 auto;
     width: min(320px, 100vw);
-    background: var(--color-dark-elevated, oklch(21.779% 0.00002 271.152));
+    background: var(--color-bg-elevated);
     padding: 6rem 2rem 2rem;
-    box-shadow: -2px 0 20px rgba(0, 0, 0, 0.5);
-    transition: inset-inline-end var(--transition-base, 0.3s ease);
+    box-shadow: var(--shadow-lg);
+    transition: inset-inline-end var(--transition-base);
     overflow-y: auto;
     overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
@@ -298,14 +306,14 @@
 
   .main-nav li {
     width: 100%;
-    border-bottom: 1px solid var(--color-border, rgba(255, 255, 255, 0.1));
+    border-bottom: 1px solid var(--color-border);
   }
 
   .main-nav li.nav-cta {
     border-bottom: none;
     margin-top: 1rem;
     padding-top: 1rem;
-    border-top: 1px solid var(--color-border, rgba(255, 255, 255, 0.1));
+    border-top: 1px solid var(--color-border);
   }
 
   .main-nav a {
@@ -357,17 +365,17 @@
 .mobile-menu-toggle:focus-visible,
 .main-nav a:focus-visible,
 .cta-button:focus-visible {
-  outline: 2px solid var(--color-primary, oklch(70.716% 0.17277 43.29));
+  outline: 2px solid var(--color-primary);
   outline-offset: 2px;
 }
 
 @media (prefers-contrast: high) {
   .main-nav a {
-    color: rgba(255, 255, 255, 0.9);
+    color: var(--color-text);
   }
   
   .logo-text small {
-    color: rgba(255, 255, 255, 0.8);
+    color: var(--color-text-light);
   }
 }
 </style>

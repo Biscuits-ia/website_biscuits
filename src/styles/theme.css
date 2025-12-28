@@ -1,0 +1,164 @@
+:root {  
+  /* Couleurs sémantiques */
+  --color-success: oklch(69.588% 0.14907 162.508);
+  --color-warning: oklch(76.858% 0.1646 70.075);
+  --color-danger: oklab(63.681% 0.18788 0.08887);
+  --color-info: var(--color-primary);
+
+  /* Espacements */
+  --spacing-xs: 0.5rem;
+  --spacing-sm: 0.75rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+  --spacing-2xl: 3rem;
+  --spacing-3xl: 4rem;
+  --spacing-4xl: 5rem;
+
+  /* Typographie */
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-base: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.25rem;
+  --font-size-2xl: 1.5rem;
+  --font-size-3xl: 2rem;
+  --font-size-4xl: 2.5rem;
+  --font-size-5xl: 3.5rem;
+
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --font-weight-extrabold: 800;
+
+  /* Border radius */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: 24px;
+  --radius-full: 9999px;
+
+  /* Transitions */
+  --transition-fast: 0.2s ease;
+  --transition-base: 0.3s ease;
+  --transition-slow: 0.5s ease;
+
+  /* Conteneurs */
+  --container-sm: 640px;
+  --container-md: 768px;
+  --container-lg: 1024px;
+  --container-xl: 1200px;
+  --container-2xl: 1400px;
+}
+
+/* ========================================
+   DARK THEME (par défaut)
+   ======================================== */
+:root,
+:root[data-theme='dark'] {
+  --color-primary-light: oklch(95% 0.05 250);
+
+  
+  --color-primary: oklch(60.201% 0.11053 58.986);
+  --color-primary-dark: oklch(37.619% 0.07877 44.64);
+  --color-secondary: oklch(65.92% 0.153 34.70);
+  --color-first: oklch(67.081% 0.13582 82.641);
+  
+  /* Palette de gris */
+  --color-gray-50: oklch(98% 0 0);
+  --color-gray-100: oklch(95% 0 0);
+  --color-gray-200: oklch(92% 0 0);
+  --color-gray-300: oklch(85% 0 0);
+  --color-gray-400: oklch(70% 0 0);
+  --color-gray-500: oklch(50% 0 0);
+  --color-gray-600: oklch(40% 0 0);
+  --color-gray-700: oklch(30% 0 0);
+  --color-gray-800: oklch(20% 0 0);
+  --color-gray-900: oklch(12% 0 0);
+
+  /* Couleurs de fond et surface */
+  --color-bg: oklch(15.907% 0.00002 271.152);
+  --color-bg-alt: oklch(21.779% 0.00002 271.152);
+  --color-bg-elevated: oklch(26.033% 0.00003 271.152);
+  --color-border: oklch(100% 0.00011 271.152 / 0.1);
+  
+  /* Couleurs de texte */
+  --color-text: oklch(100% 0.00011 271.152 / 0.9);
+  --color-text-light: oklch(100% 0.00011 271.152 / 0.6);
+
+  /* Ombres pour dark mode */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 8px 20px rgba(0, 0, 0, 0.5);
+  --shadow-xl: 0 12px 24px rgba(0, 0, 0, 0.6);
+  --shadow-2xl: 0 20px 60px rgba(0, 0, 0, 0.7);
+  --shadow-glow: 0 0 20px oklch(69.859% 0.17765 40.766 / 0.3);
+  --shadow-glow-hover: 0 0 30px oklch(74.623% 0.15641 55.847 / 0.5);
+
+  /* Glassmorphism dark */
+  --glass-bg: rgba(255, 255, 255, 0.05);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-blur: blur(10px);
+}
+
+/* ========================================
+   LIGHT THEME
+   ======================================== */
+:root[data-theme='light'] {
+  --color-primary-light: oklch(25% 0.05 250);
+
+  
+  --color-primary: oklch(77.702% 0.03752 64.468);
+  --color-primary-dark: oklch(77.4% 0.02532 46.91);
+  --color-secondary: oklch(81.361% 0.06356 34.359);
+  --color-first: oklch(72.071% 0.09051 88.598);
+  
+  /* Palette de gris inversée pour light mode */
+  --color-gray-50: oklch(12% 0 0);
+  --color-gray-100: oklch(20% 0 0);
+  --color-gray-200: oklch(30% 0 0);
+  --color-gray-300: oklch(40% 0 0);
+  --color-gray-400: oklch(50% 0 0);
+  --color-gray-500: oklch(70% 0 0);
+  --color-gray-600: oklch(85% 0 0);
+  --color-gray-700: oklch(92% 0 0);
+  --color-gray-800: oklch(95% 0 0);
+  --color-gray-900: oklch(98% 0 0);
+
+  /* Couleurs de fond et surface */
+  --color-bg: oklch(98% 0.002 271.152);
+  --color-bg-alt: oklch(95% 0.002 271.152);
+  --color-bg-elevated: oklch(100% 0.00 0);
+  --color-border: oklch(0% 0 0 / 0.1);
+  
+  /* Couleurs de texte */
+  --color-text: oklch(20% 0.002 271.152);
+  --color-text-light: oklch(40% 0.002 271.152);
+
+  /* Ombres pour light mode */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 8px 20px rgba(0, 0, 0, 0.12);
+  --shadow-xl: 0 12px 24px rgba(0, 0, 0, 0.15);
+  --shadow-2xl: 0 20px 60px rgba(0, 0, 0, 0.2);
+  --shadow-glow: 0 0 20px oklch(69.859% 0.17765 40.766 / 0.15);
+  --shadow-glow-hover: 0 0 30px oklch(74.623% 0.15641 55.847 / 0.25);
+
+  /* Glassmorphism light */
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(0, 0, 0, 0.1);
+  --glass-blur: blur(10px);
+}
+
+/* Transition douce entre les thèmes */
+:root {
+  color-scheme: dark;
+  transition: background-color var(--transition-base), 
+              color var(--transition-base);
+}
+
+:root[data-theme='light'] {
+  color-scheme: light;
+}

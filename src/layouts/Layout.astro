@@ -1,10 +1,13 @@
 ---
 import Header from '@/components/Header.astro';
+
+import ThemeInit from '@/components/ThemeInit.astro';
 import Footer from '@/components/Footer.astro';
 import CookieConsent from '../components/svelte/CookieConsent.svelte';
 import Analytics from '@vercel/analytics/astro'
 import  SpeedInsights  from "@vercel/speed-insights/astro"
 
+import '@/styles/theme.css';
 import '@/styles/global.css';
 
 interface Props {
@@ -49,7 +52,7 @@ const organizationSchema = {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+  <ThemeInit />
   <!-- SEO -->
   <title>{fullTitle}</title>
   <meta name="description" content={description} />
@@ -101,8 +104,8 @@ const organizationSchema = {
 </head>
 
 <body>
-  <Header />
   <main id="main-content">
+    <Header />
     <slot />
     <CookieConsent client:load />
   </main>
@@ -116,6 +119,29 @@ const organizationSchema = {
     const preferences = event.detail;
     console.log('Préférences mises à jour:', preferences);
   });
+
+  (function() {
+      const STORAGE_KEY = 'theme-preference';
+      
+      /** * Récupère la préférence : localStorage > Système
+       */
+      function getThemePreference() {
+        if (typeof localStorage !== 'undefined' && localStorage.getItem(STORAGE_KEY)) {
+          return localStorage.getItem(STORAGE_KEY);
+        }
+        return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      }
+
+      const theme = getThemePreference();
+      
+      // Applique la classe sur <html> immédiatement
+      document.documentElement.setAttribute('data-theme', theme);
+      
+      // Ajoute une classe 'dark' pour compatibilité Tailwind (si utilisé)
+      if (theme === 'dark') {
+        document.documentElement.classList.add('dark');
+      }
+    })();
 </script>
 
 <script>

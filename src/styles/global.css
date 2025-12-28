@@ -586,22 +586,6 @@ section:nth-child(odd) {
   50% { transform: translateY(-20px) rotate(10deg); }
 }
 
-/* Scroll indicator */
-.scroll-indicator {
-  position: absolute;
-  bottom: 2rem;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.5rem;
-  color: var(--color-text-light);
-  font-size: 0.875rem;
-  animation: bounce 2s ease-in-out infinite;
-  opacity: 0;
-}
-
 @keyframes bounce {
   0%, 100% { transform: translateX(-50%) translateY(0); }
   50% { transform: translateX(-50%) translateY(10px); }

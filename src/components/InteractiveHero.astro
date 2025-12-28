@@ -64,12 +64,6 @@ const {
         <span class="cta-icon">🔍</span>
       </a>
     </div>
-
-    <div class="scroll-indicator" data-scroll-indicator>
-      <span class="scroll-text">Scroll</span>
-      <span class="scroll-icon">↓</span>
-    </div>
-  </div>
 </section>
 
 <style>
@@ -281,27 +275,6 @@ const {
   transform: translateY(-4px);
 }
 
-/* Scroll indicator */
-.scroll-indicator {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.5rem;
-  color: var(--color-text-light);
-  font-size: 0.9rem;
-  text-transform: uppercase;
-  letter-spacing: 0.15em;
-}
-
-.scroll-indicator.animated .scroll-icon {
-  animation: bounce 2s ease-in-out infinite;
-}
-
-@keyframes bounce {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(10px); }
-}
-
 /* Responsive */
 @media (max-width: 768px) {
   .interactive-hero {
@@ -507,11 +480,6 @@ const {
         document.querySelectorAll('.title-word').forEach((word) => {
           word.classList.add('animated');
         });
-
-        const scrollIndicator = document.querySelector('[data-scroll-indicator]');
-        if (scrollIndicator) {
-          scrollIndicator.classList.add('animated');
-        }
       }
     }, 2000);
 
@@ -543,6 +511,5 @@ const {
     });
 
     tl.from('[data-ctas]', { opacity: 0, y: 20, duration: 0.5 }, '-=0.8')
-      .from('[data-scroll-indicator]', { opacity: 0, duration: 0.5 }, '-=0.3');
   }
 </script>

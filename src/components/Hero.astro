@@ -87,12 +87,6 @@ import Logo from '@/assets/logo.webp';
     </div>
   </div>
 
-  <div class="scroll-indicator">
-    <span>Scroll</span>
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-      <path d="M12 5v14m0 0l-7-7m7 7l7-7"/>
-    </svg>
-  </div>
 </section>
 
 <style>
@@ -329,23 +323,7 @@ animation-delay: 2s;
 0%, 100% { transform: translateY(0); }
 50% { transform: translateY(-20px); }
 }
-.scroll-indicator {
-position: absolute;
-bottom: 2rem;
-left: 50%;
-transform: translateX(-50%);
-display: flex;
-flex-direction: column;
-align-items: center;
-gap: 0.5rem;
-color: var(--color-text-light);
-font-size: 0.875rem;
-animation: fadeIn 0.8s ease-out 1.5s both, bounce 2s ease-in-out 2s infinite;
-}
-@keyframes fadeIn {
-from { opacity: 0; }
-to { opacity: 1; }
-}
+
 @keyframes bounce {
 0%, 100% { transform: translateX(-50%) translateY(0); }
 50% { transform: translateX(-50%) translateY(10px); }
@@ -398,8 +376,7 @@ transition-duration: 0.01ms !important;
 .feature-badge,
 .hero-cta,
 .trust-indicators,
-.hero-visual,
-.scroll-indicator {
+.hero-visual {
 animation: none !important;
 opacity: 1 !important;
 transform: none !important;

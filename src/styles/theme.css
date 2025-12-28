@@ -107,13 +107,13 @@
    LIGHT THEME
    ======================================== */
 :root[data-theme='light'] {
-  --color-primary-light: oklch(25% 0.05 250);
+  --color-primary-light: oklch(25.615% 0.00003 271.152);
 
   
-  --color-primary: oklch(77.702% 0.03752 64.468);
-  --color-primary-dark: oklch(77.4% 0.02532 46.91);
-  --color-secondary: oklch(81.361% 0.06356 34.359);
-  --color-first: oklch(72.071% 0.09051 88.598);
+  --color-primary: oklch(60.201% 0.11053 58.986);
+  --color-primary-dark: oklch(37.619% 0.07877 44.64);
+  --color-secondary: oklch(65.92% 0.153 34.70);
+  --color-first: oklch(67.081% 0.13582 82.641);
   
   /* Palette de gris inversée pour light mode */
   --color-gray-50: oklch(12% 0 0);

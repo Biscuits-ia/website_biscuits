@@ -108,9 +108,9 @@
   --color-primary-light: oklch(24.354% 0.00003 271.152);
   
   /* 🔥 COULEURS ULTRA-PEPS - Maximum contraste et saturation 🔥 */
-  --color-primary: oklch(89.598% 0.15256 196.882);      /* Bleu ultra-électrique */
+  --color-primary: oklch(66.101% 0.11164 197.118);      /* Bleu ultra-électrique */
   --color-primary-dark: oklch(76.079% 0.13753 218.926); /* Bleu profond saturé */
-  --color-secondary: oklch(65.809% 0.27381 350.855);    /* Rose néon explosif */
+  --color-secondary: oklch(67.048% 0.31573 323.695);    /* Rose néon explosif */
   --color-first: oklch(82.363% 0.24888 146.41);        /* Vert lime ultra-vif */
   
   /* Couleurs accent supplémentaires pour varier */

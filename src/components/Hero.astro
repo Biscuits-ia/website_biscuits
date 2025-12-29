@@ -3,67 +3,79 @@ import { Image } from "astro:assets";
 import Logo from '@/assets/logo.webp';
 ---
 
-<section class="hero-section" data-hero-section>
-  <div class="hero-bg">
-    <div class="gradient-orb gradient-orb-1"></div>
+<section class="hero-section relative min-h-screen flex items-center justify-center overflow-hidden bg-[var(--color-bg)] px-4 py-8 md:py-16" data-hero-section>
+  
+  <!-- Background animé -->
+  <div class="hero-bg absolute inset-0 z-0 overflow-hidden pointer-events-none">
+    <div class="gradient-orb-1 absolute w-[500px] h-[500px] rounded-full blur-[80px] opacity-25 -top-[200px] -left-[100px] animate-float1" 
+         style="background: radial-gradient(circle, var(--color-primary) 0%, transparent 70%);">
+    </div>
   </div>
 
-  <div class="hero-content">
-    <div class="hero-text">
-      <h2 class="hero-subtitle">
-        Vos Vibe <span class="highlight">Solutions</span>
+  <!-- Contenu Hero -->
+  <div class="hero-content relative z-10 max-w-[1400px] w-full grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center">
+    
+    <!-- Texte Hero -->
+    <div class="hero-text flex flex-col gap-6 text-center lg:text-left items-center lg:items-start">
+      
+      <h2 class="hero-subtitle text-2xl md:text-4xl font-semibold text-[var(--color-text)] m-0 animate-fadeInUp opacity-0" style="animation-delay: 0.2s;">
+        Vos Vibe <span class="highlight bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] bg-clip-text text-transparent font-extrabold">Solutions</span>
       </h2>
       
-      <h1 class="hero-title">
+      <h1 class="hero-title text-4xl md:text-6xl lg:text-7xl font-extrabold leading-tight text-[var(--color-text)] m-0 animate-fadeInUp opacity-0" style="animation-delay: 0.4s;">
         Créé plus vite avec les outils IA & starterkits
       </h1>
       
-      <div class="hero-features">
-        <div class="feature-badge">
-          <span class="badge-icon">⚡</span>
-          <span>Solution Vibe coder</span>
+      <!-- Feature badges -->
+      <div class="hero-features grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4 w-full max-w-[500px] lg:max-w-none">
+        <div class="feature-badge flex items-center gap-3 px-5 py-4 bg-[var(--glass-bg)] border border-[var(--color-border)] rounded-xl backdrop-blur-sm transition-all duration-300 hover:bg-[var(--color-bg-elevated)] hover:border-[var(--color-primary)] hover:-translate-y-0.5 animate-fadeInUp opacity-0" style="animation-delay: 0.6s;">
+          <span class="badge-icon text-2xl">⚡</span>
+          <span class="text-[15px] text-[var(--color-text-light)] font-medium">Solution Vibe coder</span>
         </div>
-        <div class="feature-badge">
-          <span class="badge-icon">⚙️</span>
-          <span>Solution d'Automatisation</span>
+        <div class="feature-badge flex items-center gap-3 px-5 py-4 bg-[var(--glass-bg)] border border-[var(--color-border)] rounded-xl backdrop-blur-sm transition-all duration-300 hover:bg-[var(--color-bg-elevated)] hover:border-[var(--color-primary)] hover:-translate-y-0.5 animate-fadeInUp opacity-0" style="animation-delay: 0.7s;">
+          <span class="badge-icon text-2xl">⚙️</span>
+          <span class="text-[15px] text-[var(--color-text-light)] font-medium">Solution d'Automatisation</span>
         </div>
-        <div class="feature-badge">
-          <span class="badge-icon">🖥️</span>
-          <span>Solution Software</span>
+        <div class="feature-badge flex items-center gap-3 px-5 py-4 bg-[var(--glass-bg)] border border-[var(--color-border)] rounded-xl backdrop-blur-sm transition-all duration-300 hover:bg-[var(--color-bg-elevated)] hover:border-[var(--color-primary)] hover:-translate-y-0.5 animate-fadeInUp opacity-0" style="animation-delay: 0.8s;">
+          <span class="badge-icon text-2xl">🖥️</span>
+          <span class="text-[15px] text-[var(--color-text-light)] font-medium">Solution Software</span>
         </div>
-        <div class="feature-badge">
-          <span class="badge-icon">🚀</span>
-          <span>Solution SaaS</span>
+        <div class="feature-badge flex items-center gap-3 px-5 py-4 bg-[var(--glass-bg)] border border-[var(--color-border)] rounded-xl backdrop-blur-sm transition-all duration-300 hover:bg-[var(--color-bg-elevated)] hover:border-[var(--color-primary)] hover:-translate-y-0.5 animate-fadeInUp opacity-0" style="animation-delay: 0.9s;">
+          <span class="badge-icon text-2xl">🚀</span>
+          <span class="text-[15px] text-[var(--color-text-light)] font-medium">Solution SaaS</span>
         </div>
       </div>
 
-      <div class="hero-cta">
-        <a href="/devis" class="btn-primary" id="hero-cta-btn">
-          <span class="btn-text">Demander un devis gratuit</span>
-          <svg class="btn-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M5 12h14M12 5l7 7-7 7"/>
-          </svg>
+      <!-- CTA Button -->
+      <div class="hero-cta mt-6 animate-fadeInUp opacity-0" style="animation-delay: 1s;">
+        <a href="/devis" 
+           id="hero-cta-btn"
+           class="btn-primary inline-flex items-center gap-3 px-10 py-5 bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] text-[var(--color-primary-light)] font-semibold text-lg rounded-xl shadow-[var(--shadow-glow)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-glow-hover)] relative overflow-hidden group">
+          <span class="btn-text relative z-10">Demander un devis gratuit</span>
+          <span class="btn-shine absolute inset-0 -left-full w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-all duration-500 group-hover:left-full"></span>
         </a>
       </div>
 
-      <div class="trust-indicators">
-        <div class="trust-item">
-          <strong class="counter-value" data-target="15">15+</strong>
-          <span>Années d'expérience</span>
+      <!-- Trust indicators -->
+      <div class="trust-indicators flex flex-col sm:flex-row gap-6 sm:gap-12 mt-8 animate-fadeInUp opacity-0" style="animation-delay: 1.2s;">
+        <div class="trust-item flex flex-col gap-1 text-center lg:text-left">
+          <strong class="counter-value text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-[var(--color-first)] to-[var(--color-secondary)] bg-clip-text text-transparent" data-target="15">15+</strong>
+          <span class="text-sm text-[var(--color-text-light)]">Années d'expérience</span>
         </div>
-        <div class="trust-item">
-          <strong class="counter-value" data-target="500">500+</strong>
-          <span>Clients satisfaits</span>
+        <div class="trust-item flex flex-col gap-1 text-center lg:text-left">
+          <strong class="counter-value text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-[var(--color-first)] to-[var(--color-secondary)] bg-clip-text text-transparent" data-target="500">500+</strong>
+          <span class="text-sm text-[var(--color-text-light)]">Clients satisfaits</span>
         </div>
-        <div class="trust-item">
-          <strong class="counter-value" data-target="1000">1000+</strong>
-          <span>Projets réalisés</span>
+        <div class="trust-item flex flex-col gap-1 text-center lg:text-left">
+          <strong class="counter-value text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-[var(--color-first)] to-[var(--color-secondary)] bg-clip-text text-transparent" data-target="1000">1000+</strong>
+          <span class="text-sm text-[var(--color-text-light)]">Projets réalisés</span>
         </div>
       </div>
     </div>
 
-    <div class="hero-visual">
-      <div class="visual-card">
+    <!-- Visual Hero -->
+    <div class="hero-visual relative hidden lg:block animate-fadeInRight opacity-0" style="animation-delay: 0.6s;">
+      <div class="visual-card relative rounded-[20px]">
         <Image 
           src={Logo}
           alt="Solutions tech et développement IA - Biscuits Dev"
@@ -72,317 +84,113 @@ import Logo from '@/assets/logo.webp';
           format="webp"
           loading="eager"
           quality={80}
+          class="w-full h-auto block"
         />
         
-        <div class="floating-element floating-1">
+        <div class="floating-element floating-1 absolute top-[10%] -right-[5%] text-3xl opacity-80 pointer-events-none animate-floatElement">
           <span>🎯</span>
         </div>
-        <div class="floating-element floating-2">
+        <div class="floating-element floating-2 absolute bottom-[15%] -left-[5%] text-3xl opacity-80 pointer-events-none animate-floatElement" style="animation-delay: 1s;">
           <span>🧠</span>
         </div>
-        <div class="floating-element floating-3">
+        <div class="floating-element floating-3 absolute top-[50%] -right-[8%] text-3xl opacity-80 pointer-events-none animate-floatElement" style="animation-delay: 2s;">
           <span>🤖</span>
         </div>
       </div>
     </div>
   </div>
-
 </section>
 
 <style>
-  .hero-section {
-position: relative;
-min-height: 100vh;
-display: flex;
-align-items: center;
-justify-content: center;
-overflow: hidden;
-background: var(--color-bg);
-padding: 2rem 1rem;
-}
-.hero-bg {
-position: absolute;
-inset: 0;
-z-index: 0;
-overflow: hidden;
-pointer-events: none;
-}
-.gradient-orb {
-position: absolute;
-border-radius: 50%;
-filter: blur(80px);
-opacity: 0.25;
-}
-.gradient-orb-1 {
-width: 500px;
-height: 500px;
-background: radial-gradient(circle, var(--color-primary) 0%, transparent 70%);
-top: -200px;
-left: -100px;
-animation: float1 20s ease-in-out infinite;
-}
-@keyframes float1 {
-0%, 100% { transform: translate(0, 0) scale(1); }
-33% { transform: translate(30px, -30px) scale(1.1); }
-66% { transform: translate(-20px, 20px) scale(0.9); }
-}
-.hero-content {
-position: relative;
-z-index: 1;
-max-width: 1400px;
-width: 100%;
-display: grid;
-grid-template-columns: 1fr 1fr;
-gap: 4rem;
-align-items: center;
-}
-.hero-text {
-display: flex;
-flex-direction: column;
-gap: 1.5rem;
-}
-.hero-subtitle {
-font-size: clamp(1.5rem, 3vw, 2rem);
-font-weight: 600;
-color: var(--color-text);
-margin: 0;
-animation: fadeInUp 0.8s ease-out 0.2s both;
-}
-.highlight {
-background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
--webkit-background-clip: text;
-background-clip: text;
--webkit-text-fill-color: transparent;
-font-weight: 800;
-}
-.hero-title {
-font-size: clamp(2.5rem, 5vw, 4rem);
-font-weight: 800;
-line-height: 1.2;
-color: var(--color-text);
-margin: 0;
-animation: fadeInUp 0.8s ease-out 0.4s both;
-}
-@keyframes fadeInUp {
-from {
-opacity: 0;
-transform: translateY(30px);
-}
-to {
-opacity: 1;
-transform: translateY(0);
-}
-}
-.hero-features {
-display: grid;
-grid-template-columns: repeat(2, 1fr);
-gap: 1rem;
-margin-top: 1rem;
-}
-.feature-badge {
-display: flex;
-align-items: center;
-gap: 0.75rem;
-padding: 1rem 1.25rem;
-background: var(--glass-bg);
-border: 1px solid var(--color-border);
-border-radius: 12px;
-backdrop-filter: blur(10px);
-transition: all 0.3s ease;
-animation: fadeInUp 0.6s ease-out both;
-}
-.feature-badge:nth-child(1) { animation-delay: 0.6s; }
-.feature-badge:nth-child(2) { animation-delay: 0.7s; }
-.feature-badge:nth-child(3) { animation-delay: 0.8s; }
-.feature-badge:nth-child(4) { animation-delay: 0.9s; }
-.feature-badge:hover {
-background: var(--color-bg-elevated);
-border-color: var(--color-primary);
-transform: translateY(-2px);
-}
-.badge-icon {
-font-size: 1.5rem;
-}
-.feature-badge span:last-child {
-font-size: 0.95rem;
-color: var(--color-text-light);
-font-weight: 500;
-}
-.hero-cta {
-margin-top: 1.5rem;
-animation: fadeInUp 0.8s ease-out 1s both;
-}
-.btn-primary {
-display: inline-flex;
-align-items: center;
-gap: 0.75rem;
-padding: 1.25rem 2.5rem;
-background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
-color: var(--color-bg);
-font-weight: 600;
-font-size: 1.1rem;
-border-radius: 12px;
-text-decoration: none;
-box-shadow: var(--shadow-glow);
-transition: all 0.3s ease;
-position: relative;
-overflow: hidden;
-}
-.btn-primary::before {
-content: '';
-position: absolute;
-top: 0;
-left: -100%;
-width: 100%;
-height: 100%;
-background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-transition: left 0.5s ease;
-}
-.btn-primary:hover::before {
-left: 100%;
-}
-.btn-primary:hover {
-transform: translateY(-3px);
-box-shadow: var(--shadow-glow-hover);
-}
-.btn-arrow {
-transition: transform 0.3s ease;
-}
-.btn-primary:hover .btn-arrow {
-transform: translateX(5px);
-}
-.trust-indicators {
-display: flex;
-gap: 3rem;
-margin-top: 2rem;
-animation: fadeInUp 0.8s ease-out 1.2s both;
-}
-.trust-item {
-display: flex;
-flex-direction: column;
-gap: 0.25rem;
-}
-.trust-item strong {
-font-size: 2rem;
-font-weight: 800;
-background: linear-gradient(135deg, var(--color-first), var(--color-secondary));
--webkit-background-clip: text;
-background-clip: text;
--webkit-text-fill-color: transparent;
-}
-.trust-item span {
-font-size: 0.875rem;
-color: var(--color-text-light);
-}
-.hero-visual {
-position: relative;
-animation: fadeInRight 1s ease-out 0.6s both;
-}
-@keyframes fadeInRight {
-from {
-opacity: 0;
-transform: translateX(50px);
-}
-to {
-opacity: 1;
-transform: translateX(0);
-}
-}
-.visual-card {
-position: relative;
-border-radius: 20px;
-}
-.visual-card img {
-width: 100%;
-height: auto;
-display: block;
-}
-.floating-element {
-position: absolute;
-font-size: 2rem;
-opacity: 0.8;
-pointer-events: none;
-animation: floatElement 3s ease-in-out infinite;
-}
-.floating-1 {
-top: 10%;
-right: -5%;
-animation-delay: 0s;
-}
-.floating-2 {
-bottom: 15%;
-left: -5%;
-animation-delay: 1s;
-}
-.floating-3 {
-top: 50%;
-right: -8%;
-animation-delay: 2s;
-}
-@keyframes floatElement {
-0%, 100% { transform: translateY(0); }
-50% { transform: translateY(-20px); }
-}
+  /* Animations personnalisées */
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
 
-@keyframes bounce {
-0%, 100% { transform: translateX(-50%) translateY(0); }
-50% { transform: translateX(-50%) translateY(10px); }
-}
-@media (max-width: 1024px) {
-.hero-content {
-grid-template-columns: 1fr;
-gap: 3rem;
-text-align: center;
-}
-.hero-text {
-align-items: center;
-}
-.hero-features {
-max-width: 500px;
-}
-.trust-indicators {
-justify-content: center;
-gap: 2rem;
-}
-}
-@media (max-width: 820px) {
-.hero-visual {
-display: none;
-}
-}
-@media (max-width: 640px) {
-.hero-features {
-grid-template-columns: 1fr;
-}
-.trust-indicators {
-flex-direction: column;
-gap: 1.5rem;
-text-align: center;
-}
-.floating-element {
-display: none;
-}
-}
-@media (prefers-reduced-motion: reduce) {
-*,
-*::before,
-*::after {
-animation-duration: 0.01ms !important;
-animation-iteration-count: 1 !important;
-transition-duration: 0.01ms !important;
-}
-.hero-subtitle,
-.hero-title,
-.feature-badge,
-.hero-cta,
-.trust-indicators,
-.hero-visual {
-animation: none !important;
-opacity: 1 !important;
-transform: none !important;
-}
-}
+  @keyframes fadeInRight {
+    from {
+      opacity: 0;
+      transform: translateX(50px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes floatElement {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-20px); }
+  }
+
+  @keyframes float1 {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    33% { transform: translate(30px, -30px) scale(1.1); }
+    66% { transform: translate(-20px, 20px) scale(0.9); }
+  }
+
+  .animate-fadeInUp {
+    animation: fadeInUp 0.8s ease-out both;
+  }
+
+  .animate-fadeInRight {
+    animation: fadeInRight 1s ease-out both;
+  }
+
+  .animate-floatElement {
+    animation: floatElement 3s ease-in-out infinite;
+  }
+
+  .animate-float1 {
+    animation: float1 20s ease-in-out infinite;
+  }
+
+  /* Effet de brillance sur le bouton */
+  .btn-shine {
+    pointer-events: none;
+  }
+
+  /* Désactiver les animations si préférence utilisateur */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+    
+    .hero-subtitle,
+    .hero-title,
+    .feature-badge,
+    .hero-cta,
+    .trust-indicators,
+    .hero-visual {
+      animation: none !important;
+      opacity: 1 !important;
+      transform: none !important;
+    }
+  }
+
+  /* Pas de hover sur mobile */
+  @media (hover: none) {
+    .feature-badge:hover {
+      transform: none;
+    }
+    
+    .btn-primary:hover {
+      transform: none;
+    }
+  }
 </style>
+
 <script>
   // Script minimaliste - fonctionne même si GSAP n'est pas chargé
   function initHero() {

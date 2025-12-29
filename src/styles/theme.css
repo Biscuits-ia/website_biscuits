@@ -32,35 +32,25 @@
   --font-weight-bold: 700;
   --font-weight-extrabold: 800;
 
-  /* Border radius */
-  --radius-sm: 6px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
-  --radius-xl: 16px;
-  --radius-2xl: 24px;
-  --radius-full: 9999px;
-
-  /* Transitions */
-  --transition-fast: 0.2s ease;
-  --transition-base: 0.3s ease;
-  --transition-slow: 0.5s ease;
-
   /* Conteneurs */
   --container-sm: 640px;
   --container-md: 768px;
   --container-lg: 1024px;
   --container-xl: 1200px;
   --container-2xl: 1400px;
+
+  /* Transitions */
+  --transition-fast: 0.2s ease;
+  --transition-base: 0.3s ease;
+  --transition-slow: 0.5s ease;
 }
 
 /* ========================================
-   DARK THEME (par défaut)
+   DARK THEME (par défaut) - Style moderne
    ======================================== */
 :root,
 :root[data-theme='dark'] {
   --color-primary-light: oklch(95% 0.05 250);
-
-  
   --color-primary: oklch(60.201% 0.11053 58.986);
   --color-primary-dark: oklch(37.619% 0.07877 44.64);
   --color-secondary: oklch(65.92% 0.153 34.70);
@@ -88,7 +78,7 @@
   --color-text: oklch(100% 0.00011 271.152 / 0.9);
   --color-text-light: oklch(100% 0.00011 271.152 / 0.6);
 
-  /* Ombres pour dark mode */
+  /* Ombres douces pour dark mode */
   --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
   --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
   --shadow-lg: 0 8px 20px rgba(0, 0, 0, 0.5);
@@ -97,59 +87,99 @@
   --shadow-glow: 0 0 20px oklch(69.859% 0.17765 40.766 / 0.3);
   --shadow-glow-hover: 0 0 30px oklch(74.623% 0.15641 55.847 / 0.5);
 
-  /* Glassmorphism dark */
+  /* Glassmorphism doux */
   --glass-bg: rgba(255, 255, 255, 0.05);
   --glass-border: rgba(255, 255, 255, 0.1);
   --glass-blur: blur(10px);
+
+  /* Border radius doux */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: 24px;
+  --radius-full: 9999px;
 }
 
 /* ========================================
-   LIGHT THEME
+   LIGHT THEME - Style NÉO-BRUTALISME 💥
    ======================================== */
 :root[data-theme='light'] {
-  --color-primary-light: oklch(25.615% 0.00003 271.152);
-
+  --color-primary-light: oklch(24.354% 0.00003 271.152);
   
-  --color-primary: oklch(60.201% 0.11053 58.986);
-  --color-primary-dark: oklch(37.619% 0.07877 44.64);
-  --color-secondary: oklch(65.92% 0.153 34.70);
-  --color-first: oklch(67.081% 0.13582 82.641);
+  /* 🔥 COULEURS ULTRA-PEPS - Maximum contraste et saturation 🔥 */
+  --color-primary: oklch(89.598% 0.15256 196.882);      /* Bleu ultra-électrique */
+  --color-primary-dark: oklch(76.079% 0.13753 218.926); /* Bleu profond saturé */
+  --color-secondary: oklch(65.809% 0.27381 350.855);    /* Rose néon explosif */
+  --color-first: oklch(82.363% 0.24888 146.41);        /* Vert lime ultra-vif */
   
-  /* Palette de gris inversée pour light mode */
-  --color-gray-50: oklch(12% 0 0);
-  --color-gray-100: oklch(20% 0 0);
-  --color-gray-200: oklch(30% 0 0);
-  --color-gray-300: oklch(40% 0 0);
+  /* Couleurs accent supplémentaires pour varier */
+  --color-accent-yellow: oklch(85% 0.35 95); /* Jaune banane */
+  --color-accent-orange: oklch(70% 0.35 45); /* Orange crush */
+  --color-accent-purple: oklch(60% 0.35 300);/* Violet intense */
+  --color-accent-cyan: oklch(75% 0.30 195);  /* Cyan électrique */
+  
+  /* Palette de gris ultra-contrastée */
+  --color-gray-50: oklch(5% 0 0);            /* Noir profond */
+  --color-gray-100: oklch(15% 0 0);
+  --color-gray-200: oklch(25% 0 0);
+  --color-gray-300: oklch(35% 0 0);
   --color-gray-400: oklch(50% 0 0);
-  --color-gray-500: oklch(70% 0 0);
-  --color-gray-600: oklch(85% 0 0);
-  --color-gray-700: oklch(92% 0 0);
+  --color-gray-500: oklch(65% 0 0);
+  --color-gray-600: oklch(80% 0 0);
+  --color-gray-700: oklch(90% 0 0);
   --color-gray-800: oklch(95% 0 0);
   --color-gray-900: oklch(98% 0 0);
 
-  /* Couleurs de fond et surface */
-  --color-bg: oklch(98% 0.002 271.152);
-  --color-bg-alt: oklch(95% 0.002 271.152);
-  --color-bg-elevated: oklch(100% 0.00 0);
-  --color-border: oklch(0% 0 0 / 0.1);
+  /* Fond jaune crème / beige peps */
+  --color-bg: oklch(97% 0.03 90);            /* Beige chaud lumineux */
+  --color-bg-alt: oklch(92% 0.04 85);        /* Jaune crème pâle */
+  --color-bg-elevated: oklch(100% 0 0);      /* Blanc pur */
+  --color-border: oklch(0% 0 0 / 1);         /* Noir pur 100% */
   
-  /* Couleurs de texte */
-  --color-text: oklch(20% 0.002 271.152);
-  --color-text-light: oklch(40% 0.002 271.152);
+  /* Texte noir ultra-franc */
+  --color-text: oklch(8% 0 0);               /* Noir intense */
+  --color-text-light: oklch(35% 0 0);        /* Gris très foncé */
 
-  /* Ombres pour light mode */
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
-  --shadow-lg: 0 8px 20px rgba(0, 0, 0, 0.12);
-  --shadow-xl: 0 12px 24px rgba(0, 0, 0, 0.15);
-  --shadow-2xl: 0 20px 60px rgba(0, 0, 0, 0.2);
-  --shadow-glow: 0 0 20px oklch(69.859% 0.17765 40.766 / 0.15);
-  --shadow-glow-hover: 0 0 30px oklch(74.623% 0.15641 55.847 / 0.25);
+  /* ⚡ OMBRES NÉO-BRUTALISME - Offset ultra-prononcé ⚡ */
+  --shadow-sm: 3px 3px 0px rgba(0, 0, 0, 1);
+  --shadow-md: 6px 6px 0px rgba(0, 0, 0, 1);
+  --shadow-lg: 9px 9px 0px rgba(0, 0, 0, 1);
+  --shadow-xl: 12px 12px 0px rgba(0, 0, 0, 1);
+  --shadow-2xl: 16px 16px 0px rgba(0, 0, 0, 1);
+  --shadow-glow: 8px 8px 0px rgba(0, 0, 0, 1);
+  --shadow-glow-hover: 12px 12px 0px rgba(0, 0, 0, 1);
 
-  /* Glassmorphism light */
-  --glass-bg: rgba(255, 255, 255, 0.7);
-  --glass-border: rgba(0, 0, 0, 0.1);
-  --glass-blur: blur(10px);
+  /* Pas de glassmorphism en néo-brutalisme */
+  --glass-bg: var(--color-bg-elevated);
+  --glass-border: var(--color-border);
+  --glass-blur: blur(0px);
+
+  /* ⚡ BORDER RADIUS NUL - angles droits purs ⚡ */
+  --radius-sm: 0px;
+  --radius-md: 0px;
+  --radius-lg: 0px;
+  --radius-xl: 0px;
+  --radius-2xl: 0px;
+  --radius-full: 0px;
+
+  /* Transitions ultra-snappy pour effet cartoon */
+  --transition-fast: 0.08s ease-out;
+  --transition-base: 0.12s ease-out;
+  --transition-slow: 0.18s ease-out;
+}
+
+/* ========================================
+   STYLES SPÉCIFIQUES NÉO-BRUTALISME
+   ======================================== */
+:root[data-theme='light'] {
+  /* Bordures ultra-épaisses pour maximum d'impact */
+  --brutal-border: 4px solid var(--color-border);
+  
+  /* Décalage d'ombre au hover - effet cartoon exagéré */
+  --brutal-hover-translate: -3px;
+  --brutal-hover-shadow-x: 9px;
+  --brutal-hover-shadow-y: 9px;
 }
 
 /* Transition douce entre les thèmes */
@@ -161,4 +191,133 @@
 
 :root[data-theme='light'] {
   color-scheme: light;
+}
+
+/* ========================================
+   OVERRIDES POUR NÉO-BRUTALISME (Light mode)
+   ======================================== */
+:root[data-theme='light'] .cta-button,
+:root[data-theme='light'] .btn-primary,
+:root[data-theme='light'] button {
+  border: var(--brutal-border);
+  box-shadow: var(--shadow-lg);
+  transition: all var(--transition-fast);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+:root[data-theme='light'] .cta-button:hover,
+:root[data-theme='light'] .btn-primary:hover,
+:root[data-theme='light'] button:hover {
+  transform: translate(-3px, -3px);
+  box-shadow: var(--shadow-xl);
+}
+
+:root[data-theme='light'] .cta-button:active,
+:root[data-theme='light'] .btn-primary:active,
+:root[data-theme='light'] button:active {
+  transform: translate(3px, 3px);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Cards avec bordures épaisses et ombres fortes */
+:root[data-theme='light'] .zone-card,
+:root[data-theme='light'] .feature-badge,
+:root[data-theme='light'] .contact-form,
+:root[data-theme='light'] .stat-item {
+  border: var(--brutal-border);
+  box-shadow: var(--shadow-lg);
+  transition: all var(--transition-fast);
+  background: var(--color-bg-elevated);
+}
+
+:root[data-theme='light'] .zone-card:hover,
+:root[data-theme='light'] .stat-item:hover {
+  transform: translate(-3px, -3px);
+  box-shadow: var(--shadow-xl);
+}
+
+/* Feature badges avec couleurs alternées */
+:root[data-theme='light'] .feature-badge:nth-child(1) {
+  background: oklch(81.544% 0.11037 172.452); /* Bleu clair */
+}
+
+:root[data-theme='light'] .feature-badge:nth-child(2) {
+  background: oklch(73.377% 0.14462 146.977); /* Rose clair */
+}
+
+:root[data-theme='light'] .feature-badge:nth-child(3) {
+  background: oklch(69.779% 0.11583 208.861); /* Vert clair */
+}
+
+:root[data-theme='light'] .feature-badge:nth-child(4) {
+  background: oklch(90.824% 0.24641 130.559);  /* Jaune clair */
+}
+
+/* Inputs avec style brutal */
+:root[data-theme='light'] input,
+:root[data-theme='light'] select,
+:root[data-theme='light'] textarea {
+  border: var(--brutal-border);
+  box-shadow: var(--shadow-md);
+  background: var(--color-bg-elevated);
+  font-weight: 600;
+}
+
+:root[data-theme='light'] input:focus,
+:root[data-theme='light'] select:focus,
+:root[data-theme='light'] textarea:focus {
+  outline: none;
+  box-shadow: var(--shadow-lg);
+  transform: translate(-2px, -2px);
+  border-color: var(--color-primary);
+}
+
+/* Header avec bordure noire ultra-épaisse */
+:root[data-theme='light'] .site-header {
+  border-bottom: 5px solid var(--color-border);
+  box-shadow: none;
+  background: var(--color-bg);
+}
+
+:root[data-theme='light'] .site-header.scrolled {
+  box-shadow: 0 6px 0px rgba(0, 0, 0, 1);
+  background: var(--color-bg-elevated);
+}
+
+/* Logo avec effet pop */
+:root[data-theme='light'] .logo-text strong {
+  text-shadow: 3px 3px 0px rgba(0, 0, 0, 0.2);
+}
+
+/* Titres avec effet cartoon */
+:root[data-theme='light'] h1,
+:root[data-theme='light'] h2,
+:root[data-theme='light'] h3 {
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.1);
+}
+
+/* Trust indicators avec backgrounds colorés */
+:root[data-theme='light'] .trust-item:nth-child(1) strong {
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(2px 2px 0px rgba(0, 0, 0, 0.15));
+}
+
+:root[data-theme='light'] .trust-item:nth-child(2) strong {
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(2px 2px 0px rgba(0, 0, 0, 0.15));
+}
+
+:root[data-theme='light'] .trust-item:nth-child(3) strong {
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(2px 2px 0px rgba(0, 0, 0, 0.15));
 }

@@ -156,7 +156,7 @@ const features: Feature[] = [
 .feature-card {
   background: var(--color-bg-alt);
   border: 1px solid var(--color-border);
-  border-radius: 24px;
+  border-radius: var(--radius-2xl);
   padding: 2.5rem;
   position: relative;
   overflow: hidden;
@@ -172,7 +172,7 @@ const features: Feature[] = [
   background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
   opacity: 0;
   transition: opacity 0.4s ease;
-  border-radius: 24px;
+  border-radius: var(--radius-2xl);
 }
 
 .feature-card:hover::before {
@@ -183,7 +183,7 @@ const features: Feature[] = [
   position: absolute;
   inset: -2px;
   background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
-  border-radius: 24px;
+  border-radius: var(--radius-2xl);
   opacity: 0;
   filter: blur(20px);
   transition: opacity 0.4s ease;
@@ -246,7 +246,7 @@ const features: Feature[] = [
   padding: 0.5rem 1rem;
   background: var(--glass-bg);
   border: 1px solid var(--color-border);
-  border-radius: 50px;
+  border-radius: var(--radius-full);
   font-size: 0.85rem;
   color: var(--color-primary);
   font-weight: 600;

@@ -105,13 +105,13 @@
    LIGHT THEME - Style NÉO-BRUTALISME 💥
    ======================================== */
 :root[data-theme='light'] {
-  --color-primary-light: oklch(24.354% 0.00003 271.152);
+  --color-primary-light: oklch(93.1% 0.00011 271.152);
   
   /* 🔥 COULEURS ULTRA-PEPS - Maximum contraste et saturation 🔥 */
-  --color-primary: oklch(66.101% 0.11164 197.118);      /* Bleu ultra-électrique */
-  --color-primary-dark: oklch(76.079% 0.13753 218.926); /* Bleu profond saturé */
-  --color-secondary: oklch(67.048% 0.31573 323.695);    /* Rose néon explosif */
-  --color-first: oklch(82.363% 0.24888 146.41);        /* Vert lime ultra-vif */
+  --color-primary: oklch(60.201% 0.11053 58.986);
+  --color-primary-dark: oklch(37.619% 0.07877 44.64);
+  --color-secondary: oklch(65.92% 0.153 34.70);
+  --color-first: oklch(67.081% 0.13582 82.641);
   
   /* Couleurs accent supplémentaires pour varier */
   --color-accent-yellow: oklch(85% 0.35 95); /* Jaune banane */
@@ -132,7 +132,7 @@
   --color-gray-900: oklch(98% 0 0);
 
   /* Fond jaune crème / beige peps */
-  --color-bg: oklch(97% 0.03 90);            /* Beige chaud lumineux */
+  --color-bg: oklch(90.445% 0.03331 89.861);            /* Beige chaud lumineux */
   --color-bg-alt: oklch(92% 0.04 85);        /* Jaune crème pâle */
   --color-bg-elevated: oklch(100% 0 0);      /* Blanc pur */
   --color-border: oklch(0% 0 0 / 1);         /* Noir pur 100% */
@@ -141,14 +141,17 @@
   --color-text: oklch(8% 0 0);               /* Noir intense */
   --color-text-light: oklch(35% 0 0);        /* Gris très foncé */
 
-  /* ⚡ OMBRES NÉO-BRUTALISME - Offset ultra-prononcé ⚡ */
-  --shadow-sm: 3px 3px 0px rgba(0, 0, 0, 1);
-  --shadow-md: 6px 6px 0px rgba(0, 0, 0, 1);
-  --shadow-lg: 9px 9px 0px rgba(0, 0, 0, 1);
-  --shadow-xl: 12px 12px 0px rgba(0, 0, 0, 1);
-  --shadow-2xl: 16px 16px 0px rgba(0, 0, 0, 1);
-  --shadow-glow: 8px 8px 0px rgba(0, 0, 0, 1);
-  --shadow-glow-hover: 12px 12px 0px rgba(0, 0, 0, 1);
+  /* ⚡ OMBRES NÉO-BRUTALISME - Offset ultra-prononcé ⚡ *//* ⚡ OMBRES NÉO-BRUTALISME ADOUCIES ⚡ */
+  /* On passe de 3px/6px à 2px/4px et on réduit l'opacité à 80% ou 100% selon tes goûts */
+  --shadow-sm: 2px 2px 0px rgba(0, 0, 0, 1);
+  --shadow-md: 4px 4px 0px rgba(0, 0, 0, 1);
+  --shadow-lg: 6px 6px 0px rgba(0, 0, 0, 1);
+  --shadow-xl: 8px 8px 0px rgba(0, 0, 0, 1);
+  --shadow-2xl: 10px 10px 0px rgba(0, 0, 0, 1);
+
+  /* Pour le glow, on peut garder un petit décalage mais plus discret */
+  --shadow-glow: 4px 4px 0px rgba(0, 0, 0, 1);
+  --shadow-glow-hover: 6px 6px 0px rgba(0, 0, 0, 1);
 
   /* Pas de glassmorphism en néo-brutalisme */
   --glass-bg: var(--color-bg-elevated);

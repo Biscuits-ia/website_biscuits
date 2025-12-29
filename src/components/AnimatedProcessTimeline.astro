@@ -320,7 +320,7 @@ const steps: ProcessStep[] = [
   padding: 0.5rem 1rem;
   background: var(--glass-bg);
   border: 1px solid var(--color-primary);
-  border-radius: 50px;
+  border-radius: var(--radius-full);
   font-size: 0.9rem;
   color: var(--color-first);
   font-weight: 600;
@@ -383,8 +383,9 @@ const steps: ProcessStep[] = [
   align-items: center;
   gap: 1rem;
   padding: 1.25rem 2.5rem;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
   color: var(--color-bg);
-  border-radius: 50px;
+  border-radius: var(--radius-full);
   font-weight: 700;
   font-size: 1.1rem;
   text-decoration: none;

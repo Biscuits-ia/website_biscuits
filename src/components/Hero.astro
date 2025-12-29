@@ -5,46 +5,15 @@ import Logo from '@/assets/logo.webp';
 
 <section class="hero-section relative min-h-screen flex items-center justify-center overflow-hidden bg-[var(--color-bg)] px-4 py-8 md:py-16" data-hero-section>
   
-  <!-- Background animé -->
-  <div class="hero-bg absolute inset-0 z-0 overflow-hidden pointer-events-none">
-    <div class="gradient-orb-1 absolute w-[500px] h-[500px] rounded-full blur-[80px] opacity-25 -top-[200px] -left-[100px] animate-float1" 
-         style="background: radial-gradient(circle, var(--color-primary) 0%, transparent 70%);">
-    </div>
-  </div>
-
   <!-- Contenu Hero -->
   <div class="hero-content relative z-10 max-w-[1400px] w-full grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center">
     
     <!-- Texte Hero -->
     <div class="hero-text flex flex-col gap-6 text-center lg:text-left items-center lg:items-start">
-      
-      <h2 class="hero-subtitle text-2xl md:text-4xl font-semibold text-[var(--color-text)] m-0 animate-fadeInUp opacity-0" style="animation-delay: 0.2s;">
-        Vos Vibe <span class="highlight bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] bg-clip-text text-transparent font-extrabold">Solutions</span>
-      </h2>
-      
       <h1 class="hero-title text-4xl md:text-6xl lg:text-7xl font-extrabold leading-tight text-[var(--color-text)] m-0 animate-fadeInUp opacity-0" style="animation-delay: 0.4s;">
         Créé plus vite avec les outils IA & starterkits
       </h1>
       
-      <!-- Feature badges -->
-      <div class="hero-features grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4 w-full max-w-[500px] lg:max-w-none">
-        <div class="feature-badge flex items-center gap-3 px-5 py-4 bg-[var(--glass-bg)] border border-[var(--color-border)] rounded-xl backdrop-blur-sm transition-all duration-300 hover:bg-[var(--color-bg-elevated)] hover:border-[var(--color-primary)] hover:-translate-y-0.5 animate-fadeInUp opacity-0" style="animation-delay: 0.6s;">
-          <span class="badge-icon text-2xl">⚡</span>
-          <span class="text-[15px] text-[var(--color-text-light)] font-medium">Solution Vibe coder</span>
-        </div>
-        <div class="feature-badge flex items-center gap-3 px-5 py-4 bg-[var(--glass-bg)] border border-[var(--color-border)] rounded-xl backdrop-blur-sm transition-all duration-300 hover:bg-[var(--color-bg-elevated)] hover:border-[var(--color-primary)] hover:-translate-y-0.5 animate-fadeInUp opacity-0" style="animation-delay: 0.7s;">
-          <span class="badge-icon text-2xl">⚙️</span>
-          <span class="text-[15px] text-[var(--color-text-light)] font-medium">Solution d'Automatisation</span>
-        </div>
-        <div class="feature-badge flex items-center gap-3 px-5 py-4 bg-[var(--glass-bg)] border border-[var(--color-border)] rounded-xl backdrop-blur-sm transition-all duration-300 hover:bg-[var(--color-bg-elevated)] hover:border-[var(--color-primary)] hover:-translate-y-0.5 animate-fadeInUp opacity-0" style="animation-delay: 0.8s;">
-          <span class="badge-icon text-2xl">🖥️</span>
-          <span class="text-[15px] text-[var(--color-text-light)] font-medium">Solution Software</span>
-        </div>
-        <div class="feature-badge flex items-center gap-3 px-5 py-4 bg-[var(--glass-bg)] border border-[var(--color-border)] rounded-xl backdrop-blur-sm transition-all duration-300 hover:bg-[var(--color-bg-elevated)] hover:border-[var(--color-primary)] hover:-translate-y-0.5 animate-fadeInUp opacity-0" style="animation-delay: 0.9s;">
-          <span class="badge-icon text-2xl">🚀</span>
-          <span class="text-[15px] text-[var(--color-text-light)] font-medium">Solution SaaS</span>
-        </div>
-      </div>
 
       <!-- CTA Button -->
       <div class="hero-cta mt-6 animate-fadeInUp opacity-0" style="animation-delay: 1s;">

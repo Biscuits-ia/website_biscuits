@@ -129,7 +129,7 @@ const stats: Stat[] = [
   <!-- CTA final -->
   <div class="final-cta" data-lazy-animate>
     <div class="cta-left">
-      <h2>Prêt à transformer<br/>votre activité ?</h2>
+      <h2>Prêt à transformer votre activité ?</h2>
       <p>Discutons de votre projet et découvrez comment l'IA peut vous aider.</p>
       <ul class="cta-benefits">
         <li>✓ Devis gratuit sous 24-48h</li>
@@ -266,7 +266,7 @@ const stats: Stat[] = [
   font-size: clamp(2rem, 5vw, 3.5rem);
   font-weight: 800;
   margin-bottom: 1.5rem;
-  color: var(--color-primary-light);
+  color: var(--color-gray-100);
   line-height: 1.2;
 }
 
@@ -310,7 +310,7 @@ const stats: Stat[] = [
   width: 6px;
   height: 6px;
   background: var(--color-secondary);
-  border-radius: 50%;
+  border-radius: var(--radius-xl);
 }
 
 .service-price {
@@ -403,7 +403,7 @@ const stats: Stat[] = [
 .stat-card {
   background: var(--glass-bg);
   border: 1px solid var(--color-primary);
-  border-radius: 20px;
+  border-radius: var(--radius-xl);
   padding: 3rem 2rem;
   text-align: center;
   backdrop-filter: blur(20px);
@@ -447,14 +447,14 @@ const stats: Stat[] = [
   width: 100%;
   height: 6px;
   background: var(--color-border);
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   overflow: hidden;
 }
 
 .stat-bar {
   height: 100%;
   background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   width: 0;
   transition: width 1.5s cubic-bezier(0.65, 0, 0.35, 1);
 }
@@ -481,14 +481,14 @@ const stats: Stat[] = [
 .cta-left h2 {
   font-size: clamp(2.5rem, 5vw, 4rem);
   font-weight: 900;
-  color: var(--color-primary-light);
+  color: var(--color-gray-50);
   margin-bottom: 1.5rem;
   line-height: 1.2;
 }
 
 .cta-left p {
   font-size: 1.3rem;
-  color: var(--color-gray-300);
+  color: var(--color-gray-50);
   opacity: 0.9;
   line-height: 1.7;
   margin-bottom: 2rem;
@@ -521,7 +521,7 @@ const stats: Stat[] = [
   color: var(--color-bg);
   font-size: 1.3rem;
   font-weight: 700;
-  border-radius: 15px;
+  border-radius: var(--radius-lg);
   text-decoration: none;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   box-shadow: var(--shadow-lg);

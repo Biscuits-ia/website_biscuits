@@ -111,7 +111,7 @@
   --color-primary: oklch(60.201% 0.11053 58.986);
   --color-primary-dark: oklch(37.619% 0.07877 44.64);
   --color-secondary: oklch(65.92% 0.153 34.70);
-  --color-first: oklch(67.081% 0.13582 82.641);
+  --color-first: oklch(46.555% 0.09659 79.314);
   
   /* Couleurs accent supplémentaires pour varier */
   --color-accent-yellow: oklch(85% 0.35 95); /* Jaune banane */

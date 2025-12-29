@@ -237,7 +237,7 @@ const stats: Stat[] = [
   font-size: clamp(2rem, 5vw, 3.5rem);
   font-weight: 800;
   margin-bottom: 1.5rem;
-  color: var(--color-primary-light);
+  color: var(--color-gray-100);
   line-height: 1.2;
 }
 
@@ -260,7 +260,7 @@ const stats: Stat[] = [
   width: 6px;
   height: 6px;
   background: var(--color-secondary);
-  border-radius: 50%;
+  border-radius: var(--radius-xl);
   animation: pulse 2s ease-in-out infinite;
 }
 
@@ -383,7 +383,7 @@ const stats: Stat[] = [
 .stat-card {
   background: var(--glass-bg);
   border: 1px solid var(--color-primary);
-  border-radius: 20px;
+  border-radius: var(--radius-xl);
   padding: 3rem 2rem;
   text-align: center;
   backdrop-filter: blur(20px);
@@ -447,7 +447,7 @@ const stats: Stat[] = [
   width: 100%;
   height: 6px;
   background: var(--color-border);
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   overflow: hidden;
   position: relative;
 }
@@ -455,7 +455,7 @@ const stats: Stat[] = [
 .stat-bar {
   height: 100%;
   background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   width: 0;
   transition: width 2s cubic-bezier(0.65, 0, 0.35, 1);
   box-shadow: 0 0 10px var(--color-primary);
@@ -500,14 +500,14 @@ const stats: Stat[] = [
 .cta-left h2 {
   font-size: clamp(2.5rem, 5vw, 4rem);
   font-weight: 900;
-  color: var(--color-primary-light);
+  color: var(--color-gray-50);
   margin-bottom: 1.5rem;
   line-height: 1.2;
 }
 
 .cta-left p {
   font-size: 1.3rem;
-  color: var(--color-gray-300);
+  color: var(--color-gray-100);
   opacity: 0.9;
   line-height: 1.7;
   margin-bottom: 2rem;
@@ -523,7 +523,7 @@ const stats: Stat[] = [
 
 .cta-benefits li {
   font-size: 1.1rem;
-  color: var(--color-primary-light);
+  color: var(--color-gray-100);
   padding-left: 0.5rem;
 }
 
@@ -551,7 +551,7 @@ const stats: Stat[] = [
   height: 100%;
   font-weight: 700;
   font-size: 1.2rem;
-  border-radius: 15px;
+  border-radius: var(--radius-lg);
   transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 }
 

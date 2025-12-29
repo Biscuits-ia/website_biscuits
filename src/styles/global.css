@@ -414,7 +414,7 @@ section:nth-child(odd) {
   font-size: clamp(1.25rem, 3vw, 2rem);
   font-weight: 700;
   color: var(--color-text);
-  margin: 0;
+  margin-top: 4rem;
   opacity: 0;
 }
 
@@ -957,7 +957,10 @@ section:nth-child(odd) {
     min-height: var(--header-height-mobile);
     padding-inline: 1rem;
   }
-
+  
+  .badge-icon {
+    display: none;
+  }
   .mobile-menu-toggle {
     display: block;
   }

@@ -51,18 +51,18 @@
 :root,
 :root[data-theme='dark'] {
   /* 🍪 PALETTE BISCUITS NOCTURNE - Tons chauds sur fond sombre */
-  --color-primary: oklch(68% 0.18 50);         /* Caramel doré lumineux */
+  --color-primary: oklch(54.737% 0.14363 50.501);         /* Caramel doré lumineux */
   --color-primary-light: oklch(92.397% 0.04768 58.943);   /* Caramel clair */
   --color-primary-dark: oklch(52% 0.16 45);    /* Caramel brûlé */
-  --color-secondary: oklch(72% 0.20 40);       /* Orange cuivré chaud */
+  --color-secondary: oklch(45.388% 0.1315 39.495);       /* Orange cuivré chaud */
   --color-first: oklch(75% 0.16 80);           /* Miel ambré doré */
   
   /* Palette gourmande nocturne */
   --color-accent-yellow: oklch(82% 0.18 85);   /* Miel doré brillant */
-  --color-accent-orange: oklch(70% 0.22 50);   /* Caramel intense */
+  --color-accent-orange: oklch(55.426% 0.15987 44.467);   /* Caramel intense */
   --color-accent-cream: oklch(85% 0.08 75);    /* Crème vanillée */
-  --color-accent-cinnamon: oklch(62% 0.16 45); /* Cannelle chaude */
-  --color-accent-toffee: oklch(58% 0.18 55);   /* Toffee riche */
+  --color-accent-cinnamon: oklch(51.448% 0.15841 40.94); /* Cannelle chaude */
+  --color-accent-toffee: oklch(49.648% 0.13668 46.597);   /* Toffee riche */
   
   /* Palette de gris avec teinte chaude biscuit */
   --color-gray-50: oklch(92% 0.02 50);         /* Crème claire */
@@ -82,7 +82,7 @@
   --color-bg-elevated: oklch(25% 0.02 45);     /* Chocolat au lait foncé */
   
   /* Bordure caramel doré - Signature gourmande */
-  --color-border: oklch(86.698% 0.0581 64.346);          /* Caramel doré */
+  --color-border: oklch(70.303% 0.09035 65.994);          /* Caramel doré */
   
   /* Texte crème chaleureux */
   --color-text: oklch(95% 0.02 70);            /* Crème vanillée */
@@ -132,7 +132,7 @@
 :root[data-theme='light'] {
   /* 🍪 PALETTE GOURMANDE BISCUITS */
   --color-primary: oklch(48% 0.15 40);         /* Chocolat chaud intense */
-  --color-primary-light: oklch(91.298% 0.02722 43.487);   /* Biscuit doré clair */
+  --color-primary-light: oklch(89.174% 0.05067 41.019);   /* Biscuit doré clair */
   --color-primary-dark: oklch(35% 0.12 40);    /* Chocolat noir */
 
   --color-secondary: oklch(65% 0.20 50);       /* Caramel cuivré */
@@ -218,10 +218,8 @@
 }
 
 /* Transition douce entre les thèmes */
-:root {
+:root[data-theme='dark'] {
   color-scheme: dark;
-  transition: background-color var(--transition-base), 
-              color var(--transition-base);
 }
 
 :root[data-theme='light'] {
@@ -252,6 +250,48 @@
 :root[data-theme='light'] .cta-button:active,
 :root[data-theme='light'] .btn-primary:active,
 :root[data-theme='light'] button:active {
+  transform: translate(3px, 3px);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Cards avec bordures épaisses et ombres fortes */
+:root[data-theme='light'] .zone-card,
+:root[data-theme='light'] .feature-badge,
+:root[data-theme='light'] .contact-form,
+:root[data-theme='light'] .stat-item {
+  border: var(--brutal-border);
+  box-shadow: var(--shadow-lg);
+  transition: all var(--transition-fast);
+  background: var(--color-bg-elevated);
+}
+
+:root[data-theme='light'] .zone-card:hover,
+:root[data-theme='light'] .stat-item:hover {
+  transform: translate(-3px, -3px);
+  box-shadow: var(--shadow-xl);
+}
+
+:root[data-theme='dark'] .cta-button,
+:root[data-theme='dark'] .btn-primary,
+:root[data-theme='dark'] button {
+  border: var(--brutal-border);
+  box-shadow: var(--shadow-lg);
+  transition: all var(--transition-fast);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+:root[data-theme='dark'] .cta-button:hover,
+:root[data-theme='dark'] .btn-primary:hover,
+:root[data-theme='dark'] button:hover {
+  transform: translate(-3px, -3px);
+  box-shadow: var(--shadow-xl);
+}
+
+:root[data-theme='dark'] .cta-button:active,
+:root[data-theme='dark'] .btn-primary:active,
+:root[data-theme='dark'] button:active {
   transform: translate(3px, 3px);
   box-shadow: var(--shadow-sm);
 }

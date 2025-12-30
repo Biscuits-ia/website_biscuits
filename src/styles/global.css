@@ -67,7 +67,7 @@ h6 {
 
 h1 {
   font-size: clamp(var(--font-size-3xl), 5vw, var(--font-size-5xl));
-  background: linear-gradient(135deg, var(--color-text) 0%, var(--color-text-light) 100%);
+  background: var(--color-text);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -161,7 +161,7 @@ section:nth-child(odd) {
 
 .logo-text strong {
   font-size: clamp(1.25rem, 3vw, 1.5rem);
-  background: linear-gradient(135deg, var(--color-primary), var(--color-first));
+  background: var(--color-primary);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -292,7 +292,7 @@ section:nth-child(odd) {
   justify-content: center;
   gap: 0.75rem;
   padding: 0.75rem 1.5rem;
-  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+  background: var(--color-primary);
   color: var(--color-primary-light) !important;
   border-radius: var(--radius-lg);
   border: 1px solid transparent;
@@ -376,9 +376,7 @@ section:nth-child(odd) {
 .gradient-grid {
   position: absolute;
   inset: 0;
-  background-image: 
-    linear-gradient(var(--color-border) 1px, transparent 1px),
-    linear-gradient(90deg, var(--color-border) 1px, transparent 1px);
+  background-image: var(--color-border);
   background-size: 50px 50px;
   mask-image: radial-gradient(ellipse at center, black 20%, transparent 80%);
 }
@@ -419,7 +417,7 @@ section:nth-child(odd) {
 }
 
 .highlight {
-  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-first) 100%);
+  background: --color-primary;
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -485,7 +483,7 @@ section:nth-child(odd) {
   align-items: center;
   gap: 0.75rem;
   padding: clamp(1rem, 2.5vw, 1.25rem) clamp(1.5rem, 4vw, 2.5rem);
-  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+  background: var(--color-primary);
   color: var(--color-primary-light);
   font-weight: 700;
   font-size: clamp(1rem, 2.5vw, 1.1rem);
@@ -507,7 +505,6 @@ section:nth-child(odd) {
   inset: 0 auto 0 -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
   transition: left 0.5s ease;
 }
 
@@ -545,7 +542,7 @@ section:nth-child(odd) {
 .trust-item strong {
   font-size: clamp(1.5rem, 4vw, 2rem);
   font-weight: 900;
-  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-first) 100%);
+  background: var(--color-primary);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -603,7 +600,7 @@ section:nth-child(odd) {
 
 .zone-header h2 {
   font-size: clamp(1.75rem, 4vw, 2.5rem);
-  background: linear-gradient(135deg, var(--color-primary), var(--color-first));
+  background: var(--color-primary);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -639,7 +636,7 @@ section:nth-child(odd) {
   position: absolute;
   inset: 0 0 auto 0;
   height: 3px;
-  background: linear-gradient(90deg, var(--color-primary), var(--color-first));
+  background: var(--color-primary);
 }
 
 .zone-card:hover {
@@ -791,7 +788,7 @@ section:nth-child(odd) {
   z-index: 1;
   width: clamp(60px, 12vw, 80px);
   height: clamp(60px, 12vw, 80px);
-  background: linear-gradient(135deg, var(--color-primary), var(--color-first));
+  background: var(--color-primary);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -846,7 +843,7 @@ section:nth-child(odd) {
   display: block;
   font-size: clamp(2rem, 5vw, 3rem);
   font-weight: var(--font-weight-extrabold);
-  background: linear-gradient(135deg, var(--color-primary), var(--color-first));
+  background: var(--color-primary);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -888,7 +885,7 @@ section:nth-child(odd) {
   position: absolute;
   inset: 0 0 auto 0;
   height: 3px;
-  background: linear-gradient(90deg, var(--color-primary), var(--color-first));
+  background: var(--color-primary);
 }
 
 .contact-title,
@@ -898,7 +895,7 @@ section:nth-child(odd) {
   font-size: clamp(1.5rem, 4vw, 1.875rem);
   color: var(--color-text);
   margin-bottom: 2rem;
-  background: linear-gradient(135deg, var(--color-primary), var(--color-first));
+  background: var(--color-primary);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;

@@ -50,115 +50,64 @@
    ======================================== */
 :root,
 :root[data-theme='dark'] {
-  --color-primary-light: oklch(95% 0.05 250);
-  --color-primary: oklch(60.201% 0.11053 58.986);
-  --color-primary-dark: oklch(37.619% 0.07877 44.64);
-  --color-secondary: oklch(65.92% 0.153 34.70);
-  --color-first: oklch(67.081% 0.13582 82.641);
+  /* 🍪 PALETTE BISCUITS NOCTURNE - Tons chauds sur fond sombre */
+  --color-primary: oklch(68% 0.18 50);         /* Caramel doré lumineux */
+  --color-primary-light: oklch(92.397% 0.04768 58.943);   /* Caramel clair */
+  --color-primary-dark: oklch(52% 0.16 45);    /* Caramel brûlé */
+  --color-secondary: oklch(72% 0.20 40);       /* Orange cuivré chaud */
+  --color-first: oklch(75% 0.16 80);           /* Miel ambré doré */
   
-  /* Palette de gris */
-  --color-gray-50: oklch(98% 0 0);
-  --color-gray-100: oklch(95% 0 0);
-  --color-gray-200: oklch(92% 0 0);
-  --color-gray-300: oklch(85% 0 0);
-  --color-gray-400: oklch(70% 0 0);
-  --color-gray-500: oklch(50% 0 0);
-  --color-gray-600: oklch(40% 0 0);
-  --color-gray-700: oklch(30% 0 0);
-  --color-gray-800: oklch(20% 0 0);
-  --color-gray-900: oklch(12% 0 0);
-
-  /* Couleurs de fond et surface */
-  --color-bg: oklch(15.907% 0.00002 271.152);
-  --color-bg-alt: oklch(21.779% 0.00002 271.152);
-  --color-bg-elevated: oklch(26.033% 0.00003 271.152);
-  --color-border: oklch(100% 0.00011 271.152 / 0.1);
+  /* Palette gourmande nocturne */
+  --color-accent-yellow: oklch(82% 0.18 85);   /* Miel doré brillant */
+  --color-accent-orange: oklch(70% 0.22 50);   /* Caramel intense */
+  --color-accent-cream: oklch(85% 0.08 75);    /* Crème vanillée */
+  --color-accent-cinnamon: oklch(62% 0.16 45); /* Cannelle chaude */
+  --color-accent-toffee: oklch(58% 0.18 55);   /* Toffee riche */
   
-  /* Couleurs de texte */
-  --color-text: oklch(100% 0.00011 271.152 / 0.9);
-  --color-text-light: oklch(100% 0.00011 271.152 / 0.6);
+  /* Palette de gris avec teinte chaude biscuit */
+  --color-gray-50: oklch(92% 0.02 50);         /* Crème claire */
+  --color-gray-100: oklch(85% 0.02 50);
+  --color-gray-200: oklch(75% 0.02 50);
+  --color-gray-300: oklch(62% 0.02 50);
+  --color-gray-400: oklch(48% 0.02 50);
+  --color-gray-500: oklch(38% 0.02 50);
+  --color-gray-600: oklch(28% 0.02 40);
+  --color-gray-700: oklch(22% 0.02 40);        /* Chocolat noir */
+  --color-gray-800: oklch(16% 0.02 40);        /* Cacao profond */
+  --color-gray-900: oklch(12% 0.02 40);        /* Noir chocolat */
 
-  /* Ombres douces pour dark mode */
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 8px 20px rgba(0, 0, 0, 0.5);
-  --shadow-xl: 0 12px 24px rgba(0, 0, 0, 0.6);
-  --shadow-2xl: 0 20px 60px rgba(0, 0, 0, 0.7);
-  --shadow-glow: 0 0 20px oklch(69.859% 0.17765 40.766 / 0.3);
-  --shadow-glow-hover: 0 0 30px oklch(74.623% 0.15641 55.847 / 0.5);
-
-  /* Glassmorphism doux */
-  --glass-bg: rgba(255, 255, 255, 0.05);
-  --glass-border: rgba(255, 255, 255, 0.1);
-  --glass-blur: blur(10px);
-
-  /* Border radius doux */
-  --radius-sm: 6px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
-  --radius-xl: 16px;
-  --radius-2xl: 24px;
-  --radius-full: 9999px;
-}
-
-/* ========================================
-   LIGHT THEME - Style NÉO-BRUTALISME 💥
-   ======================================== */
-:root[data-theme='light'] {
-  --color-primary-light: oklch(93.1% 0.00011 271.152);
+  /* Fonds sombres chaleureux - Ambiance biscuiterie la nuit */
+  --color-bg: oklch(8% 0.02 40);         /* Noir chocolat chaud */
+  --color-bg-alt: oklch(20% 0.02 40);          /* Cacao foncé */
+  --color-bg-elevated: oklch(25% 0.02 45);     /* Chocolat au lait foncé */
   
-  /* 🔥 COULEURS ULTRA-PEPS - Maximum contraste et saturation 🔥 */
-  --color-primary: oklch(60.201% 0.11053 58.986);
-  --color-primary-dark: oklch(37.619% 0.07877 44.64);
-  --color-secondary: oklch(65.92% 0.153 34.70);
-  --color-first: oklch(46.555% 0.09659 79.314);
+  /* Bordure caramel doré - Signature gourmande */
+  --color-border: oklch(86.698% 0.0581 64.346);          /* Caramel doré */
   
-  /* Couleurs accent supplémentaires pour varier */
-  --color-accent-yellow: oklch(85% 0.35 95); /* Jaune banane */
-  --color-accent-orange: oklch(70% 0.35 45); /* Orange crush */
-  --color-accent-purple: oklch(60% 0.35 300);/* Violet intense */
-  --color-accent-cyan: oklch(75% 0.30 195);  /* Cyan électrique */
+  /* Texte crème chaleureux */
+  --color-text: oklch(95% 0.02 70);            /* Crème vanillée */
+  --color-text-light: oklch(72% 0.02 60);      /* Beige doux */
+
+  /* ⚡ OMBRES NÉO-BRUTALISME BISCUITS DARK ⚡ */
+  --shadow-sm: 3px 3px 0px var(--color-border);
+  --shadow-md: 5px 5px 0px var(--color-border);
+  --shadow-lg: 7px 7px 0px var(--color-border);
+  --shadow-xl: 10px 10px 0px var(--color-border);
+  --shadow-2xl: 14px 14px 0px var(--color-border);
   
-  /* Palette de gris ultra-contrastée */
-  --color-gray-50: oklch(5% 0 0);            /* Noir profond */
-  --color-gray-100: oklch(15% 0 0);
-  --color-gray-200: oklch(25% 0 0);
-  --color-gray-300: oklch(35% 0 0);
-  --color-gray-400: oklch(50% 0 0);
-  --color-gray-500: oklch(65% 0 0);
-  --color-gray-600: oklch(80% 0 0);
-  --color-gray-700: oklch(90% 0 0);
-  --color-gray-800: oklch(95% 0 0);
-  --color-gray-900: oklch(98% 0 0);
+  /* Ombres avec lueur chaude (effet four) */
+  --shadow-glow: 0 0 40px oklch(68% 0.24 50 / 0.7), 
+                 5px 5px 0px var(--color-border);
 
-  /* Fond jaune crème / beige peps */
-  --color-bg: oklch(90.445% 0.03331 89.861);            /* Beige chaud lumineux */
-  --color-bg-alt: oklch(92% 0.04 85);        /* Jaune crème pâle */
-  --color-bg-elevated: oklch(100% 0 0);      /* Blanc pur */
-  --color-border: oklch(0% 0 0 / 1);         /* Noir pur 100% */
-  
-  /* Texte noir ultra-franc */
-  --color-text: oklch(8% 0 0);               /* Noir intense */
-  --color-text-light: oklch(35% 0 0);        /* Gris très foncé */
+  --shadow-glow-hover: 0 0 35px oklch(68% 0.18 50 / 0.6), 8px 8px 0px var(--color-border);
+  --shadow-press: 2px 2px 0px var(--color-border);
 
-  /* ⚡ OMBRES NÉO-BRUTALISME - Offset ultra-prononcé ⚡ *//* ⚡ OMBRES NÉO-BRUTALISME ADOUCIES ⚡ */
-  /* On passe de 3px/6px à 2px/4px et on réduit l'opacité à 80% ou 100% selon tes goûts */
-  --shadow-sm: 2px 2px 0px rgba(0, 0, 0, 1);
-  --shadow-md: 4px 4px 0px rgba(0, 0, 0, 1);
-  --shadow-lg: 6px 6px 0px rgba(0, 0, 0, 1);
-  --shadow-xl: 8px 8px 0px rgba(0, 0, 0, 1);
-  --shadow-2xl: 10px 10px 0px rgba(0, 0, 0, 1);
-
-  /* Pour le glow, on peut garder un petit décalage mais plus discret */
-  --shadow-glow: 4px 4px 0px rgba(0, 0, 0, 1);
-  --shadow-glow-hover: 6px 6px 0px rgba(0, 0, 0, 1);
-
-  /* Pas de glassmorphism en néo-brutalisme */
+  /* Pas de glassmorphism */
   --glass-bg: var(--color-bg-elevated);
   --glass-border: var(--color-border);
   --glass-blur: blur(0px);
 
-  /* ⚡ BORDER RADIUS NUL - angles droits purs ⚡ */
+  /* ⚡ ANGLES DROITS PURS ⚡ */
   --radius-sm: 0px;
   --radius-md: 0px;
   --radius-lg: 0px;
@@ -166,11 +115,94 @@
   --radius-2xl: 0px;
   --radius-full: 0px;
 
-  /* Transitions ultra-snappy pour effet cartoon */
-  --transition-fast: 0.08s ease-out;
-  --transition-base: 0.12s ease-out;
-  --transition-slow: 0.18s ease-out;
+  /* Variables néo-brutalisme dark */
+  --brutal-border-thin: 3px solid var(--color-border);
+  --brutal-border: 4px solid var(--color-border);
+  --brutal-border-thick: 5px solid var(--color-border);
+  
+  --brutal-hover-lift: -4px;
+  --brutal-hover-shadow-x: 11px;
+  --brutal-hover-shadow-y: 11px;
+  --brutal-press-translate: 4px;
 }
+
+/* ========================================
+   LIGHT THEME - Style NÉO-BRUTALISME 💥
+   ======================================== */
+:root[data-theme='light'] {
+  /* 🍪 PALETTE GOURMANDE BISCUITS */
+  --color-primary: oklch(48% 0.15 40);         /* Chocolat chaud intense */
+  --color-primary-light: oklch(91.298% 0.02722 43.487);   /* Biscuit doré clair */
+  --color-primary-dark: oklch(35% 0.12 40);    /* Chocolat noir */
+
+  --color-secondary: oklch(65% 0.20 50);       /* Caramel cuivré */
+  --color-first: oklch(72% 0.16 80);           /* Miel ambré */
+  
+  /* Palette gourmande étendue */
+  --color-accent-cream: oklch(92% 0.04 75);    /* Crème fouettée */
+  --color-accent-caramel: oklch(68% 0.18 55);  /* Caramel beurre salé */
+  --color-accent-honey: oklch(78% 0.16 85);    /* Miel doré */
+  --color-accent-cinnamon: oklch(58% 0.14 45); /* Cannelle épicée */
+  --color-accent-vanilla: oklch(88% 0.06 80);  /* Vanille douce */
+  
+  /* Gris chauds terreux */
+  --color-gray-50: oklch(8% 0.01 40);          /* Cacao noir */
+  --color-gray-100: oklch(18% 0.01 40);
+  --color-gray-200: oklch(28% 0.02 40);
+  --color-gray-300: oklch(40% 0.02 40);
+  --color-gray-400: oklch(52% 0.02 40);
+  --color-gray-500: oklch(65% 0.02 40);
+  --color-gray-600: oklch(75% 0.02 40);
+  --color-gray-700: oklch(85% 0.02 40);
+  --color-gray-800: oklch(92% 0.02 40);
+  --color-gray-900: oklch(96% 0.02 40);
+
+  /* Fonds chaleureux gourmands */
+  --color-bg: oklch(93% 0.035 75);             /* Farine de blé chaude */
+  --color-bg-alt: oklch(95% 0.025 75);         /* Sucre vanillé pâle */
+  --color-bg-elevated: oklch(97% 0.015 75);    /* Blanc cassé crémeux */
+  
+  /* Bordure chocolat noir profond */
+  --color-border: oklch(15% 0.03 40);          /* Chocolat 85% intense */
+  
+  /* Texte chocolat foncé */
+  --color-text: oklch(20% 0.03 40);            /* Chocolat noir riche */
+  --color-text-light: oklch(42% 0.02 40);      /* Cacao moyen */
+
+  /* ⚡ OMBRES NÉO-BRUTALISME BISCUITS ⚡ */
+  --shadow-sm: 3px 3px 0px var(--color-border);
+  --shadow-md: 5px 5px 0px var(--color-border);
+  --shadow-lg: 7px 7px 0px var(--color-border);
+  --shadow-xl: 10px 10px 0px var(--color-border);
+  --shadow-2xl: 14px 14px 0px var(--color-border);
+  
+  --shadow-glow: 5px 5px 0px var(--color-border);
+  --shadow-glow-hover: 8px 8px 0px var(--color-border);
+  --shadow-press: 2px 2px 0px var(--color-border);
+
+  --glass-bg: var(--color-bg-elevated);
+  --glass-border: var(--color-border);
+  --glass-blur: blur(0px);
+
+  /* ⚡ ANGLES DROITS PURS ⚡ */
+  --radius-sm: 0px;
+  --radius-md: 0px;
+  --radius-lg: 0px;
+  --radius-xl: 0px;
+  --radius-2xl: 0px;
+  --radius-full: 0px;
+
+  /* Variables néo-brutalisme light */
+  --brutal-border-thin: 3px solid var(--color-border);
+  --brutal-border: 4px solid var(--color-border);
+  --brutal-border-thick: 5px solid var(--color-border);
+  
+  --brutal-hover-lift: -4px;
+  --brutal-hover-shadow-x: 11px;
+  --brutal-hover-shadow-y: 11px;
+  --brutal-press-translate: 4px;
+}
+
 
 /* ========================================
    STYLES SPÉCIFIQUES NÉO-BRUTALISME
@@ -242,21 +274,10 @@
 }
 
 /* Feature badges avec couleurs alternées */
-:root[data-theme='light'] .feature-badge:nth-child(1) {
-  background: oklch(81.544% 0.11037 172.452); /* Bleu clair */
-}
-
-:root[data-theme='light'] .feature-badge:nth-child(2) {
-  background: oklch(73.377% 0.14462 146.977); /* Rose clair */
-}
-
-:root[data-theme='light'] .feature-badge:nth-child(3) {
-  background: oklch(69.779% 0.11583 208.861); /* Vert clair */
-}
-
-:root[data-theme='light'] .feature-badge:nth-child(4) {
-  background: oklch(90.824% 0.24641 130.559);  /* Jaune clair */
-}
+.feature-badge:nth-child(1) { background: var(--color-accent-honey); }
+.feature-badge:nth-child(2) { background: var(--color-accent-caramel); }
+.feature-badge:nth-child(3) { background: var(--color-accent-vanilla); }
+.feature-badge:nth-child(4) { background: var(--color-accent-cinnamon); }
 
 /* Inputs avec style brutal */
 :root[data-theme='light'] input,

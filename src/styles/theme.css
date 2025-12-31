@@ -55,10 +55,10 @@
   --color-primary-light: oklch(92.397% 0.04768 58.943);   /* Caramel clair */
   --color-primary-dark: oklch(52% 0.16 45);    /* Caramel brûlé */
   --color-secondary: oklch(45.388% 0.1315 39.495);       /* Orange cuivré chaud */
-  --color-first: oklch(75% 0.16 80);           /* Miel ambré doré */
+  --color-first: oklch(53.717% 0.11801 60.834);           /* Miel ambré doré */
   
   /* Palette gourmande nocturne */
-  --color-accent-yellow: oklch(82% 0.18 85);   /* Miel doré brillant */
+  --color-accent-yellow: oklch(53.717% 0.11801 60.834);   /* Miel doré brillant */
   --color-accent-orange: oklch(55.426% 0.15987 44.467);   /* Caramel intense */
   --color-accent-cream: oklch(85% 0.08 75);    /* Crème vanillée */
   --color-accent-cinnamon: oklch(51.448% 0.15841 40.94); /* Cannelle chaude */
@@ -131,19 +131,17 @@
    ======================================== */
 :root[data-theme='light'] {
   /* 🍪 PALETTE GOURMANDE BISCUITS */
-  --color-primary: oklch(48% 0.15 40);         /* Chocolat chaud intense */
-  --color-primary-light: oklch(89.174% 0.05067 41.019);   /* Biscuit doré clair */
-  --color-primary-dark: oklch(35% 0.12 40);    /* Chocolat noir */
-
-  --color-secondary: oklch(65% 0.20 50);       /* Caramel cuivré */
-  --color-first: oklch(72% 0.16 80);           /* Miel ambré */
+  --color-primary: oklch(60.201% 0.11053 58.986);
+  --color-primary-light:oklch(57.378% 0.22642 28.383 / 0.808);
+  --color-primary-dark: oklch(32.109% 0.00004 271.152);
+  --color-secondary: oklch(60.201% 0.11053 58.986);
+  --color-first: oklch(57.378% 0.22642 28.383 / 0.808);
   
   /* Palette gourmande étendue */
-  --color-accent-cream: oklch(92% 0.04 75);    /* Crème fouettée */
-  --color-accent-caramel: oklch(68% 0.18 55);  /* Caramel beurre salé */
-  --color-accent-honey: oklch(78% 0.16 85);    /* Miel doré */
-  --color-accent-cinnamon: oklch(58% 0.14 45); /* Cannelle épicée */
-  --color-accent-vanilla: oklch(88% 0.06 80);  /* Vanille douce */
+  --color-accent-cream: oklch(60.201% 0.11053 58.986);
+  --color-accent-caramel: oklch(32.109% 0.00004 271.152);
+  --color-accent-honey: oklch(57.378% 0.22642 28.383 / 0.808);
+  --color-accent-vanilla: oklch(57.378% 0.22642 28.383 / 0.808);
   
   /* Gris chauds terreux */
   --color-gray-50: oklch(8% 0.01 40);          /* Cacao noir */
@@ -158,9 +156,9 @@
   --color-gray-900: oklch(96% 0.02 40);
 
   /* Fonds chaleureux gourmands */
-  --color-bg: oklch(93% 0.035 75);             /* Farine de blé chaude */
-  --color-bg-alt: oklch(95% 0.025 75);         /* Sucre vanillé pâle */
-  --color-bg-elevated: oklch(97% 0.015 75);    /* Blanc cassé crémeux */
+  --color-bg: oklch(95.509% 0.05337 88.363);             /* Farine de blé chaude */
+  --color-bg-alt: oklch(95.509% 0.05337 88.363);         /* Sucre vanillé pâle */
+  --color-bg-elevated: oklch(95.509% 0.05337 88.363);    /* Blanc cassé crémeux */
   
   /* Bordure chocolat noir profond */
   --color-border: oklch(15% 0.03 40);          /* Chocolat 85% intense */
@@ -385,3 +383,4 @@
   -webkit-text-fill-color: transparent;
   filter: drop-shadow(2px 2px 0px rgba(0, 0, 0, 0.15));
 }
+

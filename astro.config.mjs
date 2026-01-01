@@ -26,7 +26,7 @@ priority: 0.7,
 lastmod: new Date(),
 }), vercel(),
 robots({
-      host: "https://biscuits-ia.com",
+      host: 'biscuits-ia.com',
       sitemap: [
         "https://biscuits-ia.com/sitemap.xml",
       ],

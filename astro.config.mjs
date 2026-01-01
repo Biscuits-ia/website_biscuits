@@ -14,7 +14,6 @@ import robots from 'astro-robots';
 // https://astro.build/config
 export default defineConfig({
   site: 'https://biscuits-ia.com',
-
   integrations: [mdx(), svelte(), compress({
     CSS: true,
     HTML: true,
@@ -27,10 +26,10 @@ priority: 0.7,
 lastmod: new Date(),
 }), vercel(),
 robots({
-      host: "https://example.com",
+      host: "https://biscuits-ia.com",
       sitemap: [
-        "https://example.com/sitemap.xml",
-        "https://www.example.com/sitemap.xml",
+        "https://biscuits-ia.com/sitemap.xml",
+        "https://www.biscuits-ia.com/sitemap.xml",
       ],
       policy: [
         {

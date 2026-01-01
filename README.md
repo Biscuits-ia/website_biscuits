@@ -1,6 +1,6 @@
-# 🍪 Biscuits AI
+# 🍪 Biscuits IA
 
-Biscuits AI est une plateforme orientée **développeurs & créateurs** proposant des **starter-kits production-ready**, des outils d'automatisation et des solutions SaaS pour accélérer la création de projets web et applicatifs modernes.
+Biscuits IA est une plateforme orientée **développeurs & créateurs** proposant des **starter-kits production-ready**, des outils d'automatisation et des solutions SaaS pour accélérer la création de projets web et applicatifs modernes.
 
 Le projet s'adresse aux **vibe coders**, indépendants, startups et équipes techniques souhaitant gagner du temps tout en respectant les **meilleures pratiques 2025** (sécurité, performance, CI/CD, SEO, typage strict).
 
@@ -32,7 +32,7 @@ Le projet s'adresse aux **vibe coders**, indépendants, startups et équipes tec
 
 ## 🧠 Philosophie du projet
 
-Biscuits AI repose sur une vision simple :
+Biscuits IA repose sur une vision simple :
 
 > **Accélérer la création de produits tech fiables, performants et sécurisés sans sacrifier la qualité.**
 
@@ -58,7 +58,7 @@ Les starter-kits sont conçus pour être :
 
 Projet développé par **Alexis Gallard**
 
-- Marke : **Biscuits AI**
+- Marke : **Biscuits IA**
 - Écosystème : Optea Tech
 - Orientation : Dev, SaaS, Sécurité, IA
 
@@ -89,5 +89,5 @@ Toute reproduction ou redistribution sans autorisation est interdite.
 
 ---
 
-> 🍪 **Biscuits AI – Le code qui croustille en production.**
+> 🍪 **Biscuits IA – Le code qui croustille en production.**
 

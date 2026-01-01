@@ -29,7 +29,6 @@ robots({
       host: "https://biscuits-ia.com",
       sitemap: [
         "https://biscuits-ia.com/sitemap.xml",
-        "https://www.biscuits-ia.com/sitemap.xml",
       ],
       policy: [
         {

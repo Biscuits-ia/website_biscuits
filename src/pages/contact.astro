@@ -1,6 +1,6 @@
 ---
 import BaseLayout from '@layouts/Layout.astro';
-import ContactForm from '@/components/ContactForm.astro';
+import ContactForm from '@/components/svelte/ContactForm.svelte';
 
 import '@/styles/global.css'
 import NewsletterForm from '@/components/svelte/NewsletterForm.svelte';
@@ -33,10 +33,7 @@ const structuredData = {
     <div class="container">
       <div class="contact-grid">
         <div class="contact-form-section">
-          <h2>Demande de Devis Gratuit</h2>
-          <p class="form-intro text-center">
-            Remplissez ce formulaire et nous vous répondrons dans les plus brefs délais.
-          </p>
+          <h2>Remplissez ce formulaire et nous vous répondrons dans les plus brefs délais.</h2>
           <ContactForm />
         </div>  
 
@@ -101,11 +98,6 @@ const structuredData = {
   .contact-form-section h2 {
     text-align: center;
     margin-bottom: var(--spacing-md);
-  }
-
-  .form-intro {
-    color: var(--color-text-light);
-    margin-bottom: var(--spacing-xl);
   }
 
   .contact-info-section {
@@ -186,16 +178,6 @@ const structuredData = {
   .social-btn:hover {
     transform: translateX(8px);
     opacity: 0.9;
-  }
-
-  .social-btn.linkedin {
-    background: #0077b5;
-    color: white;
-  }
-
-  .social-btn.facebook {
-    background: #1877f2;
-    color: white;
   }
 
   .map-section {

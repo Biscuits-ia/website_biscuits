@@ -1,0 +1,90 @@
+---
+export interface Props {
+  title: string;
+  description: string;
+  canonical: string;
+  ogImage?: string;
+  ogType?: 'website' | 'article';
+  noindex?: boolean;
+  author?: string;
+  publishedTime?: string;
+  modifiedTime?: string;
+  tags?: string[];
+}
+
+const {
+  title,
+  description,
+  canonical,
+  ogImage = '/og-default.jpg',
+  ogType = 'website',
+  noindex = false,
+  author,
+  publishedTime,
+  modifiedTime,
+  tags = []
+} = Astro.props;
+
+const siteUrl = import.meta.env.SITE || 'https://biscuits.dev';
+const fullOgImage = ogImage.startsWith('http') 
+  ? ogImage 
+  : `${siteUrl}${ogImage}`;
+
+// Ensure description is between 50-160 characters
+const seoDescription = description.length > 160 
+  ? description.substring(0, 157) + '...' 
+  : description;
+---
+
+<!-- Primary Meta Tags -->
+<title>{title}</title>
+<meta name="title" content={title} />
+<meta name="description" content={seoDescription} />
+
+<!-- Canonical URL -->
+<link rel="canonical" href={canonical} />
+
+<!-- Open Graph / Facebook -->
+<meta property="og:type" content={ogType} />
+<meta property="og:url" content={canonical} />
+<meta property="og:title" content={title} />
+<meta property="og:description" content={seoDescription} />
+<meta property="og:image" content={fullOgImage} />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:locale" content="fr_FR" />
+<meta property="og:site_name" content="Biscuits IA" />
+
+<!-- Article specific meta tags -->
+{ogType === 'article' && (
+  <>
+    {author && <meta property="article:author" content={author} />}
+    {publishedTime && <meta property="article:published_time" content={publishedTime} />}
+    {modifiedTime && <meta property="article:modified_time" content={modifiedTime} />}
+    {tags.map(tag => (
+      <meta property="article:tag" content={tag} />
+    ))}
+  </>
+)}
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:url" content={canonical} />
+<meta name="twitter:title" content={title} />
+<meta name="twitter:description" content={seoDescription} />
+<meta name="twitter:image" content={fullOgImage} />
+<meta name="twitter:site" content="@biscuitsIA" />
+<meta name="twitter:creator" content="@biscuitsIA" />
+
+<!-- Robots -->
+{noindex ? (
+  <meta name="robots" content="noindex, nofollow" />
+) : (
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+)}
+
+<!-- Additional SEO -->
+<meta name="theme-color" content="#3b82f6" />
+<meta name="color-scheme" content="dark light" />
+<link rel="alternate" hreflang="fr" href={canonical} />
+<link rel="alternate" hreflang="x-default" href={canonical} />

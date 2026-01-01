@@ -1,0 +1,87 @@
+---
+export interface SchemaOrgProps {
+  type: 'Organization' | 'ProfessionalService' | 'FAQPage' | 'Article' | 'WebPage';
+  data?: Record<string, any>;
+}
+
+const { type, data = {} } = Astro.props;
+
+const baseOrganization = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "Biscuits IA",
+  "url": "https://biscuits.dev",
+  "logo": "https://biscuits.dev/logo.webp",
+  "description": "Solutions IA et automatisation pour développeurs et startups tech",
+  "email": "contact@biscuits.dev",
+  "address": {
+    "@type": "PostalAddress",
+    "addressCountry": "FR"
+  },
+  "sameAs": [
+    "https://linkedin.com/company/biscuits-ia",
+    "https://twitter.com/biscuitsIA"
+  ]
+};
+
+const schemas = {
+  Organization: baseOrganization,
+  
+  ProfessionalService: {
+    "@context": "https://schema.org",
+    "@type": "ProfessionalService",
+    "name": data.name || "Services Biscuits IA",
+    "description": data.description || "Solutions IA personnalisées",
+    "provider": baseOrganization,
+    "areaServed": {
+      "@type": "Country",
+      "name": "France"
+    },
+    "serviceType": data.serviceType || "Développement IA",
+    ...data
+  },
+  
+  FAQPage: {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": data.questions?.map((q: any) => ({
+      "@type": "Question",
+      "name": q.question,
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": q.answer
+      }
+    })) || []
+  },
+  
+  Article: {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": data.headline || data.title,
+    "description": data.description,
+    "datePublished": data.datePublished,
+    "dateModified": data.dateModified || data.datePublished,
+    "author": {
+      "@type": "Person",
+      "name": data.author || "Biscuits du Dev"
+    },
+    "publisher": baseOrganization,
+    "image": data.image,
+    "url": data.url
+  },
+  
+  WebPage: {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "name": data.name || "Biscuits IA",
+    "description": data.description,
+    "url": data.url,
+    "publisher": baseOrganization,
+    "breadcrumb": data.breadcrumb
+  }
+};
+
+const schema = schemas[type];
+---
+
+<script type="application/ld+json" set:html={JSON.stringify(schema)} />

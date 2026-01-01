@@ -2,7 +2,7 @@ const CACHE_NAME = 'biscuits-dev-v1';
 const urlsToCache = [
   '/',
   '/styles/global.css',
-  '/hero-tech.webp',
+  '/styles/theme.css',
   '/logo.webp',
 ];
 

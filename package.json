@@ -27,6 +27,7 @@
     "@vercel/speed-insights": "^1.3.1",
     "astro": "5.16.6",
     "astro-compress": "^2.3.8",
+    "astro-robots": "^2.3.1",
     "eslint": "^9.39.2",
     "gsap": "^3.14.2",
     "rehype-pretty-code": "^0.14.1",

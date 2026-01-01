@@ -31,7 +31,7 @@ const {
 const siteUrl = 'https://biscuits.dev';
 const finalCanonical = canonical || Astro.url.origin + Astro.url.pathname;
 
-const fullTitle = `${title} | Biscuits AI – IA, Starterkits & Automatisation`;
+const fullTitle = `${title} | ${description}`;
 
 const organizationSchema = {
   "@context": "https://schema.org",
@@ -39,12 +39,8 @@ const organizationSchema = {
   "name": "Biscuits AI",
   "url": "https://biscuits.dev",
   "logo": "https://biscuits.dev/logo.png",
-  "description": "Starterkits Next.js / Astro, outils IA, prompts avancés et automatisations pour développeurs et vibe coders.",
+  "description": "Starterkits, outils IA avancés et automatisations pour développeurs et vibe coders.",
   "email": "contact@biscuits.dev",
-  "sameAs": [
-    "https://github.com/optea-tech",
-    "https://tiktok.com/@sweetosky"
-  ]
 };
 ---
 <!DOCTYPE html>
@@ -59,12 +55,8 @@ const organizationSchema = {
   <link rel="canonical" href={finalCanonical} />
 
   <!-- Theme + UI -->
-  <meta name="theme-color" content="#0d0d0d" />
+  <meta name="theme-color" content="#b16f36" />
   <meta name="color-scheme" content="dark light" />
-
-  <!-- Preconnect pour Storyblok -->
-  <link rel="preconnect" href="https://a.storyblok.com" />
-  <link rel="dns-prefetch" href="https://a.storyblok.com" />
 
   <!-- Open Graph -->
   <meta property="og:type" content={type} />
@@ -81,19 +73,11 @@ const organizationSchema = {
   <meta name="twitter:description" content={description} />
   <meta name="twitter:image" content={`${siteUrl}${ogImage}`} />
 
-  <!-- Favicon -->
+
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+  <link rel="sitemap" href="/sitemap-index.xml" />
 
-  <!-- Preconnect pour Storyblok -->
-  <link rel="preconnect" href="https://a.storyblok.com" />
-  <link rel="dns-prefetch" href="https://a.storyblok.com" />
-
-  <!-- Preconnect -->
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-
-  <!-- JSON-LD -->
   <script type="application/ld+json" set:html={JSON.stringify(organizationSchema)} />
   {structuredData && (
     <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
@@ -123,21 +107,17 @@ const organizationSchema = {
   (function() {
       const STORAGE_KEY = 'theme-preference';
       
-      /** * Récupère la préférence : localStorage > Système
-       */
       function getThemePreference() {
         if (typeof localStorage !== 'undefined' && localStorage.getItem(STORAGE_KEY)) {
           return localStorage.getItem(STORAGE_KEY);
         }
-        return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        return window.matchMedia('(prefers-color-scheme: light)').matches ? 'dark' : 'light';
       }
 
       const theme = getThemePreference();
       
-      // Applique la classe sur <html> immédiatement
       document.documentElement.setAttribute('data-theme', theme);
       
-      // Ajoute une classe 'dark' pour compatibilité Tailwind (si utilisé)
       if (theme === 'dark') {
         document.documentElement.classList.add('dark');
       }

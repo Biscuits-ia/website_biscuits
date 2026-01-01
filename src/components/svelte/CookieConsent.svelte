@@ -213,7 +213,7 @@
   </div>
 {/if}
 
-<style>
+<style scoped>
   .cookie-banner {
     position: fixed;
     bottom: 20px;
@@ -223,7 +223,6 @@
     margin: 0 auto;
     background: var(--color-background);
     border-radius: 12px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
     z-index: 10000;
     padding: 24px;
   }

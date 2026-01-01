@@ -8,25 +8,52 @@ import svelte from '@astrojs/svelte';
 import compress from 'astro-compress';
 
 
+import robots from 'astro-robots';
+
+
 // https://astro.build/config
 export default defineConfig({
   site: 'https://biscuits-ia.com',
 
-  integrations: [
-    mdx(), 
-    svelte(), 
-    compress({
-      CSS: true,
-      HTML: true,
-      Image: false,
-      JavaScript: true,
-      SVG: true,
+  integrations: [mdx(), svelte(), compress({
+    CSS: true,
+    HTML: true,
+    Image: true,
+    JavaScript: true,
+    SVG: true,
+  }), sitemap({
+changefreq: 'weekly',
+priority: 0.7,
+lastmod: new Date(),
+}), vercel(),
+robots({
+      host: "https://example.com",
+      sitemap: [
+        "https://example.com/sitemap.xml",
+        "https://www.example.com/sitemap.xml",
+      ],
+      policy: [
+        {
+          userAgent: [
+            "Applebot",
+            "Googlebot",
+            "bingbot",
+            "Yandex",
+            "Yeti",
+            "Baiduspider",
+            "360Spider",
+            "*",
+          ],
+          allow: ["/"],
+          crawlDelay: 5,
+        },
+        {
+          userAgent: "BLEXBot",
+          disallow: ["/assets", "/uploades/1989-08-21/*jpg$"],
+        },
+      ],
     }),
-    sitemap({
-  changefreq: 'weekly',
-  priority: 0.7,
-  lastmod: new Date(),
-  }), vercel()],
+  ],
 
   output: 'static',
   

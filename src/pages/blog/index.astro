@@ -1,5 +1,5 @@
 ---
-import Layout from '@/layouts/Layout.astro';
+import Layout from '@/layouts/BaseLayout.astro';
 import { getCollection, type CollectionEntry } from 'astro:content';
 
 const articles = await getCollection('blog');
@@ -16,32 +16,14 @@ const sortedArticles = publishedArticles.sort(
 const featuredArticles = sortedArticles.filter((a: CollectionEntry<'blog'>) => a.data.featured);
 const regularArticles = sortedArticles.filter((a: CollectionEntry<'blog'>) => !a.data.featured);
 
-const allTags = [...new Set(sortedArticles.flatMap((a: CollectionEntry<'blog'>) => (a.data.tags as string[]) || []))] as string[];
-
-const structuredData = {
-  "@context": "https://schema.org",
-  "@type": "Blog",
-  "name": "Blog – Biscuits AI",
-  "headline": "Blog Biscuits AI",
-  "description": "Articles sur l'IA, les starterkits optimisés, les outils de développement et les automatisations pour développeurs et vibe coders.",
-  "url": "https://biscuits.dev/blog",
-  "inLanguage": "fr-FR",
-  "publisher": {
-    "@type": "Organization",
-    "name": "Biscuits AI",
-    "url": "https://biscuits.dev",
-    "logo": "https://biscuits.dev/logo.webp"
-  }
-};
+const allTags = [...new Set(sortedArticles.flatMap((a: CollectionEntry<'blog'>) => (a.data.tags as string[]) || []))] as string[];  
 ---
 
 <Layout
-  title="Blog - Biscuits du Dev"
+  title="Blog"
   description="Articles, guides et tutoriels pour développeurs et vibe coders"
-  structuredData={structuredData}
 >
   <div class="blog-wrapper">
-    <!-- Hero Section -->
     <header class="blog-hero">
       <div class="hero-content">
         <h1 class="hero-title">

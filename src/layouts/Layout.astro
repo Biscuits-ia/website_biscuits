@@ -1,175 +1,225 @@
 ---
 import Header from '@/components/Header.astro';
-
-import ThemeInit from '@/components/ThemeInit.astro';
 import Footer from '@/components/Footer.astro';
-import CookieConsent from '../components/svelte/CookieConsent.svelte';
-import Analytics from '@vercel/analytics/astro'
-import  SpeedInsights  from "@vercel/speed-insights/astro"
+import ThemeInit from '@/components/ThemeInit.astro';
+import SEOHead from '@/components/SEO/SEOHead.astro';
+import SchemaOrg from '@/components/SEO/SchemaOrg.astro';
+import CookieConsent from '@/components/svelte/CookieConsent.svelte';
+
+import Analytics from '@vercel/analytics/astro';
+import SpeedInsights from '@vercel/speed-insights/astro';
 
 import '@/styles/theme.css';
 import '@/styles/global.css';
 
-interface Props {
+export interface Props {
   title: string;
   description: string;
   canonical?: string;
   ogImage?: string;
-  type?: 'website' | 'article';
-  structuredData?: object;
+  ogType?: 'website' | 'article';
+  noindex?: boolean;
+  schema?: {
+    type: 'Organization' | 'ProfessionalService' | 'FAQPage' | 'Article' | 'WebPage';
+    data?: Record<string, any>;
+  };
+  loadGSAP?: boolean;
 }
 
 const {
   title,
   description,
   canonical,
-  ogImage = '/og-image.jpg',
-  type = 'website',
-  structuredData
+  ogImage = '/og-default.jpg',
+  ogType = 'website',
+  noindex = false,
+  schema,
+  loadGSAP = false
 } = Astro.props;
 
-const siteUrl = 'https://biscuits.dev';
-const finalCanonical = canonical || Astro.url.origin + Astro.url.pathname;
+const siteUrl = import.meta.env.SITE || 'https://biscuits.dev';
 
-const fullTitle = `${title} | ${description}`;
+const fullCanonical = canonical 
+  ? `${siteUrl}${canonical}` 
+  : `${siteUrl}${Astro.url.pathname}`;
+
+const fullTitle = title.includes('|') ? title : `${title} | Biscuits IA`;
 
 const organizationSchema = {
   "@context": "https://schema.org",
   "@type": "Organization",
   "name": "Biscuits IA",
-  "url": "https://biscuits.dev",
-  "logo": "https://biscuits.dev/logo.png",
-  "description": "Solutions IA et Automatisation.",
+  "url": siteUrl,
+  "logo": `${siteUrl}/logo.webp`,
+  "description": "Solutions IA et automatisation pour développeurs et startups tech",
   "email": "contact@biscuits.dev",
+  "address": {
+    "@type": "PostalAddress",
+    "addressCountry": "FR"
+  },
+  "sameAs": [
+    "https://linkedin.com/company/biscuits-ia",
+    "https://twitter.com/biscuitsIA"
+  ]
 };
+
+const isProd = import.meta.env.PROD;
 ---
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
   <ThemeInit />
-  <!-- SEO -->
-  <title>{fullTitle}</title>
-  <meta name="description" content={description} />
-  <link rel="canonical" href={finalCanonical} />
-
-  <!-- Theme + UI -->
-  <meta name="theme-color" content="#b16f36" />
-  <meta name="color-scheme" content="dark light" />
-
-  <!-- Open Graph -->
-  <meta property="og:type" content={type} />
-  <meta property="og:title" content={fullTitle} />
-  <meta property="og:description" content={description} />
-  <meta property="og:url" content={finalCanonical} />
-  <meta property="og:image" content={`${siteUrl}${ogImage}`} />
-  <meta property="og:locale" content="fr_FR" />
-  <meta property="og:site_name" content="Biscuits IA" />
-
-  <!-- Twitter -->
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content={fullTitle} />
-  <meta name="twitter:description" content={description} />
-  <meta name="twitter:image" content={`${siteUrl}${ogImage}`} />
-
-
+  
+  <!-- SEO Component -->
+  <SEOHead 
+    title={fullTitle}
+    description={description}
+    canonical={fullCanonical}
+    ogImage={ogImage}
+    ogType={ogType}
+    noindex={noindex}
+  />
+  
+  {schema && <SchemaOrg type={schema.type} data={schema.data} />}
+  
+  {!schema && (
+    <script type="application/ld+json" set:html={JSON.stringify(organizationSchema)} />
+  )}
+  
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
   <link rel="sitemap" href="/sitemap-index.xml" />
-
-  <script type="application/ld+json" set:html={JSON.stringify(organizationSchema)} />
-  {structuredData && (
-    <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
+  
+  <!-- Preconnect to external domains (performance) -->
+  {isProd && (
+    <>
+      <link rel="preconnect" href="https://www.googletagmanager.com" crossorigin />
+      <link rel="preconnect" href="https://plausible.io" crossorigin />
+    </>
   )}
-  <!-- Robots -->
-  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+  
+  {isProd && (
+    <script is:inline>
+      (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+      new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+      j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+      'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+      })(window,document,'script','dataLayer','GTM-W2273TRX');
+    </script>
+  )}
 </head>
 
 <body>
-  <!-- Google Tag Manager (noscript) -->
-  <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-W2273TRX"
-  height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
-  <!-- End Google Tag Manager (noscript) -->
+  {isProd && (
+    <noscript>
+      <iframe 
+        src="https://www.googletagmanager.com/ns.html?id=GTM-W2273TRX"
+        height="0" 
+        width="0" 
+        style="display:none;visibility:hidden"
+      ></iframe>
+    </noscript>
+  )}
+
+  <a href="#main-content" class="skip-link">
+    Aller au contenu principal
+  </a>
+
+  <Header />
 
   <main id="main-content">
-    <Header />
     <slot />
-    <CookieConsent client:load />
   </main>
+
   <Footer />
-  <Analytics/>
-  <SpeedInsights/>
-</body>
 
-<script is:inline>
-  window.addEventListener('cookieConsentUpdated', (event) => {
-    const preferences = event.detail;
-    console.log('Préférences mises à jour:', preferences);
-  });
+  <CookieConsent client:idle />
 
-  (function() {
+  {isProd && (
+    <>
+      <Analytics />
+      <SpeedInsights />
+    </>
+  )}
+  
+  {loadGSAP && (
+    <script>
+      import { initGSAP, killAllAnimations } from '@/animations/core/gsap-config';
+
+      initGSAP();
+      
+      document.addEventListener('astro:before-swap', () => {
+        killAllAnimations();
+      });
+      
+      document.addEventListener('astro:after-swap', () => {
+        initGSAP();
+      });
+    </script>
+  )}
+  
+  {isProd && (
+    <>
+      <script 
+        defer 
+        data-domain="biscuits-ia.com" 
+        src="https://plausible.io/js/script.js"
+      ></script>
+      
+      <script is:inline>
+        window.plausible = window.plausible || function() {
+          (plausible.q = plausible.q || []).push(arguments)
+        };
+      </script>
+    </>
+  )}
+  
+  <script is:inline>
+    (function() {
       const STORAGE_KEY = 'theme-preference';
       
       function getThemePreference() {
         if (typeof localStorage !== 'undefined' && localStorage.getItem(STORAGE_KEY)) {
           return localStorage.getItem(STORAGE_KEY);
         }
-        return window.matchMedia('(prefers-color-scheme: light)').matches ? 'dark' : 'light';
+        return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
       }
 
       const theme = getThemePreference();
-      
       document.documentElement.setAttribute('data-theme', theme);
       
       if (theme === 'dark') {
         document.documentElement.classList.add('dark');
       }
     })();
-</script>
-
-<script>
-import { initGSAP, killAllAnimations } from '@/animations/core/gsap-config';
-
-  initGSAP();
-  
-  document.addEventListener('astro:before-swap', () => {
-    killAllAnimations();
-  });
-  
-  document.addEventListener('astro:after-swap', () => {
-    initGSAP();
-  });
-
-</script>
-
-  <script
-    defer
-    data-domain="biscuits-ia.com"
-    src="https://plausible.io/js/script.js">
   </script>
+</body>
 
-  <!-- Google tag (gtag.js) -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-YSNSBVWCGQ"></script>
-  <script is:inline>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
+<style is:global>
+  .skip-link {
+    position: absolute;
+    top: -100px;
+    left: 0;
+    background: var(--color-primary);
+    color: white;
+    padding: var(--spacing-sm) var(--spacing-md);
+    z-index: var(--z-tooltip);
+    font-weight: var(--font-weight-semibold);
+    text-decoration: none;
+    border-radius: 0 0 var(--radius-md) 0;
+    transition: top var(--transition-fast);
+  }
 
-    gtag('config', 'G-YSNSBVWCGQ');
-  </script>
-  <!-- Google Tag Manager -->
-  <script is:inline>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-  new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-  j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-  'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-  })(window,document,'script','dataLayer','GTM-W2273TRX');</script>
- 
-  <!-- Privacy-friendly analytics by Plausible -->
-  <script async src="https://plausible.io/js/pa-UAdXXk6c-CDMpIaBUkl7D.js"></script>
-  <script is:inline>
-    window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)},plausible.init=plausible.init||function(i){plausible.o=i||{}};
-    plausible.init()
-  </script>
+  .skip-link:focus {
+    top: 0;
+  }
 
+  main {
+    min-height: 60vh;
+  }
+</style>
 </html>

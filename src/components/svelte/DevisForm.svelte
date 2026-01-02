@@ -1,4 +1,3 @@
-<!-- src/islands/DevisForm.svelte -->
 <script lang="ts">
   import { submitDevis } from '@/utils/api';
   

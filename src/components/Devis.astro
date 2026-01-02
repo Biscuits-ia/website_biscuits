@@ -134,6 +134,15 @@ const schema = {
   </section>
 </BaseLayout>
 
+<script is:inline>
+  const btn = document.getElementById('btn-devis');
+  btn.addEventListener('click', () => {
+    umami.track('cta_devis'); // <-- Ici, l'événement est déclenché
+    // Ensuite tu peux rediriger ou faire autre chose
+    console.log('Bouton devis cliqué !');
+  });
+</script>
+
 <style>
   /* Hero */
   .hero {

@@ -97,7 +97,7 @@ const stats: Stat[] = [
             )}
             
             <a href="/devis" class="cta-magnetic">
-              <span class="cta-text">Demander un devis</span>
+              <span onclick="plausible('cta_devis')" class="cta-text">Demander un devis</span>
               <span class="cta-arrow">→</span>
             </a>
           </div>
@@ -138,7 +138,7 @@ const stats: Stat[] = [
       </ul>
     </div>
     <div class="cta-right">
-      <a href="/contact" class="cta-button">
+      <a href="/contact" onclick="plausible('cta_contact')" class="cta-button">
         Contactez-nous
       </a>
     </div>

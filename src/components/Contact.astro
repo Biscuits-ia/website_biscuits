@@ -207,6 +207,12 @@ const schema = {
   
   const placeholder = document.getElementById('newsletter-placeholder');
   if (placeholder) observer.observe(placeholder);
+
+  const btn = document.getElementById('btn-contact');
+  btn.addEventListener('click', () => {
+    umami.track('cta_contact'); 
+    console.log('Bouton devis cliqué !');
+  });
 </script>
 
 <style>

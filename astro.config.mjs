@@ -8,6 +8,7 @@ import svelte from '@astrojs/svelte';
 import compress from 'astro-compress';
 
 
+
 import robots from 'astro-robots';
 
 
@@ -44,10 +45,6 @@ robots({
           ],
           allow: ["/"],
           crawlDelay: 5,
-        },
-        {
-          userAgent: "BLEXBot",
-          disallow: ["/assets", "/uploades/1989-08-21/*jpg$"],
         },
       ],
     }),

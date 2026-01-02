@@ -1,0 +1,334 @@
+---
+// src/pages/devis.astro
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import DevisForm from '@/components/svelte/DevisForm.svelte';
+
+const seoData = {
+  title: 'Demande de devis gratuit',
+  description: 'Obtenez un devis personnalisé pour vos projets IA, automatisation et starterkits. Réponse sous 24-48h.',
+  canonical: '/devis'
+};
+
+const schema = {
+  type: 'WebPage' as const,
+  data: {
+    name: 'Demande de devis - Biscuits IA',
+    description: seoData.description,
+    url: 'https://biscuits.dev/devis',
+    breadcrumb: {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Accueil",
+          "item": "https://biscuits.dev"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Devis",
+          "item": "https://biscuits.dev/devis"
+        }
+      ]
+    }
+  }
+};
+---
+
+<BaseLayout {...seoData} schema={schema}>
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="container">
+      <h1>Demande de devis</h1>
+      <p class="lead">
+        Obtenez une estimation personnalisée sous <strong>24-48h</strong> pour vos 
+        besoins professionnels.
+      </p>
+      
+      <div class="hero-features">
+        <div class="feature">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+          </svg>
+          <span>100% gratuit</span>
+        </div>
+        <div class="feature">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+          </svg>
+          <span>Réponse 24-48h</span>
+        </div>
+        <div class="feature">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path>
+          </svg>
+          <span>Sans engagement</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Form Section -->
+  <section class="form-section">
+    <div class="container">
+      <h2>Informations nécessaires</h2>
+      <p class="section-intro">
+        Remplissez ce formulaire pour recevoir un devis détaillé et personnalisé.
+      </p>
+      
+      <!-- ✅ CORRECT : Hydratation différée, ZERO JS inline -->
+      <DevisForm client:idle />
+    </div>
+  </section>
+
+  <!-- How it works -->
+  <section class="how-it-works">
+    <div class="container">
+      <h2>Comment ça marche ?</h2>
+      
+      <div class="steps">
+        <div class="step">
+          <div class="step-number">1</div>
+          <div class="step-icon">📝</div>
+          <h3>Vous envoyez votre demande</h3>
+          <p>Avec les informations nécessaires pour analyser vos besoins précisément.</p>
+        </div>
+        
+        <div class="step">
+          <div class="step-number">2</div>
+          <div class="step-icon">🧠</div>
+          <h3>Analyse & estimation</h3>
+          <p>Nous évaluons la charge, les outils nécessaires et les délais de réalisation.</p>
+        </div>
+        
+        <div class="step">
+          <div class="step-number">3</div>
+          <div class="step-icon">📄</div>
+          <h3>Envoi du devis sous 24-48h</h3>
+          <p>Tarifs transparents, modulaires, sans engagement de votre part.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="cta">
+    <div class="container">
+      <h2>Des questions avant de demander un devis ?</h2>
+      <p>Contactez-nous, nous vous guidons gratuitement.</p>
+      <div class="cta-buttons">
+        <a href="/contact" class="btn btn-outline">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+            <polyline points="22,6 12,13 2,6"></polyline>
+          </svg>
+          Formulaire de contact
+        </a>
+        <a href="/services" class="btn btn-ghost">
+          Voir nos services
+        </a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  /* Hero */
+  .hero {
+    padding: 4rem 0;
+    text-align: center;
+    background: linear-gradient(135deg, var(--color-bg-alt), var(--color-bg));
+  }
+  
+  .hero h1 {
+    font-size: clamp(2.5rem, 5vw, 4rem);
+    margin-bottom: 1rem;
+    font-weight: var(--font-weight-black);
+    color: var(--color-text);
+  }
+  
+  .lead {
+    font-size: clamp(1rem, 2vw, 1.25rem);
+    color: var(--color-text-light);
+    max-width: 700px;
+    margin: 0 auto 3rem;
+    line-height: var(--line-height-relaxed);
+  }
+  
+  .hero-features {
+    display: flex;
+    gap: 2rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  
+  .feature {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 1.5rem;
+    background: var(--color-bg-elevated);
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-full);
+    font-weight: var(--font-weight-semibold);
+    transition: all var(--transition-fast);
+  }
+  
+  .feature:hover {
+    transform: translateY(-2px);
+    border-color: var(--color-primary);
+  }
+  
+  .feature svg {
+    color: var(--color-primary);
+    flex-shrink: 0;
+  }
+  
+  /* Form Section */
+  .form-section {
+    padding: 4rem 0;
+  }
+  
+  .form-section h2 {
+    text-align: center;
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+    font-weight: var(--font-weight-black);
+  }
+  
+  .section-intro {
+    text-align: center;
+    color: var(--color-text-light);
+    margin-bottom: 3rem;
+    font-size: var(--font-size-lg);
+  }
+  
+  /* How it works */
+  .how-it-works {
+    padding: 4rem 0;
+    background: var(--color-bg-alt);
+  }
+  
+  .how-it-works h2 {
+    text-align: center;
+    font-size: 2.5rem;
+    margin-bottom: 3rem;
+    font-weight: var(--font-weight-black);
+  }
+  
+  .steps {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
+    max-width: 1000px;
+    margin: 0 auto;
+  }
+  
+  .step {
+    position: relative;
+    text-align: center;
+    padding: 2rem;
+    background: var(--color-bg);
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    transition: all var(--transition-base);
+  }
+  
+  .step:hover {
+    transform: translateY(-8px);
+    box-shadow: var(--shadow-xl);
+    border-color: var(--color-primary);
+  }
+  
+  .step-number {
+    position: absolute;
+    top: -1rem;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 2.5rem;
+    height: 2.5rem;
+    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: var(--font-weight-bold);
+    font-size: var(--font-size-lg);
+    box-shadow: var(--shadow-glow);
+  }
+  
+  .step-icon {
+    font-size: 3rem;
+    margin: 1rem 0;
+  }
+  
+  .step h3 {
+    font-size: var(--font-size-xl);
+    margin-bottom: 0.75rem;
+    font-weight: var(--font-weight-bold);
+  }
+  
+  .step p {
+    color: var(--color-text-light);
+    line-height: var(--line-height-relaxed);
+  }
+  
+  /* CTA */
+  .cta {
+    padding: 4rem 0;
+    text-align: center;
+  }
+  
+  .cta h2 {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    font-weight: var(--font-weight-black);
+  }
+  
+  .cta p {
+    color: var(--color-text-light);
+    margin-bottom: 2rem;
+    font-size: var(--font-size-lg);
+  }
+  
+  .cta-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  
+  /* Responsive */
+  @media (max-width: 768px) {
+    .hero h1 {
+      font-size: 2.5rem;
+    }
+    
+    .hero-features {
+      gap: 1rem;
+    }
+    
+    .feature {
+      padding: 0.75rem 1.25rem;
+      font-size: 0.95rem;
+    }
+    
+    .steps {
+      grid-template-columns: 1fr;
+    }
+    
+    .cta-buttons {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    
+    .cta-buttons .btn {
+      width: 100%;
+    }
+  }
+</style>

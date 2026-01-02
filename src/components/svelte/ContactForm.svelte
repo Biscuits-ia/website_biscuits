@@ -1,7 +1,5 @@
-<!-- src/islands/ContactForm.svelte -->
+<!-- src/components/svelte/ContactForm.svelte -->
 <script lang="ts">
-  import { submitContact } from '@/utils/api';
-  
   // Form state
   let name = '';
   let email = '';
@@ -40,7 +38,7 @@
   
   const COUNTRIES = [
     'France', 'Belgique', 'Luxembourg', 'Suisse', 
-    'Canada', 'Autre'
+    'Allemagne', 'Canada', 'Autre'
   ];
   
   // Validation
@@ -101,6 +99,8 @@
   async function handleSubmit(e: Event) {
     e.preventDefault();
     
+    console.log('🚀 Form submission started');
+    
     // Reset states
     errors = {};
     generalError = '';
@@ -115,11 +115,12 @@
       if (error) {
         errors[field] = error;
         hasErrors = true;
+        console.log(`❌ Validation error on ${field}:`, error);
       }
     }
     
     if (hasErrors) {
-      // Focus first error
+      console.log('❌ Form has validation errors');
       const firstError = Object.keys(errors)[0];
       if (firstError) {
         document.getElementById(firstError)?.focus();
@@ -129,31 +130,82 @@
     
     // Check honeypot (spam)
     if (honey.trim() !== '') {
+      console.log('🤖 Spam detected (honeypot filled)');
       generalError = 'Erreur de validation';
       return;
     }
     
     // Check submission time (anti-bot)
     const submissionTime = Date.now();
-    if (submissionTime - formLoadTime < 3000) {
+    if (submissionTime - formLoadTime < 2000) {
+      console.log('⚡ Form submitted too fast');
       generalError = 'Veuillez prendre le temps de remplir le formulaire';
       return;
     }
     
     isSubmitting = true;
     
+    // Prepare payload
+    const payload = {
+      name: name.trim(),
+      email: email.trim(),
+      country,
+      service,
+      message: message.trim(),
+      honey,
+      timestamp: Math.floor(formLoadTime / 1000)
+    };
+    
+    console.log('📤 Sending payload:', {
+      name: payload.name,
+      email: payload.email,
+      country: payload.country,
+      service: payload.service,
+      messageLength: payload.message.length
+    });
+    
     try {
-      await submitContact({
-        name: name.trim(),
-        email: email.trim(),
-        country,
-        service,
-        message: message.trim(),
-        honey,
-        timestamp: Math.floor(formLoadTime / 1000)
+      // ✅ CHANGE THIS URL TO YOUR ACTUAL API
+      const API_URL = import.meta.env.PUBLIC_API_URL || 'https://biscuits-admin-main-1a6oe6.laravel.cloud';
+      const endpoint = `${API_URL}/api/contacts`;
+      
+      console.log('🌐 API endpoint:', endpoint);
+      
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify(payload),
       });
       
+      console.log('📥 Response status:', response.status);
+      
+      const result = await response.json();
+      console.log('📋 Response data:', result);
+      
+      if (!response.ok) {
+        // Handle API errors
+        if (response.status === 429) {
+          throw new Error('Trop de demandes. Veuillez patienter quelques instants.');
+        }
+        
+        if (response.status === 422 && result.errors) {
+          // Validation errors from API
+          errors = result.errors;
+          throw new Error(result.message || 'Erreur de validation');
+        }
+        
+        if (response.status >= 500) {
+          throw new Error('Erreur serveur. Veuillez réessayer plus tard.');
+        }
+        
+        throw new Error(result.message || 'Erreur lors de l\'envoi');
+      }
+      
       // Success
+      console.log('✅ Form submitted successfully');
       isSuccess = true;
       
       // Reset form
@@ -164,12 +216,15 @@
       message = '';
       
       // Track conversion (if analytics available)
-      if (typeof window.gtag !== 'undefined') {
-        window.gtag('event', 'form_submit', {
+      if (typeof window !== 'undefined' && 'gtag' in window) {
+        (window as any).gtag('event', 'form_submit', {
           form_name: 'contact',
           service: service
         });
       }
+      
+      // Scroll to success message
+      window.scrollTo({ top: 0, behavior: 'smooth' });
       
       // Hide success message after 10s
       setTimeout(() => {
@@ -177,7 +232,7 @@
       }, 10000);
       
     } catch (error: any) {
-      console.error('Contact form error:', error);
+      console.error('❌ Form submission error:', error);
       
       if (error.errors) {
         // Validation errors from API
@@ -185,6 +240,10 @@
       } else {
         generalError = error.message || 'Une erreur est survenue. Veuillez réessayer.';
       }
+      
+      // Scroll to error message
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      
     } finally {
       isSubmitting = false;
     }
@@ -203,7 +262,10 @@
       <svg class="alert-icon" viewBox="0 0 24 24" aria-hidden="true">
         <path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" fill="none"/>
       </svg>
-      <span>Message envoyé avec succès ! Nous vous répondrons sous 48h.</span>
+      <div>
+        <strong>Message envoyé avec succès !</strong>
+        <p>Nous vous répondrons sous 48h.</p>
+      </div>
     </div>
   {/if}
   
@@ -235,6 +297,7 @@
       aria-describedby={errors.name ? 'name-error' : undefined}
       disabled={isSubmitting}
       maxlength="100"
+      autocomplete="name"
     />
     {#if errors.name}
       <span id="name-error" class="error-message" role="alert">
@@ -385,6 +448,10 @@
       <span class="spinner" aria-hidden="true"></span>
       Envoi en cours...
     {:else}
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="22" y1="2" x2="11" y2="13"></line>
+        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+      </svg>
       Envoyer
     {/if}
   </button>
@@ -394,7 +461,7 @@
   .contact-form {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 1.5rem;
+    gap: 1.8rem;
     max-width: 900px;
     margin: 0 auto;
   }
@@ -411,7 +478,7 @@
   
   label {
     font-size: 0.95rem;
-    font-weight: 600;
+    font-weight: var(--font-weight-semibold);
     color: var(--color-text);
   }
   
@@ -422,13 +489,13 @@
   input,
   select,
   textarea {
-    padding: 0.75rem;
+    padding: 0.8rem;
     border: 2px solid var(--color-border);
     border-radius: var(--radius-md);
     background: var(--color-bg-alt);
     color: var(--color-text);
     font-family: inherit;
-    font-size: 1rem;
+    font-size: 15px;
     transition: all var(--transition-fast);
   }
   
@@ -441,15 +508,16 @@
   }
   
   .form-group.error input,
-  .form-group.error select,
-  .form-group.error textarea {
+  .form-group.error textarea,
+  .form-group.error select {
     border-color: var(--color-danger);
+    background-color: rgba(239, 68, 68, 0.05);
   }
   
   .error-message {
     color: var(--color-danger);
     font-size: 0.875rem;
-    font-weight: 500;
+    font-weight: var(--font-weight-medium);
   }
   
   .char-count {
@@ -471,10 +539,11 @@
   /* Alerts */
   .alert {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 1rem;
-    padding: 1rem;
+    padding: 1.25rem;
     border-radius: var(--radius-lg);
+    border: 2px solid;
     margin-bottom: 1.5rem;
     grid-column: 1 / -1;
     animation: slideDown 0.3s ease;
@@ -500,48 +569,58 @@
   .alert-success {
     background: rgba(16, 185, 129, 0.1);
     color: var(--color-success);
-    border: 1px solid var(--color-success);
+    border-color: var(--color-success);
+  }
+  
+  .alert-success strong {
+    display: block;
+    margin-bottom: 0.25rem;
+  }
+  
+  .alert-success p {
+    margin: 0;
+    font-size: 0.95rem;
   }
   
   .alert-error {
     background: rgba(239, 68, 68, 0.1);
     color: var(--color-danger);
-    border: 1px solid var(--color-danger);
+    border-color: var(--color-danger);
   }
   
   /* Submit button */
   .btn-submit {
     grid-column: 1 / -1;
-    padding: 1rem 2rem;
+    padding: 1.25rem 2rem;
     background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
     color: white;
     border: none;
     border-radius: var(--radius-lg);
     font-size: 1.1rem;
-    font-weight: 700;
+    font-weight: var(--font-weight-bold);
     cursor: pointer;
     transition: all var(--transition-base);
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    box-shadow: var(--shadow-md);
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 0.5rem;
+    gap: 0.75rem;
   }
   
   .btn-submit:hover:not(:disabled) {
     transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
+    box-shadow: var(--shadow-glow-hover);
   }
   
   .btn-submit:disabled {
-    opacity: 0.6;
+    opacity: 0.7;
     cursor: not-allowed;
   }
   
   .spinner {
-    width: 1rem;
-    height: 1rem;
-    border: 2px solid rgba(255, 255, 255, 0.3);
+    width: 1.25rem;
+    height: 1.25rem;
+    border: 3px solid rgba(255, 255, 255, 0.3);
     border-top-color: white;
     border-radius: 50%;
     animation: spin 0.6s linear infinite;
@@ -557,6 +636,7 @@
   @media (max-width: 768px) {
     .contact-form {
       grid-template-columns: 1fr;
+      gap: 1.5rem;
     }
   }
 </style>

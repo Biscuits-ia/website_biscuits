@@ -29,7 +29,7 @@ lastmod: new Date(),
 robots({
       host: 'biscuits-ia.com',
       sitemap: [
-        "https://biscuits-ia.com/sitemap.xml",
+        "https://biscuits-ia.com//sitemap-index.xml",
       ],
       policy: [
         {
@@ -44,7 +44,6 @@ robots({
             "*",
           ],
           allow: ["/"],
-          crawlDelay: 5,
         },
       ],
     }),

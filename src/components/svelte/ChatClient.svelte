@@ -331,7 +331,7 @@
         if (error.name === 'AbortError') {
           errorMessage = "⏱️ Délai d'attente dépassé. Veuillez réessayer.";
         } else if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
-          errorMessage = "🔌 Impossible de se connecter au serveur. Vérifiez que le backend est démarré.";
+          errorMessage = "🔌Impossible de contacter Biscuit IA pour le moment";
         } else {
           errorMessage = `❌ ${error.message}`;
         }

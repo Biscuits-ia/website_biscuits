@@ -5,7 +5,12 @@ const currentYear = new Date().getFullYear();
 ---
 
 <div id="chatbot-root">
-  <ChatClient client:load />
+  <ChatClient 
+      client:load
+      assistant="support"
+      position="bottom-right"
+      enableDebug={import.meta.env.DEV}
+    />
 </div>
 
 <footer class="site-footer">

@@ -1,50 +1,34 @@
 <script lang="ts">
   import { afterUpdate } from 'svelte';
 
+  // ============================================================================
+  // TYPES
+  // ============================================================================
+  
   type MessageRole = "user" | "assistant";
-
-  /**
-   * Type d'assistant disponible
-   */
   type AssistantType = "support" | "dev" | "sales";
-
-  /**
-   * Position du chatbot sur l'écran
-   */
   type ChatPosition = "bottom-right" | "bottom-left";
 
-  /**
-   * Structure d'un message dans la conversation
-   */
   interface Message {
     readonly role: MessageRole;
     readonly content: string;
     readonly timestamp: string;
-    readonly id?: string;
+    readonly id: string;
   }
 
-  /**
-   * Configuration d'un assistant
-   */
   interface AssistantConfig {
     readonly name: string;
     readonly emoji: string;
     readonly description: string;
   }
 
-  /**
-   * Réponse de l'API Laravel - Succès
-   */
   interface ApiSuccessResponse {
-    readonly success: true;
+    readonly success?: true;
     readonly conversation_id: number;
     readonly reply: string;
     readonly message_count: number;
   }
 
-  /**
-   * Réponse de l'API Laravel - Erreur
-   */
   interface ApiErrorResponse {
     readonly success?: false;
     readonly error: string;
@@ -54,31 +38,29 @@
 
   type ApiResponse = ApiSuccessResponse | ApiErrorResponse;
 
-  interface ApiRequestPayload {
-    readonly message: string;
-    readonly conversation_id: number | null;
-  }
-
+  // ============================================================================
+  // PROPS
+  // ============================================================================
 
   export let assistant: AssistantType = "support";
   export let position: ChatPosition = "bottom-right";
   export let maxMessageLength: number = 4000;
-  export let requestTimeout: number = 60000; // 60 secondes
+  export let requestTimeout: number = 60000;
   export let enableDebug: boolean = false;
 
   // ============================================================================
   // STATE
   // ============================================================================
 
-  let isOpen: boolean = false;
+  let isOpen = false;
   let messages: Message[] = [];
-  let input: string = "";
+  let input = "";
   let conversationId: number | null = null;
-  let loading: boolean = false;
-  let hasUnread: boolean = false;
+  let loading = false;
+  let hasUnread = false;
+  let errorRetryCount = 0;
   let messagesEndRef: HTMLDivElement;
   let inputRef: HTMLInputElement;
-  let errorRetryCount: number = 0;
 
   // ============================================================================
   // CONSTANTES
@@ -88,9 +70,6 @@
   const EMPTY_MESSAGE_ERROR = "Le message ne peut pas être vide";
   const MESSAGE_TOO_LONG_ERROR = `Le message ne peut pas dépasser ${maxMessageLength} caractères`;
 
-  /**
-   * Configuration des assistants disponibles
-   */
   const assistantConfigMap: Record<AssistantType, AssistantConfig> = {
     support: {
       name: "Assistant Support",
@@ -107,15 +86,17 @@
       emoji: "💼",
       description: "Informations produits et devis"
     },
-  } as const;
+  };
 
   // ============================================================================
-  // COMPUTED (Reactive Statements)
+  // REACTIVE
   // ============================================================================
 
   $: currentConfig = assistantConfigMap[assistant];
   $: isInputValid = input.trim().length > 0 && input.length <= maxMessageLength;
   $: canSendMessage = isInputValid && !loading;
+  $: charCountClass = input.length > maxMessageLength * 0.9 ? 'danger' : 
+                     input.length > maxMessageLength * 0.7 ? 'warning' : '';
 
   $: if (isOpen) {
     inputRef?.focus();
@@ -127,23 +108,32 @@
   // ============================================================================
 
   /**
-   * Récupère l'URL de l'API en supprimant le slash final
+   * ✅ CORRECTION: Gestion robuste de l'URL API
    */
   const getApiUrl = (): string => {
-    const baseUrl = import.meta.env.PUBLIC_LARAVEL_API_URL || 'http://localhost:8000';
-    return baseUrl.replace(/\/$/, '');
+    // 1. Récupérer l'URL depuis import.meta.env
+    let baseUrl = import.meta.env.PUBLIC_LARAVEL_API_URL;
+    
+    // 2. Fallback si non définie
+    if (!baseUrl) {
+      console.warn('[ChatClient] PUBLIC_LARAVEL_API_URL non définie, utilisation de localhost:8000');
+      baseUrl = 'http://localhost:8000';
+    }
+    
+    // 3. Supprimer le slash final
+    const cleanUrl = baseUrl.replace(/\/$/, '');
+    
+    if (enableDebug) {
+      console.log('[ChatClient] API URL:', cleanUrl);
+    }
+    
+    return cleanUrl;
   };
 
-  /**
-   * Génère un ID unique pour un message
-   */
   const generateMessageId = (): string => {
     return `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
   };
 
-  /**
-   * Crée un message avec les métadonnées complètes
-   */
   const createMessage = (role: MessageRole, content: string): Message => ({
     id: generateMessageId(),
     role,
@@ -151,36 +141,21 @@
     timestamp: new Date().toISOString(),
   });
 
-  /**
-   * Ajoute un message à la liste
-   */
   const addMessage = (message: Message): void => {
     messages = [...messages, message];
   };
 
-  /**
-   * Affiche un message d'erreur dans le chat
-   */
   const showErrorInChat = (errorMessage: string): void => {
     addMessage(createMessage("assistant", errorMessage));
   };
 
-  /**
-   * Log de debug (seulement si activé)
-   */
   const debugLog = (context: string, data: unknown): void => {
     if (enableDebug) {
       console.log(`[ChatClient:${context}]`, data);
     }
   };
 
-  /**
-   * Valide le message avant envoi
-   */
-  const validateMessage = (message: string): {
-    isValid: boolean;
-    error: string | null;
-  } => {
+  const validateMessage = (message: string): { isValid: boolean; error: string | null } => {
     const trimmed = message.trim();
 
     if (trimmed.length === 0) {
@@ -195,11 +170,9 @@
   };
 
   /**
-   * Gère les erreurs HTTP et retourne un message approprié
+   * ✅ CORRECTION: Meilleure gestion des erreurs HTTP
    */
-  const handleHttpError = async (
-    response: Response
-  ): Promise<string> => {
+  const handleHttpError = async (response: Response): Promise<string> => {
     let errorData: Partial<ApiErrorResponse> = {};
 
     try {
@@ -216,36 +189,32 @@
         return errorData.error || `Trop de requêtes. Réessayez dans ${retryAfter} minute(s).`;
 
       case 422:
-        return errorData.details?.message?.[0] || "Validation échouée";
+        return errorData.details?.message?.[0] || errorData.error || "Validation échouée";
 
       case 403:
-        return "Accès non autorisé à cette conversation";
+        return errorData.error || "Accès non autorisé à cette conversation";
 
       case 404:
-        return "La conversation n'existe pas";
+        return errorData.error || "La conversation n'existe pas";
 
       case 500:
-        return "Erreur serveur. Veuillez réessayer.";
+      case 502:
+      case 503:
+        return errorData.error || "Erreur serveur. Veuillez réessayer.";
 
       default:
         return errorData.error || `Erreur ${response.status}`;
     }
   };
 
-  /**
-   * Type guard pour vérifier si la réponse est un succès
-   */
-  const isSuccessResponse = (
-    response: ApiResponse
-  ): response is ApiSuccessResponse => {
-    return 'success' in response && response.success === true;
+  const isSuccessResponse = (response: ApiResponse): response is ApiSuccessResponse => {
+    return 'reply' in response && 'conversation_id' in response;
   };
 
-  /**
-   * Scroll automatique vers le bas
-   */
   const scrollToBottom = (): void => {
-    messagesEndRef?.scrollIntoView({ behavior: "smooth" });
+    if (messagesEndRef) {
+      messagesEndRef.scrollIntoView({ behavior: "smooth" });
+    }
   };
 
   // ============================================================================
@@ -261,7 +230,7 @@
   // ============================================================================
 
   /**
-   * Envoie un message à l'API
+   * ✅ CORRECTION: Envoi de message avec meilleure gestion d'erreurs
    */
   const sendMessage = async (): Promise<void> => {
     // 1) Validation
@@ -288,18 +257,23 @@
 
     try {
       const apiUrl = getApiUrl();
+      const endpoint = `${apiUrl}/api/ai/${assistant}`;
       
+      debugLog('API Endpoint', endpoint);
+
       // 3) Configuration de la requête avec timeout
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), requestTimeout);
 
-      const payload: ApiRequestPayload = {
+      const payload = {
         message: userMessage,
         conversation_id: conversationId,
       };
 
+      debugLog('Request Payload', payload);
+
       // 4) Appel API
-      const response = await fetch(`${apiUrl}/api/ai/${assistant}`, {
+      const response = await fetch(endpoint, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -311,6 +285,8 @@
       });
 
       clearTimeout(timeoutId);
+
+      debugLog('Response Status', response.status);
 
       // 5) Gestion des erreurs HTTP
       if (!response.ok) {
@@ -354,6 +330,8 @@
       if (error instanceof Error) {
         if (error.name === 'AbortError') {
           errorMessage = "⏱️ Délai d'attente dépassé. Veuillez réessayer.";
+        } else if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+          errorMessage = "🔌 Impossible de se connecter au serveur. Vérifiez que le backend est démarré.";
         } else {
           errorMessage = `❌ ${error.message}`;
         }
@@ -373,9 +351,6 @@
     }
   };
 
-  /**
-   * Réinitialise la conversation
-   */
   const resetConversation = (): void => {
     messages = [];
     conversationId = null;
@@ -384,34 +359,21 @@
     debugLog('reset', 'Conversation reset');
   };
 
-  /**
-   * Toggle du chat
-   */
   const toggleChat = (): void => {
     isOpen = !isOpen;
   };
 
-  /**
-   * Ferme le chat
-   */
   const closeChat = (): void => {
     isOpen = false;
   };
 
-  // ============================================================================
-  // GESTION DU CLAVIER
-  // ============================================================================
-
-  /**
-   * Gestion des raccourcis clavier
-   */
   const handleKeydown = (event: KeyboardEvent): void => {
     if (event.key === 'Escape' && isOpen) {
       closeChat();
       event.preventDefault();
     }
 
-    if (event.key === 'Enter' && !event.shiftKey && input.trim()) {
+    if (event.key === 'Enter' && !event.shiftKey && input.trim() && !loading) {
       sendMessage();
       event.preventDefault();
     }
@@ -421,7 +383,6 @@
 <svelte:window on:keydown={handleKeydown} />
 
 <style>
-  /* ... styles identiques ... */
   :global(.chatbot-button) {
     position: fixed;
     bottom: 24px;
@@ -595,6 +556,59 @@
     border-top: 1px solid rgba(255, 255, 255, 0.1);
   }
 
+  .input-wrapper {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .input-field {
+    flex: 1;
+    padding: 12px 16px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    color: rgb(65, 65, 65);
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .input-field:focus {
+    border-color: rgba(255, 255, 255, 0.3);
+  }
+
+  .input-field:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .send-button {
+    width: 44px;
+    height: 44px;
+    border: none;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    cursor: pointer;
+  }
+
+  .send-button:enabled {
+    background: linear-gradient(135deg, oklch(60.201% 0.11053 58.986) 0%, oklch(65.92% 0.153 34.70) 100%);
+  }
+
+  .send-button:disabled {
+    background: #4B5563;
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+
+  .send-button:enabled:hover {
+    transform: scale(1.05);
+  }
+
   .char-counter {
     font-size: 11px;
     color: #6b7280;
@@ -604,6 +618,19 @@
 
   .char-counter.warning { color: #f59e0b; }
   .char-counter.danger { color: #ef4444; }
+
+  .footer-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 8px;
+  }
+
+  .powered-by {
+    font-size: 11px;
+    color: #6b7280;
+    margin: 0;
+  }
 
   @media (max-width: 480px) {
     .chatbot-popup {
@@ -747,9 +774,8 @@
     <div class="chatbot-input">
       <form 
         on:submit|preventDefault={sendMessage}
-        style="display: flex; flex-direction: column; gap: 8px;"
       >
-        <div style="display: flex; gap: 8px; align-items: center;">
+        <div class="input-wrapper">
           <input
             bind:this={inputRef}
             type="text"
@@ -759,26 +785,14 @@
             disabled={loading}
             aria-label="Message"
             aria-describedby="char-counter"
-            style="flex: 1; padding: 12px 16px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; color: white; font-size: 14px; outline: none;"
+            class="input-field"
           />
           <button
             type="submit"
             disabled={!canSendMessage}
             aria-label="Envoyer le message"
             aria-disabled={!canSendMessage}
-            style="
-              width: 44px;
-              height: 44px;
-              background: {loading ? '#4B5563' : 'linear-gradient(135deg, oklch(60.201% 0.11053 58.986) 0%, oklch(65.92% 0.153 34.70) 100%)'};
-              border: none;
-              border-radius: 12px;
-              cursor: {canSendMessage ? 'pointer' : 'not-allowed'};
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              opacity: {canSendMessage ? 1 : 0.5};
-              transition: all 0.2s;
-            "
+            class="send-button"
           >
             <svg style="width: 20px; height: 20px; color: white;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
@@ -786,13 +800,13 @@
           </button>
         </div>
         
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-          <p style="font-size: 11px; color: #6b7280; margin: 0;">
+        <div class="footer-info">
+          <p class="powered-by">
             Propulsé par BiscuitsAI
           </p>
           <p 
             id="char-counter"
-            class="char-counter {input.length > maxMessageLength * 0.9 ? 'danger' : input.length > maxMessageLength * 0.7 ? 'warning' : ''}"
+            class="char-counter {charCountClass}"
           >
             {input.length} / {maxMessageLength}
           </p>

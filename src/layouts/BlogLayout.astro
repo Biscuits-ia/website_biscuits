@@ -1,0 +1,158 @@
+---
+import '@/styles/global.css'
+import '@/styles/theme.css'
+
+interface Props {
+  title: string;
+  description: string;
+  pubDate?: string | Date;
+  author?: string;
+  image?: string;
+  tags?: string[];
+}
+
+const { 
+  title, 
+  description, 
+  pubDate, 
+  author, 
+  image, 
+  tags 
+} = Astro.props;
+
+const publishDate = pubDate ? new Date(pubDate) : new Date();
+const formattedDate = publishDate.toLocaleDateString('fr-FR', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric'
+});
+
+const content = await Astro.slots.render('default');
+const wordCount = content.split(/\s+/).filter(Boolean).length;
+const readingTime = Math.ceil(wordCount / 200);
+
+const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+
+const ogImage = image 
+  ? new URL(image, Astro.site).href
+  : new URL('/og-default.jpg', Astro.site).href;
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'BlogPosting',
+  headline: title,
+  description: description,
+  image: ogImage,
+  datePublished: publishDate.toISOString(),
+  dateModified: publishDate.toISOString(),
+  author: {
+    '@type': 'Person',
+    name: author || 'Auteur'
+  },
+  publisher: {
+    '@type': 'Organization',
+    name: 'Nom de votre site',
+    logo: {
+      '@type': 'ImageObject',
+      url: new URL('/logo.png', Astro.site).href
+    }
+  },
+  mainEntityOfPage: {
+    '@type': 'WebPage',
+    '@id': canonicalURL.href
+  }
+};
+
+---
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <!-- SEO Meta Tags -->
+  <title>{title} | Votre Site</title>
+  <meta name="description" content={description}>
+  <link rel="canonical" href={canonicalURL}>
+  
+  <!-- Open Graph -->
+  <meta property="og:type" content="article">
+  <meta property="og:title" content={title}>
+  <meta property="og:description" content={description}>
+  <meta property="og:url" content={canonicalURL}>
+  <meta property="og:image" content={ogImage}>
+  <meta property="article:published_time" content={publishDate.toISOString()}>
+  {author && <meta property="article:author" content={author}>}
+  
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content={title}>
+  <meta name="twitter:description" content={description}>
+  <meta name="twitter:image" content={ogImage}>
+  
+  <!-- JSON-LD -->
+  <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+</head>
+
+<body>
+  <!-- Vous pouvez ajouter votre header/nav ici -->
+  
+  <main class="blog-container">
+    <!-- En-tête de l'article -->
+    <header class="article-header">
+      <h1>{title}</h1>
+      
+      <div class="article-meta">
+        {pubDate && (
+          <>
+            <time datetime={publishDate.toISOString()}>
+              {formattedDate}
+            </time>
+            <span class="separator">•</span>
+          </>
+        )}
+        <span class="reading-time">
+          {readingTime} min de lecture
+        </span>
+        {author && (
+          <>
+            <span class="separator">•</span>
+            <span class="author">Par {author}</span>
+          </>
+        )}
+      </div>
+      
+      {tags && tags.length > 0 && (
+        <div class="article-tags">
+          {tags.map(tag => (
+            <span class="tag">{tag}</span>
+          ))}
+        </div>
+      )}
+    </header>
+
+    <!-- Table des matières gérée par le composant dédié dans [slug].astro -->
+
+    <!-- Contenu de l'article -->
+    <article class="prose">
+      <slot />
+    </article>
+
+    <!-- Footer de l'article -->
+    <footer class="article-footer">
+      <p>
+        {pubDate && (
+          <>
+            Publié le <time datetime={publishDate.toISOString()}>{formattedDate}</time>
+          </>
+        )}
+        {author && pubDate && ` par ${author}`}
+        {author && !pubDate && `Par ${author}`}
+      </p>
+    </footer>
+  </main>
+
+  <!-- Vous pouvez ajouter votre footer ici -->
+</body>
+</html>

@@ -4,7 +4,7 @@ export interface SchemaOrgProps {
   data?: Record<string, any>;
 }
 
-const { type, data = {} } = Astro.props;
+const { type, data = {} } = Astro.props as SchemaOrgProps;
 
 const baseOrganization = {
   "@context": "https://schema.org",
@@ -81,7 +81,7 @@ const schemas = {
   }
 };
 
-const schema = schemas[type];
+const schema = schemas[type as keyof typeof schemas];
 ---
 
 <script type="application/ld+json" set:html={JSON.stringify(schema)} />

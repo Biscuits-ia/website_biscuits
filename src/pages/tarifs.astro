@@ -1,30 +1,22 @@
 ---
-import '@/styles/global.css'
 import BaseLayout from '@layouts/Layout.astro';
 
-const structuredData = {
-  "@context": "https://schema.org",
-  "@type": "OfferCatalog",
-  "name": "Tarifs Biscuits IA – Solutions IA",
-  "url": "https://biscuits.dev/tarifs",
-};
 ---
 
 <BaseLayout
-  title="Biscuits IA"
-  description="Tarifs pour Solutions IA et Automatisation."
-  structuredData={structuredData}
+  title="Tarifs & Prix | Biscuits IA"
+  description="Tarification claire et transparente pour vos projets IA et automatisations. Étude et devis gratuits."
 >
   <section class="tarifs-hero">
     <div class="container">
-      <h1 data-hero-title>Nos Tarifs</h1>
-      <p class="hero-subtitle" data-hero-subtitle>
+      <h1>Tarifs & Prix</h1>
+      <p class="hero-lead">
         Tarification claire pour vos projets IA. Étude et devis gratuits.
       </p>
-      <div class="hero-badges" data-hero-badges>
-        <span class="badge">💯 Aucun frais caché</span>
-        <span class="badge">📋 Devis détaillé gratuit</span>
-        <span class="badge">🌍 100% remote</span>
+      <div class="hero-badges">
+        <span class="badge">Aucun frais caché</span>
+        <span class="badge">Devis détaillé gratuit</span>
+        <span class="badge">100% remote</span>
       </div>
     </div>
   </section>
@@ -32,10 +24,9 @@ const structuredData = {
   <section class="tarifs-main">
     <div class="container">
       
-      <!-- Assistants IA -->
-      <div class="service-pricing" data-pricing-section="0">
+      <div class="pricing-section">
         <div class="pricing-header">
-          <h2>🤖 Assistants IA personnalisés</h2>
+          <h2>Assistants IA personnalisés</h2>
           <p>Conception et déploiement d'agents IA adaptés à vos besoins métiers</p>
         </div>
 
@@ -52,7 +43,7 @@ const structuredData = {
               <small>Analyse du besoin, cas d'usage, faisabilité</small>
             </div>
             <div class="col-price highlight">Gratuit</div>
-            <div class="col-duration">30–45 min</div>
+            <div class="col-duration">30-45 min</div>
           </div>
 
           <div class="pricing-row">
@@ -61,7 +52,7 @@ const structuredData = {
               <small>FAQ, support, agent interne</small>
             </div>
             <div class="col-price">À partir de 900€</div>
-            <div class="col-duration">4–7 jours</div>
+            <div class="col-duration">4-7 jours</div>
           </div>
 
           <div class="pricing-row">
@@ -75,15 +66,14 @@ const structuredData = {
         </div>
       </div>
 
-      <!-- Automatisation -->
-      <div class="service-pricing" data-pricing-section="1">
+      <div class="pricing-section">
         <div class="pricing-header">
-          <h2>⚙️ Automatisation de workflows</h2>
+          <h2>Automatisation de workflows</h2>
           <p>Gagnez du temps en automatisant vos processus avec l'IA</p>
         </div>
 
         <div class="pricing-packages">
-          <div class="package-card" data-package="0">
+          <div class="package-card">
             <h3>Workflow simple</h3>
             <div class="package-price">
               <span class="amount">600€</span>
@@ -97,7 +87,7 @@ const structuredData = {
             </ul>
           </div>
 
-          <div class="package-card featured" data-package="1">
+          <div class="package-card featured">
             <div class="package-badge">Populaire</div>
             <h3>Workflow avancé</h3>
             <div class="package-price">
@@ -112,7 +102,7 @@ const structuredData = {
             </ul>
           </div>
 
-          <div class="package-card" data-package="2">
+          <div class="package-card">
             <h3>Automatisation sur mesure</h3>
             <div class="package-price">
               <span class="amount">Sur devis</span>
@@ -126,11 +116,10 @@ const structuredData = {
         </div>
       </div>
 
-      <!-- FAQ -->
-      <div class="tarifs-faq" data-faq-section>
+      <div class="tarifs-faq">
         <h2>Questions fréquentes</h2>
         
-        <details class="faq-item" data-faq="0">
+        <details class="faq-item">
           <summary>Comment se déroule un projet Biscuits IA ?</summary>
           <p>
             Chaque projet commence par une phase de cadrage gratuite afin de définir
@@ -138,7 +127,7 @@ const structuredData = {
           </p>
         </details>
 
-        <details class="faq-item" data-faq="1">
+        <details class="faq-item">
           <summary>Les tarifs sont-ils fixes ?</summary>
           <p>
             Les tarifs affichés sont indicatifs. Un devis personnalisé est établi
@@ -146,7 +135,7 @@ const structuredData = {
           </p>
         </details>
 
-        <details class="faq-item" data-faq="2">
+        <details class="faq-item">
           <summary>Travaillez-vous uniquement à distance ?</summary>
           <p>
             Oui, tous les projets sont réalisés à distance, ce qui permet plus de
@@ -154,7 +143,7 @@ const structuredData = {
           </p>
         </details>
 
-        <details class="faq-item" data-faq="3">
+        <details class="faq-item">
           <summary>Proposez-vous un accompagnement après livraison ?</summary>
           <p>
             Oui, un accompagnement et des évolutions peuvent être proposés via des
@@ -162,7 +151,7 @@ const structuredData = {
           </p>
         </details>
 
-        <details class="faq-item" data-faq="4">
+        <details class="faq-item">
           <summary>Mes données sont-elles en sécurité ?</summary>
           <p>
             Oui. La confidentialité et la sécurité des données sont une priorité
@@ -173,447 +162,426 @@ const structuredData = {
 
     </div>
   </section>
+
+  <section class="tarifs-cta">
+    <div class="container">
+      <h2>Prêt à démarrer votre projet ?</h2>
+      <p>Demandez un devis personnalisé, gratuit et sans engagement.</p>
+      <div class="cta-actions">
+        <a href="/devis" class="btn-primary">Demander un devis</a>
+        <a href="/contact" class="btn-secondary">Nous contacter</a>
+      </div>
+    </div>
+  </section>
 </BaseLayout>
 
 <style>
-/* Hero */
-.tarifs-hero {
-  padding: 6rem 2rem 4rem;
-  text-align: center;
-  position: relative;
-  overflow: hidden;
-  background: var(--color-bg);
-}
-
-.tarifs-hero::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(circle at center, var(--color-primary), transparent 70%);
-  opacity: 0.1;
-}
-
-.tarifs-hero h1 {
-  font-size: clamp(2.5rem, 6vw, 5rem);
-  margin-bottom: 1.5rem;
-  font-weight: 900;
-  color: var(--color-text);
-}
-
-.hero-subtitle {
-  font-size: clamp(1.1rem, 2vw, 1.5rem);
-  opacity: 0.9;
-  margin-bottom: 2rem;
-  color: var(--color-text-light);
-}
-
-.hero-badges {
-  display: flex;
-  gap: 1rem;
-  justify-content: center;
-  flex-wrap: wrap;
-}
-
-.badge {
-  background: var(--glass-bg);
-  padding: 0.75rem 1.5rem;
-  border-radius: var(--radius-full);
-  font-size: 0.95rem;
-  font-weight: 600;
-  backdrop-filter: var(--glass-blur);
-  border: 1px solid var(--glass-border);
-  transition: all var(--transition-base);
-  box-shadow: var(--shadow-sm);
-}
-
-.badge:hover {
-  background: var(--color-bg-elevated);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
-}
-
-/* Main */
-.tarifs-main {
-  padding: 4rem 2rem;
-  background: var(--color-bg);
-}
-
-.service-pricing {
-  margin-bottom: 6rem;
-  position: relative;
-}
-
-.pricing-header {
-  text-align: center;
-  margin-bottom: 3rem;
-}
-
-.pricing-header h2 {
-  font-size: clamp(2rem, 4vw, 3rem);
-  margin-bottom: 1rem;
-  color: var(--color-text);
-  font-weight: 900;
-}
-
-.pricing-header p {
-  color: var(--color-text-light);
-  font-size: 1.1rem;
-}
-
-/* Tables */
-.pricing-table {
-  background: var(--color-bg-alt);
-  border-radius: var(--radius-2xl);
-  overflow: hidden;
-  border: 1px solid var(--color-border);
-  backdrop-filter: var(--glass-blur);
-  box-shadow: var(--shadow-lg);
-}
-
-.pricing-row {
-  display: grid;
-  grid-template-columns: 2fr 1fr 1fr;
-  gap: 1.5rem;
-  padding: 1.5rem;
-  border-bottom: 1px solid var(--color-border);
-  align-items: center;
-  transition: all var(--transition-base);
-}
-
-.pricing-row:hover:not(.header) {
-  background: var(--color-bg-elevated);
-  transform: translateX(3px);
-}
-
-.pricing-row.header {
-  background: var(--color-bg-elevated);
-  font-weight: 700;
-  color: var(--color-text);
-}
-
-.col-service strong {
-  display: block;
-  margin-bottom: 0.5rem;
-  color: var(--color-text);
-  font-weight: 700;
-}
-
-.col-service small {
-  color: var(--color-text-light);
-  font-size: 0.9rem;
-}
-
-.col-price {
-  font-size: 1.5rem;
-  font-weight: 800;
-  color: var(--color-primary);
-  text-align: center;
-}
-
-.col-price.highlight {
-  color: var(--color-first);
-  font-size: 1.75rem;
-}
-
-.col-duration {
-  text-align: center;
-  color: var(--color-text-light);
-  font-weight: 600;
-}
-
-/* Packages */
-.pricing-packages {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 2rem;
-}
-
-.package-card {
-  background: var(--color-bg-alt);
-  padding: 2.5rem 2rem;
-  border-radius: var(--radius-2xl);
-  border: 2px solid var(--color-border);
-  position: relative;
-  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-  backdrop-filter: var(--glass-blur);
-  box-shadow: var(--shadow-lg);
-}
-
-.package-card:hover {
-  transform: translateY(-10px) scale(1.02);
-  border-color: var(--color-primary);
-  box-shadow: var(--shadow-xl);
-}
-
-.package-card.featured {
-  border-color: var(--color-primary);
-  background: var(--color-bg-elevated);
-  border-width: 3px;
-}
-
-.package-badge {
-  position: absolute;
-  top: -15px;
-  right: 2rem;
-  background: var(--color-primary);  color: var(--color-primary-light);
-  padding: 0.5rem 1.5rem;
-  border-radius: var(--radius-full);
-  font-size: 0.85rem;
-  font-weight: 700;
-  box-shadow: var(--shadow-glow);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.package-card h3 {
-  font-size: 1.75rem;
-  text-align: center;
-  margin-bottom: 1.5rem;
-  color: var(--color-text);
-  font-weight: 800;
-}
-
-.package-price {
-  text-align: center;
-  margin-bottom: 2rem;
-  padding-bottom: 2rem;
-  border-bottom: 2px solid var(--color-border);
-}
-
-.package-price .amount {
-  display: block;
-  font-size: 3rem;
-  font-weight: 900;
-  color: var(--color-primary);
-  margin-bottom: 0.5rem;
-}
-
-.package-price .period {
-  font-size: 0.9rem;
-  color: var(--color-text-light);
-  font-weight: 600;
-}
-
-.package-card ul {
-  list-style: none;
-  padding: 0;
-}
-
-.package-card li {
-  padding: 0.75rem 0;
-  line-height: 1.6;
-  color: var(--color-text);
-  position: relative;
-  padding-left: 1.5rem;
-  font-weight: 500;
-}
-
-.package-card li::before {
-  content: '✓';
-  position: absolute;
-  left: 0;
-  color: var(--color-first);
-  font-weight: bold;
-  font-size: 1.2rem;
-}
-
-/* FAQ */
-.tarifs-faq {
-  max-width: 900px;
-  margin: 4rem auto;
-}
-
-.tarifs-faq h2 {
-  text-align: center;
-  font-size: clamp(2rem, 4vw, 3rem);
-  margin-bottom: 3rem;
-  color: var(--color-text);
-  font-weight: 900;
-}
-
-.faq-item {
-  background: var(--color-bg-alt);
-  margin-bottom: 1rem;
-  border-radius: var(--radius-lg);
-  border: 2px solid var(--color-border);
-  border-left-width: 4px;
-  border-left-color: var(--color-primary);
-  backdrop-filter: var(--glass-blur);
-  overflow: hidden;
-  transition: all var(--transition-base);
-  box-shadow: var(--shadow-md);
-}
-
-.faq-item:hover {
-  background: var(--color-bg-elevated);
-  transform: translateX(5px);
-  box-shadow: var(--shadow-lg);
-}
-
-.faq-item summary {
-  padding: 1.5rem;
-  cursor: pointer;
-  font-weight: 700;
-  font-size: 1.1rem;
-  list-style: none;
-  transition: color var(--transition-fast);
-  color: var(--color-text);
-}
-
-.faq-item summary:hover {
-  color: var(--color-primary);
-}
-
-.faq-item summary::before {
-  content: '▶';
-  display: inline-block;
-  margin-right: 1rem;
-  transition: transform var(--transition-base);
-  color: var(--color-primary);
-}
-
-.faq-item[open] summary::before {
-  transform: rotate(90deg);
-}
-
-.faq-item p {
-  padding: 0 1.5rem 1.5rem;
-  color: var(--color-text-light);
-  line-height: 1.7;
-  font-weight: 500;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-  .pricing-row {
-    grid-template-columns: 1fr;
+  .tarifs-hero {
+    padding: 6rem var(--spacing-lg) 4rem;
     text-align: center;
+    background: var(--color-bg);
   }
 
-  .pricing-packages {
-    grid-template-columns: 1fr;
+  .tarifs-hero h1 {
+    font-size: clamp(2.5rem, 6vw, 4rem);
+    font-weight: 900;
+    color: var(--color-text);
+    margin-bottom: var(--spacing-md);
+  }
+
+  .hero-lead {
+    font-size: clamp(1.125rem, 2.5vw, 1.375rem);
+    color: var(--color-text-light);
+    margin-bottom: var(--spacing-xl);
+  }
+
+  .hero-badges {
+    display: flex;
+    gap: var(--spacing-md);
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .badge {
+    background: var(--color-bg-alt);
+    padding: var(--spacing-sm) var(--spacing-lg);
+    border-radius: var(--radius-full);
+    font-size: 0.95rem;
+    font-weight: 600;
+    border: 2px solid var(--color-border);
+    transition: all var(--transition-base);
+  }
+
+  .badge:hover {
+    background: var(--color-bg-elevated);
+    border-color: var(--color-primary);
+    transform: translateY(-2px);
+  }
+
+  .tarifs-main {
+    padding: 4rem var(--spacing-lg);
+    background: var(--color-bg);
+  }
+
+  .pricing-section {
+    margin-bottom: 6rem;
+  }
+
+  .pricing-header {
+    text-align: center;
+    margin-bottom: 3rem;
+  }
+
+  .pricing-header h2 {
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 900;
+    color: var(--color-text);
+    margin-bottom: var(--spacing-md);
+  }
+
+  .pricing-header p {
+    color: var(--color-text-light);
+    font-size: 1.125rem;
+  }
+
+  .pricing-table {
+    background: var(--color-bg-alt);
+    border-radius: var(--radius-2xl);
+    overflow: hidden;
+    border: 2px solid var(--color-border);
+    max-width: 1000px;
+    margin: 0 auto;
+  }
+
+  .pricing-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: var(--spacing-lg);
+    padding: var(--spacing-xl);
+    border-bottom: 1px solid var(--color-border);
+    align-items: center;
+    transition: all var(--transition-base);
+  }
+
+  .pricing-row:last-child {
+    border-bottom: none;
+  }
+
+  .pricing-row:hover:not(.header) {
+    background: var(--color-bg-elevated);
+  }
+
+  .pricing-row.header {
+    background: var(--color-bg-elevated);
+    font-weight: 700;
+    color: var(--color-text);
+  }
+
+  .col-service strong {
+    display: block;
+    margin-bottom: var(--spacing-sm);
+    color: var(--color-text);
+    font-weight: 700;
   }
 
   .col-service small {
-    display: block;
-    margin-top: 0.5rem;
+    color: var(--color-text-light);
+    font-size: 0.9rem;
   }
-  
+
+  .col-price {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--color-primary);
+    text-align: center;
+  }
+
+  .col-price.highlight {
+    color: var(--color-first);
+    font-size: 1.75rem;
+  }
+
+  .col-duration {
+    text-align: center;
+    color: var(--color-text-light);
+    font-weight: 600;
+  }
+
+  .pricing-packages {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: var(--spacing-2xl);
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
   .package-card {
-    padding: 2rem 1.5rem;
+    background: var(--color-bg-alt);
+    padding: var(--spacing-3xl) var(--spacing-2xl);
+    border-radius: var(--radius-2xl);
+    border: 2px solid var(--color-border);
+    position: relative;
+    transition: all var(--transition-base);
   }
-}
 
-/* Réduction des mouvements */
-@media (prefers-reduced-motion: reduce) {
-  .badge,
-  .pricing-row,
-  .package-card,
-  .faq-item {
-    transition: none !important;
-  }
-  
   .package-card:hover {
-    transform: none !important;
+    transform: translateY(-5px);
+    border-color: var(--color-primary);
+    box-shadow: var(--shadow-xl);
   }
-}
+
+  .package-card.featured {
+    border-color: var(--color-primary);
+    background: var(--color-bg-elevated);
+    border-width: 3px;
+  }
+
+  .package-badge {
+    position: absolute;
+    top: -15px;
+    right: 2rem;
+    background: var(--color-primary);
+    color: var(--color-bg);
+    padding: var(--spacing-sm) var(--spacing-lg);
+    border-radius: var(--radius-full);
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .package-card h3 {
+    font-size: 1.75rem;
+    text-align: center;
+    margin-bottom: var(--spacing-xl);
+    color: var(--color-text);
+    font-weight: 800;
+  }
+
+  .package-price {
+    text-align: center;
+    margin-bottom: var(--spacing-2xl);
+    padding-bottom: var(--spacing-2xl);
+    border-bottom: 2px solid var(--color-border);
+  }
+
+  .package-price .amount {
+    display: block;
+    font-size: 3rem;
+    font-weight: 900;
+    color: var(--color-primary);
+    margin-bottom: var(--spacing-sm);
+  }
+
+  .package-price .period {
+    font-size: 0.9rem;
+    color: var(--color-text-light);
+    font-weight: 600;
+  }
+
+  .package-card ul {
+    list-style: none;
+    padding: 0;
+  }
+
+  .package-card li {
+    padding: var(--spacing-sm) 0 var(--spacing-sm) var(--spacing-xl);
+    line-height: 1.6;
+    color: var(--color-text);
+    position: relative;
+    font-weight: 500;
+  }
+
+  .package-card li::before {
+    content: '✓';
+    position: absolute;
+    left: 0;
+    color: var(--color-first);
+    font-weight: bold;
+    font-size: 1.2rem;
+  }
+
+  .tarifs-faq {
+    max-width: 900px;
+    margin: 4rem auto 0;
+  }
+
+  .tarifs-faq h2 {
+    text-align: center;
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 900;
+    color: var(--color-text);
+    margin-bottom: var(--spacing-2xl);
+  }
+
+  .faq-item {
+    background: var(--color-bg-alt);
+    margin-bottom: var(--spacing-md);
+    border-radius: var(--radius-lg);
+    border: 2px solid var(--color-border);
+    border-left-width: 4px;
+    border-left-color: var(--color-primary);
+    overflow: hidden;
+    transition: all var(--transition-base);
+  }
+
+  .faq-item:hover {
+    background: var(--color-bg-elevated);
+    transform: translateX(5px);
+  }
+
+  .faq-item summary {
+    padding: var(--spacing-lg);
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 1.1rem;
+    list-style: none;
+    transition: color var(--transition-fast);
+    color: var(--color-text);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+  }
+
+  .faq-item summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .faq-item summary::before {
+    content: '▶';
+    display: inline-block;
+    transition: transform var(--transition-base);
+    color: var(--color-primary);
+    flex-shrink: 0;
+  }
+
+  .faq-item[open] summary::before {
+    transform: rotate(90deg);
+  }
+
+  .faq-item summary:hover {
+    color: var(--color-primary);
+  }
+
+  .faq-item summary:focus-visible {
+    outline: 3px solid var(--color-primary);
+    outline-offset: 3px;
+  }
+
+  .faq-item p {
+    padding: 0 var(--spacing-lg) var(--spacing-lg);
+    color: var(--color-text-light);
+    line-height: 1.7;
+    font-weight: 500;
+  }
+
+  .tarifs-cta {
+    padding: 4rem var(--spacing-lg);
+    text-align: center;
+    background: var(--color-bg-alt);
+    margin-top: 4rem;
+  }
+
+  .tarifs-cta h2 {
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 900;
+    color: var(--color-text);
+    margin-bottom: var(--spacing-md);
+  }
+
+  .tarifs-cta p {
+    font-size: clamp(1rem, 2.5vw, 1.25rem);
+    color: var(--color-text-light);
+    margin-bottom: var(--spacing-xl);
+  }
+
+  .cta-actions {
+    display: flex;
+    gap: var(--spacing-md);
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .btn-primary,
+  .btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    padding: var(--spacing-md) var(--spacing-xl);
+    border-radius: var(--radius-lg);
+    font-weight: 600;
+    text-decoration: none;
+    transition: all var(--transition-base);
+  }
+
+  .btn-primary {
+    background: var(--color-primary);
+    color: var(--color-bg);
+  }
+
+  .btn-primary:hover {
+    background: var(--color-primary-dark);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .btn-secondary {
+    background: var(--color-bg);
+    color: var(--color-text);
+    border: 2px solid var(--color-border);
+  }
+
+  .btn-secondary:hover {
+    background: var(--color-bg-elevated);
+    border-color: var(--color-primary);
+  }
+
+  .btn-primary:focus-visible,
+  .btn-secondary:focus-visible {
+    outline: 3px solid var(--color-primary);
+    outline-offset: 3px;
+  }
+
+  @media (max-width: 768px) {
+    .pricing-row {
+      grid-template-columns: 1fr;
+      text-align: center;
+    }
+
+    .col-service small {
+      display: block;
+      margin-top: var(--spacing-sm);
+    }
+
+    .pricing-packages {
+      grid-template-columns: 1fr;
+    }
+
+    .cta-actions {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .btn-primary,
+    .btn-secondary {
+      justify-content: center;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .badge,
+    .pricing-row,
+    .package-card,
+    .faq-item,
+    .btn-primary,
+    .btn-secondary {
+      transition: none;
+    }
+    
+    .badge:hover,
+    .package-card:hover,
+    .faq-item:hover,
+    .btn-primary:hover {
+      transform: none;
+    }
+  }
 </style>
-
-<script>
-  function initPricingAnimations() {
-    // Check reduced motion
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      return;
-    }
-
-    // Observer avec seuil plus bas
-    const observerOptions = {
-      threshold: 0.1,
-      rootMargin: '0px 0px -50px 0px'
-    };
-
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('animate-in');
-          observer.unobserve(entry.target);
-        }
-      });
-    }, observerOptions);
-
-    // Hero animations
-    const heroTitle = document.querySelector('[data-hero-title]');
-    const heroSubtitle = document.querySelector('[data-hero-subtitle]');
-    const heroBadges = document.querySelector('[data-hero-badges]');
-
-    if (heroTitle) {
-      (heroTitle as HTMLElement).style.opacity = '0';
-      (heroTitle as HTMLElement).style.transform = 'translateY(30px)';
-      (heroTitle as HTMLElement).style.transition = 'all 0.8s ease 200ms';
-      setTimeout(() => heroTitle.classList.add('animate-in'), 100);
-    }
-
-    if (heroSubtitle) {
-      (heroSubtitle as HTMLElement).style.opacity = '0';
-      (heroSubtitle as HTMLElement).style.transform = 'translateY(20px)';
-      (heroSubtitle as HTMLElement).style.transition = 'all 0.8s ease 400ms';
-      setTimeout(() => heroSubtitle.classList.add('animate-in'), 100);
-    }
-
-    if (heroBadges) {
-      const badges = heroBadges.querySelectorAll('.badge');
-      badges.forEach((badge, i) => {
-        (badge as HTMLElement).style.opacity = '0';
-        (badge as HTMLElement).style.transform = 'translateY(20px)';
-        (badge as HTMLElement).style.transition = `all 0.6s ease ${600 + i * 100}ms`;
-        setTimeout(() => badge.classList.add('animate-in'), 100);
-      });
-    }
-
-    // Pricing sections
-    document.querySelectorAll('[data-pricing-section]').forEach((section, index) => {
-      (section as HTMLElement).style.opacity = '0';
-      (section as HTMLElement).style.transform = 'translateY(50px)';
-      (section as HTMLElement).style.transition = `all 0.8s ease ${index * 100}ms`;
-      observer.observe(section);
-    });
-
-    // Package cards avec scale
-    document.querySelectorAll('[data-package]').forEach((card, index) => {
-      (card as HTMLElement).style.opacity = '0';
-      (card as HTMLElement).style.transform = 'scale(0.9) translateY(30px)';
-      (card as HTMLElement).style.transition = `all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) ${index * 100}ms`;
-      observer.observe(card);
-    });
-
-    // FAQ items
-    document.querySelectorAll('[data-faq]').forEach((item, index) => {
-      (item as HTMLElement).style.opacity = '0';
-      (item as HTMLElement).style.transform = 'translateX(-30px)';
-      (item as HTMLElement).style.transition = `all 0.6s ease ${index * 80}ms`;
-      observer.observe(item);
-    });
-  }
-
-  // Style pour les animations
-  const style = document.createElement('style');
-  style.textContent = `
-    [data-hero-title].animate-in,
-    [data-hero-subtitle].animate-in,
-    .badge.animate-in,
-    [data-pricing-section].animate-in,
-    [data-package].animate-in,
-    [data-faq].animate-in {
-      opacity: 1 !important;
-      transform: translateY(0) translateX(0) scale(1) !important;
-    }
-  `;
-  document.head.appendChild(style);
-
-  // Init
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initPricingAnimations);
-  } else {
-    initPricingAnimations();
-  }
-</script>

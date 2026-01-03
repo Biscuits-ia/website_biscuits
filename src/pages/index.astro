@@ -5,25 +5,11 @@ import HorizontalScrollSection from '@/components/HorizontalScrollSection.astro'
 import AnimatedFeatureGrid from '@/components/AnimatedFeaturesGrid.astro';
 import AnimatedProcessTimeline from '@/components/AnimatedProcessTimeline.astro';
 
-const structuredData = {
-"@context": "https://schema.org",
-  "@type": "WebPage",
-  "name": "Biscuits IA",
-  "description": "Solutions IA et Automatisation.",
-  "url": "https://biscuits.dev/",
-  "publisher": {
-    "@type": "Organization",
-    "name": "Biscuits IA",
-    "url": "https://biscuits.dev",
-    "logo": "https://biscuits.dev/logo.webp"
-  }
-};
 ---
 
 <BaseLayout
-  title="Biscuits IA"
-  description="outils IA, starterkits optimisés, prompts et automatisations pour. Crée plus vite avec des bases propres."
-  structuredData={structuredData}
+  title="Biscuits IA - Solutions IA et Automatisation"
+  description="Outils IA, starterkits optimisés, prompts et automatisations pour développeurs et entreprises. Créez plus vite avec des bases propres."
 >
   <Hero />
   <HorizontalScrollSection />
@@ -31,19 +17,14 @@ const structuredData = {
   <AnimatedProcessTimeline />  
 </BaseLayout>
 
-<script>
-  
-  import Lenis from '@studio-freight/lenis';
-
-  const lenis = new Lenis({
-    duration: 1.2,
-    easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-  });
-
-  function raf(time: number) {
-    lenis.raf(time);
-    requestAnimationFrame(raf);
+<style is:global>
+  html {
+    scroll-behavior: smooth;
   }
 
-  requestAnimationFrame(raf);
-</script>
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+  }
+</style>

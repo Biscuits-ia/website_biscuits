@@ -4,20 +4,11 @@ import ContactForm from '@/components/svelte/ContactForm.svelte';
 
 import '@/styles/global.css'
 import NewsletterForm from '@/components/svelte/NewsletterForm.svelte';
-
-const structuredData = {
-"@context": "https://schema.org",
-  "@type": "ContactPage",
-  "name": "Contact",
-  "description": "Page de contact Biscuits IA.",
-  "url": "https://biscuits.dev/contact"
-};
 ---
 
 <BaseLayout
   title="Biscuits IA "
   description="Contactez nous pour vos besoins"
-  structuredData={structuredData}
 >
   <section class="contact-hero">
     <div class="container">

@@ -1,492 +1,419 @@
-<script lang="ts">
-  import { submitDevis } from '@/utils/api';
+<script>
+  import { createEventDispatcher } from 'svelte';
+  import { SERVICES_CONFIG } from "@/utils/formValidation";
   
-  // Form state
-  let name = '';
-  let email = '';
-  let phone = '';
-  let service = '';
-  let budget = '';
-  let message = '';
-  let honey = ''; // Honeypot
+  const dispatch = createEventDispatcher();
   
-  // UI state
-  let errors: Record<string, string> = {};
-  let isSubmitting = false;
-  let isSuccess = false;
-  let generalError = '';
-  let messageLength = 0;
-  
-  // Timestamp for spam detection
-  const formLoadTime = Date.now();
-  
-  // Services config
-  const SERVICES = {
-    'starter-kits': [
-      'StarterKit Next.js Pro',
-      'StarterKit Astro Local Business',
-      'StarterKit SaaS Supabase Complet'
-    ],
-    'ia': [
-      'Audit IA',
-      'Automatisation IA API',
-      'Chatbot IA Professionnel'
-    ],
-    'consulting': [
-      'Consulting Technique',
-      'Coaching Développeur',
-      'Architecture & Performance'
-    ]
+  const API_BASE_URL = 'https://biscuits-admin-main-1a6oe6.laravel.cloud';
+  const API_ENDPOINT = `${API_BASE_URL}/api/devis`;
+  const API_TIMEOUT = 15000;
+
+  let formData = {
+    name: '',
+    email: '',
+    phone: '',
+    budget: '',
+    service: '',
+    message: '',
+    website: ''
   };
-  
-  const BUDGETS = [
-    '< 1000€',
-    '1000-3000€',
-    '3000-5000€',
-    '5000-10000€',
-    '10000-20000€',
-    '> 20000€'
-  ];
-  
-  // Reactive message length
-  $: messageLength = message.length;
-  $: messageLengthColor = messageLength > 1900 ? 'var(--color-danger)' : 
-                          messageLength > 1500 ? 'var(--color-warning)' : 
-                          'var(--color-text-light)';
-  
-  // Validation
-  function validateField(field: string, value: string): string | null {
-    switch (field) {
-      case 'name':
-        if (!value.trim()) return 'Le nom est requis';
-        if (value.length < 2) return 'Le nom est trop court';
-        if (value.length > 100) return 'Le nom est trop long';
-        return null;
-        
-      case 'email':
-        if (!value.trim()) return 'L\'email est requis';
-        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
-          return 'Email invalide';
-        }
-        if (value.length > 255) return 'Email trop long';
-        return null;
-        
-      case 'phone':
-        if (value && !/^[+\d\s()-]+$/.test(value)) {
-          return 'Téléphone invalide';
-        }
-        if (value.length > 20) return 'Téléphone trop long';
-        return null;
-        
-      case 'service':
-        if (!value) return 'Veuillez sélectionner un service';
-        return null;
-        
-      case 'message':
-        if (!value.trim()) return 'Le message est requis';
-        if (value.length < 20) return 'Le message doit contenir au moins 20 caractères';
-        if (value.length > 2000) return 'Le message est trop long (max 2000 caractères)';
-        return null;
-        
-      default:
-        return null;
+
+  let errors = {};
+  let isSubmitting = false;
+  let submitSuccess = false;
+  let submitError = '';
+  let messageLength = 0;
+
+  $: messageLength = formData.message.length;
+
+  const validateField = (name, value) => {
+    if (!value || value.trim() === '') {
+      if (name === 'phone' || name === 'budget') return null;
+      return 'Ce champ est obligatoire';
     }
-  }
-  
-  // Real-time validation
-  function handleBlur(field: string, value: string) {
-    const error = validateField(field, value);
+
+    switch (name) {
+      case 'name':
+        if (value.length < 2) return 'Le nom doit contenir au moins 2 caractères';
+        if (value.length > 100) return 'Le nom ne peut pas dépasser 100 caractères';
+        break;
+
+      case 'email':
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(value)) return 'Email invalide';
+        if (value.length > 255) return 'L\'email ne peut pas dépasser 255 caractères';
+        break;
+
+      case 'phone':
+        if (value && !/^[+\d\s()-]+$/.test(value)) return 'Téléphone invalide';
+        break;
+
+      case 'service':
+        if (value.length < 3) return 'Veuillez sélectionner un service';
+        break;
+
+      case 'message':
+        if (value.length < 20) return 'Le message doit contenir au moins 20 caractères';
+        if (value.length > 2000) return 'Le message ne peut pas dépasser 2000 caractères';
+        break;
+    }
+
+    return null;
+  };
+
+  const handleBlur = (field) => {
+    const error = validateField(field, formData[field]);
     if (error) {
       errors[field] = error;
     } else {
       delete errors[field];
     }
-    errors = errors; // Trigger reactivity
-  }
-  
-  // Clear error on input
-  function handleInput(field: string) {
+    errors = errors;
+  };
+
+  const handleInput = (field) => {
     if (errors[field]) {
       delete errors[field];
       errors = errors;
     }
-  }
-  
-  // Form submission
-  async function handleSubmit(e: Event) {
+  };
+
+  const sanitizeInput = (value) => {
+    if (!value) return '';
+    return value.trim().replace(/[<>]/g, '').slice(0, 5000);
+  };
+
+  const sendToApi = async (data) => {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT);
+
+    try {
+      const response = await fetch(API_ENDPOINT, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify(data),
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+      const result = await response.json();
+
+      if (!response.ok) {
+        if (response.status === 429 || response.status >= 500) {
+          throw new Error('Service temporairement indisponible. Réessayez plus tard.');
+        }
+        throw new Error(result.message || 'Une erreur est survenue');
+      }
+
+      return result;
+    } catch (error) {
+      clearTimeout(timeoutId);
+      if (error.name === 'AbortError') {
+        throw new Error('La requête a expiré. Veuillez réessayer.');
+      }
+      throw error;
+    }
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // Reset states
+    submitSuccess = false;
+    submitError = '';
     errors = {};
-    generalError = '';
-    isSuccess = false;
-    
-    // Validate all required fields
-    const fields = { name, email, phone, service, message };
+
+    const sanitizedData = {
+      name: sanitizeInput(formData.name),
+      email: sanitizeInput(formData.email),
+      phone: sanitizeInput(formData.phone) || undefined,
+      service: sanitizeInput(formData.service),
+      budget: sanitizeInput(formData.budget) || undefined,
+      message: sanitizeInput(formData.message),
+      website: formData.website,
+    };
+
     let hasErrors = false;
+    const fieldsToValidate = ['name', 'email', 'phone', 'service', 'message'];
     
-    // Required fields validation
-    ['name', 'email', 'service', 'message'].forEach(field => {
-      const error = validateField(field, fields[field as keyof typeof fields]);
-      if (error) {
-        errors[field] = error;
-        hasErrors = true;
+    fieldsToValidate.forEach((field) => {
+      const value = sanitizedData[field];
+      if (value !== undefined) {
+        const error = validateField(field, value);
+        if (error) {
+          errors[field] = error;
+          hasErrors = true;
+        }
       }
     });
-    
-    // Optional phone validation
-    if (phone) {
-      const phoneError = validateField('phone', phone);
-      if (phoneError) {
-        errors.phone = phoneError;
-        hasErrors = true;
-      }
-    }
-    
+
     if (hasErrors) {
-      // Focus first error
-      const firstError = Object.keys(errors)[0];
-      if (firstError) {
-        document.getElementById(firstError)?.focus();
-      }
+      errors = errors;
       return;
     }
-    
-    // Check honeypot (spam)
-    if (honey.trim() !== '') {
-      generalError = 'Erreur de validation';
-      return;
-    }
-    
-    // Check submission time (anti-bot)
-    const submissionTime = Date.now();
-    if (submissionTime - formLoadTime < 2000) {
-      generalError = 'Veuillez prendre le temps de remplir le formulaire';
-      return;
-    }
-    
+
     isSubmitting = true;
-    
+
     try {
-      await submitDevis({
-        name: name.trim(),
-        email: email.trim(),
-        phone: phone.trim() || undefined,
-        service,
-        budget: budget || undefined,
-        message: message.trim(),
-        honey,
-        timestamp: Math.floor(formLoadTime / 1000)
-      });
+      await sendToApi(sanitizedData);
+      submitSuccess = true;
       
-      // Success
-      isSuccess = true;
-      
-      // Reset form
-      name = '';
-      email = '';
-      phone = '';
-      service = '';
-      budget = '';
-      message = '';
-      
-      // Track conversion
+      formData = {
+        name: '',
+        email: '',
+        phone: '',
+        budget: '',
+        service: '',
+        message: '',
+        website: ''
+      };
+
       if (typeof window.gtag !== 'undefined') {
         window.gtag('event', 'form_submit', {
-          form_name: 'devis',
-          service: service,
-          budget: budget
+          form_name: 'quote',
+          service: sanitizedData.service,
+          budget: sanitizedData.budget,
         });
       }
-      
-      // Scroll to success message
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-      
-      // Hide success message after 10s
+
       setTimeout(() => {
-        isSuccess = false;
+        submitSuccess = false;
       }, 10000);
-      
-    } catch (error: any) {
-      console.error('Devis form error:', error);
-      
-      if (error.errors) {
-        // Validation errors from API
-        errors = error.errors;
-      } else {
-        generalError = error.message || 'Une erreur est survenue. Veuillez réessayer.';
-      }
-      
-      // Scroll to error message
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-      
+
+      dispatch('success');
+
+    } catch (error) {
+      console.error('Erreur envoi:', error);
+      submitError = error.message || 'Une erreur inattendue est survenue';
     } finally {
       isSubmitting = false;
     }
-  }
+  };
 </script>
 
-<form 
-  on:submit={handleSubmit} 
-  class="devis-form" 
-  novalidate
-  aria-label="Formulaire de demande de devis"
->
-  <!-- Success message -->
-  {#if isSuccess}
-    <div class="alert alert-success" role="status" aria-live="polite">
-      <svg class="alert-icon" viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" fill="none"/>
-      </svg>
-      <div>
-        <strong>Demande envoyée avec succès !</strong>
-        <p>Nous vous répondrons sous 24-48h avec un devis détaillé.</p>
-      </div>
-    </div>
-  {/if}
-  
-  <!-- General error -->
-  {#if generalError}
-    <div class="alert alert-error" role="alert" aria-live="assertive">
-      <svg class="alert-icon" viewBox="0 0 24 24" aria-hidden="true">
-        <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" fill="none" />
-        <path d="M12 8v4m0 4h.01" stroke="currentColor" stroke-width="2" />
-      </svg>
-      <span>{generalError}</span>
-    </div>
-  {/if}
-  
-  <!-- Name field -->
+{#if submitSuccess}
+  <div class="alert alert-success" role="status" aria-live="polite">
+    <svg class="alert-icon" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" fill="none"/>
+    </svg>
+    <span>Demande envoyée avec succès ! Nous vous répondrons sous 24-48h.</span>
+  </div>
+{/if}
+
+{#if submitError}
+  <div class="alert alert-error" role="alert" aria-live="assertive">
+    <svg class="alert-icon" viewBox="0 0 24 24" aria-hidden="true">
+      <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" fill="none" />
+      <path d="M12 8v4m0 4h.01" stroke="currentColor" stroke-width="2" />
+    </svg>
+    <span>{submitError}</span>
+  </div>
+{/if}
+
+<form on:submit={handleSubmit} class="quote-form" novalidate>
   <div class="form-group" class:error={errors.name}>
     <label for="name">
-      Nom / Entreprise <span class="required" aria-label="requis">*</span>
+      Nom / Entreprise <span class="required">*</span>
     </label>
-    <input
-      id="name"
-      type="text"
-      bind:value={name}
-      on:blur={() => handleBlur('name', name)}
+    <input 
+      type="text" 
+      id="name" 
+      bind:value={formData.name}
+      on:blur={() => handleBlur('name')}
       on:input={() => handleInput('name')}
-      placeholder="Votre nom ou entreprise"
-      aria-required="true"
-      aria-invalid={!!errors.name}
-      aria-describedby={errors.name ? 'name-error' : undefined}
-      disabled={isSubmitting}
+      placeholder="Votre nom ou entreprise" 
+      required 
       maxlength="100"
       autocomplete="name"
+      aria-invalid={errors.name ? 'true' : 'false'}
+      aria-describedby={errors.name ? 'name-error' : undefined}
     />
     {#if errors.name}
-      <span id="name-error" class="error-message" role="alert">
-        {errors.name}
-      </span>
+      <span class="error-message" id="name-error" role="alert">{errors.name}</span>
     {/if}
   </div>
-  
-  <!-- Email field -->
+
   <div class="form-group" class:error={errors.email}>
     <label for="email">
-      Email professionnel <span class="required" aria-label="requis">*</span>
+      Email professionnel <span class="required">*</span>
     </label>
-    <input
-      id="email"
-      type="email"
-      bind:value={email}
-      on:blur={() => handleBlur('email', email)}
+    <input 
+      type="email" 
+      id="email" 
+      bind:value={formData.email}
+      on:blur={() => handleBlur('email')}
       on:input={() => handleInput('email')}
-      placeholder="contact@exemple.fr"
-      aria-required="true"
-      aria-invalid={!!errors.email}
-      aria-describedby={errors.email ? 'email-error' : undefined}
-      disabled={isSubmitting}
+      placeholder="contact@exemple.fr" 
+      required 
       maxlength="255"
       autocomplete="email"
+      aria-invalid={errors.email ? 'true' : 'false'}
+      aria-describedby={errors.email ? 'email-error' : undefined}
     />
     {#if errors.email}
-      <span id="email-error" class="error-message" role="alert">
-        {errors.email}
-      </span>
+      <span class="error-message" id="email-error" role="alert">{errors.email}</span>
     {/if}
   </div>
-  
-  <!-- Phone field (optional) -->
+
   <div class="form-group" class:error={errors.phone}>
-    <label for="phone">
-      Téléphone <span class="optional">(optionnel)</span>
-    </label>
-    <input
-      id="phone"
-      type="tel"
-      bind:value={phone}
-      on:blur={() => handleBlur('phone', phone)}
+    <label for="phone">Téléphone</label>
+    <input 
+      type="tel" 
+      id="phone" 
+      bind:value={formData.phone}
+      on:blur={() => handleBlur('phone')}
       on:input={() => handleInput('phone')}
-      placeholder="+33 6 00 00 00 00"
-      aria-invalid={!!errors.phone}
-      aria-describedby={errors.phone ? 'phone-error' : undefined}
-      disabled={isSubmitting}
+      placeholder="+33 6 00 00 00 00" 
       maxlength="20"
       autocomplete="tel"
+      aria-invalid={errors.phone ? 'true' : 'false'}
+      aria-describedby={errors.phone ? 'phone-error' : undefined}
     />
     {#if errors.phone}
-      <span id="phone-error" class="error-message" role="alert">
-        {errors.phone}
-      </span>
+      <span class="error-message" id="phone-error" role="alert">{errors.phone}</span>
     {/if}
   </div>
-  
-  <!-- Budget field (optional) -->
-  <div class="form-group" class:error={errors.budget}>
-    <label for="budget">
-      Budget estimé <span class="optional">(optionnel)</span>
-    </label>
-    <select
-      id="budget"
-      bind:value={budget}
-      disabled={isSubmitting}
-    >
+
+  <div class="form-group">
+    <label for="budget">Budget estimé</label>
+    <select id="budget" bind:value={formData.budget}>
       <option value="">-- Budget indicatif --</option>
-      {#each BUDGETS as b}
-        <option value={b}>{b}</option>
-      {/each}
+      <option value="< 1000€">Moins de 1 000€</option>
+      <option value="1000-3000€">1 000€ - 3 000€</option>
+      <option value="3000-5000€">3 000€ - 5 000€</option>
+      <option value="5000-10000€">5 000€ - 10 000€</option>
+      <option value="10000-20000€">10 000€ - 20 000€</option>
+      <option value="> 20000€">Plus de 20 000€</option>
     </select>
   </div>
-  
-  <!-- Service field -->
+
   <div class="form-group full" class:error={errors.service}>
     <label for="service">
-      Service souhaité <span class="required" aria-label="requis">*</span>
+      Service souhaité <span class="required">*</span>
     </label>
-    <select
-      id="service"
-      bind:value={service}
-      on:blur={() => handleBlur('service', service)}
+    <select 
+      id="service" 
+      bind:value={formData.service}
+      on:blur={() => handleBlur('service')}
       on:change={() => handleInput('service')}
+      required 
       aria-required="true"
-      aria-invalid={!!errors.service}
+      aria-invalid={errors.service ? 'true' : 'false'}
       aria-describedby={errors.service ? 'service-error' : undefined}
-      disabled={isSubmitting}
     >
       <option value="">Sélectionnez un service…</option>
       <optgroup label="Starter Kits">
-        {#each SERVICES['starter-kits'] as s}
-          <option value={s}>{s}</option>
+        {#each SERVICES_CONFIG["starter-kits"] as service}
+          <option value={service}>{service}</option>
         {/each}
       </optgroup>
       <optgroup label="Solutions IA">
-        {#each SERVICES['ia'] as s}
-          <option value={s}>{s}</option>
+        {#each SERVICES_CONFIG["ia"] as service}
+          <option value={service}>{service}</option>
         {/each}
       </optgroup>
       <optgroup label="Consulting & Coaching">
-        {#each SERVICES['consulting'] as s}
-          <option value={s}>{s}</option>
+        {#each SERVICES_CONFIG["consulting"] as service}
+          <option value={service}>{service}</option>
         {/each}
       </optgroup>
     </select>
     {#if errors.service}
-      <span id="service-error" class="error-message" role="alert">
-        {errors.service}
-      </span>
+      <span class="error-message" id="service-error" role="alert">{errors.service}</span>
     {/if}
   </div>
-  
-  <!-- Message field -->
+
   <div class="form-group full" class:error={errors.message}>
     <label for="message">
-      Détails supplémentaires <span class="required" aria-label="requis">*</span>
+      Détails supplémentaires <span class="required">*</span>
     </label>
-    <textarea
-      id="message"
-      bind:value={message}
-      on:blur={() => handleBlur('message', message)}
+    <textarea 
+      id="message" 
+      bind:value={formData.message}
+      on:blur={() => handleBlur('message')}
       on:input={() => handleInput('message')}
-      placeholder="Nombre de postes, besoins, contraintes, deadlines…"
-      aria-required="true"
-      aria-invalid={!!errors.message}
-      aria-describedby={errors.message ? 'message-error' : undefined}
-      disabled={isSubmitting}
-      rows="5"
+      rows="5" 
+      placeholder="Nombre de postes, besoins, contraintes, deadlines…" 
+      required 
+      minlength="20"
       maxlength="2000"
+      aria-invalid={errors.message ? 'true' : 'false'}
+      aria-describedby="message-count {errors.message ? 'message-error' : ''}"
     ></textarea>
-    <div class="char-count" style="color: {messageLengthColor}" aria-live="polite">
+    <span 
+      class="char-count" 
+      id="message-count"
+      class:warning={messageLength > 1500}
+      class:danger={messageLength > 1900}
+      aria-live="polite"
+    >
       {messageLength} / 2000
-    </div>
+    </span>
     {#if errors.message}
-      <span id="message-error" class="error-message" role="alert">
-        {errors.message}
-      </span>
+      <span class="error-message" id="message-error" role="alert">{errors.message}</span>
     {/if}
   </div>
-  
-  <!-- Honeypot (hidden from users, visible to bots) -->
-  <input
-    type="text"
-    name="website"
-    bind:value={honey}
-    tabindex="-1"
-    autocomplete="off"
-    class="honeypot"
-    aria-hidden="true"
+
+  <input 
+    type="text" 
+    name="website" 
+    bind:value={formData.website}
+    tabindex="-1" 
+    autocomplete="off" 
+    class="honeypot" 
+    aria-hidden="true" 
   />
-  
-  <!-- Submit button -->
-  <button
-    type="submit"
-    class="btn-submit"
+
+  <button 
+    type="submit" 
+    class="btn-primary" 
+    class:loading={isSubmitting}
     disabled={isSubmitting}
     aria-busy={isSubmitting}
   >
+    <span class="btn-text">Envoyer ma demande</span>
     {#if isSubmitting}
-      <span class="spinner" aria-hidden="true"></span>
-      Envoi en cours...
-    {:else}
-      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <line x1="22" y1="2" x2="11" y2="13"></line>
-        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-      </svg>
-      Envoyer ma demande
+      <span class="btn-loader" aria-hidden="true"></span>
     {/if}
   </button>
 </form>
 
 <style>
-  .devis-form {
+  .quote-form {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 1.8rem;
     max-width: 900px;
     margin: 0 auto;
   }
-  
+
   .form-group {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
   }
-  
+
   .form-group.full {
     grid-column: 1 / -1;
   }
-  
+
   label {
     font-size: 0.95rem;
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-text);
+    font-weight: 600;
+    color: var(--color-text-light);
   }
-  
+
   .required {
     color: var(--color-danger);
   }
-  
-  .optional {
-    color: var(--color-text-light);
-    font-weight: var(--font-weight-normal);
-  }
-  
+
   input,
   select,
   textarea {
     padding: 0.8rem;
-    border: 2px solid var(--color-border);
+    border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
     background: var(--color-bg-alt);
     color: var(--color-text);
@@ -494,39 +421,44 @@
     font-size: 15px;
     transition: all var(--transition-fast);
   }
-  
+
   input:focus,
   select:focus,
   textarea:focus {
     outline: none;
     border-color: var(--color-primary);
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    box-shadow: 0 0 0 3px var(--color-primary-light);
   }
-  
+
   .form-group.error input,
   .form-group.error textarea,
   .form-group.error select {
     border-color: var(--color-danger);
-    background-color: rgba(239, 68, 68, 0.05);
+    background-color: var(--color-danger-light);
   }
-  
+
   .error-message {
     color: var(--color-danger);
     font-size: 0.875rem;
-    font-weight: var(--font-weight-medium);
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
+    font-weight: 500;
   }
-  
+
   .char-count {
-    text-align: right;
+    display: block;
     font-size: 0.875rem;
-    font-weight: var(--font-weight-medium);
+    text-align: right;
+    color: var(--color-text-light);
     transition: color var(--transition-fast);
   }
-  
-  /* Honeypot hidden */
+
+  .char-count.warning {
+    color: var(--color-warning);
+  }
+
+  .char-count.danger {
+    color: var(--color-danger);
+  }
+
   .honeypot {
     position: absolute !important;
     left: -9999px !important;
@@ -535,20 +467,19 @@
     opacity: 0 !important;
     pointer-events: none !important;
   }
-  
-  /* Alerts */
+
   .alert {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     gap: 1rem;
+    margin-bottom: 1.5rem;
     padding: 1.25rem;
     border-radius: var(--radius-lg);
-    border: 2px solid;
-    margin-bottom: 1.5rem;
-    grid-column: 1 / -1;
-    animation: slideDown 0.3s ease;
+    font-size: 0.95rem;
+    font-weight: 500;
+    animation: slideDown 0.3s ease-out;
   }
-  
+
   @keyframes slideDown {
     from {
       opacity: 0;
@@ -559,101 +490,82 @@
       transform: translateY(0);
     }
   }
-  
+
   .alert-icon {
     width: 1.5rem;
     height: 1.5rem;
     flex-shrink: 0;
   }
-  
+
   .alert-success {
-    background: rgba(16, 185, 129, 0.1);
+    background: var(--color-success-light);
     color: var(--color-success);
-    border-color: var(--color-success);
+    border: 1px solid var(--color-success);
   }
-  
-  .alert-success strong {
-    display: block;
-    margin-bottom: 0.25rem;
-  }
-  
-  .alert-success p {
-    margin: 0;
-    font-size: 0.95rem;
-  }
-  
+
   .alert-error {
-    background: rgba(239, 68, 68, 0.1);
+    background: var(--color-danger-light);
     color: var(--color-danger);
-    border-color: var(--color-danger);
+    border: 1px solid var(--color-danger);
   }
-  
-  /* Submit button */
-  .btn-submit {
-    grid-column: 1 / -1;
-    padding: 1.25rem 2rem;
+
+  .btn-primary {
+    position: relative;
+    width: 100%;
+    padding: 1.25rem;
     background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
-    color: white;
+    color: var(--color-bg);
     border: none;
     border-radius: var(--radius-lg);
     font-size: 1.1rem;
-    font-weight: var(--font-weight-bold);
+    font-weight: 600;
     cursor: pointer;
     transition: all var(--transition-base);
+    margin-top: 1rem;
     box-shadow: var(--shadow-glow);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.75rem;
-    position: relative;
-    overflow: hidden;
   }
-  
-  .btn-submit::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-    transition: left 0.5s ease;
-  }
-  
-  .btn-submit:hover:not(:disabled)::before {
-    left: 100%;
-  }
-  
-  .btn-submit:hover:not(:disabled) {
+
+  .btn-primary:hover:not(:disabled) {
     transform: translateY(-2px);
     box-shadow: var(--shadow-glow-hover);
   }
-  
-  .btn-submit:disabled {
-    opacity: 0.7;
+
+  .btn-primary:focus-visible {
+    outline: 3px solid var(--color-primary);
+    outline-offset: 3px;
+  }
+
+  .btn-primary:disabled {
+    opacity: 0.6;
     cursor: not-allowed;
   }
-  
-  .spinner {
-    width: 1.25rem;
-    height: 1.25rem;
+
+  .btn-primary.loading .btn-text {
+    opacity: 0;
+  }
+
+  .btn-loader {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 24px;
+    height: 24px;
     border: 3px solid rgba(255, 255, 255, 0.3);
     border-top-color: white;
     border-radius: 50%;
     animation: spin 0.6s linear infinite;
   }
-  
+
   @keyframes spin {
     to {
-      transform: rotate(360deg);
+      transform: translate(-50%, -50%) rotate(360deg);
     }
   }
-  
-  /* Mobile */
+
   @media (max-width: 768px) {
-    .devis-form {
+    .quote-form {
       grid-template-columns: 1fr;
-      gap: 1.5rem;
     }
   }
 </style>

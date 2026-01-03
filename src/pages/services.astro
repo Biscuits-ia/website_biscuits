@@ -1,428 +1,457 @@
 ---
 import BaseLayout from '@/layouts/Layout.astro';
-
-const structuredData = {
-  "@context": "https://schema.org",
-  "@type": "WebPage",
-  "name": "Biscuits IA",
-  "description": "Services de Développement IA et Automatisation.",
-  "url": "https://biscuits.dev/services",
-  "publisher": {
-    "@type": "Organization",
-    "name": "Biscuits IA",
-    "url": "https://biscuits.dev",
-    "logo": "https://biscuits.dev/logo.webp"
-  }
-};
 ---
 
 <BaseLayout
-  title="Services & Outils pour Développeurs et Startups Tech"
-  description="Découvrez nos services, automatisations et outils pour booster vos projets de développement et IA."
-  structuredData={structuredData}
+  title="Services & Solutions IA | Biscuits IA"
+  description="Découvrez nos services : assistants IA, automatisations, starter kits et consulting technique pour booster vos projets."
 >
-  <section class="overview-section" data-section>
+  <section class="services-hero">
     <div class="container">
-      <h2 data-fade-in>Pourquoi choisir Biscuits Dev ?</h2>
-      <p data-fade-in data-delay="100">
-        Biscuits Dev fournit un écosystème complet d'outils et services pour les développeurs et startups tech.
-        Que vous soyez en phase de prototypage ou en production, nous vous aidons à accélérer vos projets avec des solutions fiables et scalables.
+      <h1>Nos Services</h1>
+      <p class="lead">
+        Un écosystème complet pour accélérer vos projets IA et automatisations.
+        Du prototype à la production.
       </p>
-      <ul data-fade-in data-delay="200">
-        <li>Expertise IA et automatisations avancées</li>
-        <li>Starter kits et templates prêts à l'emploi</li>
-        <li>Consulting technique et architecture solide</li>
-        <li>Support et maintenance proactifs</li>
-      </ul>
     </div>
   </section>
 
-  <section class="services-detailed" data-section>
+  <section class="services-overview">
     <div class="container">
-      <article class="service-item" data-service-card="0">
-        <div class="service-number">01</div>
-        <h3>Agents & Automatisations IA</h3>
-        <p class="lead">
-          Créez des workflows intelligents et des agents sur mesure qui automatisent vos tâches répétitives et optimisent vos processus.
-        </p>
-        <h4>Fonctionnalités clés :</h4>
-        <ul>
-          <li>Agents conversationnels pour support ou gestion interne</li>
-          <li>Automatisations IA pour tâches récurrentes</li>
-          <li>RAG (Retrieval-Augmented Generation) et intégration GPT/Claude/Mistral</li>
-          <li>Scripts personnalisés et intégration à vos systèmes existants</li>
-        </ul>
-        <h4>Cas d'usage :</h4>
-        <ul>
-          <li>Support client autonome sur Discord ou site web</li>
-          <li>Analyse et traitement automatique de données</li>
-          <li>Alertes intelligentes pour votre infrastructure ou vos projets</li>
-        </ul>
-      </article>
-
-      <article class="service-item" data-service-card="1">
-        <div class="service-number">02</div>
-        <h3>Starter Kits & Templates</h3>
-        <p class="lead">
-          Démarrez vos projets plus vite avec nos bases techniques prêtes à l'emploi, codées proprement et facilement extensibles.
-        </p>
-        <h4>Inclus :</h4>
-        <ul>
-          <li>Starter kits SaaS avec authentification et paiements intégrés</li>
-          <li>Templates front modernes et responsives</li>
-          <li>Exemples d'API et intégrations prêtes à l'emploi</li>
-          <li>Guides pour structurer votre projet rapidement</li>
-        </ul>
-        <h4>Avantages :</h4>
-        <ul>
-          <li>Économie de temps sur le setup initial</li>
-          <li>Réduction des erreurs courantes</li>
-          <li>Code propre et maintenable</li>
-        </ul>
-      </article>
-
-      <article class="service-item" data-service-card="2">
-        <div class="service-number">03</div>
-        <h3>Intégrations & Automatisations</h3>
-        <p class="lead">
-          Connectez vos systèmes, automatisez vos workflows et gagnez en fiabilité et productivité.
-        </p>
-        <h4>Fonctionnalités :</h4>
-        <ul>
-          <li>Webhooks et API pour connecter vos services</li>
-          <li>Workers et jobs programmés pour automatisations avancées</li>
-          <li>Monitoring et alertes pour suivre l'état de vos systèmes</li>
-          <li>Documentation et support pour intégrer facilement nos solutions</li>
-        </ul>
-        <h4>Exemples :</h4>
-        <ul>
-          <li>Synchronisation automatique entre CRM et outils internes</li>
-          <li>Automatisation des déploiements ou backups</li>
-          <li>Alertes et rapports personnalisés sur vos systèmes</li>
-        </ul>
-      </article>
-
-      <article class="service-item" data-service-card="3">
-        <div class="service-number">04</div>
-        <h3>Consulting & Architecture</h3>
-        <p class="lead">
-          Nos experts vous accompagnent dans vos choix techniques et la conception d'architectures robustes et évolutives.
-        </p>
-        <h4>Services :</h4>
-        <ul>
-          <li>Audit technique de vos projets</li>
-          <li>Conseil sur stack technologique, performances et scalabilité</li>
-          <li>Design sécurisé et optimisé pour la production</li>
-          <li>Planification et roadmap technique sur mesure</li>
-        </ul>
-        <h4>Pourquoi c'est important :</h4>
-        <ul>
-          <li>Réduction des risques techniques</li>
-          <li>Évolutivité et maintenabilité garanties</li>
-          <li>Optimisation du coût et des ressources</li>
-        </ul>
-      </article>
-
-      <article class="service-item" data-service-card="4">
-        <div class="service-number">05</div>
-        <h3>Support & Maintenance</h3>
-        <p class="lead">
-          Nous assurons le suivi, la maintenance et le support de vos projets pour garantir leur stabilité et leur performance.
-        </p>
-        <h4>Inclut :</h4>
-        <ul>
-          <li>Bug fixing et correctifs rapides</li>
-          <li>Mises à jour régulières de vos systèmes</li>
-          <li>Optimisation et monitoring proactif</li>
-          <li>Assistance technique réactive pour vos équipes</li>
-        </ul>
-      </article>
+      <h2>Pourquoi choisir Biscuits IA ?</h2>
+      <div class="benefits-grid">
+        <div class="benefit">
+          <span class="benefit-icon" aria-hidden="true">🎯</span>
+          <h3>Expertise IA avancée</h3>
+          <p>Maîtrise des derniers modèles (GPT, Claude, Mistral) et techniques (RAG, fine-tuning)</p>
+        </div>
+        <div class="benefit">
+          <span class="benefit-icon" aria-hidden="true">⚡</span>
+          <h3>Mise en production rapide</h3>
+          <p>Starter kits prêts à l'emploi, code propre et maintenable</p>
+        </div>
+        <div class="benefit">
+          <span class="benefit-icon" aria-hidden="true">🔒</span>
+          <h3>Sécurité & conformité</h3>
+          <p>Respect RGPD, architecture sécurisée, tests exhaustifs</p>
+        </div>
+        <div class="benefit">
+          <span class="benefit-icon" aria-hidden="true">🤝</span>
+          <h3>Support continu</h3>
+          <p>Accompagnement post-livraison, maintenance et évolutions</p>
+        </div>
+      </div>
     </div>
   </section>
 
-  <section class="cta-section" data-fade-in>
+  <section class="services-list">
     <div class="container">
-      <h2>Prêt à booster vos projets ?</h2>
+      
+      <article class="service-card">
+        <div class="service-number" aria-hidden="true">01</div>
+        <h2>Assistants IA personnalisés</h2>
+        <p class="service-lead">
+          Créez des agents intelligents adaptés à vos besoins métiers, 
+          du support client à l'automatisation interne.
+        </p>
+        
+        <div class="service-content">
+          <h3>Fonctionnalités</h3>
+          <ul>
+            <li>Agents conversationnels multi-sources (RAG)</li>
+            <li>Intégration GPT/Claude/Mistral</li>
+            <li>Logique métier sur-mesure</li>
+            <li>Connexion à vos systèmes existants</li>
+          </ul>
+
+          <h3>Cas d'usage</h3>
+          <ul>
+            <li>Support client autonome (Discord, site web)</li>
+            <li>Assistant interne pour vos équipes</li>
+            <li>Analyse et traitement de documents</li>
+            <li>Génération de contenus personnalisés</li>
+          </ul>
+        </div>
+
+        <a href="/devis" class="service-cta">Demander un devis</a>
+      </article>
+
+      <article class="service-card">
+        <div class="service-number" aria-hidden="true">02</div>
+        <h2>Automatisations & workflows</h2>
+        <p class="service-lead">
+          Gagnez du temps en automatisant vos processus métiers avec l'IA.
+        </p>
+        
+        <div class="service-content">
+          <h3>Fonctionnalités</h3>
+          <ul>
+            <li>Workflows multi-étapes intelligents</li>
+            <li>Connexion API et webhooks</li>
+            <li>Monitoring et alertes</li>
+            <li>Scripts personnalisés</li>
+          </ul>
+
+          <h3>Exemples</h3>
+          <ul>
+            <li>Synchronisation CRM ↔ outils internes</li>
+            <li>Traitement automatique d'emails</li>
+            <li>Génération de rapports périodiques</li>
+            <li>Alertes intelligentes basées sur vos KPIs</li>
+          </ul>
+        </div>
+
+        <a href="/devis" class="service-cta">Demander un devis</a>
+      </article>
+
+      <article class="service-card">
+        <div class="service-number" aria-hidden="true">03</div>
+        <h2>Starter Kits & templates</h2>
+        <p class="service-lead">
+          Démarrez vos projets sur de bonnes bases avec nos templates éprouvés.
+        </p>
+        
+        <div class="service-content">
+          <h3>Inclus</h3>
+          <ul>
+            <li>Kits SaaS avec auth & paiements</li>
+            <li>Templates front modernes (Astro, Next.js)</li>
+            <li>APIs RESTful documentées</li>
+            <li>CI/CD et déploiement automatisé</li>
+          </ul>
+
+          <h3>Avantages</h3>
+          <ul>
+            <li>Économie de 2-4 semaines de setup</li>
+            <li>Best practices intégrées</li>
+            <li>Code propre et testé</li>
+            <li>Documentation complète</li>
+          </ul>
+        </div>
+
+        <a href="/devis" class="service-cta">Demander un devis</a>
+      </article>
+
+      <article class="service-card">
+        <div class="service-number" aria-hidden="true">04</div>
+        <h2>Consulting & architecture</h2>
+        <p class="service-lead">
+          Accompagnement technique pour concevoir des architectures robustes et évolutives.
+        </p>
+        
+        <div class="service-content">
+          <h3>Services</h3>
+          <ul>
+            <li>Audit technique de vos projets</li>
+            <li>Conseil sur stack et architecture</li>
+            <li>Design patterns et scalabilité</li>
+            <li>Roadmap technique sur-mesure</li>
+          </ul>
+
+          <h3>Bénéfices</h3>
+          <ul>
+            <li>Réduction des risques techniques</li>
+            <li>Optimisation coûts/performances</li>
+            <li>Évolutivité garantie</li>
+            <li>Transfert de compétences</li>
+          </ul>
+        </div>
+
+        <a href="/contact" class="service-cta">Nous contacter</a>
+      </article>
+
+    </div>
+  </section>
+
+  <section class="services-cta">
+    <div class="container">
+      <h2>Prêt à démarrer votre projet ?</h2>
       <p>
-        Contactez-nous dès aujourd'hui et découvrez comment Biscuits Dev peut accélérer votre développement et automatiser vos workflows.
+        Discutons de vos besoins. Étude et devis gratuits, sans engagement.
       </p>
-      <a href="/contact" class="cta-button">Contactez-nous</a>
+      <div class="cta-actions">
+        <a href="/devis" class="btn-primary">Demander un devis</a>
+        <a href="/contact" class="btn-secondary">Nous contacter</a>
+      </div>
     </div>
   </section>
 </BaseLayout>
 
 <style>
-  /* Base */
-.overview-section,
-.services-detailed,
-.cta-section {
-  position: relative;
-  background: var(--color-bg);
-}
+  .services-hero {
+    padding: 6rem var(--spacing-lg) 4rem;
+    text-align: center;
+    background: var(--color-bg);
+  }
 
-.overview-section h2,
-.cta-section h2 {
-  font-size: clamp(2.5rem, 5vw, 4rem);
-  text-align: center;
-  padding: 2rem;
-  margin-bottom: 1rem;
-  margin-top: 2rem;
-  color: var(--color-text);
-  font-weight: 900;
-  letter-spacing: -0.02em;
-}
+  .services-hero h1 {
+    font-size: clamp(2.5rem, 6vw, 4rem);
+    font-weight: 900;
+    color: var(--color-text);
+    margin-bottom: var(--spacing-md);
+  }
 
-.overview-section p,
-.cta-section p {
-  color: var(--color-text-light);
-  text-align: center;
-  font-size: clamp(1rem, 2.5vw, 1.25rem);
-  margin-bottom: 1rem;
-  font-weight: 500;
-}
+  .lead {
+    font-size: clamp(1.125rem, 2.5vw, 1.375rem);
+    color: var(--color-text-light);
+    max-width: 800px;
+    margin: 0 auto;
+    line-height: 1.6;
+  }
 
-.overview-section ul {
-  padding: 1.2rem 0;
-  padding-left: 1.25rem;
-  margin-bottom: 2rem;
-  font-size: clamp(1rem, 2.5vw, 1.125rem);
-  color: var(--color-text-light);
-  list-style-type: disc;
-}
+  .services-overview {
+    padding: 4rem var(--spacing-lg);
+    background: var(--color-bg-alt);
+  }
 
-.overview-section li {
-  margin-bottom: 0.5rem;
-  font-weight: 500;
-}
+  .services-overview h2 {
+    text-align: center;
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 900;
+    color: var(--color-text);
+    margin-bottom: var(--spacing-2xl);
+  }
 
-/* Service cards */
-.service-item {
-  background: var(--color-bg-alt);
-  border: 2px solid var(--color-border);
-  border-radius: var(--radius-2xl);
-  padding: 2.5rem;
-  margin-bottom: 2rem;
-  position: relative;
-  overflow: hidden;
-  transition: all 0.4s ease;
-  box-shadow: var(--shadow-lg);
-  backdrop-filter: var(--glass-blur);
-}
+  .benefits-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: var(--spacing-xl);
+    max-width: 1200px;
+    margin: 0 auto;
+  }
 
-.service-item::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(circle at top right, var(--color-primary), transparent 70%);
-  opacity: 0;
-  transition: opacity 0.4s ease;
-}
+  .benefit {
+    background: var(--color-bg);
+    padding: var(--spacing-xl);
+    border-radius: var(--radius-lg);
+    border: 2px solid var(--color-border);
+    transition: all var(--transition-base);
+  }
 
-.service-item:hover {
-  border-color: var(--color-primary);
-  transform: translateY(-5px);
-  box-shadow: var(--shadow-xl);
-}
+  .benefit:hover {
+    border-color: var(--color-primary);
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
+  }
 
-.service-item:hover::before {
-  opacity: 0.1;
-}
+  .benefit-icon {
+    font-size: 3rem;
+    display: block;
+    margin-bottom: var(--spacing-md);
+  }
 
-.service-number {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
-  font-size: 5rem;
-  font-weight: 900;
-  color: var(--color-primary);
-  opacity: 0.15;
-  pointer-events: none;
-}
+  .benefit h3 {
+    font-size: 1.375rem;
+    font-weight: 700;
+    color: var(--color-text);
+    margin-bottom: var(--spacing-sm);
+  }
 
-.service-item h3 {
-  color: var(--color-text);
-  margin-bottom: 1rem;
-  font-size: clamp(1.75rem, 3vw, 2.25rem);
-  position: relative;
-  font-weight: 900;
-  letter-spacing: -0.02em;
-}
+  .benefit p {
+    color: var(--color-text-light);
+    line-height: 1.6;
+  }
 
-.service-item p.lead {
-  color: var(--color-text-light);
-  margin-bottom: 2rem;
-  font-size: clamp(1rem, 2.5vw, 1.125rem);
-  line-height: 1.7;
-  font-weight: 500;
-}
+  .services-list {
+    padding: 4rem var(--spacing-lg);
+    background: var(--color-bg);
+  }
 
-.service-item ul {
-  padding-left: 1.5rem;
-  margin-bottom: 1.5rem;
-}
+  .service-card {
+    max-width: 1000px;
+    margin: 0 auto var(--spacing-4xl);
+    background: var(--color-bg-alt);
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-2xl);
+    padding: var(--spacing-3xl);
+    position: relative;
+    transition: all var(--transition-base);
+  }
 
-.service-item li {
-  margin-bottom: 0.5rem;
-  color: var(--color-text);
-  line-height: 1.6;
-  position: relative;
-  font-weight: 500;
-}
-
-.service-item li::before {
-  content: '→';
-  position: absolute;
-  left: -1.5rem;
-  color: var(--color-primary);
-  font-weight: bold;
-}
-
-.service-item h4 {
-  color: var(--color-primary);
-  margin: 1.5rem 0 1rem;
-  font-size: clamp(1.25rem, 2.5vw, 1.5rem);
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-/* CTA */
-.cta-section {
-  text-align: center;
-  padding: 4rem 2rem;
-  background: var(--color-bg-elevated);
-  border-top: 2px solid var(--color-border);
-  margin-top: 4rem;
-  box-shadow: var(--shadow-xl);
-}
-
-.cta-button {
-  display: inline-block;
-  padding: 1.25rem 3rem;
-  margin-top: 1.5rem;
-  background: var(--color-primary);
-  border-radius: var(--radius-lg);
-  border: 2px solid transparent;
-  text-decoration: none;
-  font-weight: 700;
-  font-size: 1.1rem;
-  transition: all var(--transition-base);
-  box-shadow: var(--shadow-glow);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.cta-button:hover {
-  transform: translateY(-3px);
-  box-shadow: var(--shadow-glow-hover);
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-  .service-item {
-    padding: 2rem 1.5rem;
+  .service-card:hover {
+    border-color: var(--color-primary);
+    box-shadow: var(--shadow-xl);
   }
 
   .service-number {
-    font-size: 3rem;
+    position: absolute;
+    top: 1.5rem;
+    right: 1.5rem;
+    font-size: 5rem;
+    font-weight: 900;
+    color: var(--color-primary);
+    opacity: 0.1;
   }
-}
 
-/* Réduction des mouvements */
-@media (prefers-reduced-motion: reduce) {
-  .service-item,
-  .cta-button {
-    transition: none !important;
+  .service-card h2 {
+    font-size: clamp(1.75rem, 4vw, 2.5rem);
+    font-weight: 900;
+    color: var(--color-text);
+    margin-bottom: var(--spacing-md);
   }
-  
-  .service-item:hover {
-    transform: none !important;
+
+  .service-lead {
+    font-size: clamp(1rem, 2.5vw, 1.25rem);
+    color: var(--color-text-light);
+    margin-bottom: var(--spacing-xl);
+    line-height: 1.6;
   }
-  
-  .cta-button:hover {
-    transform: none !important;
+
+  .service-content h3 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--color-primary);
+    margin: var(--spacing-xl) 0 var(--spacing-md);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
   }
-}
 
-/* Dark theme specifics */
-:root[data-theme='dark'] .service-item::before {
-  opacity: 0.05;
-}
+  .service-content ul {
+    list-style: none;
+    padding: 0;
+    margin-bottom: var(--spacing-lg);
+  }
 
-:root[data-theme='dark'] .service-item:hover::before {
-  opacity: 0.1;
-}
+  .service-content li {
+    padding: var(--spacing-sm) 0 var(--spacing-sm) var(--spacing-xl);
+    color: var(--color-text);
+    line-height: 1.6;
+    position: relative;
+  }
 
-/* Light theme specifics - Neo-brutalism */
-:root[data-theme='light'] .service-number {
-  opacity: 0.2;
-  filter: drop-shadow(2px 2px 0px rgba(0, 0, 0, 0.1));
-}
+  .service-content li::before {
+    content: '→';
+    position: absolute;
+    left: 0;
+    color: var(--color-primary);
+    font-weight: bold;
+  }
+
+  .service-cta {
+    display: inline-block;
+    padding: var(--spacing-md) var(--spacing-xl);
+    background: var(--color-primary);
+    color: var(--color-bg);
+    border-radius: var(--radius-lg);
+    text-decoration: none;
+    font-weight: 600;
+    transition: all var(--transition-base);
+    margin-top: var(--spacing-lg);
+  }
+
+  .service-cta:hover {
+    background: var(--color-primary-dark);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .service-cta:focus-visible {
+    outline: 3px solid var(--color-primary);
+    outline-offset: 3px;
+  }
+
+  .services-cta {
+    padding: 4rem var(--spacing-lg);
+    text-align: center;
+    background: var(--color-bg-alt);
+  }
+
+  .services-cta h2 {
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 900;
+    color: var(--color-text);
+    margin-bottom: var(--spacing-md);
+  }
+
+  .services-cta p {
+    font-size: clamp(1rem, 2.5vw, 1.25rem);
+    color: var(--color-text-light);
+    margin-bottom: var(--spacing-xl);
+  }
+
+  .cta-actions {
+    display: flex;
+    gap: var(--spacing-md);
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .btn-primary,
+  .btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    padding: var(--spacing-md) var(--spacing-xl);
+    border-radius: var(--radius-lg);
+    font-weight: 600;
+    text-decoration: none;
+    transition: all var(--transition-base);
+  }
+
+  .btn-primary {
+    background: var(--color-primary);
+    color: var(--color-bg);
+  }
+
+  .btn-primary:hover {
+    background: var(--color-primary-dark);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .btn-secondary {
+    background: var(--color-bg);
+    color: var(--color-text);
+    border: 2px solid var(--color-border);
+  }
+
+  .btn-secondary:hover {
+    background: var(--color-bg-elevated);
+    border-color: var(--color-primary);
+  }
+
+  .btn-primary:focus-visible,
+  .btn-secondary:focus-visible {
+    outline: 3px solid var(--color-primary);
+    outline-offset: 3px;
+  }
+
+  @media (max-width: 768px) {
+    .benefits-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .service-card {
+      padding: var(--spacing-2xl) var(--spacing-lg);
+    }
+
+    .service-number {
+      font-size: 3rem;
+    }
+
+    .cta-actions {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .btn-primary,
+    .btn-secondary {
+      justify-content: center;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .benefit,
+    .service-card,
+    .service-cta,
+    .btn-primary,
+    .btn-secondary {
+      transition: none;
+    }
+    
+    .benefit:hover,
+    .service-cta:hover,
+    .btn-primary:hover {
+      transform: none;
+    }
+  }
 </style>
-
-<script>
-  function initServicesAnimations() {
-    // Check reduced motion
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      return;
-    }
-
-    // Intersection Observer pour les animations au scroll
-    const observerOptions = {
-      threshold: 0.1,
-      rootMargin: '0px 0px -100px 0px'
-    };
-
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('animate-in');
-          observer.unobserve(entry.target);
-        }
-      });
-    }, observerOptions);
-
-    // Fade in elements
-    document.querySelectorAll('[data-fade-in]').forEach((el) => {
-      const delay = parseInt(el.getAttribute('data-delay') || '0', 10);
-      (el as HTMLElement).style.opacity = '0';
-      (el as HTMLElement).style.transform = 'translateY(30px)';
-      (el as HTMLElement).style.transition = `all 0.8s ease ${delay}ms`;
-      observer.observe(el);
-    });
-
-    // Service cards avec stagger
-    document.querySelectorAll('[data-service-card]').forEach((el, index) => {
-      (el as HTMLElement).style.opacity = '0';
-      (el as HTMLElement).style.transform = 'translateY(50px) scale(0.95)';
-      (el as HTMLElement).style.transition = `all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) ${index * 100}ms`;
-      observer.observe(el);
-    });
-
-    // Effet de parallaxe simple sur les service numbers
-    window.addEventListener('scroll', () => {
-      const scrolled = window.scrollY;
-      document.querySelectorAll('.service-number').forEach((num, index) => {
-        (num as HTMLElement).style.transform = `translateY(${scrolled * 0.05 * (index + 1)}px)`;
-      });
-    }, { passive: true });
-  }
-
-  // Style pour les éléments animés
-  const style = document.createElement('style');
-  style.textContent = `
-    [data-fade-in].animate-in,
-    [data-service-card].animate-in {
-      opacity: 1 !important;
-      transform: translateY(0) scale(1) !important;
-    }
-  `;
-  document.head.appendChild(style);
-
-  // Init
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initServicesAnimations);
-  } else {
-    initServicesAnimations();
-  }
-</script>

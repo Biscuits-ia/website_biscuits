@@ -3,6 +3,7 @@ interface Feature {
   icon: string;
   title: string;
   description: string;
+  objectif: string;
   tags: string[];
   gradient: string;
 }
@@ -10,44 +11,50 @@ interface Feature {
 const features: Feature[] = [
   {
     icon: "🎨",
-    title: "Design System",
-    description: "Composants réutilisables avec Tailwind CSS et design tokens cohérents",
-    tags: ["UI/UX", "Components", "Tokens"],
+    title: "Audit & Stratégie IA",
+    description: "Analyse complète de vos workflows pour identifier les leviers d'automatisation à fort impact.",
+    objectif: "Définir une roadmap claire pour réduire vos coûts opérationnels.",
+    tags: ["Accompagnement"],
     gradient: "from-primary to-secondary"
   },
   {
     icon: "⚡",
-    title: "Performance",
-    description: "Optimisé pour des temps de chargement ultra-rapides et Core Web Vitals",
-    tags: ["Speed", "Optimization", "SEO"],
+    title: "IA Cognitive & Bases de Connaissances",
+    description: "Centralisez votre savoir. Un assistant intelligent sécurisé qui interroge instantanément vos documents internes (PDF, Notion, Drive).",
+    tags: ["ROI Immédiat"],
+    objectif: "Supprimer la perte de temps liée à la recherche d'information.",
     gradient: "from-secondary to-first"
   },
   {
     icon: "🔒",
-    title: "Sécurité",
-    description: "Protection avancée avec authentification robuste et chiffrement",
-    tags: ["Auth", "Encryption", "RGPD"],
+    title: "Agents Autonomes & Workflows",
+    description: "Automatisation intelligente de bout en bout : de la qualification de leads à la génération de rapports complexes sans intervention humaine.",
+    tags: ["Gain de Temps"],
+    objectif: "Libérez vos équipes des tâches répétitives.",
     gradient: "from-first to-primary"
   },
   {
     icon: "📊",
-    title: "Analytics",
-    description: "Tableaux de bord complets avec insights et métriques en temps réel",
-    tags: ["Metrics", "Reports", "AI"],
+    title: "Optimisation Prédictive",
+    description: "Utilisation du Machine Learning pour anticiper les besoins clients, les stocks ou les tendances du marché en temps réel.",
+    tags: ["Décisions Stratégiques"],
+    objectif: "Garder une longueur d'avance sur votre stratégie.",
     gradient: "from-primary to-first"
   },
   {
     icon: "🔧",
-    title: "API Modern",
-    description: "RESTful et GraphQL avec documentation interactive complète",
-    tags: ["REST", "GraphQL", "Docs"],
+    title: "Traitement du Langage Naturel (NLP)",
+    description: "Intégrez des interfaces conversationnelles et l'analyse sémantique pour interagir plus naturellement avec vos outils et vos clients.",
+    tags: ["Expérience Utilisateur"],
+    objectif: "Rendre les logiciels complexes intuitifs.",
     gradient: "from-secondary to-primary"
   },
   {
     icon: "🚀",
-    title: "CI/CD",
-    description: "Déploiement automatisé avec tests et rollback instantané",
-    tags: ["Deploy", "Tests", "Automation"],
+    title: "Innovation & R&D IA",
+    description: "Veille technologique et implémentation des dernières avancées IA (LLMs, Vision, Audio) adaptées à votre métier.",
+    tags: ["Futur Prêt"],
+    objectif: "Accompagner votre entreprise vers l'avenir de l'IA.",
     gradient: "from-first to-secondary"
   }
 ];
@@ -57,10 +64,10 @@ const features: Feature[] = [
   <div class="container">
     <div class="section-header">
       <h2 class="section-title" data-title-reveal>
-        Fonctionnalités Avancées
+        Propulsez votre entreprise dans l'ère de l'IA
       </h2>
       <p class="section-subtitle" data-subtitle-reveal>
-        Tout ce dont vous avez besoin pour construire des applications modernes
+        Des solutions sur-mesure pour automatiser vos processus et transformer vos données en décisions stratégiques.
       </p>
     </div>
 
@@ -74,8 +81,8 @@ const features: Feature[] = [
         >
           <div class="card-glow"></div>
           <div class="card-content">
-            <div class="feature-icon" data-icon-float>
-              {feature.icon}
+            <div class="feature-icon" data-tags-float>
+              {feature.tags}
             </div>
             <h3 class="feature-title">{feature.title}</h3>
             <p class="feature-description">{feature.description}</p>
@@ -201,14 +208,18 @@ const features: Feature[] = [
 }
 
 .feature-icon {
-  font-size: 3.5rem;
+  font-size: 1.2rem;
+  background-color: var(--color-primary-light);
+  color: var(--color-gray-900);
+  font-weight: 500;
+  box-shadow: var(--shadow-lg);
+  padding: 5px;
   margin-bottom: 1.5rem;
   display: inline-block;
-  filter: drop-shadow(0 4px 12px var(--color-primary));
-  transition: transform 0.3s ease;
+  border-radius: var(--radius-full);
 }
 
-.feature-card:hover .feature-icon {
+.feature-card:hover {
   transform: scale(1.1) rotateZ(5deg);
 }
 

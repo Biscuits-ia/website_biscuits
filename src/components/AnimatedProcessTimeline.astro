@@ -11,81 +11,81 @@ interface ProcessStep {
 const steps: ProcessStep[] = [
   {
     number: "01",
-    title: "Analyse & Cadrage",
-    description: "Compréhension approfondie de vos besoins et définition du scope",
+    title: "Audit & Diagnostic IA",
+    description: "Analyse de vos flux de données et identification des processus automatisables.",
     details: [
-      "Audit de l'existant",
-      "Définition des objectifs",
-      "Étude de faisabilité",
-      "Proposition technique"
+      "Cartographie des workflows",
+      "Évaluation du potentiel d'automatisation",
+      "Audit de la qualité des données",
+      "Sélection des modèles (LLM, Vision, etc.)"
     ],
-    duration: "2-3 jours",
+    duration: "2-4 jours",
     icon: "🔍"
   },
   {
     number: "02",
-    title: "Design & Architecture",
-    description: "Conception de l'architecture technique et des interfaces",
+    title: "Architecture & Sécurité",
+    description: "Conception d'une infrastructure robuste et sécurisée pour vos données IA.",
     details: [
-      "Schéma d'architecture",
-      "Design system & maquettes",
-      "Choix technologiques",
-      "Plan de développement"
+      "Schéma d'intégration API",
+      "Stratégie de confidentialité (RGPD/Data)",
+      "Design d'interfaces (UX/UI spécial IA)",
+      "Choix de la stack (RAG, Vector DB)"
     ],
     duration: "5-7 jours",
-    icon: "🎨"
+    icon: "🏗️"
   },
   {
     number: "03",
-    title: "Développement",
-    description: "Implémentation avec méthodologie agile et itérations rapides",
+    title: "Développement & Intégration",
+    description: "développement de la solution et connexion à vos outils métiers actuels.",
     details: [
-      "Setup environnement",
-      "Développement features",
-      "Tests unitaires & E2E",
-      "Code review continue"
+      "Développement du moteur IA",
+      "Connexion API (Make, Zapier, Custom)",
+      "Mise en place du RAG (Base de connaissance)",
+      "Développement Frontend & Backend"
     ],
-    duration: "2-6 semaines",
+    duration: "3-6 semaines",
     icon: "⚡"
   },
   {
     number: "04",
-    title: "Tests & QA",
-    description: "Validation complète et optimisation des performances",
+    title: "Entraînement & Fine-tuning",
+    description: "Optimisation de l'IA pour garantir des réponses précises et pertinentes.",
     details: [
-      "Tests de performance",
-      "Tests de sécurité",
-      "Optimisation SEO",
-      "Validation utilisateur"
+      "Prompt Engineering avancé",
+      "Ajustement des modèles sur vos données",
+      "Tests de précision et de sécurité",
+      "Élimination des hallucinations"
     ],
-    duration: "3-5 jours",
-    icon: "✅"
+    duration: "1-2 semaines",
+    icon: "🧠"
   },
   {
     number: "05",
-    title: "Déploiement",
-    description: "Mise en production avec monitoring et accompagnement",
+    title: "Déploiement & Monitoring",
+    description: "Mise en service et surveillance des performances en temps réel.",
     details: [
-      "Configuration serveurs",
-      "Déploiement CI/CD",
-      "Monitoring & alertes",
-      "Formation équipe"
+      "Déploiement Cloud (CI/CD)",
+      "Suivi de la consommation des tokens",
+      "Monitoring des performances IA",
+      "Formation de vos collaborateurs"
     ],
-    duration: "1-2 jours",
+    duration: "2-3 jours",
     icon: "🚀"
   },
   {
     number: "06",
-    title: "Suivi & Support",
-    description: "Maintenance continue et évolutions",
+    title: "Optimisation Continue",
+    description: "Maintenance adaptative et mise à jour selon les évolutions de l'IA.",
     details: [
-      "Support réactif",
-      "Mises à jour régulières",
-      "Optimisations",
-      "Nouvelles features"
+      "Mise à jour des modèles IA",
+      "Amélioration continue des prompts",
+      "Analyse du ROI mensuel",
+      "Support technique dédié"
     ],
-    duration: "Continu",
-    icon: "🛠️"
+    duration: "Mensuel",
+    icon: "📈"
   }
 ];
 ---
@@ -122,6 +122,13 @@ const steps: ProcessStep[] = [
               <div class="step-header">
                 <h3 class="step-title">{step.title}</h3>
                 <span class="step-duration">{step.duration}</span>
+                <ul class="step-details-list">
+                  {step.details.map((detail) => (
+                    <li class="step-detail-item">
+                      <span class="bullet">→</span> {detail}
+                    </li>
+                  ))}
+                </ul>
               </div>
               
               <p class="step-description">{step.description}</p>

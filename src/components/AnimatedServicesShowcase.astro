@@ -1,8 +1,4 @@
 ---
-/**
- * Showcase ultra-optimisé avec lazy loading et performance monitoring
- */
-
 interface Service {
   icon: string;
   title: string;
@@ -15,33 +11,54 @@ interface Service {
 const services: Service[] = [
   {
     icon: "🤖",
-    title: "Assistants IA Personnalisés",
-    description: "Agents intelligents qui automatisent vos tâches et améliorent votre productivité.",
-    features: ["GPT-4 & Claude", "RAG avancé", "Multi-sources", "API ready"],
-    price: "900",
-    badge: "Populaire"
+    title: "Assistants IA & RAG",
+    description: "Un 'ChatGPT' privé connecté à vos documents pour une expertise interne sans faille.",
+    features: [
+      "Connexion à vos PDF/Notion",
+      "Confidentialité totale des données",
+      "Déploiement GPT-4o ou Claude 3.5",
+      "Interface utilisateur sur-mesure"
+    ],
+    price: "2 500", // Prix projet MVP (crédible en B2B)
+    badge: "Plus Rentable"
   },
   {
     icon: "⚙️",
-    title: "Automatisation MCP",
-    description: "Gagnez du temps avec des processus automatisés intelligents et fiables.",
-    features: ["Workflows complexes", "Intégrations SaaS", "Monitoring", "Logs détaillés"],
-    price: "600"
+    title: "Écosystème MCP & Agents",
+    description: "Automatisez vos actions répétitives entre vos différents logiciels (SaaS).",
+    features: [
+      "Interconnexion de vos outils",
+      "Agents autonomes décisionnels",
+      "Maintenance & Logs temps réel",
+      "Économie de 10h+/semaine"
+    ],
+    price: "1 200",
+    badge: "Best-Seller"
   },
   {
     icon: "🚀",
-    title: "Starter Kits Premium",
-    description: "Bases techniques prêtes à produire avec architecture scalable et code propre.",
-    features: ["Auth & Paiements", "API modernes", "UI/UX optimisée", "Documentation"],
-    price: "1200",
-    badge: "Nouveau"
+    title: "SaaS IA Ready-to-Launch",
+    description: "Architecture complète pour lancer votre propre service basé sur l'IA.",
+    features: [
+      "Gestion abonnements (Stripe)",
+      "Dashboard Analytics IA",
+      "Infrastructure scalable",
+      "Code source 100% propriétaire"
+    ],
+    price: "4 500",
+    badge: "Expert"
   },
   {
     icon: "🧩",
-    title: "Solutions SaaS IA",
-    description: "Plateformes complètes avec intelligence artificielle intégrée.",
-    features: ["Backend scalable", "Multi-tenant", "Analytics IA", "Support continu"],
-    price: "5000"
+    title: "Infrastructure IA Custom",
+    description: "Solutions lourdes pour entreprises avec besoins spécifiques de performance.",
+    features: [
+      "Fine-tuning de modèles",
+      "Hébergement local / Privé",
+      "Support & Évolution continue",
+      "Audit de sécurité complet"
+    ],
+    price: "Sur Devis" // Pour les gros projets, ne pas bloquer avec un prix fixe
   }
 ];
 

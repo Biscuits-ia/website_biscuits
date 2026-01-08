@@ -1,6 +1,174 @@
 ---
 import BaseLayout from '@layouts/Layout.astro';
 
+// Données des badges hero
+const heroBadges = [
+  { text: "Aucun frais caché", highlight: false },
+  { text: "Devis détaillé gratuit", highlight: false },
+  { text: "100% remote", highlight: false },
+  { text: "Étude offerte", highlight: true }
+];
+
+// Données des assistants IA
+const assistantsIA = [
+  {
+    title: "Étude & cadrage IA",
+    description: "Analyse du besoin, cas d'usage, faisabilité",
+    priceFrom: "450€",
+    avgPrice: null,
+    duration: "3-5 jours",
+    savings: null,
+    featured: false
+  },
+  {
+    title: "Assistant IA simple",
+    description: "FAQ, support, agent interne",
+    priceFrom: "2 400€",
+    avgPrice: "2 900€",
+    duration: "4-7 jours",
+    savings: "~10h/semaine",
+    featured: false
+  },
+  {
+    title: "Assistant IA avancé",
+    description: "Multi-sources, logique métier, API",
+    priceFrom: "6 000€",
+    avgPrice: "8 500€",
+    duration: "2-3 semaines",
+    savings: "~20h/semaine",
+    featured: true
+  }
+];
+
+// Données des packages d'automatisation
+const automationPackages = [
+  {
+    title: "Workflow simple",
+    price: "600€",
+    period: "HT",
+    features: [
+      "Automatisation d'une tâche",
+      "IA + règles simples",
+      "Tests & mise en production",
+      "Documentation"
+    ],
+    featured: false,
+    cta: "Choisir"
+  },
+  {
+    title: "Workflow avancé",
+    price: "1 700€",
+    period: "HT",
+    features: [
+      "Multi-étapes",
+      "IA + APIs externes",
+      "Logs & monitoring",
+      "Formation 1h"
+    ],
+    featured: true,
+    badge: "Populaire",
+    cta: "Choisir"
+  },
+  {
+    title: "Automatisation sur mesure",
+    price: "Sur devis",
+    period: null,
+    features: [
+      "Processus complexes",
+      "Connexion SI / SaaS",
+      "Maintenance optionnelle",
+      "Support prioritaire"
+    ],
+    featured: false,
+    cta: "Nous contacter"
+  }
+];
+
+// Timeline du processus
+const processSteps = [
+  {
+    number: "1",
+    title: "Échange initial",
+    description: "Analyse de vos besoins",
+    duration: "24h"
+  },
+  {
+    number: "2",
+    title: "Devis personnalisé",
+    description: "Proposition détaillée",
+    duration: "48h"
+  },
+  {
+    number: "3",
+    title: "Développement",
+    description: "Création de votre solution",
+    duration: "Variable"
+  },
+  {
+    number: "4",
+    title: "Livraison & formation",
+    description: "Mise en production",
+    duration: "1 jour"
+  }
+];
+
+// FAQ
+const faqItems = [
+  {
+    question: "Comment se déroule un projet Biscuits IA ?",
+    answer: "Chaque projet commence par une phase de cadrage gratuite afin de définir précisément vos besoins et la solution IA la plus adaptée. Ensuite, nous établissons un devis détaillé et planifions les étapes de développement."
+  },
+  {
+    question: "Quelle est la différence entre assistant simple et avancé ?",
+    answer: "Un assistant simple traite des tâches basiques (FAQ, support niveau 1) avec des sources limitées. Un assistant avancé intègre plusieurs sources de données, des APIs externes, et une logique métier complexe pour des cas d'usage plus sophistiqués."
+  },
+  {
+    question: "Les tarifs sont-ils fixes ?",
+    answer: "Les tarifs affichés sont indicatifs et représentent des points de départ. Un devis personnalisé est établi en fonction de la complexité, des objectifs du projet et des intégrations nécessaires."
+  },
+  {
+    question: "Travaillez-vous uniquement à distance ?",
+    answer: "Oui, tous les projets sont réalisés à distance, ce qui permet plus de flexibilité, de réactivité et des tarifs optimisés. Nous utilisons des outils collaboratifs modernes pour assurer une communication fluide."
+  },
+  {
+    question: "Proposez-vous un accompagnement après livraison ?",
+    answer: "Oui, un accompagnement et des évolutions peuvent être proposés via des forfaits ou abonnements adaptés. Nous restons disponibles pour faire évoluer votre solution selon vos besoins."
+  },
+  {
+    question: "Mes données sont-elles en sécurité ?",
+    answer: "Absolument. La confidentialité et la sécurité des données sont une priorité dans tous les projets Biscuits IA. Nous pouvons signer un NDA et suivons les meilleures pratiques en matière de sécurité."
+  },
+  {
+    question: "Quel est le délai pour recevoir un devis ?",
+    answer: "Vous recevrez une première réponse sous 24h et un devis détaillé sous 48h après notre échange initial pour comprendre précisément vos besoins."
+  },
+  {
+    question: "Puis-je payer en plusieurs fois ?",
+    answer: "Oui, pour les projets de plus de 3 000€, nous proposons un paiement échelonné en fonction des jalons du projet (généralement 30% au démarrage, 40% à mi-parcours, 30% à la livraison)."
+  }
+];
+
+// Témoignages
+const testimonials = [
+  {
+    text: "Grâce à l'assistant IA, nous économisons 15h par semaine sur le traitement des demandes clients.",
+    author: "Marie L.",
+    company: "E-commerce",
+    savings: "15h/semaine"
+  },
+  {
+    text: "L'automatisation mise en place a réduit nos tâches répétitives de 70%. ROI atteint en 2 mois.",
+    author: "Thomas B.",
+    company: "SaaS",
+    savings: "ROI en 2 mois"
+  },
+  {
+    text: "Un accompagnement pro et une solution qui répond parfaitement à nos besoins métier.",
+    author: "Sophie D.",
+    company: "Cabinet conseil",
+    savings: "Solution sur-mesure"
+  }
+];
 ---
 
 <BaseLayout
@@ -11,20 +179,38 @@ import BaseLayout from '@layouts/Layout.astro';
     <div class="container">
       <h1>Tarifs & Prix</h1>
       <p class="hero-lead">
-        Tarification claire pour vos projets IA. Étude et devis gratuits.
+        Tarification claire pour vos projets IA. <strong>Étude gratuite et devis sous 24h.</strong>
       </p>
       <div class="hero-badges">
-        <span class="badge">Aucun frais caché</span>
-        <span class="badge">Devis détaillé gratuit</span>
-        <span class="badge">100% remote</span>
+        {heroBadges.map(badge => (
+          <span class={`badge ${badge.highlight ? 'highlight' : ''}`}>
+            {badge.text}
+          </span>
+        ))}
+      </div>
+      
+      <div class="value-prop">
+        <p>💡 Investissez dans l'IA, économisez jusqu'à <strong>20h/semaine</strong></p>
       </div>
     </div>
   </section>
 
+  <!-- Navigation rapide -->
+  <nav class="quick-nav">
+    <div class="container">
+      <a href="#assistants" class="quick-link">Assistants IA</a>
+      <a href="#automatisation" class="quick-link">Automatisation</a>
+      <a href="#processus" class="quick-link">Notre processus</a>
+      <a href="#faq" class="quick-link">FAQ</a>
+      <a href="#devis" class="quick-link cta">Devis gratuit</a>
+    </div>
+  </nav>
+
   <section class="tarifs-main">
     <div class="container">
       
-      <div class="pricing-section">
+      <!-- Section Assistants IA -->
+      <div id="assistants" class="pricing-section">
         <div class="pricing-header">
           <h2>Assistants IA personnalisés</h2>
           <p>Conception et déploiement d'agents IA adaptés à vos besoins métiers</p>
@@ -35,138 +221,137 @@ import BaseLayout from '@layouts/Layout.astro';
             <div class="col-service">Prestation</div>
             <div class="col-price">Tarif HT</div>
             <div class="col-duration">Délai</div>
+            <div class="col-action"></div>
           </div>
 
-          <div class="pricing-row">
-            <div class="col-service">
-              <strong>Étude & cadrage IA</strong>
-              <small>Analyse du besoin, cas d'usage, faisabilité</small>
+          {assistantsIA.map(service => (
+            <div class={`pricing-row ${service.featured ? 'featured' : ''}`}>
+              <div class="col-service">
+                <strong>{service.title}</strong>
+                <small>{service.description}</small>
+                {service.savings && (
+                  <div class="savings-badge">Économisez {service.savings}</div>
+                )}
+              </div>
+              <div class="col-price">
+                <span class="price-from">À partir de</span>
+                <span class={`price-amount ${service.featured ? 'highlight' : ''}`}>
+                  {service.priceFrom}
+                </span>
+                {service.avgPrice && (
+                  <small class="price-note">Prix moyen: {service.avgPrice}</small>
+                )}
+              </div>
+              <div class="col-duration">{service.duration}</div>
+              <div class="col-action">
+                <a href="/devis" class={`btn-small ${service.featured ? 'primary' : ''}`}>
+                  Demander
+                </a>
+              </div>
             </div>
-            <div class="col-price highlight">Gratuit</div>
-            <div class="col-duration">30-45 min</div>
-          </div>
-
-          <div class="pricing-row">
-            <div class="col-service">
-              <strong>Assistant IA simple</strong>
-              <small>FAQ, support, agent interne</small>
-            </div>
-            <div class="col-price">À partir de 900€</div>
-            <div class="col-duration">4-7 jours</div>
-          </div>
-
-          <div class="pricing-row">
-            <div class="col-service">
-              <strong>Assistant IA avancé</strong>
-              <small>Multi-sources, logique métier, API</small>
-            </div>
-            <div class="col-price">À partir de 2 300€</div>
-            <div class="col-duration">2-3 semaines</div>
-          </div>
+          ))}
         </div>
       </div>
 
-      <div class="pricing-section">
+      <!-- Section Automatisation -->
+      <div id="automatisation" class="pricing-section">
         <div class="pricing-header">
           <h2>Automatisation de workflows</h2>
           <p>Gagnez du temps en automatisant vos processus avec l'IA</p>
         </div>
 
         <div class="pricing-packages">
-          <div class="package-card">
-            <h3>Workflow simple</h3>
-            <div class="package-price">
-              <span class="amount">600€</span>
-              <span class="period">HT</span>
+          {automationPackages.map(pkg => (
+            <div class={`package-card ${pkg.featured ? 'featured' : ''}`}>
+              {pkg.badge && <div class="package-badge">{pkg.badge}</div>}
+              <h3>{pkg.title}</h3>
+              <div class="package-price">
+                <span class="amount">{pkg.price}</span>
+                {pkg.period && <span class="period">{pkg.period}</span>}
+              </div>
+              <ul>
+                {pkg.features.map(feature => (
+                  <li>{feature}</li>
+                ))}
+              </ul>
+              <a href="/devis" class={`btn-package ${pkg.featured ? 'primary' : ''}`}>
+                {pkg.cta}
+              </a>
             </div>
-            <ul>
-              <li>Automatisation d'une tâche</li>
-              <li>IA + règles simples</li>
-              <li>Tests & mise en production</li>
-              <li>Documentation</li>
-            </ul>
-          </div>
-
-          <div class="package-card featured">
-            <div class="package-badge">Populaire</div>
-            <h3>Workflow avancé</h3>
-            <div class="package-price">
-              <span class="amount">1700€</span>
-              <span class="period">HT</span>
-            </div>
-            <ul>
-              <li>Multi-étapes</li>
-              <li>IA + APIs externes</li>
-              <li>Logs & monitoring</li>
-              <li>Formation 1h</li>
-            </ul>
-          </div>
-
-          <div class="package-card">
-            <h3>Automatisation sur mesure</h3>
-            <div class="package-price">
-              <span class="amount">Sur devis</span>
-            </div>
-            <ul>
-              <li>Processus complexes</li>
-              <li>Connexion SI / SaaS</li>
-              <li>Maintenance optionnelle</li>
-            </ul>
-          </div>
+          ))}
         </div>
       </div>
 
-      <div class="tarifs-faq">
+      <!-- Timeline du processus -->
+      <div id="processus" class="process-section">
+        <div class="pricing-header">
+          <h2>Comment ça marche ?</h2>
+          <p>Un processus simple et transparent, de la prise de contact à la livraison</p>
+        </div>
+
+        <div class="process-timeline">
+          {processSteps.map((step, index) => (
+            <div class="process-step">
+              <div class="step-number">{step.number}</div>
+              <div class="step-content">
+                <h3>{step.title}</h3>
+                <p>{step.description}</p>
+                <span class="step-duration">{step.duration}</span>
+              </div>
+              {index < processSteps.length - 1 && <div class="step-connector"></div>}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <!-- Témoignages -->
+      <div class="testimonials-section">
+        <div class="pricing-header">
+          <h2>Ils ont déjà économisé du temps</h2>
+          <p>Résultats concrets de nos clients</p>
+        </div>
+
+        <div class="testimonials-grid">
+          {testimonials.map(testimonial => (
+            <div class="testimonial-card">
+              <div class="testimonial-content">
+                <p>"{testimonial.text}"</p>
+              </div>
+              <div class="testimonial-author">
+                <strong>{testimonial.author}</strong>
+                <span>{testimonial.company}</span>
+              </div>
+              <div class="testimonial-metric">{testimonial.savings}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <!-- FAQ -->
+      <div id="faq" class="tarifs-faq">
         <h2>Questions fréquentes</h2>
         
-        <details class="faq-item">
-          <summary>Comment se déroule un projet Biscuits IA ?</summary>
-          <p>
-            Chaque projet commence par une phase de cadrage gratuite afin de définir
-            précisément vos besoins et la solution IA la plus adaptée.
-          </p>
-        </details>
-
-        <details class="faq-item">
-          <summary>Les tarifs sont-ils fixes ?</summary>
-          <p>
-            Les tarifs affichés sont indicatifs. Un devis personnalisé est établi
-            en fonction de la complexité et des objectifs du projet.
-          </p>
-        </details>
-
-        <details class="faq-item">
-          <summary>Travaillez-vous uniquement à distance ?</summary>
-          <p>
-            Oui, tous les projets sont réalisés à distance, ce qui permet plus de
-            flexibilité et de réactivité.
-          </p>
-        </details>
-
-        <details class="faq-item">
-          <summary>Proposez-vous un accompagnement après livraison ?</summary>
-          <p>
-            Oui, un accompagnement et des évolutions peuvent être proposés via des
-            forfaits ou abonnements adaptés.
-          </p>
-        </details>
-
-        <details class="faq-item">
-          <summary>Mes données sont-elles en sécurité ?</summary>
-          <p>
-            Oui. La confidentialité et la sécurité des données sont une priorité
-            dans tous les projets Biscuits IA.
-          </p>
-        </details>
+        {faqItems.map(item => (
+          <details class="faq-item">
+            <summary>{item.question}</summary>
+            <p>{item.answer}</p>
+          </details>
+        ))}
       </div>
 
     </div>
   </section>
 
-  <section class="tarifs-cta">
+  <!-- CTA Final -->
+  <section id="devis" class="tarifs-cta">
     <div class="container">
       <h2>Prêt à démarrer votre projet ?</h2>
       <p>Demandez un devis personnalisé, gratuit et sans engagement.</p>
+      <div class="cta-benefits">
+        <span>✓ Réponse sous 24h</span>
+        <span>✓ Étude gratuite</span>
+        <span>✓ Sans engagement</span>
+      </div>
       <div class="cta-actions">
         <a href="/devis" class="btn-primary">Demander un devis</a>
         <a href="/contact" class="btn-secondary">Nous contacter</a>
@@ -176,8 +361,16 @@ import BaseLayout from '@layouts/Layout.astro';
 </BaseLayout>
 
 <style>
+  /* Container */
+  .container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 var(--spacing-lg);
+  }
+
+  /* Hero Section */
   .tarifs-hero {
-    padding: 6rem var(--spacing-lg) 4rem;
+    padding: 6rem 0 4rem;
     text-align: center;
     background: var(--color-bg);
   }
@@ -195,11 +388,16 @@ import BaseLayout from '@layouts/Layout.astro';
     margin-bottom: var(--spacing-xl);
   }
 
+  .hero-lead strong {
+    color: var(--color-primary);
+  }
+
   .hero-badges {
     display: flex;
     gap: var(--spacing-md);
     justify-content: center;
     flex-wrap: wrap;
+    margin-bottom: var(--spacing-xl);
   }
 
   .badge {
@@ -212,14 +410,93 @@ import BaseLayout from '@layouts/Layout.astro';
     transition: all var(--transition-base);
   }
 
+  .badge.highlight {
+    background: var(--color-primary);
+    color: var(--color-bg);
+    border-color: var(--color-primary);
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+  }
+
   .badge:hover {
     background: var(--color-bg-elevated);
     border-color: var(--color-primary);
     transform: translateY(-2px);
   }
 
+  .badge.highlight:hover {
+    background: var(--color-primary-dark);
+  }
+
+  .value-prop {
+    margin-top: var(--spacing-2xl);
+    padding: var(--spacing-lg);
+    background: var(--color-bg-alt);
+    border-radius: var(--radius-lg);
+    border-left: 4px solid var(--color-first);
+    display: inline-block;
+  }
+
+  .value-prop p {
+    margin: 0;
+    font-size: 1.1rem;
+    color: var(--color-text);
+  }
+
+  .value-prop strong {
+    color: var(--color-first);
+  }
+
+  /* Quick Navigation */
+  .quick-nav {
+    position: sticky;
+    top: 0;
+    background: var(--color-bg-elevated);
+    border-bottom: 2px solid var(--color-border);
+    padding: var(--spacing-md) 0;
+    z-index: 100;
+    backdrop-filter: blur(10px);
+  }
+
+  .quick-nav .container {
+    display: flex;
+    gap: var(--spacing-md);
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .quick-link {
+    padding: var(--spacing-sm) var(--spacing-lg);
+    border-radius: var(--radius-lg);
+    text-decoration: none;
+    color: var(--color-text);
+    font-weight: 600;
+    transition: all var(--transition-base);
+    border: 2px solid transparent;
+  }
+
+  .quick-link:hover {
+    background: var(--color-bg-alt);
+    border-color: var(--color-border);
+  }
+
+  .quick-link.cta {
+    background: var(--color-primary);
+    color: var(--color-bg);
+  }
+
+  .quick-link.cta:hover {
+    background: var(--color-primary-dark);
+    transform: translateY(-2px);
+  }
+
+  /* Main Section */
   .tarifs-main {
-    padding: 4rem var(--spacing-lg);
+    padding: 4rem 0;
     background: var(--color-bg);
   }
 
@@ -244,18 +521,19 @@ import BaseLayout from '@layouts/Layout.astro';
     font-size: 1.125rem;
   }
 
+  /* Pricing Table */
   .pricing-table {
     background: var(--color-bg-alt);
     border-radius: var(--radius-2xl);
     overflow: hidden;
     border: 2px solid var(--color-border);
-    max-width: 1000px;
+    max-width: 1200px;
     margin: 0 auto;
   }
 
   .pricing-row {
     display: grid;
-    grid-template-columns: 2fr 1fr 1fr;
+    grid-template-columns: 2fr 1.2fr 0.8fr 0.8fr;
     gap: var(--spacing-lg);
     padding: var(--spacing-xl);
     border-bottom: 1px solid var(--color-border);
@@ -271,6 +549,11 @@ import BaseLayout from '@layouts/Layout.astro';
     background: var(--color-bg-elevated);
   }
 
+  .pricing-row.featured {
+    background: var(--color-bg-elevated);
+    border-left: 4px solid var(--color-primary);
+  }
+
   .pricing-row.header {
     background: var(--color-bg-elevated);
     font-weight: 700;
@@ -282,23 +565,57 @@ import BaseLayout from '@layouts/Layout.astro';
     margin-bottom: var(--spacing-sm);
     color: var(--color-text);
     font-weight: 700;
+    font-size: 1.1rem;
   }
 
   .col-service small {
     color: var(--color-text-light);
     font-size: 0.9rem;
+    display: block;
+    line-height: 1.5;
+  }
+
+  .savings-badge {
+    display: inline-block;
+    margin-top: var(--spacing-sm);
+    padding: var(--spacing-xs) var(--spacing-md);
+    background: var(--color-first);
+    color: var(--color-bg);
+    border-radius: var(--radius-full);
+    font-size: 0.85rem;
+    font-weight: 700;
   }
 
   .col-price {
-    font-size: 1.5rem;
-    font-weight: 800;
-    color: var(--color-primary);
     text-align: center;
   }
 
-  .col-price.highlight {
-    color: var(--color-first);
+  .price-from {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--color-text-light);
+    margin-bottom: var(--spacing-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .price-amount {
+    display: block;
     font-size: 1.75rem;
+    font-weight: 800;
+    color: var(--color-primary);
+  }
+
+  .price-amount.highlight {
+    color: var(--color-first);
+    font-size: 2rem;
+  }
+
+  .price-note {
+    display: block;
+    margin-top: var(--spacing-xs);
+    font-size: 0.8rem;
+    color: var(--color-text-light);
   }
 
   .col-duration {
@@ -307,6 +624,40 @@ import BaseLayout from '@layouts/Layout.astro';
     font-weight: 600;
   }
 
+  .col-action {
+    text-align: center;
+  }
+
+  .btn-small {
+    display: inline-block;
+    padding: var(--spacing-sm) var(--spacing-lg);
+    background: var(--color-bg);
+    color: var(--color-text);
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: all var(--transition-base);
+  }
+
+  .btn-small:hover {
+    background: var(--color-bg-elevated);
+    border-color: var(--color-primary);
+    transform: translateY(-2px);
+  }
+
+  .btn-small.primary {
+    background: var(--color-primary);
+    color: var(--color-bg);
+    border-color: var(--color-primary);
+  }
+
+  .btn-small.primary:hover {
+    background: var(--color-primary-dark);
+  }
+
+  /* Packages */
   .pricing-packages {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -322,6 +673,8 @@ import BaseLayout from '@layouts/Layout.astro';
     border: 2px solid var(--color-border);
     position: relative;
     transition: all var(--transition-base);
+    display: flex;
+    flex-direction: column;
   }
 
   .package-card:hover {
@@ -382,6 +735,8 @@ import BaseLayout from '@layouts/Layout.astro';
   .package-card ul {
     list-style: none;
     padding: 0;
+    margin-bottom: var(--spacing-2xl);
+    flex-grow: 1;
   }
 
   .package-card li {
@@ -401,6 +756,155 @@ import BaseLayout from '@layouts/Layout.astro';
     font-size: 1.2rem;
   }
 
+  .btn-package {
+    display: block;
+    text-align: center;
+    padding: var(--spacing-md) var(--spacing-xl);
+    background: var(--color-bg);
+    color: var(--color-text);
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    text-decoration: none;
+    font-weight: 600;
+    transition: all var(--transition-base);
+    margin-top: auto;
+  }
+
+  .btn-package:hover {
+    background: var(--color-bg-elevated);
+    border-color: var(--color-primary);
+    transform: translateY(-2px);
+  }
+
+  .btn-package.primary {
+    background: var(--color-primary);
+    color: var(--color-bg);
+    border-color: var(--color-primary);
+  }
+
+  .btn-package.primary:hover {
+    background: var(--color-primary-dark);
+  }
+
+  /* Process Timeline */
+  .process-section {
+    margin-bottom: 6rem;
+  }
+
+  .process-timeline {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: var(--spacing-2xl);
+    max-width: 1200px;
+    margin: 0 auto;
+    position: relative;
+  }
+
+  .process-step {
+    text-align: center;
+    position: relative;
+  }
+
+  .step-number {
+    width: 60px;
+    height: 60px;
+    background: var(--color-primary);
+    color: var(--color-bg);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    font-weight: 900;
+    margin: 0 auto var(--spacing-lg);
+    border: 4px solid var(--color-bg-alt);
+  }
+
+  .step-content h3 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--color-text);
+    margin-bottom: var(--spacing-sm);
+  }
+
+  .step-content p {
+    color: var(--color-text-light);
+    margin-bottom: var(--spacing-md);
+  }
+
+  .step-duration {
+    display: inline-block;
+    padding: var(--spacing-xs) var(--spacing-md);
+    background: var(--color-first);
+    color: var(--color-bg);
+    border-radius: var(--radius-full);
+    font-size: 0.85rem;
+    font-weight: 700;
+  }
+
+  /* Testimonials */
+  .testimonials-section {
+    margin-bottom: 6rem;
+  }
+
+  .testimonials-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: var(--spacing-xl);
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .testimonial-card {
+    background: var(--color-bg-alt);
+    padding: var(--spacing-2xl);
+    border-radius: var(--radius-xl);
+    border: 2px solid var(--color-border);
+    border-left-width: 4px;
+    border-left-color: var(--color-primary);
+    transition: all var(--transition-base);
+  }
+
+  .testimonial-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .testimonial-content p {
+    font-style: italic;
+    color: var(--color-text);
+    line-height: 1.7;
+    margin-bottom: var(--spacing-lg);
+  }
+
+  .testimonial-author {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+    margin-bottom: var(--spacing-md);
+  }
+
+  .testimonial-author strong {
+    color: var(--color-text);
+    font-weight: 700;
+  }
+
+  .testimonial-author span {
+    color: var(--color-text-light);
+    font-size: 0.9rem;
+  }
+
+  .testimonial-metric {
+    display: inline-block;
+    padding: var(--spacing-sm) var(--spacing-md);
+    background: var(--color-first);
+    color: var(--color-bg);
+    border-radius: var(--radius-full);
+    font-size: 0.85rem;
+    font-weight: 700;
+  }
+
+  /* FAQ */
   .tarifs-faq {
     max-width: 900px;
     margin: 4rem auto 0;
@@ -475,11 +979,16 @@ import BaseLayout from '@layouts/Layout.astro';
     font-weight: 500;
   }
 
+  /* CTA Final */
   .tarifs-cta {
-    padding: 4rem var(--spacing-lg);
+    padding: 4rem 0;
     text-align: center;
     background: var(--color-bg-alt);
     margin-top: 4rem;
+  }
+
+  .tarifs-cta .container {
+    max-width: 900px;
   }
 
   .tarifs-cta h2 {
@@ -495,6 +1004,20 @@ import BaseLayout from '@layouts/Layout.astro';
     margin-bottom: var(--spacing-xl);
   }
 
+  .cta-benefits {
+    display: flex;
+    gap: var(--spacing-lg);
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: var(--spacing-xl);
+  }
+
+  .cta-benefits span {
+    color: var(--color-first);
+    font-weight: 600;
+    font-size: 1.05rem;
+  }
+
   .cta-actions {
     display: flex;
     gap: var(--spacing-md);
@@ -506,9 +1029,10 @@ import BaseLayout from '@layouts/Layout.astro';
   .btn-secondary {
     display: inline-flex;
     align-items: center;
-    padding: var(--spacing-md) var(--spacing-xl);
+    padding: var(--spacing-md) var(--spacing-2xl);
     border-radius: var(--radius-lg);
     font-weight: 600;
+    font-size: 1.05rem;
     text-decoration: none;
     transition: all var(--transition-base);
   }
@@ -541,9 +1065,24 @@ import BaseLayout from '@layouts/Layout.astro';
     outline-offset: 3px;
   }
 
+  /* Responsive */
   @media (max-width: 768px) {
+    .container {
+      padding: 0 var(--spacing-md);
+    }
+
+    .tarifs-hero {
+      padding: 4rem 0 3rem;
+    }
+
     .pricing-row {
       grid-template-columns: 1fr;
+      text-align: center;
+      gap: var(--spacing-md);
+      padding: var(--spacing-lg);
+    }
+
+    .col-service {
       text-align: center;
     }
 
@@ -552,36 +1091,118 @@ import BaseLayout from '@layouts/Layout.astro';
       margin-top: var(--spacing-sm);
     }
 
+    .savings-badge {
+      margin-top: var(--spacing-md);
+    }
+
+    .col-price {
+      margin: var(--spacing-md) 0;
+    }
+
     .pricing-packages {
       grid-template-columns: 1fr;
+      gap: var(--spacing-xl);
+    }
+
+    .process-timeline {
+      grid-template-columns: 1fr;
+      gap: var(--spacing-xl);
+    }
+
+    .testimonials-grid {
+      grid-template-columns: 1fr;
+      gap: var(--spacing-lg);
     }
 
     .cta-actions {
       flex-direction: column;
       align-items: stretch;
+      gap: var(--spacing-md);
     }
 
     .btn-primary,
     .btn-secondary {
       justify-content: center;
+      width: 100%;
+    }
+
+    .quick-nav {
+      position: relative;
+    }
+
+    .quick-nav .container {
+      justify-content: flex-start;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      padding: 0 var(--spacing-md);
+    }
+
+    .quick-link {
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .hero-badges {
+      gap: var(--spacing-sm);
+    }
+
+    .badge {
+      font-size: 0.85rem;
+      padding: var(--spacing-xs) var(--spacing-md);
+    }
+
+    .value-prop {
+      margin-left: var(--spacing-md);
+      margin-right: var(--spacing-md);
+    }
+
+    .package-card {
+      padding: var(--spacing-2xl) var(--spacing-lg);
     }
   }
 
+  /* Accessibility */
   @media (prefers-reduced-motion: reduce) {
     .badge,
     .pricing-row,
     .package-card,
     .faq-item,
     .btn-primary,
-    .btn-secondary {
+    .btn-secondary,
+    .btn-small,
+    .btn-package,
+    .testimonial-card,
+    .quick-link {
       transition: none;
     }
     
     .badge:hover,
     .package-card:hover,
     .faq-item:hover,
-    .btn-primary:hover {
+    .btn-primary:hover,
+    .btn-small:hover,
+    .btn-package:hover,
+    .testimonial-card:hover,
+    .quick-link.cta:hover {
       transform: none;
+    }
+
+    .badge.highlight {
+      animation: none;
+    }
+  }
+
+  /* Print styles */
+  @media print {
+    .quick-nav,
+    .tarifs-cta {
+      display: none;
+    }
+
+    .pricing-row,
+    .package-card,
+    .faq-item {
+      break-inside: avoid;
     }
   }
 </style>

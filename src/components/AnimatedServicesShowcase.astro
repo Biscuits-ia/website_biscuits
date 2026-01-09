@@ -10,56 +10,62 @@ interface Service {
 
 const services: Service[] = [
   {
-    icon: "🤖",
-    title: "Assistants IA & RAG",
-    description: "Un 'ChatGPT' privé connecté à vos documents pour une expertise interne sans faille.",
-    features: [
-      "Connexion à vos PDF/Notion",
-      "Confidentialité totale des données",
-      "Déploiement GPT-4o ou Claude 3.5",
-      "Interface utilisateur sur-mesure"
-    ],
-    price: "2 500",
-    badge: "Plus Rentable"
-  },
-  {
-    icon: "⚙️",
-    title: "Écosystème MCP & Agents",
-    description: "Automatisez vos actions répétitives entre vos différents logiciels (SaaS).",
-    features: [
-      "Interconnexion de vos outils",
-      "Agents autonomes décisionnels",
-      "Maintenance & Logs temps réel",
-      "Économie de 10h+/semaine"
-    ],
-    price: "1 200",
-    badge: "Best-Seller"
-  },
-  {
-    icon: "🚀",
-    title: "SaaS IA Ready-to-Launch",
-    description: "Architecture complète pour lancer votre propre service basé sur l'IA.",
-    features: [
-      "Gestion abonnements (Stripe)",
-      "Dashboard Analytics IA",
-      "Infrastructure scalable",
-      "Code source 100% propriétaire"
-    ],
-    price: "4 500",
-    badge: "Expert"
-  },
-  {
-    icon: "🧩",
-    title: "Infrastructure IA Custom",
-    description: "Solutions lourdes pour entreprises avec besoins spécifiques de performance.",
-    features: [
-      "Fine-tuning de modèles",
-      "Hébergement local / Privé",
-      "Support & Évolution continue",
-      "Audit de sécurité complet"
-    ],
-    price: "Sur Devis"
-  }
+  icon: "🤖",
+  title: "Assistants IA & RAG",
+  description: "Un assistant IA privé connecté à vos documents pour répondre avec précision à vos connaissances internes.",
+  features: [
+    "Connexion à vos documents (PDF, Notion, fichiers texte)",
+    "Indexation RAG sécurisée (données non réutilisées)",
+    "Modèles IA mutualisés (GPT-4o ou Claude 3.5)",
+    "Interface web prête à l’emploi",
+    "Maintenance & mises à jour incluses"
+  ],
+  price: "20€ / mois",
+  badge: "Plus rentable"
+},
+{
+  icon: "⚙️",
+  title: "Écosystème MCP & Agents",
+  description: "Automatisez et orchestrez vos outils SaaS grâce à des agents IA autonomes et intelligents.",
+  features: [
+    "Interconnexion de vos outils (CRM, Notion, Slack, GitHub…)",
+    "Agents IA orientés actions & décisions",
+    "Workflows automatisés sur mesure",
+    "Logs, monitoring et maintenance initiale",
+    "Gain de productivité estimé : 10h+/semaine"
+  ],
+  price: "1 200€",
+  badge: "Best-Seller"
+},
+{
+  icon: "🚀",
+  title: "SaaS IA Ready-to-Launch",
+  description: "Fondation technique complète pour créer, lancer et monétiser votre propre produit SaaS basé sur l’IA.",
+  features: [
+    "Backend IA prêt pour la production",
+    "Gestion des abonnements (Stripe)",
+    "Authentification & gestion des quotas",
+    "Dashboard analytics & usage IA",
+    "Infrastructure scalable",
+    "Code source 100% propriétaire"
+  ],
+  price: "4 500€",
+  badge: "Expert"
+},
+{
+  icon: "🧩",
+  title: "Infrastructure IA Custom",
+  description: "Conception et déploiement d’architectures IA sur mesure pour des exigences élevées en sécurité et performance.",
+  features: [
+    "RAG avancé & fine-tuning de modèles",
+    "Hébergement dédié (cloud privé ou on-premise)",
+    "Architecture scalable et sécurisée",
+    "Audit de sécurité & conformité",
+    "Support et évolutions continues"
+  ],
+  price: "Sur devis"
+}
+
 ];
 
 interface Stat {

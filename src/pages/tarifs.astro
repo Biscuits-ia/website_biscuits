@@ -43,44 +43,49 @@ const assistantsIA = [
 // Données des packages d'automatisation
 const automationPackages = [
   {
-    title: "Workflow simple",
-    price: "600€",
-    period: "HT",
+    title: "Audit & MVP Stratégique",
+    price: "1 450€", 
+    period: "HT / projet",
     features: [
-      "Automatisation d'une tâche",
-      "IA + règles simples",
-      "Tests & mise en production",
-      "Documentation"
+      "Diagnostic complet des flux opérationnels",
+      "Architecture d'automatisation ciblée (Quick Win)",
+      "Intégration d'IA générative sécurisée",
+      "Tests de fiabilité et validation de données",
+      "Rapport de ROI prévisionnel"
     ],
     featured: false,
-    cta: "Choisir"
+    cta: "Lancer mon audit"
   },
   {
-    title: "Workflow avancé",
-    price: "1 700€",
-    period: "HT",
+    title: "Système Agentique Expert",
+    price: "3 800€", 
+    period: "HT / projet",
     features: [
-      "Multi-étapes",
-      "IA + APIs externes",
-      "Logs & monitoring",
-      "Formation 1h"
+      "Workflows multi-agents auto-correcteurs",
+      "Interconnexion SI critique (CRM, ERP, API)",
+      "RAG Avancé (Base de connaissance privée)",
+      "Monitoring temps réel et logs d'exécution",
+      "Protocoles de sécurité et conformité RGPD",
+      "Support expert & Optimisation (30 jours)"
     ],
     featured: true,
-    badge: "Populaire",
-    cta: "Choisir"
+    badge: "Expertise Recommandée",
+    cta: "Déployer la solution"
   },
   {
-    title: "Automatisation sur mesure",
-    price: "Sur devis",
-    period: null,
+    title: "Infrastructure IA Sur-Mesure",
+    price: "À partir de 8 500€",
+    period: "HT",
     features: [
-      "Processus complexes",
-      "Connexion SI / SaaS",
-      "Maintenance optionnelle",
-      "Support prioritaire"
+      "Solution d'automatisation industrielle",
+      "Fine-tuning de modèles propriétaires",
+      "Déploiement sur infrastructure souveraine",
+      "Gouvernance des données et sécurité bancaire",
+      "Accompagnement au changement et formation",
+      "Maintenance évolutive (SLA garanti)"
     ],
     featured: false,
-    cta: "Nous contacter"
+    cta: "Consultation Expert"
   }
 ];
 
@@ -140,7 +145,7 @@ const faqItems = [
   },
   {
     question: "Quel est le délai pour recevoir un devis ?",
-    answer: "Vous recevrez une première réponse sous 24h et un devis détaillé sous 48h après notre échange initial pour comprendre précisément vos besoins."
+    answer: "Vous recevrez une première réponse sous 48h et un devis détaillé sous 48h après notre échange initial pour comprendre précisément vos besoins."
   },
   {
     question: "Puis-je payer en plusieurs fois ?",
@@ -348,7 +353,7 @@ const testimonials = [
       <h2>Prêt à démarrer votre projet ?</h2>
       <p>Demandez un devis personnalisé, gratuit et sans engagement.</p>
       <div class="cta-benefits">
-        <span>✓ Réponse sous 24h</span>
+        <span>✓ Réponse sous 48h</span>
         <span>✓ Étude gratuite</span>
         <span>✓ Sans engagement</span>
       </div>
@@ -448,7 +453,7 @@ const testimonials = [
   }
 
   .value-prop strong {
-    color: var(--color-first);
+    color: var(--color-second);
   }
 
   /* Quick Navigation */
@@ -579,7 +584,7 @@ const testimonials = [
     display: inline-block;
     margin-top: var(--spacing-sm);
     padding: var(--spacing-xs) var(--spacing-md);
-    background: var(--color-first);
+    background: var(--color-second);
     color: var(--color-bg);
     border-radius: var(--radius-full);
     font-size: 0.85rem;
@@ -603,7 +608,7 @@ const testimonials = [
     display: block;
     font-size: 1.75rem;
     font-weight: 800;
-    color: var(--color-primary);
+    color: var(--color-second);
   }
 
   .price-amount.highlight {
@@ -684,7 +689,7 @@ const testimonials = [
   }
 
   .package-card.featured {
-    border-color: var(--color-primary);
+    border-color: var(--color-second);
     background: var(--color-bg-elevated);
     border-width: 3px;
   }
@@ -693,7 +698,7 @@ const testimonials = [
     position: absolute;
     top: -15px;
     right: 2rem;
-    background: var(--color-primary);
+    background: var(--color-second);
     color: var(--color-bg);
     padding: var(--spacing-sm) var(--spacing-lg);
     border-radius: var(--radius-full);
@@ -722,7 +727,7 @@ const testimonials = [
     display: block;
     font-size: 3rem;
     font-weight: 900;
-    color: var(--color-primary);
+    color: var(--color-second);
     margin-bottom: var(--spacing-sm);
   }
 
@@ -751,7 +756,7 @@ const testimonials = [
     content: '✓';
     position: absolute;
     left: 0;
-    color: var(--color-first);
+    color: var(--color-second);
     font-weight: bold;
     font-size: 1.2rem;
   }
@@ -835,7 +840,7 @@ const testimonials = [
   .step-duration {
     display: inline-block;
     padding: var(--spacing-xs) var(--spacing-md);
-    background: var(--color-first);
+    background: var(--color-second);
     color: var(--color-bg);
     border-radius: var(--radius-full);
     font-size: 0.85rem;
@@ -897,7 +902,7 @@ const testimonials = [
   .testimonial-metric {
     display: inline-block;
     padding: var(--spacing-sm) var(--spacing-md);
-    background: var(--color-first);
+    background: var(--color-second);
     color: var(--color-bg);
     border-radius: var(--radius-full);
     font-size: 0.85rem;
@@ -1013,7 +1018,7 @@ const testimonials = [
   }
 
   .cta-benefits span {
-    color: var(--color-first);
+    color: var(--color-second);
     font-weight: 600;
     font-size: 1.05rem;
   }

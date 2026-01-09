@@ -132,14 +132,15 @@
 :root[data-theme='light'] {
   /* 🍪 PALETTE GOURMANDE BISCUITS */
   --color-primary: oklch(60.201% 0.11053 58.986);
-  --color-primary-light:oklch(57.378% 0.22642 28.383 / 0.808);
-  --color-primary-dark: oklch(32.109% 0.00004 271.152);
+  --color-primary-light:oklch(46.911% 0.08436 59.46);
+  --color-primary-dark: oklch(46.911% 0.08436 59.46);
   --color-secondary: oklch(60.201% 0.11053 58.986);
-  --color-first: oklch(57.378% 0.22642 28.383 / 0.808);
+  --color-first: oklch(46.911% 0.08436 59.46);
+  --color-second: oklch(63.442% 0.17547 149.012 / 0.808);
   
   /* Palette gourmande étendue */
   --color-accent-cream: oklch(60.201% 0.11053 58.986);
-  --color-accent-caramel: oklch(32.109% 0.00004 271.152);
+  --color-accent-caramel: oklch(46.911% 0.08436 59.46);
   --color-accent-honey: oklch(57.378% 0.22642 28.383 / 0.808);
   --color-accent-vanilla: oklch(57.378% 0.22642 28.383 / 0.808);
   

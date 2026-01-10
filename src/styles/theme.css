@@ -54,11 +54,13 @@
   --color-primary: oklch(54.737% 0.14363 50.501);         /* Caramel doré lumineux */
   --color-primary-light: oklch(92.397% 0.04768 58.943);   /* Caramel clair */
   --color-primary-dark: oklch(52% 0.16 45);    /* Caramel brûlé */
+  --color-second: oklch(60.201% 0.11053 58.986);           /* Miel doré doré */
   --color-secondary: oklch(45.388% 0.1315 39.495);       /* Orange cuivré chaud */
-  --color-first: oklch(53.717% 0.11801 60.834);           /* Miel ambré doré */
+  --color-first: oklch(60.201% 0.11053 58.986);           /* Miel ambré doré */
+  --color-third: oklch(47.027% 0.14321 143.953);
   
   /* Palette gourmande nocturne */
-  --color-accent-yellow: oklch(53.717% 0.11801 60.834);   /* Miel doré brillant */
+  --color-accent-yellow: oklch(60.201% 0.11053 58.986);   /* Miel doré brillant */
   --color-accent-orange: oklch(55.426% 0.15987 44.467);   /* Caramel intense */
   --color-accent-cream: oklch(85% 0.08 75);    /* Crème vanillée */
   --color-accent-cinnamon: oklch(51.448% 0.15841 40.94); /* Cannelle chaude */
@@ -136,7 +138,8 @@
   --color-primary-dark: oklch(46.911% 0.08436 59.46);
   --color-secondary: oklch(60.201% 0.11053 58.986);
   --color-first: oklch(46.911% 0.08436 59.46);
-  --color-second: oklch(63.442% 0.17547 149.012 / 0.808);
+  --color-second: oklch(60.201% 0.11053 58.986);
+  --color-third: oklch(52.012% 0.14178 144.75);
   
   /* Palette gourmande étendue */
   --color-accent-cream: oklch(60.201% 0.11053 58.986);

@@ -4,7 +4,7 @@
   
   const dispatch = createEventDispatcher();
   
-  const API_BASE_URL = import.meta.env.PUBLIC_API_URL;
+  const API_BASE_URL = "https://biscuits-admin-main-1a6oe6.laravel.cloud";
   const API_ENDPOINT = `${API_BASE_URL}/api/devis`;
   const API_TIMEOUT = 15000;
 

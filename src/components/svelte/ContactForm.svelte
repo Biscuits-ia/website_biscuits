@@ -5,7 +5,7 @@
   let country = '';
   let service = '';
   let message = '';
-  let honey = ''; // Honeypot
+  let honey = '';
   
   // UI state
   let errors: Record<string, string> = {};

@@ -15,7 +15,9 @@
     budget: '',
     service: '',
     message: '',
-    website: ''
+    address: '',      // ✅ Ajout
+    zip_code: '',     // ✅ Ajout
+    honey: ''         // ✅ Changé de website à honey
   };
 
   let errors = {};
@@ -55,6 +57,17 @@
       case 'message':
         if (value.length < 20) return 'Le message doit contenir au moins 20 caractères';
         if (value.length > 2000) return 'Le message ne peut pas dépasser 2000 caractères';
+        break;
+
+      // ✅ Validation adresse
+      case 'address':
+        if (value.length < 5) return 'L\'adresse doit contenir au moins 5 caractères';
+        if (value.length > 255) return 'L\'adresse ne peut pas dépasser 255 caractères';
+        break;
+
+      // ✅ Validation code postal
+      case 'zip_code':
+        if (!/^[0-9]{5}$/.test(value.trim())) return 'Code postal invalide (5 chiffres requis)';
         break;
     }
 
@@ -132,11 +145,14 @@
       service: sanitizeInput(formData.service),
       budget: sanitizeInput(formData.budget) || undefined,
       message: sanitizeInput(formData.message),
-      website: formData.website,
+      address: sanitizeInput(formData.address),      // ✅ Ajout
+      zip_code: sanitizeInput(formData.zip_code),    // ✅ Ajout
+      honey: formData.honey,                          // ✅ Changé de website
+      timestamp: Math.floor(Date.now() / 1000)        // ✅ Ajout timestamp
     };
 
     let hasErrors = false;
-    const fieldsToValidate = ['name', 'email', 'phone', 'service', 'message'];
+    const fieldsToValidate = ['name', 'email', 'phone', 'service', 'message', 'address', 'zip_code']; // ✅ Ajout
     
     fieldsToValidate.forEach((field) => {
       const value = sanitizedData[field];
@@ -167,7 +183,9 @@
         budget: '',
         service: '',
         message: '',
-        website: ''
+        address: '',
+        zip_code: '',
+        honey: ''
       };
 
       if (typeof window.gtag !== 'undefined') {
@@ -276,6 +294,53 @@
     {/if}
   </div>
 
+  <!-- ✅ NOUVEAU : Champ Adresse -->
+  <div class="form-group" class:error={errors.address}>
+    <label for="address">
+      Adresse <span class="required">*</span>
+    </label>
+    <input 
+      type="text" 
+      id="address" 
+      bind:value={formData.address}
+      on:blur={() => handleBlur('address')}
+      on:input={() => handleInput('address')}
+      placeholder="123 rue de la République" 
+      required 
+      maxlength="255"
+      autocomplete="street-address"
+      aria-invalid={errors.address ? 'true' : 'false'}
+      aria-describedby={errors.address ? 'address-error' : undefined}
+    />
+    {#if errors.address}
+      <span class="error-message" id="address-error" role="alert">{errors.address}</span>
+    {/if}
+  </div>
+
+  <!-- ✅ NOUVEAU : Champ Code postal -->
+  <div class="form-group" class:error={errors.zip_code}>
+    <label for="zip_code">
+      Code postal <span class="required">*</span>
+    </label>
+    <input 
+      type="text" 
+      id="zip_code" 
+      bind:value={formData.zip_code}
+      on:blur={() => handleBlur('zip_code')}
+      on:input={() => handleInput('zip_code')}
+      placeholder="86000" 
+      required 
+      maxlength="5"
+      pattern="[0-9]{5}"
+      autocomplete="postal-code"
+      aria-invalid={errors.zip_code ? 'true' : 'false'}
+      aria-describedby={errors.zip_code ? 'zip_code-error' : undefined}
+    />
+    {#if errors.zip_code}
+      <span class="error-message" id="zip_code-error" role="alert">{errors.zip_code}</span>
+    {/if}
+  </div>
+
   <div class="form-group">
     <label for="budget">Budget estimé</label>
     <select id="budget" bind:value={formData.budget}>
@@ -356,10 +421,11 @@
     {/if}
   </div>
 
+  <!-- ✅ Honeypot (changé de website à honey) -->
   <input 
     type="text" 
-    name="website" 
-    bind:value={formData.website}
+    name="honey" 
+    bind:value={formData.honey}
     tabindex="-1" 
     autocomplete="off" 
     class="honeypot" 

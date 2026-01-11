@@ -1,4 +1,3 @@
-<!-- src/components/svelte/ContactForm.svelte -->
 <script lang="ts">
   // Form state
   let name = '';
@@ -166,7 +165,7 @@
     
     try {
       // ✅ CHANGE THIS URL TO YOUR ACTUAL API
-      const API_URL = import.meta.env.PUBLIC_API_URL || 'https://biscuits-admin-main-1a6oe6.laravel.cloud';
+      const API_URL = import.meta.env.PUBLIC_API_URL;
       const endpoint = `${API_URL}/api/contacts`;
       
       console.log('🌐 API endpoint:', endpoint);

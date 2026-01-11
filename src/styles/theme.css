@@ -57,7 +57,7 @@
   --color-second: oklch(60.201% 0.11053 58.986);           /* Miel doré doré */
   --color-secondary: oklch(45.388% 0.1315 39.495);       /* Orange cuivré chaud */
   --color-first: oklch(60.201% 0.11053 58.986);           /* Miel ambré doré */
-  --color-third: oklch(47.027% 0.14321 143.953);
+  --color-third: oklch(63.75% 0.20038 143.684);
   
   /* Palette gourmande nocturne */
   --color-accent-yellow: oklch(60.201% 0.11053 58.986);   /* Miel doré brillant */
@@ -139,7 +139,7 @@
   --color-secondary: oklch(60.201% 0.11053 58.986);
   --color-first: oklch(46.911% 0.08436 59.46);
   --color-second: oklch(60.201% 0.11053 58.986);
-  --color-third: oklch(52.012% 0.14178 144.75);
+  --color-third: oklch(60.997% 0.18931 143.803);
   
   /* Palette gourmande étendue */
   --color-accent-cream: oklch(60.201% 0.11053 58.986);

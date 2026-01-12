@@ -22,7 +22,6 @@
     phone: string;
     address: string;
     zip_code: string;
-    city: string;
     budget: string;
     service: string;
     message: string;
@@ -35,7 +34,6 @@
     phone: '',
     address: '',
     zip_code: '',
-    city: '',
     budget: '',
     service: '',
     message: '',
@@ -91,7 +89,6 @@
       'email',
       'address',
       'zip_code',
-      'city',
       'service',
       'message',
     ];
@@ -132,7 +129,6 @@
         email: sanitizeInput(formData.email),
         phone: sanitizeInput(formData.phone) || 'Non renseigné',
         address: sanitizeInput(formData.address),
-        city: sanitizeInput(formData.city),
         zip_code: sanitizeInput(formData.zip_code),
         service: formData.service,
         budget: formData.budget || 'Non renseigné',
@@ -162,7 +158,6 @@
         phone: '',
         address: '',
         zip_code: '',
-        city: '',
         budget: '',
         service: '',
         message: '',
@@ -358,28 +353,6 @@
     {#if errors.zip_code}
       <span class="error-message" id="zip_code-error" role="alert"
         >{errors.zip_code}</span
-      >
-    {/if}
-  </div>
-
-  <div class="form-group full" class:error={errors.address}>
-    <label for="address"> ville <span class="required">*</span> </label>
-    <input
-      type="text"
-      id="city"
-      bind:value={formData.address}
-      on:blur={() => handleBlur('city')}
-      on:input={() => handleInput('city')}
-      placeholder="Paris"
-      required
-      maxlength="255"
-      aria-invalid={errors.city ? 'true' : 'false'}
-      aria-describedby={errors.city ? 'city-error' : undefined}
-      disabled={isSubmitting}
-    />
-    {#if errors.city}
-      <span class="error-message" id="city-error" role="alert"
-        >{errors.city}</span
       >
     {/if}
   </div>

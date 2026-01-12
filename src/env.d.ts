@@ -1,3 +1,7 @@
-/// <reference path="../.astro/types.d.ts" />
-/// <reference types="astro/client" />
-/// <reference types="svelte" />
+interface ImportMetaEnv {
+  readonly PUBLIC_WEB3FORMS_ACCESS_KEY: string;
+}
+
+interface ImportMeta {
+  readonly env: ImportMetaEnv;
+}

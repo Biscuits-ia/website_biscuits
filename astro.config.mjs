@@ -76,7 +76,15 @@ robots({
       },
     },
     
-    // Optimisation des assets
+    optimizeDeps: {
+      include: ['gsap', 'gsap/ScrollTrigger', 'gsap/ScrollToPlugin'],
+    },
+    
+    ssr: {
+      noExternal: ['gsap', 'gsap/ScrollTrigger', 'gsap/ScrollToPlugin'],
+    },
+    
+    
     assetsInclude: ['**\/*.webp', '**\/*.avif'],
   },
   

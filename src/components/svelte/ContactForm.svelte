@@ -1,5 +1,4 @@
 <script lang="ts">
-  
   import {
     validateField,
     SERVICES_CONFIG,
@@ -12,9 +11,8 @@
     trackFormSubmit,
   } from '@/utils/web3forms';
 
-  const ACCESS_KEY = import.meta.env.PUBLIC_WEB3FORMS_CONTACT;
+  const ACCESS_KEY = import.meta.env.PUBLIC_WEB3FORMS_DEVIS;
 
-  // Type pour formData
   type FormDataType = {
     name: string;
     email: string;
@@ -24,32 +22,25 @@
     honey: string;
   };
 
-  // État du formulaire
   let formData: FormDataType = {
     name: '',
     email: '',
     country: '',
     service: '',
     message: '',
-    honey: '', // Honeypot anti-spam
+    honey: '',
   };
 
-  // État UI
   let errors: Record<string, string> = {};
   let isSubmitting = false;
   let submitSuccess = false;
   let submitError = '';
   let messageLength = 0;
 
-  // Timestamp de chargement (anti-bot)
   const formLoadTime = Date.now();
 
-  // Réactivité pour le compteur de caractères
   $: messageLength = formData.message.length;
 
-  /**
-   * Validation en temps réel au blur
-   */
   function handleBlur(field: keyof FormDataType) {
     const error = validateField(field, formData[field]);
     if (error) {
@@ -60,9 +51,6 @@
     errors = { ...errors };
   }
 
-  /**
-   * Efface l'erreur lors de la saisie
-   */
   function handleInput(field: keyof FormDataType) {
     if (errors[field]) {
       delete errors[field];
@@ -70,31 +58,30 @@
     }
   }
 
-  /**
-   * Soumission du formulaire
-   */
   async function handleSubmit(e: Event) {
     e.preventDefault();
 
-    // Reset des états
     submitSuccess = false;
     submitError = '';
     errors = {};
 
-    // 🔒 Protection anti-spam : Honeypot
     if (formData.honey.trim() !== '') {
       submitError = 'Erreur de validation';
       return;
     }
 
-    // 🔒 Protection anti-bot : Vérification du timing
     if (isTooFast(formLoadTime)) {
       submitError = 'Veuillez prendre le temps de remplir le formulaire';
       return;
     }
 
-    // 🔍 Validation des champs
-    const fieldsToValidate: (keyof FormDataType)[] = ['name', 'email', 'country', 'service', 'message'];
+    const fieldsToValidate: (keyof FormDataType)[] = [
+      'name',
+      'email',
+      'country',
+      'service',
+      'message',
+    ];
     let hasErrors = false;
 
     fieldsToValidate.forEach((field) => {
@@ -107,7 +94,6 @@
 
     if (hasErrors) {
       errors = { ...errors };
-      // Focus sur le premier champ en erreur
       const firstErrorField = Object.keys(errors)[0] as string;
       document.getElementById(firstErrorField)?.focus();
       return;
@@ -116,7 +102,6 @@
     isSubmitting = true;
 
     try {
-      // 📤 Préparation du payload pour Web3Forms
       const payload = {
         access_key: ACCESS_KEY,
         name: sanitizeInput(formData.name),
@@ -124,26 +109,19 @@
         country: formData.country,
         service: formData.service,
         message: sanitizeInput(formData.message),
-        // ✅ Champs personnalisés pour Web3Forms
         from_name: sanitizeInput(formData.name),
         subject: `[Contact] ${formData.service} - ${formData.name}`,
-        // ✅ Redirection après succès (optionnel)
-        // redirect: 'https://votresite.com/merci',
       };
 
-      // 🚀 Envoi vers Web3Forms
       await submitToWeb3Forms(payload);
 
-      // ✅ Succès
       submitSuccess = true;
 
-      // 📊 Tracking analytics
       trackFormSubmit('contact', {
         service: formData.service,
         country: formData.country,
       });
 
-      // 🔄 Reset du formulaire
       formData = {
         name: '',
         email: '',
@@ -153,16 +131,15 @@
         honey: '',
       };
 
-      // 📜 Scroll vers le haut
       window.scrollTo({ top: 0, behavior: 'smooth' });
 
-      // ⏱️ Cache le message de succès après 10s
       setTimeout(() => {
         submitSuccess = false;
       }, 10000);
     } catch (error: any) {
       console.error('❌ Erreur soumission:', error);
-      submitError = error.message || 'Une erreur est survenue. Veuillez réessayer.';
+      submitError =
+        error.message || 'Une erreur est survenue. Veuillez réessayer.';
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } finally {
       isSubmitting = false;
@@ -187,10 +164,7 @@
           fill="none"
         />
       </svg>
-      <div>
-        <strong>Message envoyé avec succès !</strong>
-        <p>Nous vous répondrons sous 48h.</p>
-      </div>
+      <span>Message envoyé avec succès ! Nous vous répondrons sous 48h.</span>
     </div>
   {/if}
 
@@ -212,70 +186,71 @@
     </div>
   {/if}
 
-  <!-- 📝 Champ Nom -->
+  <!-- 📝 Champ Nom / Entreprise -->
   <div class="form-group" class:error={errors.name}>
     <label for="name">
-      Nom / Entreprise <span class="required" aria-label="requis">*</span>
+      Nom / Entreprise <span class="required">*</span>
     </label>
     <input
-      id="name"
       type="text"
+      id="name"
       bind:value={formData.name}
       on:blur={() => handleBlur('name')}
       on:input={() => handleInput('name')}
       placeholder="Votre nom ou entreprise"
-      aria-required="true"
-      aria-invalid={!!errors.name}
-      aria-describedby={errors.name ? 'name-error' : undefined}
-      disabled={isSubmitting}
+      required
       maxlength="100"
       autocomplete="name"
+      aria-invalid={errors.name ? 'true' : 'false'}
+      aria-describedby={errors.name ? 'name-error' : undefined}
+      disabled={isSubmitting}
     />
     {#if errors.name}
-      <span id="name-error" class="error-message" role="alert">
-        {errors.name}
-      </span>
+      <span class="error-message" id="name-error" role="alert"
+        >{errors.name}</span
+      >
     {/if}
   </div>
 
   <!-- 📧 Champ Email -->
   <div class="form-group" class:error={errors.email}>
     <label for="email">
-      Email <span class="required" aria-label="requis">*</span>
+      Email professionnel <span class="required">*</span>
     </label>
     <input
-      id="email"
       type="email"
+      id="email"
       bind:value={formData.email}
       on:blur={() => handleBlur('email')}
       on:input={() => handleInput('email')}
       placeholder="contact@exemple.fr"
-      aria-required="true"
-      aria-invalid={!!errors.email}
-      aria-describedby={errors.email ? 'email-error' : undefined}
-      disabled={isSubmitting}
+      required
       maxlength="255"
       autocomplete="email"
+      aria-invalid={errors.email ? 'true' : 'false'}
+      aria-describedby={errors.email ? 'email-error' : undefined}
+      disabled={isSubmitting}
     />
     {#if errors.email}
-      <span id="email-error" class="error-message" role="alert">
-        {errors.email}
-      </span>
+      <span class="error-message" id="email-error" role="alert"
+        >{errors.email}</span
+      >
     {/if}
   </div>
 
   <!-- 🌍 Champ Pays -->
   <div class="form-group" class:error={errors.country}>
     <label for="country">
-      Pays <span class="required" aria-label="requis">*</span>
+      Pays <span class="required">*</span>
     </label>
     <select
       id="country"
       bind:value={formData.country}
       on:blur={() => handleBlur('country')}
       on:change={() => handleInput('country')}
+      required
       aria-required="true"
-      aria-invalid={!!errors.country}
+      aria-invalid={errors.country ? 'true' : 'false'}
       aria-describedby={errors.country ? 'country-error' : undefined}
       disabled={isSubmitting}
     >
@@ -285,88 +260,91 @@
       {/each}
     </select>
     {#if errors.country}
-      <span id="country-error" class="error-message" role="alert">
-        {errors.country}
-      </span>
+      <span class="error-message" id="country-error" role="alert"
+        >{errors.country}</span
+      >
     {/if}
   </div>
 
   <!-- 🛠️ Champ Service -->
   <div class="form-group" class:error={errors.service}>
     <label for="service">
-      Service <span class="required" aria-label="requis">*</span>
+      Service souhaité <span class="required">*</span>
     </label>
     <select
       id="service"
       bind:value={formData.service}
       on:blur={() => handleBlur('service')}
       on:change={() => handleInput('service')}
+      required
       aria-required="true"
-      aria-invalid={!!errors.service}
+      aria-invalid={errors.service ? 'true' : 'false'}
       aria-describedby={errors.service ? 'service-error' : undefined}
       disabled={isSubmitting}
     >
-      <option value="">Sélectionnez un service</option>
+      <option value="">Sélectionnez un service…</option>
       <optgroup label="Starter Kits">
-        {#each SERVICES_CONFIG['starter-kits'] as s}
-          <option value={s}>{s}</option>
+        {#each SERVICES_CONFIG['starter-kits'] as service}
+          <option value={service}>{service}</option>
         {/each}
       </optgroup>
       <optgroup label="Solutions IA">
-        {#each SERVICES_CONFIG.ia as s}
-          <option value={s}>{s}</option>
+        {#each SERVICES_CONFIG.ia as service}
+          <option value={service}>{service}</option>
         {/each}
       </optgroup>
-      <optgroup label="Consulting">
-        {#each SERVICES_CONFIG.consulting as s}
-          <option value={s}>{s}</option>
+      <optgroup label="Consulting & Coaching">
+        {#each SERVICES_CONFIG.consulting as service}
+          <option value={service}>{service}</option>
         {/each}
       </optgroup>
     </select>
     {#if errors.service}
-      <span id="service-error" class="error-message" role="alert">
-        {errors.service}
-      </span>
+      <span class="error-message" id="service-error" role="alert"
+        >{errors.service}</span
+      >
     {/if}
   </div>
 
   <!-- 💬 Champ Message -->
   <div class="form-group full" class:error={errors.message}>
     <label for="message">
-      Message <span class="required" aria-label="requis">*</span>
+      Message <span class="required">*</span>
     </label>
     <textarea
       id="message"
       bind:value={formData.message}
       on:blur={() => handleBlur('message')}
       on:input={() => handleInput('message')}
-      placeholder="Décrivez votre projet, vos besoins, vos contraintes..."
-      aria-required="true"
-      aria-invalid={!!errors.message}
-      aria-describedby={errors.message ? 'message-error' : undefined}
-      disabled={isSubmitting}
       rows="5"
+      placeholder="Décrivez votre projet, vos besoins, vos contraintes…"
+      required
+      minlength="20"
       maxlength="2000"
+      aria-invalid={errors.message ? 'true' : 'false'}
+      aria-describedby="message-count {errors.message ? 'message-error' : ''}"
+      disabled={isSubmitting}
     ></textarea>
-    <div
+    <span
       class="char-count"
+      id="message-count"
       class:warning={messageLength > 1500}
       class:danger={messageLength > 1900}
       aria-live="polite"
     >
       {messageLength} / 2000
-    </div>
+    </span>
     {#if errors.message}
-      <span id="message-error" class="error-message" role="alert">
-        {errors.message}
-      </span>
+      <span class="error-message" id="message-error" role="alert"
+        >{errors.message}</span
+      >
     {/if}
   </div>
 
   <!-- 🍯 Honeypot (caché pour les humains, visible pour les bots) -->
   <input
     type="text"
-    name="website"
+    name="honey"
     bind:value={formData.honey}
     tabindex="-1"
     autocomplete="off"
@@ -377,29 +355,14 @@
   <!-- 🚀 Bouton de soumission -->
   <button
     type="submit"
-    class="btn-submit"
+    class="btn-primary"
+    class:loading={isSubmitting}
     disabled={isSubmitting}
     aria-busy={isSubmitting}
   >
+    <span class="btn-text">Envoyer mon message</span>
     {#if isSubmitting}
-      <span class="spinner" aria-hidden="true"></span>
-      Envoi en cours...
-    {:else}
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width="20"
-        height="20"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-      >
-        <line x1="22" y1="2" x2="11" y2="13"></line>
-        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-      </svg>
-      Envoyer
+      <span class="btn-loader" aria-hidden="true"></span>
     {/if}
   </button>
 </form>
@@ -426,7 +389,7 @@
   label {
     font-size: 0.95rem;
     font-weight: 600;
-    color: var(--color-text);
+    color: var(--color-text-light);
   }
 
   .required {
@@ -437,7 +400,7 @@
   select,
   textarea {
     padding: 0.8rem;
-    border: 2px solid var(--color-border);
+    border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
     background: var(--color-bg-alt);
     color: var(--color-text);
@@ -451,14 +414,21 @@
   textarea:focus {
     outline: none;
     border-color: var(--color-primary);
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    box-shadow: 0 0 0 3px var(--color-primary-light);
+  }
+
+  input:disabled,
+  select:disabled,
+  textarea:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
   }
 
   .form-group.error input,
   .form-group.error textarea,
   .form-group.error select {
     border-color: var(--color-danger);
-    background-color: rgba(239, 68, 68, 0.05);
+    background-color: var(--color-danger-light);
   }
 
   .error-message {
@@ -468,8 +438,9 @@
   }
 
   .char-count {
-    text-align: right;
+    display: block;
     font-size: 0.875rem;
+    text-align: right;
     color: var(--color-text-light);
     transition: color 0.2s;
   }
@@ -495,14 +466,15 @@
   /* Alertes */
   .alert {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     gap: 1rem;
+    margin-bottom: 1.5rem;
     padding: 1.25rem;
     border-radius: var(--radius-lg);
-    border: 2px solid;
-    margin-bottom: 1.5rem;
+    font-size: 0.95rem;
+    font-weight: 500;
+    animation: slideDown 0.3s ease-out;
     grid-column: 1 / -1;
-    animation: slideDown 0.3s ease;
   }
 
   @keyframes slideDown {
@@ -523,68 +495,65 @@
   }
 
   .alert-success {
-    background: rgba(16, 185, 129, 0.1);
+    background: var(--color-success-light);
     color: var(--color-success);
-    border-color: var(--color-success);
-  }
-
-  .alert-success strong {
-    display: block;
-    margin-bottom: 0.25rem;
-  }
-
-  .alert-success p {
-    margin: 0;
-    font-size: 0.95rem;
+    border: 1px solid var(--color-success);
   }
 
   .alert-error {
-    background: rgba(239, 68, 68, 0.1);
+    background: var(--color-danger-light);
     color: var(--color-danger);
-    border-color: var(--color-danger);
+    border: 1px solid var(--color-danger);
   }
 
-  /* Bouton de soumission */
-  .btn-submit {
-    grid-column: 1 / -1;
-    padding: 1.25rem 2rem;
+  /* Bouton principal */
+  .btn-primary {
+    position: relative;
+    width: 100%;
+    padding: 1.25rem;
     background: linear-gradient(
       135deg,
       var(--color-primary),
       var(--color-primary-dark)
     );
-    color: white;
+    color: var(--color-bg);
     border: none;
     border-radius: var(--radius-lg);
     font-size: 1.1rem;
-    font-weight: 700;
+    font-weight: 600;
     cursor: pointer;
     transition: all 0.3s;
-    box-shadow: 0 4px 14px rgba(59, 130, 246, 0.3);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.75rem;
+    margin-top: 1rem;
+    box-shadow: var(--shadow-glow);
+    grid-column: 1 / -1;
   }
 
-  .btn-submit:hover:not(:disabled) {
+  .btn-primary:hover:not(:disabled) {
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+    box-shadow: var(--shadow-glow-hover);
   }
 
-  .btn-submit:focus-visible {
+  .btn-primary:focus-visible {
     outline: 3px solid var(--color-primary);
     outline-offset: 3px;
   }
 
-  .btn-submit:disabled {
-    opacity: 0.7;
+  .btn-primary:disabled {
+    opacity: 0.6;
     cursor: not-allowed;
   }
 
-  .spinner {
-    width: 1.25rem;
-    height: 1.25rem;
+  .btn-primary.loading .btn-text {
+    opacity: 0;
+  }
+
+  .btn-loader {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 24px;
+    height: 24px;
     border: 3px solid rgba(255, 255, 255, 0.3);
     border-top-color: white;
     border-radius: 50%;
@@ -593,14 +562,13 @@
 
   @keyframes spin {
     to {
-      transform: rotate(360deg);
+      transform: translate(-50%, -50%) rotate(360deg);
     }
   }
 
   @media (max-width: 768px) {
     .contact-form {
       grid-template-columns: 1fr;
-      gap: 1.5rem;
     }
   }
 </style>

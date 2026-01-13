@@ -8,7 +8,11 @@
     isTooFast,
   } from '@/utils/web3forms';
 
-  const ACCESS_KEY = import.meta.env.PUBLIC_WEB3FORMS_DEVIS;
+  // ✅ CORRECTION CRITIQUE : Utiliser la bonne clé !
+  const ACCESS_KEY = import.meta.env.PUBLIC_WEB3FORMS_CONTACT;
+
+  // 🔍 Debug : Vérifier la clé dans la console
+  console.log('🔑 ContactForm - ACCESS_KEY:', ACCESS_KEY ? '✅ Présente' : '❌ MANQUANTE');
 
   type FormDataType = {
     name: string;
@@ -54,16 +58,27 @@
   async function handleSubmit(e: Event) {
     e.preventDefault();
 
+    console.log('🚀 Début soumission ContactForm');
+
     submitSuccess = false;
     submitError = '';
     errors = {};
 
+    // Vérification de la clé
+    if (!ACCESS_KEY) {
+      console.error('❌ ACCESS_KEY manquante !');
+      submitError = 'Configuration manquante. Contactez le support.';
+      return;
+    }
+
     if (formData.honey.trim() !== '') {
+      console.log('🍯 Honeypot rempli - spam détecté');
       submitError = 'Erreur de validation';
       return;
     }
 
     if (isTooFast(formLoadTime)) {
+      console.log('⚡ Soumission trop rapide');
       submitError = 'Veuillez prendre le temps de remplir le formulaire';
       return;
     }
@@ -80,16 +95,19 @@
       if (error) {
         errors[field] = error;
         hasErrors = true;
+        console.log(`❌ Erreur ${field}:`, error);
       }
     });
 
     if (hasErrors) {
+      console.log('❌ Erreurs de validation:', errors);
       errors = { ...errors };
       const firstErrorField = Object.keys(errors)[0] as string;
       document.getElementById(firstErrorField)?.focus();
       return;
     }
 
+    console.log('✅ Validation OK');
     isSubmitting = true;
 
     try {
@@ -99,10 +117,18 @@
         email: sanitizeInput(formData.email),
         message: sanitizeInput(formData.message),
         from_name: sanitizeInput(formData.name),
-        subject: `[Contact] ${formData.name}`,
+        subject: `[Contact Simple] ${formData.name}`,
       };
 
-      await submitToWeb3Forms(payload);
+      console.log('📤 Envoi payload:', {
+        name: payload.name,
+        email: payload.email,
+        messageLength: payload.message.length
+      });
+
+      const result = await submitToWeb3Forms(payload);
+
+      console.log('✅ Réponse Web3Forms:', result);
 
       submitSuccess = true;
 
@@ -119,12 +145,13 @@
         submitSuccess = false;
       }, 10000);
     } catch (error: any) {
-      console.error('❌ Erreur soumission:', error);
+      console.error('❌ Erreur complète:', error);
       submitError =
         error.message || 'Une erreur est survenue. Veuillez réessayer.';
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } finally {
       isSubmitting = false;
+      console.log('🏁 Fin soumission');
     }
   }
 </script>
@@ -145,7 +172,7 @@
           fill="none"
         />
       </svg>
-      <span>Demande envoyée avec succès ! Nous vous répondrons sous 24-48h.</span>
+      <span>Message envoyé avec succès ! Nous vous répondrons sous 48h.</span>
     </div>
   {/if}
 

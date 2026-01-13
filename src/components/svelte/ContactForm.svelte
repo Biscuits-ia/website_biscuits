@@ -1,14 +1,11 @@
 <script lang="ts">
   import {
     validateField,
-    SERVICES_CONFIG,
-    COUNTRIES,
   } from '@/utils/formValidation';
   import {
     submitToWeb3Forms,
     sanitizeInput,
     isTooFast,
-    trackFormSubmit,
   } from '@/utils/web3forms';
 
   const ACCESS_KEY = import.meta.env.PUBLIC_WEB3FORMS_DEVIS;
@@ -16,8 +13,6 @@
   type FormDataType = {
     name: string;
     email: string;
-    country: string;
-    service: string;
     message: string;
     honey: string;
   };
@@ -25,8 +20,6 @@
   let formData: FormDataType = {
     name: '',
     email: '',
-    country: '',
-    service: '',
     message: '',
     honey: '',
   };
@@ -78,8 +71,6 @@
     const fieldsToValidate: (keyof FormDataType)[] = [
       'name',
       'email',
-      'country',
-      'service',
       'message',
     ];
     let hasErrors = false;
@@ -106,27 +97,18 @@
         access_key: ACCESS_KEY,
         name: sanitizeInput(formData.name),
         email: sanitizeInput(formData.email),
-        country: formData.country,
-        service: formData.service,
         message: sanitizeInput(formData.message),
         from_name: sanitizeInput(formData.name),
-        subject: `[Contact] ${formData.service} - ${formData.name}`,
+        subject: `[Contact] ${formData.name}`,
       };
 
       await submitToWeb3Forms(payload);
 
       submitSuccess = true;
 
-      trackFormSubmit('contact', {
-        service: formData.service,
-        country: formData.country,
-      });
-
       formData = {
         name: '',
         email: '',
-        country: '',
-        service: '',
         message: '',
         honey: '',
       };
@@ -237,75 +219,7 @@
       >
     {/if}
   </div>
-
-  <!-- 🌍 Champ Pays -->
-  <div class="form-group" class:error={errors.country}>
-    <label for="country">
-      Pays <span class="required">*</span>
-    </label>
-    <select
-      id="country"
-      bind:value={formData.country}
-      on:blur={() => handleBlur('country')}
-      on:change={() => handleInput('country')}
-      required
-      aria-required="true"
-      aria-invalid={errors.country ? 'true' : 'false'}
-      aria-describedby={errors.country ? 'country-error' : undefined}
-      disabled={isSubmitting}
-    >
-      <option value="">Sélectionnez un pays</option>
-      {#each COUNTRIES as c}
-        <option value={c}>{c}</option>
-      {/each}
-    </select>
-    {#if errors.country}
-      <span class="error-message" id="country-error" role="alert"
-        >{errors.country}</span
-      >
-    {/if}
-  </div>
-
-  <!-- 🛠️ Champ Service -->
-  <div class="form-group" class:error={errors.service}>
-    <label for="service">
-      Service souhaité <span class="required">*</span>
-    </label>
-    <select
-      id="service"
-      bind:value={formData.service}
-      on:blur={() => handleBlur('service')}
-      on:change={() => handleInput('service')}
-      required
-      aria-required="true"
-      aria-invalid={errors.service ? 'true' : 'false'}
-      aria-describedby={errors.service ? 'service-error' : undefined}
-      disabled={isSubmitting}
-    >
-      <option value="">Sélectionnez un service…</option>
-      <optgroup label="Starter Kits">
-        {#each SERVICES_CONFIG['starter-kits'] as service}
-          <option value={service}>{service}</option>
-        {/each}
-      </optgroup>
-      <optgroup label="Solutions IA">
-        {#each SERVICES_CONFIG.ia as service}
-          <option value={service}>{service}</option>
-        {/each}
-      </optgroup>
-      <optgroup label="Consulting & Coaching">
-        {#each SERVICES_CONFIG.consulting as service}
-          <option value={service}>{service}</option>
-        {/each}
-      </optgroup>
-    </select>
-    {#if errors.service}
-      <span class="error-message" id="service-error" role="alert"
-        >{errors.service}</span
-      >
-    {/if}
-  </div>
-
+  
   <!-- 💬 Champ Message -->
   <div class="form-group full" class:error={errors.message}>
     <label for="message">
@@ -397,7 +311,6 @@
   }
 
   input,
-  select,
   textarea {
     padding: 0.8rem;
     border: 1px solid var(--color-border);
@@ -410,7 +323,6 @@
   }
 
   input:focus,
-  select:focus,
   textarea:focus {
     outline: none;
     border-color: var(--color-primary);
@@ -418,15 +330,13 @@
   }
 
   input:disabled,
-  select:disabled,
   textarea:disabled {
     opacity: 0.6;
     cursor: not-allowed;
   }
 
   .form-group.error input,
-  .form-group.error textarea,
-  .form-group.error select {
+  .form-group.error textarea {
     border-color: var(--color-danger);
     background-color: var(--color-danger-light);
   }

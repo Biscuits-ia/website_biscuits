@@ -135,7 +135,6 @@
   novalidate
   aria-label="Formulaire de contact"
 >
-  <!-- ✅ Message de succès -->
   {#if submitSuccess}
     <div class="alert alert-success" role="status" aria-live="polite">
       <svg class="alert-icon" viewBox="0 0 24 24" aria-hidden="true">
@@ -146,11 +145,10 @@
           fill="none"
         />
       </svg>
-      <span>Message envoyé avec succès ! Nous vous répondrons sous 48h.</span>
+      <span>Demande envoyée avec succès ! Nous vous répondrons sous 24-48h.</span>
     </div>
   {/if}
 
-  <!-- ❌ Message d'erreur -->
   {#if submitError}
     <div class="alert alert-error" role="alert" aria-live="assertive">
       <svg class="alert-icon" viewBox="0 0 24 24" aria-hidden="true">

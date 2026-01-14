@@ -27,7 +27,7 @@ const content = {
   ],
   cta: {
     texte: "Solliciter un audit technique",
-    subtexte: "Analyse de faisabilité et estimation d'impact sous 48h."
+    subtexte: "Analyse de faisabilité et estimation d'impact."
   }
 };
 ---
@@ -73,7 +73,7 @@ const content = {
 
       <section class="cta-box">
         <button class="cta-button">{content.cta.texte}</button>
-        <p><small>{content.cta.subtexte}</small></p>
+        <p class="subtext">{content.cta.subtexte}</p>
       </section>
 
     </main>
@@ -90,7 +90,6 @@ const content = {
         color: var(--color-text);
         font-family: system-ui, sans-serif;
       }
-
       h2 {
         padding: 0.6rem 0;
       }
@@ -111,6 +110,11 @@ const content = {
         max-width: 700px;
         margin: var(--spacing-md) auto;
         color: var(--color-text-light);
+      }
+
+      .subtext{
+        margin-top: 0.7rem;
+        font-size: 13px;
       }
 
       .grid {

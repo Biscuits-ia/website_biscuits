@@ -202,7 +202,6 @@
           fill="none"
         />
       </svg>
-      <span>Demande envoyée avec succès ! Nous vous répondrons sous 24-48h.</span>
     </div>
   {/if}
 

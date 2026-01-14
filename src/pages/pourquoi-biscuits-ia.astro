@@ -1,0 +1,163 @@
+---
+import Layout from "../layouts/Layout.astro"
+const content = {
+  hero: {
+    title: "L'ingénierie de l'IA au service de votre entreprise.",
+    subtitle: "Nous concevons des architectures d'automatisation sur-mesure pour rationaliser vos flux de travail et maximiser votre rentabilité."
+  },
+  problemes: [
+    "Fragmentation des processus métiers due à une accumulation de tâches manuelles chronophages.",
+    "Complexité excessive des outils standards, souvent inadaptés aux infrastructures existantes.",
+    "Manque de visibilité sur le retour sur investissement (ROI) des solutions d'intelligence artificielle."
+  ],
+  approche: [
+    "Analyse Systémique : Identification rigoureuse des leviers d'automatisation à forte valeur ajoutée.",
+    "Solutions Agnostiques : Intégration transparente avec vos outils actuels pour une continuité de service totale.",
+    "Approche ROIste : Priorisation des développements générant un gain de temps ou une réduction de coûts mesurables."
+  ],
+  processus: [
+    "Audit & Diagnostic : Analyse technique de vos processus et identification des sources de données.",
+    "Ingénierie & Développement : Conception et déploiement d'une solution personnalisée et sécurisée.",
+    "Transfert de Compétences : Mise en production et formation de vos équipes pour une autonomie complète."
+  ],
+  benefices: [
+    { titre: "Optimisation des ressources", desc: "Réallocation de votre capital humain vers des missions à haute valeur stratégique." },
+    { titre: "Fiabilisation des flux", desc: "Élimination des erreurs de saisie et traitement de données avec une précision constante." },
+    { titre: "Montée en charge", desc: "Capacité accrue à absorber de nouveaux volumes d'activité sans surcharge structurelle." }
+  ],
+  cta: {
+    texte: "Solliciter un audit technique",
+    subtexte: "Analyse de faisabilité et estimation d'impact sous 48h."
+  }
+};
+---
+
+  <Layout
+  title="Biscuits IA "
+  description="pourquoi choisir Biscuits IA pour vos solutions d'automatisation basées sur l'IA ?"
+>
+    
+    <main class="container">
+      
+      <section class="hero-section">
+        <h1>{content.hero.title}</h1>
+        <p class="subtitle">{content.hero.subtitle}</p>
+      </section>
+
+      <div class="grid">
+        <section class="zone-card">
+          <h2>Problèmes actuels</h2>
+          <ul>
+            {content.problemes.map(item => <li>{item}</li>)}
+          </ul>
+        </section>
+
+        <section class="zone-card">
+          <h2>Nous proposons</h2>
+          <ul>
+            {content.approche.map(item => <li>{item}</li>)}
+          </ul>
+        </section>
+      </div>
+
+      <section>
+        <h2>Ce que nous offrons</h2>
+      </section>
+
+      <section class="zone-card">
+        <h2>Le processus, étape par étape</h2>
+        <ol class="process-list">
+          {content.processus.map(step => <li><strong>{step}</strong></li>)}
+        </ol>
+      </section>
+
+      <section class="cta-box">
+        <button class="cta-button">{content.cta.texte}</button>
+        <p><small>{content.cta.subtexte}</small></p>
+      </section>
+
+    </main>
+
+  </Layout>
+  
+  <style scoped>
+      :root {
+        --container-max: var(--container-lg);
+      } 
+      
+      body {
+        background-color: var(--color-bg);
+        color: var(--color-text);
+        font-family: system-ui, sans-serif;
+      }
+
+      h2 {
+        padding: 0.6rem 0;
+      }
+
+      .container {
+        max-width: var(--container-xl);
+        margin: 0 auto;
+        padding: 0 var(--spacing-md);
+      }
+
+      .hero-section {
+        text-align: center;
+        padding: var(--spacing-3xl) 0;
+      }
+
+      .subtitle {
+        font-size: var(--font-size-xl);
+        max-width: 700px;
+        margin: var(--spacing-md) auto;
+        color: var(--color-text-light);
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: var(--spacing-xl);
+        margin: var(--spacing-2xl) 0;
+      }
+
+      .grid-3 {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: var(--spacing-lg);
+        margin: var(--spacing-xl) 0;
+      }
+      
+      .process-list {
+        padding-left: var(--spacing-xl);
+      }
+      
+      .process-list li {
+        margin-bottom: var(--spacing-sm);
+        font-size: var(--font-size-lg);
+      }
+
+      .cta-box {
+        text-align: center;
+        margin-top: var(--spacing-4xl);
+        padding-bottom: var(--spacing-4xl);
+      }
+
+      .feature-badge {
+        border: var(--brutal-border);
+        box-shadow: var(--shadow-md);
+      }
+
+      ul {
+        list-style: none;
+        padding: 0;
+      }
+
+      li {
+        margin-bottom: var(--spacing-sm);
+        padding-left: 0;
+      }
+
+      .zone-card, .feature-badge {
+        margin: 0;
+      }
+    </style>

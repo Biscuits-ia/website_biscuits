@@ -15,58 +15,56 @@ interface Service {
 
 const services: Service[] = [
   {
-    icon: "🤖",
-    title: "Assistants IA & RAG",
-    description: "Un assistant IA privé connecté à vos documents pour répondre avec précision à vos connaissances internes.",
-    features: [
-      "Connexion à vos documents (PDF, Notion, fichiers texte)",
-      "Indexation RAG sécurisée (données non réutilisées)",
-      "Modèles IA mutualisés (GPT-4o ou Claude 3.5)",
-      "Interface web prête à l'emploi",
-      "Maintenance & mises à jour incluses"
+    "icon": "🤖",
+    "title": "Assistants IA & RAG associatifs",
+    "description": "Un assistant IA privé connecté aux documents de votre association pour répondre avec précision aux connaissances internes et faciliter le travail des bénévoles.",
+    "features": [
+      "Connexion aux documents associatifs (PDF, Notion, fichiers texte)",
+      "Indexation RAG sécurisée (données confidentielles non partagées)",
+      "Modèles IA mutualisés adaptés aux associations (GPT-4o ou Claude 3.5)",
+      "Interface web simple et accessible",
+      "Maintenance et mises à jour incluses"
     ],
-    price: "20€ / mois",
-    badge: "Plus rentable"
+    "badge": "Efficacité collective"
   },
   {
-    icon: "⚙️",
-    title: "Écosystème MCP & Agents",
-    description: "Automatisez vos actions répétitives entre vos différents logiciels (SaaS).",
-    features: [
-      "Interconnexion de vos outils",
-      "Agents autonomes décisionnels",
-      "Maintenance & Logs temps réel",
-      "Économie de 10h+/semaine"
+    "icon": "⚙️",
+    "title": "Écosystème MCP & Agents IA",
+    "description": "Automatisez vos actions répétitives entre vos outils internes pour alléger le travail des bénévoles et équipes.",
+    "features": [
+      "Interconnexion des outils utilisés par l’association",
+      "Agents IA autonomes orientés tâches et décisions associatives",
+      "Maintenance et suivi en temps réel",
+      "Gain de temps estimé pour les équipes"
     ],
-    price: "1 200€",
-    badge: "Best-Seller"
+    "badge": "Productivité associative"
   },
   {
-    icon: "🚀",
-    title: "SaaS IA Ready-to-Launch",
-    description: "Architecture complète pour lancer votre propre service basé sur l'IA.",
-    features: [
-      "Gestion abonnements (Stripe)",
-      "Dashboard Analytics IA",
-      "Infrastructure scalable",
-      "Code source 100% propriétaire"
+    "icon": "🚀",
+    "title": "SaaS IA prêt à l’usage pour associations",
+    "description": "Architecture complète pour lancer un service basé sur l’IA au sein de votre association ou pour vos bénéficiaires.",
+    "features": [
+      "Gestion des accès et des membres",
+      "Tableaux de bord simples pour suivre l’usage",
+      "Infrastructure scalable et sécurisée",
+      "Code source documenté et adaptable"
     ],
-    price: "4 500€",
-    badge: "Expert"
+    "badge": "Innovation associative"
   },
   {
-    icon: "🧩",
-    title: "Infrastructure IA Custom",
-    description: "Solutions lourdes pour entreprises avec besoins spécifiques de performance.",
-    features: [
-      "Fine-tuning de modèles",
-      "Hébergement local / Privé",
-      "Support & Évolution continue",
-      "Audit de sécurité complet"
+    "icon": "🧩",
+    "title": "Infrastructure IA sur mesure",
+    "description": "Solutions avancées pour associations avec des besoins spécifiques de performance, sécurité et scalabilité.",
+    "features": [
+      "Fine-tuning de modèles pour usages associatifs",
+      "Hébergement sécurisé (cloud privé ou local)",
+      "Support et évolutions continues",
+      "Audit de sécurité et conformité"
     ],
-    price: "Sur Devis"
+    "badge": "Sur mesure"
   }
-];
+]
+;
 
 interface Stat {
   icon: string;
@@ -146,8 +144,10 @@ const stats: Stat[] = [
       <h2>Prêt à transformer<br/>votre activité ?</h2>
       <p>Discutons de votre projet et découvrez comment l'IA peut vous aider.</p>
       <ul class="cta-benefits">
+        <li data-clip-reveal>✓ Des profesionelles à votre écoute</li>
         <li data-clip-reveal>✓ Consultation technique offerte</li>
         <li data-clip-reveal>✓ Solutions sur mesure</li>
+        <li data-clip-reveal>✓ Devis gratuit</li>
       </ul>
     </div>
     <div class="cta-right" data-slide-right>

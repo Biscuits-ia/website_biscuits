@@ -1,7 +1,6 @@
 ---
 import Header from '@/components/Header.astro';
 import Footer from '@/components/Footer.astro';
-import ThemeInit from '@/components/ThemeInit.astro';
 import SEOHead from '@/components/SEO/SEOHead.astro';
 import SchemaOrg from '@/components/SEO/SchemaOrg.astro';
 import CookieConsent from '@/components/svelte/CookieConsent.svelte';
@@ -71,10 +70,7 @@ const isProd = import.meta.env.PROD;
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  
-  <ThemeInit />
-  
-  <!-- SEO Component -->
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <SEOHead 
     title={fullTitle}
     description={description}

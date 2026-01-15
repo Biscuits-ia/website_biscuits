@@ -1,5 +1,4 @@
 ---
-import ThemeToggle from '@/components/ThemeToggle.astro';
 ---
 
 <header class="site-header fixed top-0 left-0 right-0 z-[1000] bg-[var(--color-bg)] border-b border-[var(--color-border)] transition-all duration-300" data-header>
@@ -71,9 +70,12 @@ import ThemeToggle from '@/components/ThemeToggle.astro';
           </a>
         </li>
 
-        <!-- Theme Toggle -->
+        <!-- Auth -->
         <li class="nav-actions w-full lg:w-auto mt-6 lg:mt-0 pt-6 lg:pt-0 border-t border-[var(--color-border)] lg:border-t-0 flex items-center justify-center">
-          <ThemeToggle />
+          <a href="/login" class="cta-button" aria-label="login">Connexion</a>
+        </li>
+        <li class="nav-actions w-full lg:w-auto mt-6 lg:mt-0 pt-6 lg:pt-0 border-t border-[var(--color-border)] lg:border-t-0 flex items-center justify-center">
+          <a href="/register" class="cta-button" aria-label="login">Inscription</a>
         </li>
       </ul>
     </nav>

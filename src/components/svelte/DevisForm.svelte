@@ -223,10 +223,10 @@
     </div>
   {/if}
 
-  <!-- 📝 Champ Nom / Entreprise -->
+  <!-- 📝 Champ Nom / association -->
   <div class="form-group" class:error={errors.name}>
     <label for="name">
-      Nom / Entreprise <span class="required">*</span>
+      Nom / association <span class="required">*</span>
     </label>
     <input
       type="text"
@@ -234,7 +234,7 @@
       bind:value={formData.name}
       on:blur={() => handleBlur('name')}
       on:input={() => handleInput('name')}
-      placeholder="Votre nom ou entreprise"
+      placeholder="Votre nom ou association"
       required
       maxlength="100"
       autocomplete="name"

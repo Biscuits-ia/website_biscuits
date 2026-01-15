@@ -1,951 +1,558 @@
 ---
 import BaseLayout from '@layouts/Layout.astro';
 
-// Données des badges hero
 const heroBadges = [
-  { text: "Aucun frais caché", highlight: false },
-  { text: "Devis détaillé gratuit", highlight: false },
-  { text: "100% remote", highlight: false },
-  { text: "Étude offerte", highlight: false }
+  "100% bénévole",
+  "Projets collaboratifs",
+  "IA au service de tous",
+  "Participation libre"
 ];
 
-// Données des assistants IA
-const assistantsIA = [
+const programs = [
   {
-    title: "Étude & cadrage IA",
-    description: "Analyse du besoin, cas d'usage, faisabilité",
-    priceFrom: "450€",
-    avgPrice: null,
-    duration: "3-5 jours",
-    savings: null,
+    title: "Atelier Découverte IA",
+    description: "Initiation aux outils IA et utilisation responsable",
+    participation: "Gratuit",
+    duration: "2h",
     featured: false
   },
   {
-    title: "Assistant IA simple",
-    description: "FAQ, support, agent interne",
-    priceFrom: "2 400€",
-    avgPrice: "2 900€",
-    duration: "4-7 jours",
-    savings: "~10h/semaine",
+    title: "Atelier Avancé IA",
+    description: "Création d'assistants IA simples et workflows automatisés",
+    participation: "Participation libre (suggestion: 20€)",
+    duration: "4h",
     featured: false
   },
   {
-    title: "Assistant IA avancé",
-    description: "Multi-sources, logique métier, API",
-    priceFrom: "6 000€",
-    avgPrice: "8 500€",
-    duration: "2-3 semaines",
-    savings: "~20h/semaine",
-    featured: false
+    title: "Projet Collaboratif IA",
+    description: "Participez à un projet associatif open-source IA",
+    participation: "Adhésion annuelle: 50€",
+    duration: "Variable",
+    featured: true
   }
 ];
 
-// Données des packages d'automatisation
-const automationPackages = [
-  {
-    title: "Audit & MVP Stratégique",
-    price: "1 450€", 
-    period: "HT / projet",
-    features: [
-      "Diagnostic complet des flux opérationnels",
-      "Architecture d'automatisation ciblée (Quick Win)",
-      "Intégration d'IA générative sécurisée",
-      "Tests de fiabilité et validation de données",
-      "Rapport de ROI prévisionnel"
-    ],
-    featured: false,
-    cta: "Lancer mon audit"
-  },
-  {
-    title: "Système Agentique Expert",
-    price: "3 800€", 
-    period: "HT / projet",
-    features: [
-      "Workflows multi-agents auto-correcteurs",
-      "Interconnexion SI critique (CRM, ERP, API)",
-      "RAG Avancé (Base de connaissance privée)",
-      "Monitoring temps réel et logs d'exécution",
-      "Protocoles de sécurité et conformité RGPD",
-      "Support expert & Optimisation (30 jours)"
-    ],
-    featured: true,
-    badge: "Expertise Recommandée",
-    cta: "Déployer la solution"
-  },
-  {
-    title: "Infrastructure IA Sur-Mesure",
-    price: "À partir de 8 500€",
-    period: "HT",
-    features: [
-      "Solution d'automatisation industrielle",
-      "Fine-tuning de modèles propriétaires",
-      "Déploiement sur infrastructure souveraine",
-      "Gouvernance des données et sécurité bancaire",
-      "Accompagnement au changement et formation",
-      "Maintenance évolutive (SLA garanti)"
-    ],
-    featured: false,
-    cta: "Consultation Expert"
-  }
-];
-
-// Timeline du processus
 const processSteps = [
-  {
-    number: "1",
-    title: "Échange initial",
-    description: "Analyse de vos besoins",
-    duration: "48h"
+  { 
+    number: "1", 
+    title: "Rejoindre l'association", 
+    description: "Devenir membre ou bénévole", 
+    duration: "1 min" 
   },
-  {
-    number: "2",
-    title: "Devis personnalisé",
-    description: "Proposition détaillée"
+  { 
+    number: "2", 
+    title: "Découvrir nos projets", 
+    description: "Ateliers, projets collaboratifs, missions bénévoles" 
   },
-  {
-    number: "3",
-    title: "Développement",
-    description: "Création de votre solution",
-    duration: "Variable"
+  { 
+    number: "3", 
+    title: "Participer activement", 
+    description: "Contribuer selon vos compétences", 
+    duration: "Variable" 
   },
-  {
-    number: "4",
-    title: "Livraison & formation",
-    description: "Mise en production",
-    duration: "1 jour"
+  { 
+    number: "4", 
+    title: "Partager et diffuser", 
+    description: "Aider à l'impact social et éducatif" 
   }
 ];
 
-// FAQ
 const faqItems = [
   {
-    question: "Comment se déroule un projet Biscuits IA ?",
-    answer: "Chaque projet commence par une phase de cadrage gratuite afin de définir précisément vos besoins et la solution IA la plus adaptée. Ensuite, nous établissons un devis détaillé et planifions les étapes de développement."
+    question: "Comment rejoindre l'association ?",
+    answer: "Vous pouvez remplir le formulaire d'adhésion en ligne, participer à un atelier gratuit ou proposer vos compétences comme bénévole."
   },
   {
-    question: "Quelle est la différence entre assistant simple et avancé ?",
-    answer: "Un assistant simple traite des tâches basiques (FAQ, support niveau 1) avec des sources limitées. Un assistant avancé intègre plusieurs sources de données, des APIs externes, et une logique métier complexe pour des cas d'usage plus sophistiqués."
+    question: "Faut-il payer pour participer aux projets ?",
+    answer: "La participation est libre et adaptée à chacun. Certaines activités sont gratuites, d'autres suggèrent une contribution symbolique pour soutenir l'association."
   },
   {
-    question: "Les tarifs sont-ils fixes ?",
-    answer: "Les tarifs affichés sont indicatifs et représentent des points de départ. Un devis personnalisé est établi en fonction de la complexité, des objectifs du projet et des intégrations nécessaires."
+    question: "Je n'ai pas de compétences techniques, puis-je participer ?",
+    answer: "Absolument ! Les projets associatifs incluent aussi des missions de coordination, communication, documentation, et test utilisateur."
   },
   {
-    question: "Travaillez-vous uniquement à distance ?",
-    answer: "Oui, tous les projets sont réalisés à distance, ce qui permet plus de flexibilité, de réactivité et des tarifs optimisés. Nous utilisons des outils collaboratifs modernes pour assurer une communication fluide."
+    question: "Comment se déroule un atelier IA ?",
+    answer: "Chaque atelier commence par une introduction pratique, suivie d'exercices guidés, et se termine par un partage des réalisations et discussions."
   },
   {
-    question: "Proposez-vous un accompagnement après livraison ?",
-    answer: "Oui, un accompagnement et des évolutions peuvent être proposés via des forfaits ou abonnements adaptés. Nous restons disponibles pour faire évoluer votre solution selon vos besoins."
-  },
-  {
-    question: "Mes données sont-elles en sécurité ?",
-    answer: "Absolument. La confidentialité et la sécurité des données sont une priorité dans tous les projets Biscuits IA. Nous pouvons signer un NDA et suivons les meilleures pratiques en matière de sécurité."
-  },
-  {
-    question: "Quel est le délai pour recevoir un devis ?",
-    answer: "Vous recevrez une première réponse et un devis détaillé, après notre échange initial pour comprendre précisément vos besoins."
-  },
-  {
-    question: "Puis-je payer en plusieurs fois ?",
-    answer: "Oui, pour les projets de plus de 3 000€, nous proposons un paiement échelonné en fonction des jalons du projet (généralement 30% au démarrage, 40% à mi-parcours, 30% à la livraison)."
+    question: "Puis-je proposer un projet ou une idée ?",
+    answer: "Oui, l'association est ouverte aux propositions. Chaque idée est discutée collectivement pour évaluer son impact et sa faisabilité."
   }
 ];
 
-// Témoignages
 const testimonials = [
-  {
-    text: "Grâce à l'assistant IA, nous économisons 15h par semaine sur le traitement des demandes clients.",
-    author: "Marie L.",
-    company: "E-commerce",
-    savings: "15h/semaine"
+  { 
+    text: "J'ai pu découvrir l'IA et contribuer à un projet réel même sans être développeur.", 
+    author: "Claire M.", 
+    role: "Bénévole" 
   },
-  {
-    text: "L'automatisation mise en place a réduit nos tâches répétitives de 70%. ROI atteint en 2 mois.",
-    author: "Thomas B.",
-    company: "SaaS",
-    savings: "ROI en 2 mois"
+  { 
+    text: "Participation flexible, équipe accueillante, impact concret sur des projets éducatifs.", 
+    author: "Alex D.", 
+    role: "Membre actif" 
   },
-  {
-    text: "Un accompagnement pro et une solution qui répond parfaitement à nos besoins métier.",
-    author: "Sophie D.",
-    company: "Cabinet conseil",
-    savings: "Solution sur-mesure"
+  { 
+    text: "Grâce à Biscuits IA, nous avons mis en place un assistant IA open-source pour les associations.", 
+    author: "Sophie L.", 
+    role: "Contributrice" 
   }
 ];
 ---
 
 <BaseLayout
-  title="Tarifs & Prix | Biscuits IA"
-  description="Tarification claire et transparente pour vos projets IA et automatisations. Étude et devis gratuits."
+  title="Participation & Projets | Biscuits IA"
+  description="Découvrez nos ateliers IA, projets collaboratifs et modes de participation. Rejoignez l'association gratuitement ou via participation libre."
 >
-  <section class="tarifs-hero">
+  <!-- Hero -->
+  <section class="hero">
     <div class="container">
-      <h1>Tarifs & Prix</h1>
-      <p class="hero-lead">
-        Tarification claire pour vos projets IA.
-      </p>
+      <h1>Rejoignez Biscuits IA</h1>
+      <p class="hero-lead">Des projets collaboratifs IA au service de la communauté, accessibles à tous.</p>
       <div class="hero-badges">
         {heroBadges.map(badge => (
-          <span class={`badge ${badge.highlight ? 'highlight' : ''}`}>
-            {badge.text}
-          </span>
+          <span class="badge">{badge}</span>
         ))}
-      </div>
-      
-      <div class="value-prop">
-        <p>💡 Investissez dans l'IA, économisez jusqu'à <strong>20h/semaine</strong></p>
       </div>
     </div>
   </section>
 
-  <!-- Navigation rapide -->
-  <nav class="quick-nav">
+  <!-- Programmes / Ateliers -->
+  <section id="programs" class="programs">
     <div class="container">
-      <a href="#assistants" class="quick-link">Assistants IA</a>
-      <a href="#automatisation" class="quick-link">Automatisation</a>
-      <a href="#processus" class="quick-link">Notre processus</a>
-      <a href="#faq" class="quick-link">FAQ</a>
-      <a href="#devis" class="quick-link cta">Devis gratuit</a>
+      <h2>Ateliers & Projets collaboratifs</h2>
+      <p class="section-intro">Choisissez votre niveau de participation et contribuez à l'IA citoyenne.</p>
+
+      <div class="program-grid">
+        {programs.map(program => (
+          <article class={`program-card ${program.featured ? 'featured' : ''}`}>
+            <h3>{program.title}</h3>
+            <p>{program.description}</p>
+            <div class="program-details">
+              <span class="program-duration" aria-label="Durée">{program.duration}</span>
+              <span class="program-participation">{program.participation}</span>
+            </div>
+            <a href="#join" class="btn-program">
+              {program.featured ? "Rejoindre maintenant" : "Participer"}
+            </a>
+          </article>
+        ))}
+      </div>
     </div>
-  </nav>
+  </section>
 
-  <section class="tarifs-main">
+  <!-- Processus -->
+  <section id="processus" class="process-section">
     <div class="container">
-      
-      <!-- Section Assistants IA -->
-      <div id="assistants" class="pricing-section">
-        <div class="pricing-header">
-          <h2>Assistants IA personnalisés</h2>
-          <p>Conception et déploiement d'agents IA adaptés à vos besoins métiers</p>
-        </div>
+      <h2>Comment ça marche ?</h2>
+      <p class="section-intro">Suivez ces étapes simples pour devenir actif dans nos projets.</p>
 
-        <div class="pricing-table">
-          <div class="pricing-row header">
-            <div class="col-service">Prestation</div>
-            <div class="col-price">Tarif HT</div>
-            <div class="col-duration">Délai</div>
-            <div class="col-action"></div>
+      <div class="process-timeline">
+        {processSteps.map((step) => (
+          <div class="process-step">
+            <div class="step-number" aria-label={`Étape ${step.number}`}>{step.number}</div>
+            <div class="step-content">
+              <h3>{step.title}</h3>
+              <p>{step.description}</p>
+              {step.duration && <span class="step-duration">{step.duration}</span>}
+            </div>
           </div>
-
-          {assistantsIA.map(service => (
-            <div class={`pricing-row ${service.featured ? 'featured' : ''}`}>
-              <div class="col-service">
-                <strong>{service.title}</strong>
-                <small>{service.description}</small>
-                {service.savings && (
-                  <div class="savings-badge">Économisez {service.savings}</div>
-                )}
-              </div>
-              <div class="col-price">
-                <span class="price-from">À partir de</span>
-                <span class={`price-amount ${service.featured ? 'highlight' : ''}`}>
-                  {service.priceFrom}
-                </span>
-                {service.avgPrice && (
-                  <small class="price-note">Prix moyen: {service.avgPrice}</small>
-                )}
-              </div>
-              <div class="col-duration">{service.duration}</div>
-              <div class="col-action">
-                <a href="/devis" class={`btn-small ${service.featured ? 'primary' : ''}`}>
-                  Demander
-                </a>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <!-- Section Automatisation -->
-      <div id="automatisation" class="pricing-section">
-        <div class="pricing-header">
-          <h2>Automatisation de workflows</h2>
-          <p>Gagnez du temps en automatisant vos processus avec l'IA</p>
-        </div>
-
-        <div class="pricing-packages">
-          {automationPackages.map(pkg => (
-            <div class={`package-card ${pkg.featured ? 'featured' : ''}`}>
-              {pkg.badge && <div class="package-badge">{pkg.badge}</div>}
-              <h3>{pkg.title}</h3>
-              <div class="package-price">
-                <span class="amount">{pkg.price}</span>
-                {pkg.period && <span class="period">{pkg.period}</span>}
-              </div>
-              <ul>
-                {pkg.features.map(feature => (
-                  <li>{feature}</li>
-                ))}
-              </ul>
-              <a href="/devis" class={`btn-package ${pkg.featured ? 'primary' : ''}`}>
-                {pkg.cta}
-              </a>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <!-- Timeline du processus -->
-      <div id="processus" class="process-section">
-        <div class="pricing-header">
-          <h2>Comment ça marche ?</h2>
-          <p>Un processus simple et transparent, de la prise de contact à la livraison</p>
-        </div>
-
-        <div class="process-timeline">
-          {processSteps.map((step, index) => (
-            <div class="process-step">
-              <div class="step-number">{step.number}</div>
-              <div class="step-content">
-                <h3>{step.title}</h3>
-                <p>{step.description}</p>
-                <span class="step-duration">{step.duration}</span>
-              </div>
-              {index < processSteps.length - 1 && <div class="step-connector"></div>}
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <!-- Témoignages -->
-      <div class="testimonials-section">
-        <div class="pricing-header">
-          <h2>Ils ont déjà économisé du temps</h2>
-          <p>Résultats concrets de nos clients</p>
-        </div>
-
-        <div class="testimonials-grid">
-          {testimonials.map(testimonial => (
-            <div class="testimonial-card">
-              <div class="testimonial-content">
-                <p>"{testimonial.text}"</p>
-              </div>
-              <div class="testimonial-author">
-                <strong>{testimonial.author}</strong>
-                <span>{testimonial.company}</span>
-              </div>
-              <div class="testimonial-metric">{testimonial.savings}</div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <!-- FAQ -->
-      <div id="faq" class="tarifs-faq">
-        <h2>Questions fréquentes</h2>
-        
-        {faqItems.map(item => (
-          <details class="faq-item">
-            <summary>{item.question}</summary>
-            <p>{item.answer}</p>
-          </details>
         ))}
       </div>
-
     </div>
   </section>
 
-  <!-- CTA Final -->
-  <section id="devis" class="tarifs-cta">
+  <!-- Témoignages -->
+  <section class="testimonials">
     <div class="container">
-      <h2>Prêt à démarrer votre projet ?</h2>
-      <p>Demandez un devis personnalisé, gratuit et sans engagement.</p>
-      <div class="cta-benefits">
-        <span>✓ Étude gratuite</span>
-        <span>✓ Sans engagement</span>
+      <h2>Ils participent et partagent</h2>
+      <div class="testimonials-grid">
+        {testimonials.map(t => (
+          <blockquote class="testimonial-card">
+            <p>"{t.text}"</p>
+            <footer>
+              <strong>{t.author}</strong>
+              <span>{t.role}</span>
+            </footer>
+          </blockquote>
+        ))}
       </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section id="faq" class="faq">
+    <div class="container">
+      <h2>Questions fréquentes</h2>
+      {faqItems.map(item => (
+        <details class="faq-item">
+          <summary>{item.question}</summary>
+          <p>{item.answer}</p>
+        </details>
+      ))}
+    </div>
+  </section>
+
+  <!-- CTA Rejoindre -->
+  <section id="join" class="cta-join">
+    <div class="container">
+      <h2>Prêt à contribuer ?</h2>
+      <p class="section-intro">Rejoignez Biscuits IA gratuitement ou selon votre participation libre.</p>
       <div class="cta-actions">
-        <a href="/devis" class="btn-primary">Demander un devis</a>
-        <a href="mailto:contact@biscuits-ia.com" target="_blank" class="btn-secondary">Nous contacter</a>
+        <a href="/adhesion" class="btn-primary">Rejoindre l'association</a>
+        <a href="mailto:contact@biscuits-ia.com" class="btn-secondary">Nous contacter</a>
       </div>
     </div>
   </section>
 </BaseLayout>
 
 <style>
-  /* Container */
-  .container {
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 0 var(--spacing-lg);
-  }
-
-  /* Hero Section */
-  .tarifs-hero {
-    padding: 6rem 0 4rem;
+  /* ========================================
+     HERO SECTION
+     ======================================== */
+  .hero {
     text-align: center;
+    padding: var(--spacing-4xl) 0 var(--spacing-3xl);
     background: var(--color-bg);
   }
 
-  .tarifs-hero h1 {
-    font-size: clamp(2.5rem, 6vw, 4rem);
-    font-weight: 900;
-    color: var(--color-text);
+  .hero h1 { 
+    font-size: clamp(var(--font-size-3xl), 6vw, var(--font-size-5xl)); 
+    font-weight: var(--font-weight-extrabold);
     margin-bottom: var(--spacing-md);
+    color: var(--color-text);
   }
 
-  .hero-lead {
-    font-size: clamp(1.125rem, 2.5vw, 1.375rem);
+  .hero-lead { 
+    font-size: clamp(var(--font-size-lg), 2.5vw, var(--font-size-xl)); 
+    margin-bottom: var(--spacing-xl);
     color: var(--color-text-light);
-    margin-bottom: var(--spacing-xl);
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
   }
 
-  .hero-lead strong {
-    color: var(--color-primary);
-  }
-
-  .hero-badges {
-    display: flex;
+  .hero-badges { 
+    display: flex; 
     gap: var(--spacing-md);
-    justify-content: center;
-    flex-wrap: wrap;
-    margin-bottom: var(--spacing-xl);
+    justify-content: center; 
+    flex-wrap: wrap; 
   }
 
-  .badge {
-    background: var(--color-bg-alt);
+  .badge { 
+    background: var(--color-bg-elevated);
+    border: var(--brutal-border-thin);
+    box-shadow: var(--shadow-sm);
     padding: var(--spacing-sm) var(--spacing-lg);
-    border-radius: var(--radius-full);
-    font-size: 0.95rem;
-    font-weight: 600;
-    border: 2px solid var(--color-border);
-    transition: all var(--transition-base);
-  }
-
-  .badge.highlight {
-    background: var(--color-primary);
-    color: var(--color-bg);
-    border-color: var(--color-primary);
-    animation: pulse 2s infinite;
-  }
-
-  @keyframes pulse {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.05); }
+    font-weight: var(--font-weight-bold);
+    font-size: var(--font-size-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all var(--transition-fast);
   }
 
   .badge:hover {
-    background: var(--color-bg-elevated);
-    border-color: var(--color-primary);
-    transform: translateY(-2px);
+    transform: translate(-2px, -2px);
+    box-shadow: var(--shadow-md);
   }
-
-  .badge.highlight:hover {
-    background: var(--color-primary-dark);
-  }
-
-  .value-prop {
-    margin-top: var(--spacing-2xl);
-    padding: var(--spacing-lg);
-    background: var(--color-bg-alt);
-    border-radius: var(--radius-lg);
-    border-left: 4px solid var(--color-first);
-    display: inline-block;
-  }
-
-  .value-prop p {
-    margin: 0;
-    font-size: 1.1rem;
-    color: var(--color-text);
-  }
-
-  .value-prop strong {
-    color: var(--color-second);
-  }
-
-  /* Quick Navigation */
-  .quick-nav {
-    position: sticky;
-    top: 0;
-    background: var(--color-bg-elevated);
-    border-bottom: 2px solid var(--color-border);
-    padding: var(--spacing-md) 0;
-    z-index: 100;
-    backdrop-filter: blur(10px);
-  }
-
-  .quick-nav .container {
-    display: flex;
-    gap: var(--spacing-md);
-    justify-content: center;
-    flex-wrap: wrap;
-  }
-
-  .quick-link {
-    padding: var(--spacing-sm) var(--spacing-lg);
-    border-radius: var(--radius-lg);
-    text-decoration: none;
-    color: var(--color-text);
-    font-weight: 600;
-    transition: all var(--transition-base);
-    border: 2px solid transparent;
-  }
-
-  .quick-link:hover {
-    background: var(--color-bg-alt);
-    border-color: var(--color-border);
-  }
-
-  .quick-link.cta {
-    background: var(--color-primary);
-    color: var(--color-bg);
-  }
-
-  .quick-link.cta:hover {
-    background: var(--color-primary-dark);
-    transform: translateY(-2px);
-  }
-
-  /* Main Section */
-  .tarifs-main {
-    padding: 4rem 0;
+  
+  /* ========================================
+     PROGRAMMES SECTION
+     ======================================== */
+  .programs {
+    padding: var(--spacing-3xl) 0;
     background: var(--color-bg);
   }
 
-  .pricing-section {
-    margin-bottom: 6rem;
-  }
-
-  .pricing-header {
+  .programs h2 {
     text-align: center;
-    margin-bottom: 3rem;
-  }
-
-  .pricing-header h2 {
-    font-size: clamp(2rem, 4vw, 3rem);
-    font-weight: 900;
-    color: var(--color-text);
+    font-size: clamp(var(--font-size-3xl), 4vw, var(--font-size-4xl));
     margin-bottom: var(--spacing-md);
+    color: var(--color-text);
   }
 
-  .pricing-header p {
+  .section-intro {
+    text-align: center;
     color: var(--color-text-light);
-    font-size: 1.125rem;
+    margin-bottom: var(--spacing-2xl);
+    font-size: var(--font-size-lg);
   }
 
-  /* Pricing Table */
-  .pricing-table {
-    background: var(--color-bg-alt);
-    border-radius: var(--radius-2xl);
-    overflow: hidden;
-    border: 2px solid var(--color-border);
-    max-width: 1200px;
-    margin: 0 auto;
+  .program-grid { 
+    display: grid; 
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); 
+    gap: var(--spacing-xl);
   }
 
-  .pricing-row {
-    display: grid;
-    grid-template-columns: 2fr 1.2fr 0.8fr 0.8fr;
-    gap: var(--spacing-lg);
+  .program-card { 
+    background: var(--color-bg-elevated);
     padding: var(--spacing-xl);
-    border-bottom: 1px solid var(--color-border);
-    align-items: center;
-    transition: all var(--transition-base);
+    border: var(--brutal-border);
+    box-shadow: var(--shadow-lg);
+    display: flex; 
+    flex-direction: column; 
+    gap: var(--spacing-md);
+    transition: all var(--transition-fast);
   }
 
-  .pricing-row:last-child {
-    border-bottom: none;
-  }
-
-  .pricing-row:hover:not(.header) {
-    background: var(--color-bg-elevated);
-  }
-
-  .pricing-row.featured {
-    background: var(--color-bg-elevated);
-  }
-
-  .pricing-row.header {
-    background: var(--color-bg-elevated);
-    font-weight: 700;
-    color: var(--color-text);
-  }
-
-  .col-service strong {
-    display: block;
-    margin-bottom: var(--spacing-sm);
-    color: var(--color-text);
-    font-weight: 700;
-    font-size: 1.1rem;
-  }
-
-  .col-service small {
-    color: var(--color-text-light);
-    font-size: 0.9rem;
-    display: block;
-    line-height: 1.5;
-  }
-
-  .savings-badge {
-    display: inline-block;
-    margin-top: var(--spacing-sm);
-    padding: var(--spacing-xs) var(--spacing-md);
-    background: var(--color-third);
-    color: var(--color-gray-900);
-    border-radius: var(--radius-full);
-    font-size: 0.85rem;
-    font-weight: 700;
-  }
-
-  .col-price {
-    text-align: center;
-  }
-
-  .price-from {
-    display: block;
-    font-size: 0.75rem;
-    color: var(--color-text-light);
-    margin-bottom: var(--spacing-xs);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-
-  .price-amount {
-    display: block;
-    font-size: 1.75rem;
-    font-weight: 800;
-    color: var(--color-second);
-  }
-
-  .price-amount.highlight {
-    color: var(--color-first);
-    font-size: 2rem;
-  }
-
-  .price-note {
-    display: block;
-    margin-top: var(--spacing-xs);
-    font-size: 0.8rem;
-    color: var(--color-text-light);
-  }
-
-  .col-duration {
-    text-align: center;
-    color: var(--color-text-light);
-    font-weight: 600;
-  }
-
-  .col-action {
-    text-align: center;
-  }
-
-  .btn-small {
-    display: inline-block;
-    padding: var(--spacing-sm) var(--spacing-lg);
-    background: var(--color-bg);
-    color: var(--color-text);
-    border: 2px solid var(--color-border);
-    border-radius: var(--radius-lg);
-    text-decoration: none;
-    font-weight: 600;
-    font-size: 0.9rem;
-    transition: all var(--transition-base);
-  }
-
-  .btn-small:hover {
-    background: var(--color-bg-elevated);
-    border-color: var(--color-primary);
-    transform: translateY(-2px);
-  }
-
-  .btn-small.primary {
-    background: var(--color-primary);
-    color: var(--color-bg);
-    border-color: var(--color-primary);
-  }
-
-  .btn-small.primary:hover {
-    background: var(--color-primary-dark);
-  }
-
-  /* Packages */
-  .pricing-packages {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: var(--spacing-2xl);
-    max-width: 1200px;
-    margin: 0 auto;
-  }
-
-  .package-card {
-    background: var(--color-bg-alt);
-    padding: var(--spacing-3xl) var(--spacing-2xl);
-    border-radius: var(--radius-2xl);
-    border: 2px solid var(--color-border);
-    position: relative;
-    transition: all var(--transition-base);
-    display: flex;
-    flex-direction: column;
-  }
-
-  .package-card:hover {
-    transform: translateY(-5px);
-    border-color: var(--color-primary);
+  .program-card:hover {
+    transform: translate(var(--brutal-hover-translate), var(--brutal-hover-translate));
     box-shadow: var(--shadow-xl);
   }
 
-  .package-card.featured {
-    border-color: var(--color-third);
-    border-width: 3px;
+  .program-card.featured { 
+    background: var(--color-accent-honey);
+    border-color: var(--color-border);
   }
 
-  .package-badge {
-    position: absolute;
-    top: -15px;
-    right: 2rem;
-    background: var(--color-third);
+  .program-card h3 {
+    font-size: var(--font-size-2xl);
+    margin: 0;
+    font-weight: var(--font-weight-extrabold);
+    text-transform: uppercase;
+    letter-spacing: -0.02em;
+  }
+
+  .program-card > p {
+    color: var(--color-text-light);
+    flex-grow: 1;
+    line-height: 1.6;
+  }
+
+  .program-details { 
+    display: flex; 
+    flex-direction: column;
+    gap: var(--spacing-xs);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text);
+    font-size: var(--font-size-sm);
+    padding: var(--spacing-md);
+    background: var(--color-bg);
+    border: var(--brutal-border-thin);
+  }
+
+  .program-duration::before {
+    content: "⏱️ ";
+  }
+
+  .program-participation::before {
+    content: "💰 ";
+  }
+
+  .btn-program { 
+    margin-top: auto; 
+    padding: var(--spacing-md) var(--spacing-xl);
+    background: var(--color-primary);
     color: var(--color-bg);
-    padding: var(--spacing-sm) var(--spacing-lg);
-    border-radius: var(--radius-full);
-    font-size: 0.85rem;
-    font-weight: 700;
+    border: var(--brutal-border);
+    box-shadow: var(--shadow-md);
+    text-decoration: none; 
+    text-align: center;
+    font-weight: var(--font-weight-extrabold);
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    transition: all var(--transition-fast);
   }
 
-  .package-card h3 {
-    font-size: 1.75rem;
+  .btn-program:hover {
+    transform: translate(-3px, -3px);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .btn-program:active {
+    transform: translate(2px, 2px);
+    box-shadow: var(--shadow-sm);
+  }
+
+  /* ========================================
+     PROCESSUS SECTION
+     ======================================== */
+  .process-section { 
+    padding: var(--spacing-3xl) 0;
     text-align: center;
-    margin-bottom: var(--spacing-xl);
-    color: var(--color-text);
-    font-weight: 800;
+    background: var(--color-bg-alt);
+    border-top: var(--brutal-border-thick);
+    border-bottom: var(--brutal-border-thick);
   }
 
-  .package-price {
-    text-align: center;
-    margin-bottom: var(--spacing-2xl);
-    padding-bottom: var(--spacing-2xl);
-    border-bottom: 2px solid var(--color-border);
+  .process-section h2 {
+    font-size: clamp(var(--font-size-3xl), 4vw, var(--font-size-4xl));
+    margin-bottom: var(--spacing-md);
   }
 
-  .package-price .amount {
-    display: block;
-    font-size: 3rem;
-    font-weight: 900;
-    color: var(--color-second);
-    margin-bottom: var(--spacing-sm);
-  }
-
-  .package-price .period {
-    font-size: 0.9rem;
-    color: var(--color-text-light);
-    font-weight: 600;
-  }
-
-  .package-card ul {
-    list-style: none;
-    padding: 0;
-    margin-bottom: var(--spacing-2xl);
-    flex-grow: 1;
-  }
-
-  .package-card li {
-    padding: var(--spacing-sm) 0 var(--spacing-sm) var(--spacing-xl);
-    line-height: 1.6;
-    color: var(--color-text);
-    position: relative;
-    font-weight: 500;
-  }
-
-  .package-card li::before {
-    content: '✓';
-    position: absolute;
-    left: 0;
-    color: var(--color-second);
-    font-weight: bold;
-    font-size: 1.2rem;
-  }
-
-  .btn-package {
-    display: block;
-    text-align: center;
-    padding: var(--spacing-md) var(--spacing-xl);
-    background: var(--color-bg);
-    color: var(--color-text);
-    border: 2px solid var(--color-border);
-    border-radius: var(--radius-lg);
-    text-decoration: none;
-    font-weight: 600;
-    transition: all var(--transition-base);
-    margin-top: auto;
-  }
-
-  .btn-package:hover {
-    background: var(--color-bg-elevated);
-    border-color: var(--color-primary);
-    transform: translateY(-2px);
-  }
-
-  .btn-package.primary {
-    background: var(--color-primary);
-    color: var(--color-bg);
-    border-color: var(--color-primary);
-  }
-
-  .btn-package.primary:hover {
-    background: var(--color-primary-dark);
-  }
-
-  /* Process Timeline */
-  .process-section {
-    margin-bottom: 6rem;
-  }
-
-  .process-timeline {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  .process-timeline { 
+    display: grid; 
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); 
     gap: var(--spacing-2xl);
-    max-width: 1200px;
-    margin: 0 auto;
+    margin-top: var(--spacing-2xl);
+  }
+
+  .process-step { 
     position: relative;
   }
 
-  .process-step {
-    text-align: center;
-    position: relative;
-  }
-
-  .step-number {
-    width: 60px;
-    height: 60px;
+  .step-number { 
+    width: 80px; 
+    height: 80px; 
     background: var(--color-primary);
     color: var(--color-bg);
-    border-radius: 50%;
+    border: var(--brutal-border);
+    box-shadow: var(--shadow-lg);
     display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.5rem;
-    font-weight: 900;
+    align-items: center; 
+    justify-content: center; 
+    font-weight: var(--font-weight-extrabold);
+    font-size: var(--font-size-3xl);
     margin: 0 auto var(--spacing-lg);
-    border: 4px solid var(--color-bg-alt);
+    transition: all var(--transition-fast);
   }
 
-  .step-content h3 {
-    font-size: 1.25rem;
-    font-weight: 700;
-    color: var(--color-text);
+  .process-step:hover .step-number {
+    transform: translate(-3px, -3px);
+    box-shadow: var(--shadow-xl);
+  }
+
+  .step-content h3 { 
+    font-weight: var(--font-weight-extrabold);
     margin-bottom: var(--spacing-sm);
+    font-size: var(--font-size-xl);
+    text-transform: uppercase;
   }
 
   .step-content p {
     color: var(--color-text-light);
-    margin-bottom: var(--spacing-md);
+    line-height: 1.6;
   }
 
   .step-duration {
     display: inline-block;
+    margin-top: var(--spacing-sm);
+    font-size: var(--font-size-sm);
+    color: var(--color-text);
+    font-weight: var(--font-weight-bold);
+    background: var(--color-bg-elevated);
     padding: var(--spacing-xs) var(--spacing-md);
-    background: var(--color-third);
-    color: var(--color-bg);
-    border-radius: var(--radius-full);
-    font-size: 0.85rem;
-    font-weight: 700;
+    border: var(--brutal-border-thin);
   }
 
-  /* Testimonials */
-  .testimonials-section {
-    margin-bottom: 6rem;
-  }
-
-  .testimonials-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: var(--spacing-xl);
-    max-width: 1200px;
-    margin: 0 auto;
-  }
-
-  .testimonial-card {
-    background: var(--color-bg-alt);
-    padding: var(--spacing-2xl);
-    border-radius: var(--radius-xl);
-    border: 2px solid var(--color-border);
-    border-left-width: 4px;
-    border-left-color: var(--color-primary);
-    transition: all var(--transition-base);
-  }
-
-  .testimonial-card:hover {
-    transform: translateY(-5px);
-    box-shadow: var(--shadow-lg);
-  }
-
-  .testimonial-content p {
-    font-style: italic;
-    color: var(--color-text);
-    line-height: 1.7;
-    margin-bottom: var(--spacing-lg);
-  }
-
-  .testimonial-author {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-xs);
-    margin-bottom: var(--spacing-md);
-  }
-
-  .testimonial-author strong {
-    color: var(--color-text);
-    font-weight: 700;
-  }
-
-  .testimonial-author span {
-    color: var(--color-text-light);
-    font-size: 0.9rem;
-  }
-
-  .testimonial-metric {
-    display: inline-block;
-    padding: var(--spacing-sm) var(--spacing-md);
-    background: var(--color-third);
-    color: var(--color-bg);
-    border-radius: var(--radius-full);
-    font-size: 0.85rem;
-    font-weight: 700;
-  }
-
-  /* FAQ */
-  .tarifs-faq {
-    max-width: 900px;
-    margin: 4rem auto 0;
-  }
-
-  .tarifs-faq h2 {
+  /* ========================================
+     TÉMOIGNAGES SECTION
+     ======================================== */
+  .testimonials { 
+    background: var(--color-bg);
+    padding: var(--spacing-3xl) 0;
     text-align: center;
-    font-size: clamp(2rem, 4vw, 3rem);
-    font-weight: 900;
-    color: var(--color-text);
+  }
+
+  .testimonials h2 {
+    font-size: clamp(var(--font-size-3xl), 4vw, var(--font-size-4xl));
     margin-bottom: var(--spacing-2xl);
   }
 
-  .faq-item {
-    background: var(--color-bg-alt);
+  .testimonials-grid { 
+    display: grid; 
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); 
+    gap: var(--spacing-xl);
+  }
+
+  .testimonial-card { 
+    background: var(--color-bg-elevated);
+    padding: var(--spacing-xl);
+    border: var(--brutal-border);
+    box-shadow: var(--shadow-lg);
+    margin: 0;
+    transition: all var(--transition-fast);
+    text-align: left;
+  }
+
+  .testimonial-card:hover {
+    transform: translate(-3px, -3px);
+    box-shadow: var(--shadow-xl);
+  }
+
+  .testimonial-card:nth-child(1) {
+    background: var(--color-accent-honey);
+  }
+
+  .testimonial-card:nth-child(2) {
+    background: var(--color-accent-caramel);
+  }
+
+  .testimonial-card:nth-child(3) {
+    background: var(--color-accent-vanilla);
+  }
+
+  .testimonial-card p {
+    font-style: italic;
+    color: var(--color-text);
     margin-bottom: var(--spacing-md);
-    border-radius: var(--radius-lg);
-    border: 2px solid var(--color-border);
-    border-left-width: 4px;
-    border-left-color: var(--color-primary);
-    overflow: hidden;
-    transition: all var(--transition-base);
+    font-size: var(--font-size-lg);
+    line-height: 1.6;
+  }
+
+  .testimonial-card footer {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+    padding-top: var(--spacing-md);
+    border-top: var(--brutal-border-thin);
+  }
+
+  .testimonial-card strong {
+    color: var(--color-text);
+    font-weight: var(--font-weight-extrabold);
+    text-transform: uppercase;
+    font-size: var(--font-size-sm);
+  }
+
+  .testimonial-card span {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-light);
+    font-weight: var(--font-weight-semibold);
+  }
+
+  /* ========================================
+     FAQ SECTION
+     ======================================== */
+  .faq { 
+    padding: var(--spacing-3xl) 0;
+    max-width: var(--container-lg);
+    margin: 0 auto;
+    background: var(--color-bg-alt);
+  }
+
+  .faq h2 {
+    text-align: center;
+    font-size: clamp(var(--font-size-3xl), 4vw, var(--font-size-4xl));
+    margin-bottom: var(--spacing-2xl);
+  }
+
+  .faq-item { 
+    margin-bottom: var(--spacing-lg);
+    padding: var(--spacing-lg);
+    border: var(--brutal-border);
+    box-shadow: var(--shadow-md);
+    background: var(--color-bg-elevated);
+    transition: all var(--transition-fast);
   }
 
   .faq-item:hover {
-    background: var(--color-bg-elevated);
-    transform: translateX(5px);
+    box-shadow: var(--shadow-lg);
   }
 
-  .faq-item summary {
-    padding: var(--spacing-lg);
-    cursor: pointer;
-    font-weight: 700;
-    font-size: 1.1rem;
+  .faq-item[open] {
+    background: var(--color-accent-cream);
+    transform: translate(-2px, -2px);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .faq-item summary { 
+    cursor: pointer; 
+    font-weight: var(--font-weight-bold);
+    padding: var(--spacing-sm);
     list-style: none;
-    transition: color var(--transition-fast);
-    color: var(--color-text);
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-md);
+    font-size: var(--font-size-lg);
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
   }
 
   .faq-item summary::-webkit-details-marker {
@@ -953,257 +560,138 @@ const testimonials = [
   }
 
   .faq-item summary::before {
-    content: '▶';
+    content: "▶";
     display: inline-block;
-    transition: transform var(--transition-base);
-    color: var(--color-primary);
-    flex-shrink: 0;
+    margin-right: var(--spacing-md);
+    transition: transform var(--transition-fast);
+    font-weight: var(--font-weight-extrabold);
   }
 
   .faq-item[open] summary::before {
     transform: rotate(90deg);
   }
 
-  .faq-item summary:hover {
-    color: var(--color-primary);
-  }
-
-  .faq-item summary:focus-visible {
-    outline: 3px solid var(--color-primary);
-    outline-offset: 3px;
-  }
-
   .faq-item p {
-    padding: 0 var(--spacing-lg) var(--spacing-lg);
-    color: var(--color-text-light);
-    line-height: 1.7;
-    font-weight: 500;
-  }
-
-  /* CTA Final */
-  .tarifs-cta {
-    padding: 4rem 0;
-    text-align: center;
-    background: var(--color-bg-alt);
-    margin-top: 4rem;
-  }
-
-  .tarifs-cta .container {
-    max-width: 900px;
-  }
-
-  .tarifs-cta h2 {
-    font-size: clamp(2rem, 4vw, 3rem);
-    font-weight: 900;
+    margin-top: var(--spacing-md);
+    padding-left: var(--spacing-2xl);
     color: var(--color-text);
-    margin-bottom: var(--spacing-md);
+    line-height: 1.7;
+    font-size: var(--font-size-base);
   }
 
-  .tarifs-cta p {
-    font-size: clamp(1rem, 2.5vw, 1.25rem);
-    color: var(--color-text-light);
-    margin-bottom: var(--spacing-xl);
-  }
-
-  .cta-benefits {
-    display: flex;
-    gap: var(--spacing-lg);
-    justify-content: center;
-    flex-wrap: wrap;
-    margin-bottom: var(--spacing-xl);
-  }
-
-  .cta-benefits span {
-    color: var(--color-second);
-    font-weight: 600;
-    font-size: 1.05rem;
-  }
-
-  .cta-actions {
-    display: flex;
-    gap: var(--spacing-md);
-    justify-content: center;
-    flex-wrap: wrap;
-  }
-
-  .btn-primary,
-  .btn-secondary {
-    display: inline-flex;
-    align-items: center;
-    padding: var(--spacing-md) var(--spacing-2xl);
-    border-radius: var(--radius-lg);
-    font-weight: 600;
-    font-size: 1.05rem;
-    text-decoration: none;
-    transition: all var(--transition-base);
-  }
-
-  .btn-primary {
+  /* ========================================
+     CTA JOIN SECTION
+     ======================================== */
+  .cta-join { 
     background: var(--color-primary);
+    padding: var(--spacing-3xl) 0;
+    text-align: center;
+    border-top: var(--brutal-border-thick);
+  }
+
+  .cta-join h2 {
+    font-size: clamp(var(--font-size-3xl), 4vw, var(--font-size-4xl));
+    margin-bottom: var(--spacing-md);
     color: var(--color-bg);
   }
 
-  .btn-primary:hover {
-    background: var(--color-primary-dark);
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-lg);
+  .cta-join .section-intro {
+    color: var(--color-bg);
+    opacity: 0.9;
   }
 
-  .btn-secondary {
+  .cta-actions { 
+    display: flex; 
+    gap: var(--spacing-lg);
+    justify-content: center; 
+    flex-wrap: wrap;
+  }
+
+  .btn-primary { 
     background: var(--color-bg);
     color: var(--color-text);
-    border: 2px solid var(--color-border);
+    padding: var(--spacing-lg) var(--spacing-2xl);
+    border: var(--brutal-border);
+    box-shadow: var(--shadow-lg);
+    text-decoration: none;
+    font-weight: var(--font-weight-extrabold);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all var(--transition-fast);
+  }
+
+  .btn-primary:hover {
+    transform: translate(-3px, -3px);
+    box-shadow: var(--shadow-xl);
+  }
+
+  .btn-primary:active {
+    transform: translate(3px, 3px);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .btn-secondary { 
+    background: transparent;
+    color: var(--color-bg);
+    border: var(--brutal-border);
+    border-color: var(--color-bg);
+    padding: var(--spacing-lg) var(--spacing-2xl);
+    box-shadow: var(--shadow-lg);
+    text-decoration: none;
+    font-weight: var(--font-weight-extrabold);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all var(--transition-fast);
   }
 
   .btn-secondary:hover {
-    background: var(--color-bg-elevated);
-    border-color: var(--color-primary);
+    background: var(--color-bg);
+    color: var(--color-text);
+    transform: translate(-3px, -3px);
+    box-shadow: var(--shadow-xl);
   }
 
-  .btn-primary:focus-visible,
-  .btn-secondary:focus-visible {
-    outline: 3px solid var(--color-primary);
-    outline-offset: 3px;
+  .btn-secondary:active {
+    transform: translate(3px, 3px);
+    box-shadow: var(--shadow-sm);
   }
 
-  /* Responsive */
+  /* ========================================
+     RESPONSIVE
+     ======================================== */
   @media (max-width: 768px) {
-    .container {
-      padding: 0 var(--spacing-md);
-    }
-
-    .tarifs-hero {
-      padding: 4rem 0 3rem;
-    }
-
-    .pricing-row {
-      grid-template-columns: 1fr;
-      text-align: center;
-      gap: var(--spacing-md);
-      padding: var(--spacing-lg);
-    }
-
-    .col-service {
-      text-align: center;
-    }
-
-    .col-service small {
-      display: block;
-      margin-top: var(--spacing-sm);
-    }
-
-    .savings-badge {
-      margin-top: var(--spacing-md);
-    }
-
-    .col-price {
-      margin: var(--spacing-md) 0;
-    }
-
-    .pricing-packages {
-      grid-template-columns: 1fr;
-      gap: var(--spacing-xl);
+    .hero {
+      padding: var(--spacing-2xl) 0 var(--spacing-xl);
     }
 
     .process-timeline {
       grid-template-columns: 1fr;
-      gap: var(--spacing-xl);
-    }
-
-    .testimonials-grid {
-      grid-template-columns: 1fr;
-      gap: var(--spacing-lg);
-    }
-
-    .cta-actions {
-      flex-direction: column;
-      align-items: stretch;
-      gap: var(--spacing-md);
-    }
-
-    .btn-primary,
-    .btn-secondary {
-      justify-content: center;
-      width: 100%;
-    }
-
-    .quick-nav {
-      position: relative;
     }
 
     .quick-nav .container {
       justify-content: flex-start;
       overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
       padding: 0 var(--spacing-md);
+      scrollbar-width: none;
     }
 
-    .quick-link {
-      white-space: nowrap;
-      flex-shrink: 0;
-    }
-
-    .hero-badges {
-      gap: var(--spacing-sm);
-    }
-
-    .badge {
-      font-size: 0.85rem;
-      padding: var(--spacing-xs) var(--spacing-md);
-    }
-
-    .value-prop {
-      margin-left: var(--spacing-md);
-      margin-right: var(--spacing-md);
-    }
-
-    .package-card {
-      padding: var(--spacing-2xl) var(--spacing-lg);
-    }
-  }
-
-  /* Accessibility */
-  @media (prefers-reduced-motion: reduce) {
-    .badge,
-    .pricing-row,
-    .package-card,
-    .faq-item,
-    .btn-primary,
-    .btn-secondary,
-    .btn-small,
-    .btn-package,
-    .testimonial-card,
-    .quick-link {
-      transition: none;
-    }
-    
-    .badge:hover,
-    .package-card:hover,
-    .faq-item:hover,
-    .btn-primary:hover,
-    .btn-small:hover,
-    .btn-package:hover,
-    .testimonial-card:hover,
-    .quick-link.cta:hover {
-      transform: none;
-    }
-
-    .badge.highlight {
-      animation: none;
-    }
-  }
-
-  /* Print styles */
-  @media print {
-    .quick-nav,
-    .tarifs-cta {
+    .quick-nav .container::-webkit-scrollbar {
       display: none;
     }
 
-    .pricing-row,
-    .package-card,
-    .faq-item {
-      break-inside: avoid;
+    .program-grid,
+    .testimonials-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .cta-actions {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .btn-primary,
+    .btn-secondary {
+      width: 100%;
     }
   }
 </style>

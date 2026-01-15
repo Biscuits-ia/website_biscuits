@@ -1,4 +1,5 @@
 ---
+// Typescript / frontmatter
 interface Service {
   id: string;
   title: string;
@@ -10,72 +11,73 @@ interface Service {
 
 const services: Service[] = [
   {
-    id: 'starterkits',
-    title: 'Starter Kits Premium',
-    description: 'Des projets prêts à l\'emploi, optimisés et conçus pour aller plus vite.',
-    icon: '🚀',
+    id: "starterkits",
+    title: "Starter Kits pour associations",
+    description: "Projets et outils prêts à l’emploi, conçus pour aider les associations à démarrer rapidement avec l’IA.",
+    icon: "🚀",
     details: [
-      'Starter Kit Next.js Pro',
-      'Starter Kit Astro Local Business',
-      'Starter Kit SaaS Supabase complet',
-      'Code structuré, optimisé et scalable'
+      "Starter Kit Next.js pour site associatif",
+      "Starter Kit Astro pour structure locale",
+      "Starter Kit SaaS Supabase adapté aux associations",
+      "Code structuré, documenté et facilement modifiable"
     ],
-    zone: 'AI intégrer'
+    zone: "AI intégrer"
   },
   {
-    id: 'solutions-ia',
-    title: 'Solutions IA Personnalisées',
-    description: 'Intégration d\'intelligence artificielle dans vos projets.',
-    icon: '🤖',
+    id: "solutions-ia",
+    title: "Solutions IA personnalisées",
+    description: "Intégration de l’IA dans vos projets associatifs pour automatiser et faciliter les tâches quotidiennes.",
+    icon: "🤖",
     details: [
-      'Automatisation de tâches',
-      'IA intégrée à votre app',
-      'Chatbots IA avancés',
-      'IA pour workflows développeurs'
+      "Automatisation de tâches répétitives",
+      "IA intégrée aux outils internes de l’association",
+      "Chatbots IA pour communication et accueil",
+      "IA pour workflows bénévoles et équipes"
     ],
-    zone: 'automatisation'
+    zone: "automatisation"
   },
   {
-    id: 'consulting-ia',
-    title: 'Consulting IA & Dev',
-    description: 'Accompagnement pour optimiser vos projets techniques.',
-    icon: '🧠',
+    id: "consulting-ia",
+    title: "Accompagnement IA & Développement",
+    description: "Support pour optimiser vos projets techniques et accompagner la montée en compétences des membres.",
+    icon: "🧠",
     details: [
-      'Choix de stack moderne',
-      'Optimisation de code',
-      'Architecture logicielle',
-      'Accompagnement projet IA'
+      "Choix de stack moderne adapté aux associations",
+      "Optimisation du code et bonnes pratiques",
+      "Architecture logicielle légère et scalable",
+      "Accompagnement projet IA et formation des équipes"
     ],
-    zone: 'Europe'
+    zone: "Europe"
   },
   {
-    id: 'automation',
-    title: 'Automatisation & Workflows',
-    description: 'Gagnez du temps avec des processus automatisés.',
-    icon: '⚙️',
+    id: "automation",
+    title: "Automatisation & Workflows",
+    description: "Gagnez du temps grâce à des processus automatisés adaptés aux associations.",
+    icon: "⚙️",
     details: [
-      'API automatisées',
-      'Générateurs IA',
-      'Scripts dev intelligents',
-      'Intégrations web & SaaS'
+      "API et intégrations automatisées pour outils internes",
+      "Générateurs IA pour documents et communications",
+      "Scripts intelligents pour les tâches répétitives",
+      "Connecteurs web & SaaS pour centraliser l’information"
     ],
-    zone: 'AI intégrer'
+    zone: "automatisation"
   }
 ];
+
 function getZoneBadge(zone: string) {
   switch (zone) {
     case 'AI intégrer':
-      return { text: 'AI intégrer', color: 'linear-gradient(90deg, oklch(60.201% 0.11053 58.986), oklch(37.619% 0.07877 44.64))' };
+      return { text: 'AI intégrer', color: 'linear-gradient(90deg, oklch(60% 0.11 58), oklch(38% 0.08 44))' };
     case 'Europe':
-      return { text: 'Europe', color: 'linear-gradient(0deg, oklch(60.201% 0.11053 58.986), oklch(37.619% 0.07877 44.64))' };
+      return { text: 'Europe', color: 'linear-gradient(0deg, oklch(60% 0.11 58), oklch(38% 0.08 44))' };
     case 'automatisation':
-      return { text: 'Automatisation', color: 'linear-gradient(190deg, oklch(60.201% 0.11053 58.986), oklch(37.619% 0.07877 44.64))' };
+      return { text: 'Automatisation', color: 'linear-gradient(190deg, oklch(60% 0.11 58), oklch(38% 0.08 44))' };
     default:
       return { text: zone, color: '#ccc' };
   }
 }
 ---
-
+<!-- HTML -->
 <div class="services-container">
   <div class="services-grid">
     {services.map((service) => {
@@ -116,154 +118,154 @@ function getZoneBadge(zone: string) {
 </div>
 
 <style>
-  .services-container {
-width: 100%;
+.services-container {
+  width: 100%;
 }
 .services-grid {
-display: grid;
-grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-gap: var(--spacing-xl);
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: var(--spacing-xl);
 }
 .service-card {
-background: var(--color-bg-alt);
-border: 1px solid var(--color-border);
-border-radius: var(--radius-xl);
-padding: var(--spacing-xl);
-transition: all var(--transition-base);
-cursor: pointer;
-position: relative;
-overflow: hidden;
+  background: var(--color-bg-alt);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  padding: var(--spacing-xl);
+  transition: all var(--transition-base);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
 }
 .service-card::before {
-content: '';
-position: absolute;
-top: 0;
-left: 0;
-right: 0;
-height: 3px;
-background: linear-gradient(90deg, var(--color-primary), var(--color-first));
-transform: scaleX(0);
-transition: transform var(--transition-base);
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--color-primary), var(--color-first));
+  transform: scaleX(0);
+  transition: transform var(--transition-base);
 }
 .service-card:hover,
 .service-card:focus {
-transform: translateY(-8px);
-box-shadow: var(--shadow-xl);
-border-color: var(--color-primary);
-background: var(--color-bg-elevated);
+  transform: translateY(-8px);
+  box-shadow: var(--shadow-xl);
+  border-color: var(--color-primary);
+  background: var(--color-bg-elevated);
 }
 .service-card:hover::before {
-transform: scaleX(1);
+  transform: scaleX(1);
 }
 .service-card:focus {
-outline: 2px solid var(--color-primary);
-outline-offset: 2px;
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
 }
 .service-card.active {
-border-color: var(--color-primary);
-box-shadow: var(--shadow-glow);
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-glow);
 }
 .service-header {
-display: flex;
-align-items: center;
-gap: var(--spacing-md);
-margin-bottom: var(--spacing-md);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
 }
 .service-icon {
-font-size: 3rem;
-filter: drop-shadow(0 0 10px var(--color-primary));
-transition: transform var(--transition-base);
+  font-size: 3rem;
+  filter: drop-shadow(0 0 10px var(--color-primary));
+  transition: transform var(--transition-base);
 }
 .service-card:hover .service-icon {
-transform: scale(1.1) rotate(5deg);
+  transform: scale(1.1) rotate(5deg);
 }
 .service-card h3 {
-font-size: var(--font-size-xl);
-color: var(--color-text);
-margin: 0;
+  font-size: var(--font-size-xl);
+  color: var(--color-text);
+  margin: 0;
 }
 .service-description {
-color: var(--color-text-light);
-margin-bottom: var(--spacing-md);
-line-height: 1.6;
+  color: var(--color-text-light);
+  margin-bottom: var(--spacing-md);
+  line-height: 1.6;
 }
 .zone-badge {
-display: inline-block;
-padding: var(--spacing-xs) var(--spacing-md);
-border-radius: var(--radius-full);
-color: var(--color-bg);
-font-size: var(--font-size-sm);
-font-weight: var(--font-weight-bold);
-text-transform: uppercase;
-margin-bottom: var(--spacing-md);
-box-shadow: var(--shadow-glow);
+  display: inline-block;
+  padding: var(--spacing-xs) var(--spacing-md);
+  border-radius: var(--radius-full);
+  color: var(--color-bg);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+  margin-bottom: var(--spacing-md);
+  box-shadow: var(--shadow-glow);
 }
 .service-details {
-max-height: 0;
-overflow: hidden;
-opacity: 0;
-transition: all var(--transition-base);
-margin-top: var(--spacing-lg);
-padding-top: 0;
-border-top: 1px solid transparent;
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: all var(--transition-base);
+  margin-top: var(--spacing-lg);
+  padding-top: 0;
+  border-top: 1px solid transparent;
 }
 .service-card.active .service-details {
-max-height: 500px;
-opacity: 1;
-padding-top: var(--spacing-lg);
-border-top-color: var(--color-border);
+  max-height: 500px;
+  opacity: 1;
+  padding-top: var(--spacing-lg);
+  border-top-color: var(--color-border);
 }
 .service-details h4 {
-font-size: var(--font-size-base);
-color: var(--color-primary);
-margin-bottom: var(--spacing-md);
+  font-size: var(--font-size-base);
+  color: var(--color-primary);
+  margin-bottom: var(--spacing-md);
 }
 .service-details ul {
-list-style: none;
-padding: 0;
+  list-style: none;
+  padding: 0;
 }
 .service-details li {
-padding: var(--spacing-xs) 0;
-color: var(--color-text-light);
-line-height: 1.5;
+  padding: var(--spacing-xs) 0;
+  color: var(--color-text-light);
+  line-height: 1.5;
 }
 @media (max-width: 768px) {
-.services-grid {
-grid-template-columns: 1fr;
-}
+  .services-grid {
+    grid-template-columns: 1fr;
+  }
 }
 </style>
 
 <script>
-  document.addEventListener('DOMContentLoaded', () => {
-    const cards = document.querySelectorAll('.service-card');
-    
-    cards.forEach((card) => {
-      const handleToggle = () => {
-        const isActive = card.classList.contains('active');
-        
-        // Fermer toutes les autres
-        cards.forEach((c) => {
-          c.classList.remove('active');
-          c.setAttribute('aria-expanded', 'false');
-        });
-        
-        // Toggle actuelle
-        if (!isActive) {
-          card.classList.add('active');
-          card.setAttribute('aria-expanded', 'true');
-        }
-      };
+document.addEventListener('DOMContentLoaded', () => {
+  const cards = document.querySelectorAll('.service-card');
+  
+  cards.forEach((card) => {
+    const handleToggle = () => {
+      const isActive = card.classList.contains('active');
       
-      card.addEventListener('click', handleToggle);
-      
-      card.addEventListener('keydown', (e) => {
-        const event = e as KeyboardEvent;
-        if (event.key === 'Enter' || event.key === ' ') {
-          event.preventDefault();
-          handleToggle();
-        }
+      // Fermer toutes les autres
+      cards.forEach((c) => {
+        c.classList.remove('active');
+        c.setAttribute('aria-expanded', 'false');
       });
+      
+      // Toggle actuelle
+      if (!isActive) {
+        card.classList.add('active');
+        card.setAttribute('aria-expanded', 'true');
+      }
+    };
+    
+    card.addEventListener('click', handleToggle);
+    
+    card.addEventListener('keydown', (e) => {
+      const event = e as KeyboardEvent;
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        handleToggle();
+      }
     });
   });
+});
 </script>

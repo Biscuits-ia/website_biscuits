@@ -125,7 +125,7 @@ const testimonials = [
           <article class={`program-card ${program.featured ? 'featured' : ''}`}>
             <h3>{program.title}</h3>
             <p>{program.description}</p>
-            <div class="program-details">
+            <div class="program-details"> 
               <span class="program-participation">{program.participation}</span>
             </div>
             <a href="#join" class="btn-program">
@@ -150,7 +150,6 @@ const testimonials = [
             <div class="step-content">
               <h3>{step.title}</h3>
               <p>{step.description}</p>
-              {step.duration && <span class="step-duration">{step.duration}</span>}
             </div>
           </div>
         ))}

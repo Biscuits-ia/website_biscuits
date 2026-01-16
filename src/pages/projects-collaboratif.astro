@@ -1,0 +1,443 @@
+---
+import BaseLayout from '@layouts/Layout.astro';
+--- 
+
+<BaseLayout
+  title="Projets Collaboratifs | Biscuits IA"
+  description="Participez à des projets open-source IA pensés pour les associations et TPE/PME."
+>
+  <section class="hero-modern">
+    <div class="container">
+      <div class="hero-content">
+        <span class="badge">Open Source</span>
+        <h1 class="hero-title">
+          Projets <span class="gradient-text">Collaboratifs</span>
+        </h1>
+        <p class="hero-subtitle">
+          Contribuez à des projets IA pour associations et TPE/PME, même sans compétences techniques avancées.
+        </p>
+        <div class="hero-stats">
+          <div class="stat-item">
+            <strong>12+</strong>
+            <span>Projets actifs</span>
+          </div>
+          <div class="stat-item">
+            <strong>200+</strong>
+            <span>Contributeurs</span>
+          </div>
+          <div class="stat-item">
+            <strong>100%</strong>
+            <span>Gratuit</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="projects-section">
+    <div class="container">
+      <div class="section-header">
+        <h2>Projets en cours</h2>
+        <p>Choisissez un projet qui correspond à vos besoins et compétences</p>
+      </div>
+      
+      <div class="projects-grid">
+        <article class="project-card card-primary">
+          <div class="card-icon">
+            <span class="icon-wrapper">🤖</span>
+          </div>
+          <div class="card-content">
+            <h3>Assistant IA associatif</h3>
+            <p>Un assistant pour centraliser vos documents et faciliter le travail des bénévoles.</p>
+            <div class="card-meta">
+              <span class="tag">En développement</span>
+              <span class="contributors">15 contributeurs</span>
+            </div>
+          </div>
+          <div class="card-footer">
+            <a href="#" class="link-arrow">Découvrir le projet</a>
+          </div>
+        </article>
+
+        <article class="project-card card-secondary">
+          <div class="card-icon">
+            <span class="icon-wrapper">⚙️</span>
+          </div>
+          <div class="card-content">
+            <h3>Automatisation des workflows</h3>
+            <p>Optimisation et automatisation des tâches répétitives au sein des associations.</p>
+            <div class="card-meta">
+              <span class="tag">Beta</span>
+              <span class="contributors">23 contributeurs</span>
+            </div>
+          </div>
+          <div class="card-footer">
+            <a href="#" class="link-arrow">Découvrir le projet</a>
+          </div>
+        </article>
+
+        <article class="project-card card-tertiary">
+          <div class="card-icon">
+            <span class="icon-wrapper">🚀</span>
+          </div>
+          <div class="card-content">
+            <h3>Starter Kits IA</h3>
+            <p>Projets prêts à l'emploi pour lancer rapidement une solution IA adaptée.</p>
+            <div class="card-meta">
+              <span class="tag">Disponible</span>
+              <span class="contributors">8 contributeurs</span>
+            </div>
+          </div>
+          <div class="card-footer">
+            <a href="#" class="link-arrow">Découvrir le projet</a>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta-modern">
+    <div class="container">
+      <div class="cta-content">
+        <h2>Rejoignez un projet collaboratif</h2>
+        <p>Participez, apprenez et faites progresser votre association ou TPE/PME grâce à l'IA.</p>
+        <div class="cta-buttons">
+          <a href="/register" class="btn-primary">
+            Participer maintenant
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <path d="M7.5 15L12.5 10L7.5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </a>
+          <a href="/contact" class="btn-secondary">Nous contacter</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  /* Hero Modern */
+  .hero-modern {
+    padding: 120px 0 80px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-modern::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    opacity: 0.3;
+  }
+
+  .hero-content {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    max-width: 800px;
+    margin: 0 auto;
+    color: var(--color-gray-100);
+  }
+
+  .badge {
+    display: inline-block;
+    padding: 8px 16px;
+    background: rgba(26, 22, 22, 0.2);
+    backdrop-filter: blur(10px);
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 24px;
+    border: 1px solid var(--border-color);
+  }
+
+  .hero-title {
+    font-size: clamp(2.5rem, 5vw, 4rem);
+    font-weight: 800;
+    line-height: 1.1;
+    margin-bottom: 24px;
+    letter-spacing: -0.02em;
+  }
+
+  .gradient-text {
+    background: linear-gradient(135deg, #ffd89b 0%, #19547b 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .hero-subtitle {
+    font-size: clamp(1.1rem, 2vw, 1.3rem);
+    line-height: 1.6;
+    opacity: 0.95;
+    margin-bottom: 48px;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .hero-stats {
+    display: flex;
+    justify-content: center;
+    gap: 48px;
+    flex-wrap: wrap;
+  }
+
+  .stat-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .stat-item strong {
+    font-size: 2rem;
+    font-weight: 700;
+  }
+
+  .stat-item span {
+    font-size: 0.9rem;
+    opacity: 0.9;
+  }
+
+  /* Projects Section */
+  .projects-section {
+    padding: 80px 0;
+    background: var(--color-secondary);
+  }
+
+  .section-header {
+    text-align: center;
+    margin-bottom: 64px;
+  }
+
+  .section-header h2 {
+    font-size: clamp(2rem, 4vw, 2.5rem);
+    font-weight: 700;
+    margin-bottom: 16px;
+    color: var(--color-text);
+  }
+
+  .section-header p {
+    font-size: 1.1rem;
+    color: var(--color-text);
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  .projects-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 32px;
+  }
+
+  .project-card {
+    background: var(--color-bg);
+    padding: 32px;
+    box-shadow: 10px 10px 0px rgb(0, 0, 0);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 2px solid transparent;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .project-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px rgb(0, 0, 0);
+  }
+
+  .card-primary:hover { border-color: oklch(60.201% 0.11053 58.986); }
+  .card-secondary:hover { border-color: oklch(60.201% 0.11053 58.986); }
+  .card-tertiary:hover { border-color: oklch(60.201% 0.11053 58.986); }
+
+  .card-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .icon-wrapper {
+    width: 64px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    background: var(--color-secondary);
+    border-radius: 16px;
+    box-shadow: 0 8px 16px rgba(234, 155, 102, 0.3);
+  }
+
+  .card-secondary .icon-wrapper {
+    background: var(--color-secondary);
+    box-shadow: 0 8px 16px rgba(234, 155, 102, 0.3);
+  }
+
+  .card-tertiary .icon-wrapper {
+    background: var(--color-secondary);
+    box-shadow: 0 8px 16px rgba(234, 155, 102, 0.3);
+  }
+
+  .card-content h3 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 12px;
+    color: var(--color-gray-100);
+  }
+
+  .card-content p {
+    font-size: 1rem;
+    line-height: 1.6;
+    color: var(--color-gray-200);
+    margin-bottom: 16px;
+  }
+
+  .card-meta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .tag {
+    padding: 4px 12px;
+    background: var(--color-first);
+    color: var(--color-gray-900);
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+
+  .contributors {
+    font-size: 0.9rem;
+    color: var(--color-gray-400);
+  }
+
+  .card-footer {
+    margin-top: auto;
+  }
+
+  .link-arrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--color-secondary);
+    font-weight: 600;
+    text-decoration: none;
+    transition: gap 0.3s ease;
+  }
+
+  .link-arrow:hover {
+    gap: 12px;
+  }
+
+  .link-arrow::after {
+    content: '→';
+    font-size: 1.2rem;
+  }
+
+  /* CTA Modern */
+  .cta-modern {
+    padding: 80px 0;
+    background: var(--color-first);
+    color: var(--color-gray-900);
+  }
+
+  .cta-content {
+    text-align: center;
+    max-width: 700px;
+    margin: 0 auto;
+  }
+
+  .cta-content h2 {
+    font-size: clamp(2rem, 4vw, 2.5rem);
+    font-weight: 700;
+    color: var(--color-gray-800);
+    margin-bottom: 16px;
+  }
+
+  .cta-content p {
+    font-size: 1.1rem;
+    opacity: 0.9;
+    margin-bottom: 40px;
+    line-height: 1.6;
+  }
+
+  .cta-buttons {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .btn-primary, .btn-secondary {
+    padding: 16px 32px;
+    font-weight: 600;
+    font-size: 1rem;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .btn-primary {
+    color: white;
+    box-shadow: 0 8px 16px rgb(19, 24, 43);
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-2px);
+  }
+
+  .btn-secondary {  
+    background: transparent;
+    color: white;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+  }
+
+  .btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.5);
+  }
+
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  @media (max-width: 768px) {
+    .hero-modern {
+      padding: 80px 0 60px;
+    }
+
+    .hero-stats {
+      gap: 32px;
+    }
+
+    .projects-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .projects-section {
+      padding: 60px 0;
+    }
+
+    .cta-modern {
+      padding: 60px 0;
+    }
+
+    .cta-buttons {
+      flex-direction: column;
+    }
+
+    .btn-primary, .btn-secondary {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+</style>

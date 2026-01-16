@@ -3,7 +3,7 @@ const urlsToCache = [
   '/',
   '/styles/global.css',
   '/styles/theme.css',
-  '/logo.webp',
+  '/logo.png',
 ];
 
 self.addEventListener('install', (event) => {

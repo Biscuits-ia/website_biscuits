@@ -16,15 +16,15 @@
   --spacing-4xl: 5rem;
 
   /* Typographie */
-  --font-size-xs: 0.75rem;
-  --font-size-sm: 0.875rem;
-  --font-size-base: 1rem;
-  --font-size-lg: 1.125rem;
-  --font-size-xl: 1.25rem;
-  --font-size-2xl: 1.5rem;
-  --font-size-3xl: 2rem;
-  --font-size-4xl: 2.5rem;
-  --font-size-5xl: 3.5rem;
+  --font-size-xs: 0.85rem;
+  --font-size-sm: 0.975rem;
+  --font-size-base: 1.6rem;
+  --font-size-lg: 1.215rem;
+  --font-size-xl: 1.35rem;
+  --font-size-2xl: 1.6rem;
+  --font-size-3xl: 2.5rem;
+  --font-size-4xl: 3rem;
+  --font-size-5xl: 4rem;
 
   --font-weight-normal: 400;
   --font-weight-medium: 500;
@@ -51,15 +51,15 @@
   --color-primary-light:oklch(46.911% 0.08436 59.46);
   --color-primary-dark: oklch(46.911% 0.08436 59.46);
   --color-secondary: oklch(60.201% 0.11053 58.986);
-  --color-first: oklch(46.911% 0.08436 59.46);
+  --color-first: oklch(52.51% 0.09481 59.895);
   --color-second: oklch(60.201% 0.11053 58.986);
   --color-third: oklch(60.997% 0.18931 143.803);
   
   /* Palette gourmande étendue */
   --color-accent-cream: oklch(60.201% 0.11053 58.986);
-  --color-accent-caramel: oklch(46.911% 0.08436 59.46);
-  --color-accent-honey: oklch(57.378% 0.22642 28.383 / 0.808);
-  --color-accent-vanilla: oklch(57.378% 0.22642 28.383 / 0.808);
+  --color-accent-caramel: oklch(60.201% 0.11053 58.986) ;
+  --color-accent-honey: oklch(86.335% 0.11215 81.912 / 0.808);
+  --color-accent-vanilla: oklch(86.335% 0.11215 81.912 / 0.808);
   
   /* Gris chauds terreux */
   --color-gray-50: oklch(8% 0.01 40);          /* Cacao noir */
@@ -133,10 +133,6 @@
   --brutal-hover-shadow-y: 9px;
 }
 
-/* Transition douce entre les thèmes */
-:root[data-theme='dark'] {
-  color-scheme: dark;
-}
 
 :root[data-theme='light'] {
   color-scheme: light;

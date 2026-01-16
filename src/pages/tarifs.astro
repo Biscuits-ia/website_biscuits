@@ -28,7 +28,7 @@ const programs = [
     description: "Contribuez à un projet open-source associatif pour développer des solutions IA utiles et inclusives",
     participation: "Adhésion annuelle : 50€",
     duration: "Variable",
-    featured: true
+    featured: false
   }
 ];
 
@@ -37,7 +37,6 @@ const processSteps = [
     number: "1", 
     title: "Rejoindre l'association", 
     description: "Devenir membre ou bénévole et découvrir nos missions", 
-    duration: "1 min" 
   },
   { 
     number: "2", 
@@ -48,7 +47,6 @@ const processSteps = [
     number: "3", 
     title: "Participer activement", 
     description: "Contribuer selon vos compétences et intérêts", 
-    duration: "Variable" 
   },
   { 
     number: "4", 
@@ -128,7 +126,6 @@ const testimonials = [
             <h3>{program.title}</h3>
             <p>{program.description}</p>
             <div class="program-details">
-              <span class="program-duration" aria-label="Durée">{program.duration}</span>
               <span class="program-participation">{program.participation}</span>
             </div>
             <a href="#join" class="btn-program">
@@ -370,8 +367,6 @@ const testimonials = [
     padding: var(--spacing-3xl) 0;
     text-align: center;
     background: var(--color-bg-alt);
-    border-top: var(--brutal-border-thick);
-    border-bottom: var(--brutal-border-thick);
   }
 
   .process-section h2 {
@@ -471,7 +466,7 @@ const testimonials = [
 
   .testimonial-card:nth-child(1) {
     background: var(--color-accent-honey);
-  }
+  } 
 
   .testimonial-card:nth-child(2) {
     background: var(--color-accent-caramel);
@@ -506,7 +501,7 @@ const testimonials = [
 
   .testimonial-card span {
     font-size: var(--font-size-sm);
-    color: var(--color-text-light);
+    color: var(--color-gray-200);
     font-weight: var(--font-weight-semibold);
   }
 
@@ -574,7 +569,7 @@ const testimonials = [
   .faq-item p {
     margin-top: var(--spacing-md);
     padding-left: var(--spacing-2xl);
-    color: var(--color-text);
+    color: var(--color-gray-900);
     line-height: 1.7;
     font-size: var(--font-size-base);
   }
@@ -607,11 +602,12 @@ const testimonials = [
     flex-wrap: wrap;
   }
 
-  .btn-primary { 
-    background: var(--color-bg);
-    color: var(--color-text);
-    padding: var(--spacing-lg) var(--spacing-2xl);
+  .btn-primary {
+    background: transparent;
+    color: var(--color-bg);
     border: var(--brutal-border);
+    border-color: var(--color-bg);
+    padding: var(--spacing-lg) var(--spacing-2xl);
     box-shadow: var(--shadow-lg);
     text-decoration: none;
     font-weight: var(--font-weight-extrabold);
@@ -620,7 +616,9 @@ const testimonials = [
     transition: all var(--transition-fast);
   }
 
-  .btn-primary:hover {
+  .btn-primary:hover {    
+    background: var(--color-bg);
+    color: var(--color-text);
     transform: translate(-3px, -3px);
     box-shadow: var(--shadow-xl);
   }

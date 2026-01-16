@@ -135,7 +135,7 @@ export class ComponentLazyLoader {
 export function preloadCriticalResources(): void {
   const criticalImages = [
     '/hero-tech.webp',
-    '/logo.webp',
+    '/logo.png',
   ];
 
   criticalImages.forEach((src) => {

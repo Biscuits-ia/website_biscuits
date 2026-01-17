@@ -70,10 +70,9 @@
 
         <!-- Auth Buttons -->
         <li class="nav-item nav-cta">
+          <li>
           <a href="/login" class="btn-auth btn-login">Connexion</a>
-        </li>
-        <li>
-          <a href="/register" class="btn-auth btn-register">Créer un compte</a>
+          </li>
         </li>
       </ul>
     </nav>
@@ -386,27 +385,7 @@
     transform: translate(-2px, -2px);
     box-shadow: var(--shadow-lg);
   }
-
-  .btn-login:active {
-    transform: translate(2px, 2px);
-    box-shadow: var(--shadow-sm);
-  }
-
-  .btn-register {
-    color: var(--color-text);
-    background: var(--color-bg-elevated);
-  }
-
-  .btn-register:hover {
-    transform: translate(-2px, -2px);
-    box-shadow: var(--shadow-lg);
-  }
-
-  .btn-register:active {
-    transform: translate(2px, 2px);
-    box-shadow: var(--shadow-sm);
-  }
-
+  
   /* ===== OVERLAY BRUTAL ===== */
   .nav-overlay {
     position: fixed;

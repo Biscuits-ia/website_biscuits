@@ -1,0 +1,312 @@
+---
+import BaseLayout from '@layouts/Layout.astro';
+---
+
+<BaseLayout 
+  title="Lutter contre la dépendance aux plateformes fermées | Biscuits IA"
+  description="Nous encourageons les solutions ouvertes et maîtrisables pour éviter que les petites structures ne deviennent prisonnières de leurs outils."
+>
+  <article class="combat-page">
+    <div class="container">
+      <header class="hero">
+        <div class="hero-content">
+          <h1>Lutter contre la dépendance aux plateformes fermées</h1>
+          <p class="subtitle">Garder le contrôle de vos données et de vos outils</p>
+        </div>
+      </header>
+
+      <section class="problem">
+        <h2>Le problème</h2>
+        <p>
+          Vous commencez avec un outil gratuit ou peu coûteux. Vous y entrez vos contacts, vos documents, vos processus. 
+          Après quelques mois, tout votre fonctionnement repose dessus. Et là, les prix augmentent. Ou les conditions changent. 
+          Ou le service ferme. Et vous êtes coincés.
+        </p>
+        <p>
+          C'est le piège du « lock-in » : vous ne pouvez plus partir sans tout reconstruire de zéro. 
+          Vos données sont dans un format propriétaire. Vos automatisations ne fonctionnent que sur cette plateforme. 
+          Impossible de migrer facilement.
+        </p>
+        
+        <div class="examples">
+          <h3>Cas vécus</h3>
+          <ul>
+            <li>Une association qui a vu son abonnement passer de 30 € à 150 € par mois après 2 ans d'utilisation, avec 3 000 contacts déjà enregistrés</li>
+            <li>Une TPE dont l'outil de gestion a été racheté et qui a dû tout refaire car les nouvelles conditions étaient inacceptables</li>
+            <li>Un collectif qui a perdu l'accès à ses archives quand un service a fermé sans préavis</li>
+            <li>Une PME qui paie des fonctionnalités dont elle n'a pas besoin car impossible de garder seulement ce qui l'intéresse</li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="position">
+        <h2>Notre position</h2>
+        <p>
+          Nous privilégions les solutions qui vous laissent maîtres de vos données et de votre organisation. 
+          Cela ne veut pas dire tout faire soi-même, mais choisir des outils qui permettent de partir si besoin.
+        </p>
+        <p>
+          Un bon outil devrait pouvoir exporter vos données dans un format standard. 
+          Il devrait fonctionner avec d'autres services. Il devrait être clair sur ce qu'il fait de vos informations.
+        </p>
+        <p>
+          Nous ne sommes pas contre les plateformes en soi. Nous sommes contre le fait qu'elles vous enferment 
+          et vous rendent dépendants.
+        </p>
+      </section>
+
+      <section class="actions">
+        <h2>Ce que nous faisons concrètement</h2>
+        <ul>
+          <li>Nous recommandons des <strong>solutions open-source</strong> quand elles existent et sont adaptées</li>
+          <li>Nous aidons à <strong>exporter et migrer les données</strong> depuis des plateformes propriétaires</li>
+          <li>Nous utilisons des <strong>formats standards</strong> (CSV, JSON, Markdown) pour que vos données restent lisibles partout</li>
+          <li>Nous documentons les <strong>alternatives aux outils fermés</strong> les plus courants</li>
+          <li>Nous créons des <strong>ponts entre services</strong> pour que vous ne soyez pas limités à un seul écosystème</li>
+          <li>Nous évaluons la <strong>portabilité des solutions</strong> avant de les recommander</li>
+        </ul>
+      </section>
+
+      <section class="impact">
+        <h2>Pourquoi c'est important</h2>
+        <p>
+          La dépendance aux plateformes fermées crée une vulnérabilité économique. Quand un fournisseur sait que vous ne pouvez pas partir, 
+          il peut augmenter ses prix ou dégrader son service sans crainte de vous perdre.
+        </p>
+        <p>
+          C'est aussi une question de pérennité. Une petite structure qui existe depuis 20 ans peut se retrouver bloquée 
+          parce qu'un outil sur lequel elle comptait disparaît ou change de modèle économique.
+        </p>
+        <p>
+          Enfin, c'est une question de souveraineté. Vos données vous appartiennent. Vous devriez pouvoir les récupérer, 
+          les déplacer, les utiliser comme bon vous semble.
+        </p>
+      </section>
+
+      <section class="transparency">
+        <h2>Notre propre approche</h2>
+        <p>
+          Nous appliquons ces principes à nos propres services. Les solutions que nous développons utilisent des formats ouverts. 
+          Les données que vous nous confiez restent exportables. Si vous voulez partir, nous vous aidons à le faire proprement.
+        </p>
+        <p>
+          Nous préférons gagner votre confiance par la qualité de notre travail plutôt que par votre impossibilité de changer de prestataire.
+        </p>
+      </section>
+
+      <section class="cta">
+        <div class="cta-content">
+          <h2>Vous voulez reprendre le contrôle ?</h2>
+          <p>Nous pouvons vous aider à évaluer vos outils actuels et à identifier des alternatives plus ouvertes.</p>
+          <div class="cta-buttons">
+            <a href="/audit" class="button">Demander un audit</a>
+            <a href="/ressources/alternatives" class="button-secondary">Voir le comparatif des alternatives</a>
+          </div>
+        </div>
+      </section>
+    </div>
+  </article>
+</BaseLayout>
+
+<style>
+  .combat-page {
+    min-height: 100vh;
+  }
+
+  .container {
+    max-width: 75ch;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+  }
+
+  .hero {
+    padding: 4rem 0 3rem;
+    margin-bottom: 4rem;
+  }
+
+  .hero-content {
+    text-align: center;
+    padding: 2.5rem 1.5rem;
+    background: var(--color-secondary);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  }
+
+  .hero h1 {
+    font-size: clamp(2rem, 5vw, 3rem);
+    line-height: 1.2;
+    margin-bottom: 1.25rem;
+    color: #1a1a1a;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  .subtitle {
+    font-size: clamp(1.125rem, 2.5vw, 1.375rem);
+    color: var(--color-gray-900);
+    font-weight: 400;
+    margin: 0;
+    line-height: 1.5;
+  }
+
+  section {
+    margin-bottom: 5rem;
+    padding: 0 0.5rem;
+  }
+
+  h2 {
+    font-size: clamp(1.625rem, 3vw, 2rem);
+    margin-bottom: 1.75rem;
+    color: #1a1a1a;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+
+  h3 {
+    font-size: 1.375rem;
+    margin-top: 2rem;
+    margin-bottom: 1.25rem;
+    color: #2a2a2a;
+    font-weight: 600;
+  }
+
+  p {
+    line-height: 1.8;
+    margin-bottom: 1.5rem;
+    color: #333;
+    font-size: 1.0625rem;
+  }
+
+  .examples,
+  .transparency {
+    background: linear-gradient(135deg, #f8f9fa 0%, #f1f3f5 100%);
+    padding: 2rem 2.5rem;
+    margin-top: 2.5rem;
+    border-left: 4px solid #4a5568;
+  }
+
+  .transparency {
+    border-left-color: #4a90e2;
+  }
+
+  ul {
+    list-style: none;
+    padding-left: 0;
+    margin-top: 1.5rem;
+  }
+
+  .actions ul li,
+  .examples ul li {
+    padding-left: 2rem;
+    margin-bottom: 1.25rem;
+    position: relative;
+    line-height: 1.75;
+    color: #2d3748;
+  }
+
+  .actions ul li::before,
+  .examples ul li::before {
+    content: "→";
+    position: absolute;
+    left: 0;
+    color: #4a5568;
+    font-weight: 600;
+    font-size: 1.25rem;
+  }
+
+  .cta {
+    background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
+    padding: 0;
+    margin-top: 5rem;
+    margin-bottom: 4rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  }
+
+  .cta-content {
+    padding: 3rem 2.5rem;
+    text-align: center;
+  }
+
+  .cta h2 {
+    color: white;
+    margin-bottom: 1rem;
+  }
+
+  .cta p {
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 2rem;
+    font-size: 1.125rem;
+  }
+
+  .cta-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .button,
+  .button-secondary {
+    display: inline-block;
+    padding: 0.875rem 2rem;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: all 0.2s ease;
+    border: 2px solid transparent;
+  }
+
+  .button {
+    background-color: white;
+    color: #1a202c;
+  }
+
+  .button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2);
+  }
+
+  .button-secondary {
+    background-color: transparent;
+    color: white;
+    border-color: rgba(255, 255, 255, 0.3);
+  }
+
+  .button-secondary:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-color: white;
+  }
+
+  @media (max-width: 768px) {
+    .hero {
+      padding: 2.5rem 0 2rem;
+      margin-bottom: 3rem;
+    }
+
+    .hero-content {
+      padding: 2rem 1.25rem;
+    }
+
+    section {
+      margin-bottom: 3.5rem;
+      padding: 0;
+    }
+
+    .examples,
+    .transparency {
+      padding: 1.5rem 1.75rem;
+    }
+
+    .cta-content {
+      padding: 2.5rem 1.5rem;
+    }
+
+    .cta-buttons {
+      flex-direction: column;
+    }
+
+    .button,
+    .button-secondary {
+      width: 100%;
+    }
+  }
+</style>

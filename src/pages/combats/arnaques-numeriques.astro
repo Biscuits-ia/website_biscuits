@@ -1,0 +1,290 @@
+---
+import BaseLayout from '@layouts/Layout.astro';
+---
+
+<BaseLayout 
+  title="Lutter contre les arnaques numériques | Biscuits IA"
+  description="Nous aidons associations, TPE et PME à identifier les faux experts et à choisir des prestataires numériques honnêtes et transparents."
+>
+  <article class="combat-page">
+    <div class="container">
+      <header class="hero">
+        <div class="hero-content">
+          <h1>Lutter contre les arnaques numériques</h1>
+          <p class="subtitle">Vous aider à identifier les vrais professionnels et à éviter les pièges du numérique</p>
+        </div>
+      </header>
+
+      <section class="problem">
+        <h2>Le problème</h2>
+        <p>
+          Chaque semaine, des associations et petites entreprises se font aborder par des « experts en IA » qui promettent monts et merveilles. 
+          Site web à 15 000 €, chatbot « révolutionnaire » à 8 000 €, formation IA à 3 000 € par personne.
+        </p>
+        <p>
+          Le résultat ? Un site WordPress basique avec un plugin gratuit, un chatbot qui ne comprend rien, 
+          une formation qui survole ChatGPT en 2 heures. Des structures qui ont dépensé leurs maigres budgets pour du vent.
+        </p>
+        
+        <div class="examples">
+          <h3>Exemples concrets</h3>
+          <ul>
+            <li>Une association culturelle facturée 12 000 € pour un « assistant IA personnalisé » qui était en réalité un prompt ChatGPT copié-collé</li>
+            <li>Une TPE qui a payé 5 000 € pour « automatiser sa comptabilité » et s'est retrouvée avec un tableur Excel mal ficelé</li>
+            <li>Un artisan convaincu d'investir 8 000 € dans un « site optimisé IA » alors qu'il n'avait besoin que d'une page vitrine à 500 €</li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="position">
+        <h2>Notre position</h2>
+        <p>
+          Nous pensons que les petites structures méritent des prestataires honnêtes qui expliquent clairement ce qu'ils font, 
+          combien ça coûte réellement, et ce qui est techniquement possible ou non.
+        </p>
+        <p>
+          L'IA peut être utile, mais elle n'est pas magique. Un bon professionnel commence par écouter vos besoins, 
+          pas par vous vendre sa solution toute faite.
+        </p>
+        <p>
+          Nous ne promettons pas de « révolutionner votre activité ». Nous proposons des outils adaptés à vos moyens et à vos vrais besoins.
+        </p>
+      </section>
+
+      <section class="actions">
+        <h2>Ce que nous faisons concrètement</h2>
+        <ul>
+          <li>Nous publions des <strong>grilles de prix transparentes</strong> pour que vous sachiez ce qui est normal de payer</li>
+          <li>Nous partageons des <strong>guides pour détecter les signaux d'alerte</strong> : promesses irréalistes, flou sur les tarifs, jargon incompréhensible</li>
+          <li>Nous proposons des <strong>audits gratuits de devis</strong> pour vous aider à comprendre ce qu'on vous vend vraiment</li>
+          <li>Nous documentons nos propres prestations en détail : temps passé, outils utilisés, limites techniques</li>
+          <li>Nous orientons vers des <strong>solutions gratuites ou peu coûteuses</strong> quand elles suffisent</li>
+        </ul>
+      </section>
+
+      <section class="impact">
+        <h2>Pourquoi c'est important</h2>
+        <p>
+          Les associations et petites structures ont des budgets limités. Chaque euro mal dépensé, c'est un projet qui ne se fait pas, 
+          un salarié qu'on ne peut pas embaucher, une activité qu'on doit abandonner.
+        </p>
+        <p>
+          Les arnaques numériques créent aussi de la méfiance. Des structures qui se sont fait avoir une fois refusent ensuite 
+          toute aide numérique, même quand elle pourrait vraiment leur être utile.
+        </p>
+        <p>
+          En rendant le marché plus transparent, nous voulons que les bons professionnels soient choisis pour leur travail, 
+          pas pour leur capacité à embobiner des clients.
+        </p>
+      </section>
+
+      <section class="cta">
+        <div class="cta-content">
+          <h2>Et maintenant ?</h2>
+          <p>Vous avez un doute sur un devis ? Une proposition qui vous semble trop belle pour être vraie ?</p>
+          <div class="cta-buttons">
+            <a href="/contact" class="button">Demander un avis</a>
+            <a href="/ressources" class="button-secondary">Consulter nos guides</a>
+          </div>
+        </div>
+      </section>
+    </div>
+  </article>
+</BaseLayout>
+
+<style>
+  .combat-page {
+    min-height: 100vh;
+  }
+
+  .container {
+    max-width: 75ch;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+  }
+
+  .hero {
+    padding: 4rem 0 3rem;
+    margin-bottom: 4rem;
+  }
+
+  .hero-content {
+    text-align: center;
+    padding: 2.5rem 1.5rem;
+    background: var(--color-secondary);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  }
+
+  .hero h1 {
+    font-size: clamp(2rem, 5vw, 3rem);
+    line-height: 1.2;
+    margin-bottom: 1.25rem;
+    color: var(--color-gray-100);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  .subtitle {
+    font-size: clamp(1.125rem, 2.5vw, 1.375rem);
+    color: var(--color-gray-900);
+    font-weight: 400;
+    margin: 0;
+    line-height: 1.5;
+  }
+
+  section {
+    margin-bottom: 5rem;
+    padding: 0 0.5rem;
+  }
+
+  h2 {
+    font-size: clamp(1.625rem, 3vw, 2rem);
+    margin-bottom: 1.75rem;
+    color: var(--color-gray-100);
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+
+  h3 {
+    font-size: 1.375rem;
+    margin-top: 2rem;
+    margin-bottom: 1.25rem;
+    color: var(--color-gray-100);
+    font-weight: 600;
+  }
+
+  p {
+    line-height: 1.8;
+    margin-bottom: 1.5rem;
+    color: var(--color-gray-100);
+    font-size: 1.0625rem;
+  }
+
+  .examples {
+    background: linear-gradient(135deg, #f8f9fa 0%, #f1f3f5 100%);
+    padding: 2rem 2.5rem;
+    margin-top: 2.5rem;
+    border-left: 4px solid #4a5568;
+  }
+
+  ul {
+    list-style: none;
+    padding-left: 0;
+    margin-top: 1.5rem;
+  }
+
+  .actions ul li,
+  .examples ul li {
+    padding-left: 2rem;
+    margin-bottom: 1.25rem;
+    position: relative;
+    line-height: 1.75;
+    color: #2d3748;
+  }
+
+  .actions ul li::before,
+  .examples ul li::before {
+    content: "→";
+    position: absolute;
+    left: 0;
+    color: var(--color-gray-100);
+    font-weight: 600;
+    font-size: 1.25rem;
+  }
+
+  .cta {
+    background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
+    padding: 0;
+    margin-top: 5rem;
+    margin-bottom: 4rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  }
+
+  .cta-content {
+    padding: 3rem 2.5rem;
+    text-align: center;
+  }
+
+  .cta h2 {
+    color: white;
+    margin-bottom: 1rem;
+  }
+
+  .cta p {
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 2rem;
+    font-size: 1.125rem;
+  }
+
+  .cta-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .button,
+  .button-secondary {
+    display: inline-block;
+    padding: 0.875rem 2rem;
+    text-decoration: none;  
+    font-weight: 600;
+    font-size: 1rem;
+    transition: all 0.2s ease;
+    border: 2px solid transparent;
+  }
+
+  .button {
+    background-color: white;
+    color: #1a202c;
+  }
+
+  .button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2);
+  }
+
+  .button-secondary {
+    background-color: transparent;
+    color: white;
+    border-color: rgba(255, 255, 255, 0.3);
+  }
+
+  .button-secondary:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-color: white;
+  }
+
+  @media (max-width: 768px) {
+    .hero {
+      padding: 2.5rem 0 2rem;
+      margin-bottom: 3rem;
+    }
+
+    .hero-content {
+      padding: 2rem 1.25rem;
+    }
+
+    section {
+      margin-bottom: 3.5rem;
+      padding: 0;
+    }
+
+    .examples {
+      padding: 1.5rem 1.75rem;
+    }
+
+    .cta-content {
+      padding: 2.5rem 1.5rem;
+    }
+
+    .cta-buttons {
+      flex-direction: column;
+    }
+
+    .button,
+    .button-secondary {
+      width: 100%;
+    }
+  }
+</style>

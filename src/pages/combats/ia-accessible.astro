@@ -1,0 +1,297 @@
+---
+import BaseLayout from '@layouts/Layout.astro';
+---
+
+<BaseLayout 
+  title="Rendre l'IA accessible aux petites structures | Biscuits IA"
+  description="L'intelligence artificielle ne devrait pas être réservée aux grandes entreprises. Nous adaptons ces outils aux associations, TPE et PME."
+>
+  <article class="combat-page">
+    <div class="container">
+      <header class="hero">
+        <div class="hero-content">
+          <h1>Rendre l'IA accessible aux petites structures</h1>
+          <p class="subtitle">Parce que les outils numériques ne devraient pas être réservés à ceux qui ont 50 000 € de budget</p>
+        </div>
+      </header>
+
+      <section class="problem">
+        <h2>Le problème</h2>
+        <p>
+          Quand on parle d'IA en entreprise, on montre toujours les mêmes exemples : grandes boîtes avec équipes dédiées, 
+          budgets à six chiffres, consultants à temps plein. Pour une association qui gère ses adhésions sur Excel ou 
+          une TPE qui jongle entre compta et prospection, ça paraît inaccessible.
+        </p>
+        <p>
+          Résultat : soit on ne fait rien en pensant que « ce n'est pas pour nous », soit on se fait vendre 
+          des solutions inadaptées à prix d'or.
+        </p>
+        
+        <div class="examples">
+          <h3>Situations concrètes</h3>
+          <ul>
+            <li>L'association qui passe 10 heures par mois à répondre aux mêmes questions par email</li>
+            <li>L'artisan qui retape manuellement ses devis parce qu'il ne sait pas qu'on peut automatiser ça</li>
+            <li>La responsable de structure qui passe ses soirées à faire du tri de documents qu'un outil pourrait classer</li>
+            <li>Le gérant qui renonce à publier sur les réseaux sociaux « parce qu'il n'a pas le temps »</li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="position">
+        <h2>Notre position</h2>
+        <p>
+          Nous pensons que l'IA peut être utile à petite échelle, pour des besoins simples et concrets. 
+          Pas besoin d'un chatbot de 10 000 € quand un formulaire bien fait et quelques réponses automatiques suffisent.
+        </p>
+        <p>
+          La plupart des petites structures n'ont pas besoin de « solutions IA sur-mesure ». 
+          Elles ont besoin qu'on leur montre comment utiliser des outils existants, gratuits ou peu coûteux, 
+          adaptés à leurs vrais besoins.
+        </p>
+        <p>
+          L'accessibilité, c'est aussi le temps d'apprentissage. Nous préférons passer 2 heures à former quelqu'un 
+          plutôt que de lui vendre une solution qu'il ne saura pas maintenir.
+        </p>
+      </section>
+
+      <section class="actions">
+        <h2>Ce que nous faisons concrètement</h2>
+        <ul>
+          <li>Nous proposons des <strong>ateliers gratuits ou à prix libre</strong> pour découvrir les bases de l'IA utile</li>
+          <li>Nous documentons des <strong>cas d'usage accessibles</strong> : automatiser une newsletter, trier des candidatures, générer des comptes-rendus</li>
+          <li>Nous créons des <strong>modèles et templates réutilisables</strong> que les structures peuvent adapter elles-mêmes</li>
+          <li>Nous recommandons des <strong>outils gratuits ou peu coûteux</strong> (moins de 50 € par mois) avant de proposer du développement sur-mesure</li>
+          <li>Nous accompagnons les structures dans l'appropriation : formation, documentation, support</li>
+          <li>Nous montons des <strong>projets mutualisés</strong> entre plusieurs petites structures pour partager les coûts</li>
+        </ul>
+      </section>
+
+      <section class="impact">
+        <h2>Pourquoi c'est important</h2>
+        <p>
+          Les associations, TPE et PME représentent la majorité du tissu économique et social. 
+          Si les outils numériques restent inaccessibles pour elles, on creuse un fossé entre ceux qui peuvent 
+          se payer l'innovation et les autres.
+        </p>
+        <p>
+          Une association qui gagne 5 heures par semaine sur des tâches administratives, c'est 5 heures de plus 
+          pour accompagner ses bénéficiaires. Une TPE qui automatise ses devis, c'est du temps libéré pour 
+          développer son activité.
+        </p>
+        <p>
+          L'IA ne devrait pas être un luxe. Elle devrait être un outil parmi d'autres, 
+          accessible à ceux qui en ont vraiment besoin.
+        </p>
+      </section>
+
+      <section class="cta">
+        <div class="cta-content">
+          <h2>Vous voulez vous y mettre ?</h2>
+          <p>Pas besoin de tout comprendre ni de tout maîtriser. On commence simple, on avance à votre rythme.</p>
+          <div class="cta-buttons">
+            <a href="/ateliers" class="button">Voir les prochains ateliers</a>
+            <a href="/cas-usage" class="button-secondary">Découvrir des exemples concrets</a>
+          </div>
+        </div>
+      </section>
+    </div>
+  </article>
+</BaseLayout>
+
+<style>
+  .combat-page {
+    min-height: 100vh;
+  }
+
+  .container {
+    max-width: 75ch;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+  }
+
+  .hero {
+    padding: 4rem 0 3rem;
+    margin-bottom: 4rem;
+  }
+
+  .hero-content {
+    text-align: center;
+    padding: 2.5rem 1.5rem;
+    background: var(--color-secondary);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  }
+
+  .hero h1 {
+    font-size: clamp(2rem, 5vw, 3rem);
+    line-height: 1.2;
+    margin-bottom: 1.25rem;
+    color: var(--color-text);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  .subtitle {
+    font-size: clamp(1.125rem, 2.5vw, 1.375rem);
+    color: var(--color-gray-900);
+    font-weight: 400;
+    margin: 0;
+    line-height: 1.5;
+  }
+
+  section {
+    margin-bottom: 5rem;
+    padding: 0 0.5rem;
+  }
+
+  h2 {
+    font-size: clamp(1.625rem, 3vw, 2rem);
+    margin-bottom: 1.75rem;
+    color: var(--color-text);
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+
+  h3 {
+    font-size: 1.375rem;
+    margin-top: 2rem;
+    margin-bottom: 1.25rem;
+    color: var(--color-text);
+    font-weight: 600;
+  }
+
+  p {
+    line-height: 1.8;
+    margin-bottom: 1.5rem;
+    color: var(--color-text);
+    font-size: 1.0625rem;
+  }
+
+  .examples {
+    background: linear-gradient(135deg, #f8f9fa 0%, #f1f3f5 100%);
+    padding: 2rem 2.5rem;
+    margin-top: 2.5rem;
+    border-left: 4px solid #4a5568;
+  }
+
+  ul {
+    list-style: none;
+    padding-left: 0;
+    margin-top: 1.5rem;
+  }
+
+  .actions ul li,
+  .examples ul li {
+    padding-left: 2rem;
+    margin-bottom: 1.25rem;
+    position: relative;
+    line-height: 1.75;
+    color: #2d3748;
+  }
+
+  .actions ul li::before,
+  .examples ul li::before {
+    content: "→";
+    position: absolute;
+    left: 0;
+    color: #4a5568;
+    font-weight: 600;
+    font-size: 1.25rem;
+  }
+
+  .cta {
+    background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
+    padding: 0;
+    margin-top: 5rem;
+    margin-bottom: 4rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  }
+
+  .cta-content {
+    padding: 3rem 2.5rem;
+    text-align: center;
+  }
+
+  .cta h2 {
+    color: white;
+    margin-bottom: 1rem;
+  }
+
+  .cta p {
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 2rem;
+    font-size: 1.125rem;
+  }
+
+  .cta-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .button,
+  .button-secondary {
+    display: inline-block;
+    padding: 0.875rem 2rem;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: all 0.2s ease;
+    border: 2px solid transparent;
+  }
+
+  .button {
+    background-color: white;
+    color: #1a202c;
+  }
+
+  .button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2);
+  }
+
+  .button-secondary {
+    background-color: transparent;
+    color: white;
+    border-color: rgba(255, 255, 255, 0.3);
+  }
+
+  .button-secondary:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-color: white;
+  }
+
+  @media (max-width: 768px) {
+    .hero {
+      padding: 2.5rem 0 2rem;
+      margin-bottom: 3rem;
+    }
+
+    .hero-content {
+      padding: 2rem 1.25rem;
+    }
+
+    section {
+      margin-bottom: 3.5rem;
+      padding: 0;
+    }
+
+    .examples {
+      padding: 1.5rem 1.75rem;
+    }
+
+    .cta-content {
+      padding: 2.5rem 1.5rem;
+    }
+
+    .cta-buttons {
+      flex-direction: column;
+    }
+
+    .button,
+    .button-secondary {
+      width: 100%;
+    }
+  }
+</style>

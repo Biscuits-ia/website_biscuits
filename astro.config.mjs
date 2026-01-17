@@ -85,16 +85,7 @@ robots({
     },
     
     
-    assetsInclude: ['**\/*.webp', '**\/*.avif'],
-  },
-  
-  image: {
-    service: {
-      entrypoint: 'astro/assets/services/sharp',
-      config: {
-        limitInputPixels: 268402689,
-      },
-    },
+    assetsInclude: ['**\/*.webp', '**\/*.png'],
   },
   
   prefetch: {

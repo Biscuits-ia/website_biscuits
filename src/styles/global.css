@@ -149,28 +149,11 @@ section:nth-child(odd) {
   -webkit-tap-highlight-color: transparent;
 }
 
-.logo-section a:hover {
-  transform: scale(1.05);
-}
-
 .logo-text {
   display: flex;
+  animation: none;
   flex-direction: column;
   line-height: 1.2;
-}
-
-.logo-text strong {
-  font-size: clamp(1.25rem, 3vw, 1.5rem);
-  background: var(--color-primary);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  font-weight: 800;
-}
-
-.logo-text small {
-  font-size: clamp(0.75rem, 2vw, 0.875rem);
-  color: var(--color-text-light);
 }
 
 /* Hamburger - couleur adaptée */
@@ -1104,14 +1087,6 @@ section:nth-child(odd) {
     right: 0;
   }
 
-  .logo-text small {
-    display: none;
-  }
-
-  .logo-text strong {
-    font-size: 1.125rem;
-  }
-
   .cta-button {
     font-size: 0.9375rem;
     padding: 0.625rem 1.25rem;
@@ -1166,10 +1141,6 @@ section:nth-child(odd) {
   .main-nav a {
     padding: 0.875rem 0;
     font-size: 0.9375rem;
-  }
-  
-  .logo-text strong {
-    font-size: 1rem;
   }
   
   .cta-button {
@@ -1273,10 +1244,6 @@ section:nth-child(odd) {
   
   .main-nav a {
     color: var(--color-text);
-  }
-  
-  .logo-text small {
-    color: var(--color-text-light);
   }
 
   .field input,

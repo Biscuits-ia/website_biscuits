@@ -240,7 +240,7 @@
 }
 
 /* Logo avec effet pop */
-:root[data-theme='light'] .logo-text strong {
+:root[data-theme='light'] {
   text-shadow: 3px 3px 0px rgba(0, 0, 0, 0.2);
 }
 

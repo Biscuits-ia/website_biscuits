@@ -10,10 +10,10 @@ import Logo from '@/assets/logo.png';
     
     <!-- Texte Hero -->
     <div class="hero-text flex flex-col gap-6 text-center lg:text-left items-center lg:items-start">
-      <h1 class="hero-title text-4xl md:text-6xl lg:text-7xl font-extrabold leading-tight text-[var(--color-text)] animate-fadeInUp opacity-0" style="animation-delay: 0.4s;">
-        Une association au service des <span class="text-transparent bg-clip-text bg-gradient-to-r from-[var(--color-first)] to-[var(--color-secondary)]">solutions tech</span> et du <span class="text-transparent bg-clip-text bg-gradient-to-r from-[var(--color-first)] to-[var(--color-secondary)]">développement IA</span>
+      <h1 class="hero-title text-4xl md:text-6xl lg:text-7xl font-extrabold leading-tight text-[var(--color-text)] animate-fadeInUp opacity-0">
+        Une association au service des solutions tech et du développement IA
       </h1>
-
+      
       <!-- CTA Button -->
      <div class="hero-cta mt-6 animate-fadeInUp opacity-0" style="animation-delay: 1s;">
         <a href="/devis" 
@@ -53,14 +53,30 @@ import Logo from '@/assets/logo.png';
           quality={80}
           class="w-full h-auto block"
         />
-          
+        <h2 class="hero-title text-4xl md:text-6xl lg:text-7xl font-extrabold leading-tight text-[var(--color-text)] animate-fadeInUp opacity-0">
+          Nous luttons contre les abus du numérique et rendons l'IA accessible à tous.
+        </h2>
       </div>
     </div>
   </div>
 </section>
 
 <style>
-  /* Animations personnalisées */
+  h1 {
+    text-align: left;
+  }
+  h2 {
+    border: 5px solid #000;
+    box-shadow: 5px 5px 0px 0px #000;
+    padding: 10px;
+    text-align: center;
+    font-size: 1.5rem;
+    color: var(--color-text-light);
+    font-weight: 500;
+    line-height: 1.4;
+    color: var(--color-gray-300);
+    margin: 0 auto;
+  }
   @keyframes fadeInUp {
     from {
       opacity: 0;

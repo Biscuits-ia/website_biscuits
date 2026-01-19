@@ -48,7 +48,6 @@
 :root[data-theme='light'] {
   /* 🍪 PALETTE GOURMANDE BISCUITS */
   --color-primary: oklch(60.201% 0.11053 58.986);
-  --color-primary-light:oklch(46.911% 0.08436 59.46);
   --color-primary-dark: oklch(46.911% 0.08436 59.46);
   --color-secondary: oklch(60.201% 0.11053 58.986);
   --color-first: oklch(52.51% 0.09481 59.895);

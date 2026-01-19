@@ -1,5 +1,5 @@
 ---
-import Layout from "../layouts/Layout.astro"
+import Layout from "../layouts/Layout.astro";
 
 const content = {
   hero: {
@@ -38,8 +38,7 @@ const content = {
   description="pourquoi choisir Biscuits IA pour vos solutions d'automatisation basées sur l'IA ?"
 >
     
-    <main class="container">
-      
+    <main class="container">       
       <section class="hero-section">
         <h1>{content.hero.title}</h1>
         <p class="subtitle">{content.hero.subtitle}</p>
@@ -52,6 +51,7 @@ const content = {
             {content.problemes.map(item => <li>{item}</li>)}
           </ul>
         </section>
+
 
         <section class="zone-card">
           <h2>Nous proposons</h2>

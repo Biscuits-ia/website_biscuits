@@ -37,13 +37,14 @@ const content = {
   title="Biscuits IA"
   description="Pourquoi choisir Biscuits IA pour vos solutions d'automatisation basées sur l'IA ?"
 >
-  <main class="container">
-    <!-- Hero Section -->
-    <section class="hero-section">
+  <section class="hero">
+    <div class="container">
       <h1 class="title">{content.hero.title}</h1>
-      <p class="subtitle">{content.hero.subtitle}</p>
-    </section>
+    </div>
+      <p class="subtitle text-center">{content.hero.subtitle}</p>
+  </section>
 
+  <div class="container">
     <!-- Problèmes & Solutions -->
     <div class="grid">
       <section class="zone-card">
@@ -91,6 +92,29 @@ const content = {
 </Layout>
 
 <style scoped>
+  
+  .hero {
+    text-align: center;
+    margin-top: 8vh;
+    padding: var(--spacing-4xl) 0 var(--spacing-3xl);
+    background: var(--color-bg);
+  }
+
+  .hero h1 { 
+    font-size: clamp(var(--font-size-3xl), 6vw, var(--font-size-5xl)); 
+    font-weight: var(--font-weight-extrabold);
+    margin-bottom: var(--spacing-md);
+    color: var(--color-text);
+  }
+
+  .hero-lead { 
+    font-size: clamp(var(--font-size-lg), 2.5vw, var(--font-size-xl)); 
+    margin-bottom: var(--spacing-xl);
+    color: var(--color-text-light);
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
+  } 
   /* Typography */
   .title {
     font-size: var(--font-size-3xl);
@@ -100,8 +124,7 @@ const content = {
 
   .subtitle {
     font-size: var(--font-size-xl);
-    text-align: center;
-    max-width: 700px;
+    margin-top: 5rem;
     line-height: 1.6;
     color: var(--color-text-light);
   }

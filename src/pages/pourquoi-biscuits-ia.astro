@@ -4,166 +4,222 @@ import Layout from "../layouts/Layout.astro";
 const content = {
   hero: {
     title: "L'ingénierie de l'IA au service de votre structure.",
-    subtitle: "Nous concevons des architectures d'automatisation sur-mesure pour rationaliser vos flux de travail et maximiser l’efficacité, que vous soyez association ou TPE/PME."
+    subtitle: "Nous concevons des architectures d'automatisation sur-mesure pour rationaliser vos flux de travail et maximiser l'efficacité, que vous soyez association ou TPE/PME. Nous utilisons Mistral et toutes nos autres IA sont entièrement développées en France."
   },
   problemes: [
     "Fragmentation des processus internes due à de nombreuses tâches manuelles répétitives.",
     "Complexité excessive des outils standards, souvent inadaptés aux structures légères ou associatives.",
-    "Manque de visibilité sur les bénéfices concrets et mesurables des solutions d’intelligence artificielle."
+    "Manque de visibilité sur les bénéfices concrets et mesurables des solutions d'intelligence artificielle."
   ],
   approche: [
-    "Analyse Globale : Identification des leviers d’automatisation et de simplification à forte valeur pour votre structure.",
+    "Analyse Globale : Identification des leviers d'automatisation et de simplification à forte valeur pour votre structure.",
     "Solutions Compatibles : Intégration fluide avec vos outils existants pour une continuité opérationnelle sans friction.",
     "Approche Pragmatique : Priorisation des développements générant un gain de temps ou une réduction de coûts tangible."
   ],
   processus: [
     "Audit & Diagnostic : Analyse des processus, identification des flux de données et points critiques.",
     "Conception & Déploiement : Mise en place de solutions IA adaptées aux besoins réels et aux contraintes de votre structure.",
-    "Transfert de Compétences : Formation et accompagnement pour assurer l’autonomie de vos équipes et bénévoles."
+    "Transfert de Compétences : Formation et accompagnement pour assurer l'autonomie de vos équipes et bénévoles."
   ],
   benefices: [
-    { titre: "Optimisation des ressources", desc: "Réallocation du temps et de l’énergie de vos équipes vers des missions à forte valeur ajoutée." },
+    { titre: "Optimisation des ressources", desc: "Réallocation du temps et de l'énergie de vos équipes vers des missions à forte valeur ajoutée." },
     { titre: "Fiabilisation des flux", desc: "Réduction des erreurs et traitement des données de manière systématique et sécurisée." },
-    { titre: "Montée en capacité", desc: "Facilitation de l’absorption de nouveaux projets ou volumes d’activité sans surcharge." }
+    { titre: "Montée en capacité", desc: "Facilitation de l'absorption de nouveaux projets ou volumes d'activité sans surcharge." }
   ],
   cta: {
     texte: "Demander un audit IA pour ma structure",
-    subtexte: "Analyse de faisabilité et estimation de l’impact sur vos process et votre efficacité."
+    subtexte: "Analyse de faisabilité et estimation de l'impact sur vos process et votre efficacité."
   }
 };
 ---
 
-  <Layout
-  title="Biscuits IA "
-  description="pourquoi choisir Biscuits IA pour vos solutions d'automatisation basées sur l'IA ?"
+<Layout
+  title="Biscuits IA"
+  description="Pourquoi choisir Biscuits IA pour vos solutions d'automatisation basées sur l'IA ?"
 >
-    
-    <main class="container">       
-      <section class="hero-section">
-        <h1>{content.hero.title}</h1>
-        <p class="subtitle">{content.hero.subtitle}</p>
-      </section>
+  <main class="container">
+    <!-- Hero Section -->
+    <section class="hero-section">
+      <h1 class="title">{content.hero.title}</h1>
+      <p class="subtitle">{content.hero.subtitle}</p>
+    </section>
 
-      <div class="grid">
-        <section class="zone-card">
-          <h2>Problèmes actuels</h2>
-          <ul>
-            {content.problemes.map(item => <li>{item}</li>)}
-          </ul>
-        </section>
-
-
-        <section class="zone-card">
-          <h2>Nous proposons</h2>
-          <ul>
-            {content.approche.map(item => <li>{item}</li>)}
-          </ul>
-        </section>
-      </div>
-
-      <section>
-        <h2>Ce que nous offrons</h2>
+    <!-- Problèmes & Solutions -->
+    <div class="grid">
+      <section class="zone-card">
+        <h2>Problèmes actuels</h2>
+        <ul>
+          {content.problemes.map(item => <li>{item}</li>)}
+        </ul>
       </section>
 
       <section class="zone-card">
-        <h2>Le processus, étape par étape</h2>
-        <ol class="process-list">
-          {content.processus.map(step => <li><strong>{step}</strong></li>)}
-        </ol>
+        <h2>Nous proposons</h2>
+        <ul>
+          {content.approche.map(item => <li>{item}</li>)}
+        </ul>
       </section>
+    </div>
 
-      <section class="cta-box">
-        <button class="cta-button">{content.cta.texte}</button>
-        <p class="subtext">{content.cta.subtexte}</p>
-      </section>
+    <!-- Bénéfices -->
+    <section class="benefits-section">
+      <h2>Ce que nous offrons</h2>
+      <div class="grid-3">
+        {content.benefices.map(benefice => (
+          <div class="feature-badge">
+            <h3>{benefice.titre}</h3>
+            <p>{benefice.desc}</p>
+          </div>
+        ))}
+      </div>
+    </section>
 
-    </main>
+    <!-- Processus -->
+    <section class="zone-card">
+      <h2>Le processus, étape par étape</h2>
+      <ol class="process-list">
+        {content.processus.map(step => <li>{step}</li>)}
+      </ol>
+    </section>
 
-  </Layout>
-  
-  <style scoped>
-      :root {
-        --container-max: var(--container-lg);
-      } 
-      
-      body {
-        background-color: var(--color-bg);
-        color: var(--color-text);
-        font-family: system-ui, sans-serif;
-      }
-      h2 {
-        padding: 0.6rem 0;
-      }
+    <!-- CTA -->
+    <section class="cta-box">
+      <button class="cta-button">{content.cta.texte}</button>
+      <p class="subtext">{content.cta.subtexte}</p>
+    </section>
+  </main>
+</Layout>
 
-      .container {
-        max-width: var(--container-xl);
-        margin: 0 auto;
-        padding: 0 var(--spacing-md);
-      }
+<style scoped>
+  /* Typography */
+  .title {
+    font-size: var(--font-size-3xl);
+    font-weight: bold;
+    text-align: center;
+  }
 
-      .hero-section {
-        text-align: center;
-        margin-right: 3rem;
-        padding: var(--spacing-3xl) 0;
-      }
+  .subtitle {
+    font-size: var(--font-size-xl);
+    text-align: center;
+    max-width: 700px;
+    line-height: 1.6;
+    color: var(--color-text-light);
+  }
 
-      .subtitle {
-        font-size: var(--font-size-xl);
-        max-width: 700px;
-        margin: var(--spacing-md) auto;
-        color: var(--color-text-light);
-      }
+  .subtext {
+    margin-top: var(--spacing-sm);
+    font-size: 0.875rem;
+    color: var(--color-text-light);
+  }
 
-      .subtext{
-        margin-top: 0.7rem;
-        font-size: 13px;
-      }
+  /* Layout */
+  .container {
+    max-width: var(--container-xl);
+    margin: 0 auto;
+    padding: 0 var(--spacing-md);
+  }
 
-      .grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-        gap: var(--spacing-xl);
-        margin: var(--spacing-2xl) 0;
-      }
+  .hero-section {
+    text-align: center; 
+  }
 
-      .grid-3 {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: var(--spacing-lg);
-        margin: var(--spacing-xl) 0;
-      }
-      
-      .process-list {
-        padding-left: var(--spacing-xl);
-      }
-      
-      .process-list li {
-        margin-bottom: var(--spacing-sm);
-        font-size: var(--font-size-lg);
-      }
+  .benefits-section {
+    margin: var(--spacing-3xl) 0;
+  }
 
-      .cta-box {
-        text-align: center;
-        margin-top: var(--spacing-4xl);
-        padding-bottom: var(--spacing-4xl);
-      }
+  .benefits-section h2 {
+    text-align: center;
+    margin-bottom: var(--spacing-xl);
+  }
 
-      .feature-badge {
-        border: var(--brutal-border);
-        box-shadow: var(--shadow-md);
-      }
+  /* Grids */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: var(--spacing-xl);
+    margin: var(--spacing-2xl) 0;
+  }
 
-      ul {
-        list-style: none;
-        padding: 0;
-      }
+  .grid-3 {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: var(--spacing-lg);
+  }
 
-      li {
-        margin-bottom: var(--spacing-sm);
-        padding-left: 0;
-      }
+  /* Lists */
+  ul {
+    list-style: none;
+    padding: 0;
+  }
 
-      .zone-card, .feature-badge {
-        margin: 0;
-      }
-    </style>
+  li {
+    margin-bottom: var(--spacing-md);
+    padding-left: var(--spacing-md);
+    position: relative;
+  }
+
+  li::before {
+    content: "→";
+    position: absolute;
+    left: 0;
+    color: var(--color-primary, #000);
+  }
+
+  .process-list {
+    padding-left: var(--spacing-xl);
+    list-style: decimal;
+  }
+
+  .process-list li {
+    font-size: var(--font-size-lg);
+    padding-left: var(--spacing-sm);
+  }
+
+  .process-list li::before {
+    content: none;
+  }
+
+  /* Cards */
+  .zone-card {
+    padding: var(--spacing-xl);
+    border: var(--brutal-border, 2px solid #000);
+    background: var(--color-bg-card, #fff);
+  }
+
+  .zone-card h2 {
+    margin-bottom: var(--spacing-lg);
+  }
+
+  .feature-badge {
+    padding: var(--spacing-lg);
+    border: var(--brutal-border, 2px solid #000);
+    box-shadow: var(--shadow-md, 4px 4px 0 rgba(0,0,0,0.1));
+    background: var(--color-bg-card, #fff);
+  }
+
+  .feature-badge h3 {
+    margin-bottom: var(--spacing-sm);
+  }
+
+  /* CTA */
+  .cta-box {
+    text-align: center;
+    margin: var(--spacing-4xl) 0;
+    padding-bottom: var(--spacing-4xl);
+  }
+
+  .cta-button {
+    padding: var(--spacing-md) var(--spacing-xl);
+    font-size: var(--font-size-lg);
+    font-weight: bold;
+    background: var(--color-primary, #000);
+    color: var(--color-bg, #fff);
+    border: var(--brutal-border, 2px solid #000);
+    cursor: pointer;
+    transition: transform 0.2s;
+  }
+
+  .cta-button:hover {
+    transform: translateY(-2px);
+  }
+</style>

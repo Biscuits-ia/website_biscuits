@@ -312,16 +312,6 @@ const features: Feature[] = [
   animation: slideVertical 8s ease-in-out infinite;
 }
 
-@keyframes slideHorizontal {
-  0%, 100% { transform: translateX(-100%); }
-  50% { transform: translateX(100%); }
-}
-
-@keyframes slideVertical {
-  0%, 100% { transform: translateY(-100%); }
-  50% { transform: translateY(100%); }
-}
-
 @media (max-width: 768px) {
   .features-section {
     padding: 4rem 1.5rem;
@@ -347,36 +337,6 @@ const features: Feature[] = [
   const shouldReduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   if (!shouldReduce) {
-    // Title reveal
-    const title = document.querySelector<HTMLElement>('[data-title-reveal]');
-    if (title) {
-      gsap.from(title, {
-        opacity: 0,
-        y: 50,
-        duration: 1,
-        scrollTrigger: {
-          trigger: title,
-          start: 'top 80%',
-        },
-      });
-    }
-
-    // Subtitle reveal
-    const subtitle = document.querySelector<HTMLElement>('[data-subtitle-reveal]');
-    if (subtitle) {
-      gsap.from(subtitle, {
-        opacity: 0,
-        y: 30,
-        duration: 0.8,
-        delay: 0.2,
-        scrollTrigger: {
-          trigger: subtitle,
-          start: 'top 80%',
-        },
-      });
-    }
-
-    // Feature cards animation
     const cards = document.querySelectorAll<HTMLElement>('[data-feature-card]');
     cards.forEach((card, index) => {
       // Entry animation
@@ -385,7 +345,7 @@ const features: Feature[] = [
         y: 80,
         rotateX: -15,
         scale: 0.9,
-        duration: 1,
+        duration: 0.4,
         delay: index * 0.1,
         ease: 'back.out(1.2)',
         scrollTrigger: {

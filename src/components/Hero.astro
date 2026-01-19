@@ -26,16 +26,16 @@ import Logo from '@/assets/logo.png';
       <!-- Trust indicators -->
       <div class="trust-indicators flex flex-col sm:flex-row gap-6 sm:gap-12 mt-8 animate-fadeInUp opacity-0" style="animation-delay: 1.2s;">
         <div class="trust-item flex flex-col gap-1 text-center lg:text-left">
-          <strong class="counter-value text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-[var(--color-first)] to-[var(--color-secondary)] bg-clip-text text-transparent" data-target="15">10</strong>
-          <span class="text-sm text-[var(--color-text-light)]">Années d'expérience</span>
+          <strong class="counter-value text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-[var(--color-first)] to-[var(--color-secondary)] bg-clip-text text-transparent">15</strong>
+          <span class="text-sm text-[var(--color-text-light)]">bénévoles engagés</span>
         </div>
         <div class="trust-item flex flex-col gap-1 text-center lg:text-left">
-          <strong class="counter-value text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-[var(--color-first)] to-[var(--color-secondary)] bg-clip-text text-transparent" data-target="35">25</strong>
-          <span class="text-sm text-[var(--color-text-light)]">Automatisations</span>
+          <strong class="counter-value text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-[var(--color-first)] to-[var(--color-secondary)] bg-clip-text text-transparent">+85%</strong>
+          <span class="text-sm text-[var(--color-text-light)]">structures sensibilisées</span>
         </div>
         <div class="trust-item flex flex-col gap-1 text-center lg:text-left">
-          <strong class="counter-value text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-[var(--color-first)] to-[var(--color-secondary)] bg-clip-text text-transparent" data-target="135">125</strong>
-          <span class="text-sm text-[var(--color-text-light)]">Heures économisées</span>
+          <strong class="counter-value text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-[var(--color-first)] to-[var(--color-secondary)] bg-clip-text text-transparent">+135</strong>
+          <span class="text-sm text-[var(--color-text-light)]">Accompagnement</span>
         </div>
       </div>
     </div>
@@ -150,65 +150,3 @@ import Logo from '@/assets/logo.png';
     }
   }
 </style>
-
-<script>
-  // Script minimaliste - fonctionne même si GSAP n'est pas chargé
-  function initHero() {
-    // Check si reduced motion
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      return;
-    }
-
-    // Simple counter animation avec requestAnimationFrame
-    const counters = document.querySelectorAll('.counter-value');
-    
-    counters.forEach((counter) => {
-      const target = parseInt(counter.getAttribute('data-target') || '0', 10);
-      let current = 0;
-      const increment = target / 60; // 60 frames pour 1 seconde
-      const duration = 2000; // 2 secondes
-      let startTime: number | null = null;
-
-      function updateCounter(timestamp: number) {
-        if (!startTime) startTime = timestamp;
-        const progress = timestamp - startTime;
-
-        if (progress < duration) {
-          current = Math.min(current + increment, target);
-          counter.textContent = Math.floor(current) + '+';
-          requestAnimationFrame(updateCounter);
-        } else {
-          counter.textContent = target + '+';
-        }
-      }
-
-      // Démarrer après 1.5 secondes
-      setTimeout(() => {
-        requestAnimationFrame(updateCounter);
-      }, 1500);
-    });
-
-    // Simple magnetic effect sans GSAP
-    const btn = document.getElementById('hero-cta-btn');
-    if (btn && window.innerWidth > 768) {
-      btn.addEventListener('mousemove', (e: MouseEvent) => {
-        const rect = btn.getBoundingClientRect();
-        const x = e.clientX - rect.left - rect.width / 2;
-        const y = e.clientY - rect.top - rect.height / 2;
-        
-        btn.style.transform = `translate(${x * 0.2}px, ${y * 0.2}px)`;
-      });
-
-      btn.addEventListener('mouseleave', () => {
-        btn.style.transform = 'translate(0, 0)';
-      });
-    }
-  }
-
-  // Init au chargement
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initHero);
-  } else {
-    initHero();
-  }
-</script>

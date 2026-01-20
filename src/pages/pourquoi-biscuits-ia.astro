@@ -34,151 +34,135 @@ const content = {
 ---
 
 <Layout
-  title="Biscuits IA"
-  description="Pourquoi choisir Biscuits IA pour vos solutions d'automatisation basées sur l'IA ?"
+  title="Biscuits IA - Solutions d'automatisation IA sur-mesure"
+  description="Biscuits IA conçoit des architectures d'automatisation basées sur l'IA pour rationaliser vos flux de travail. Solutions adaptées aux associations et TPE/PME."
 >
-  <section class="hero">
-    <div class="container">
-      <h1 class="title">{content.hero.title}</h1>
-    </div>
-      <p class="subtitle text-center">{content.hero.subtitle}</p>
-  </section>
-
-  <div class="container">
-    <!-- Problèmes & Solutions -->
-    <div class="grid">
-      <section class="zone-card">
-        <h2>Problèmes actuels</h2>
-        <ul>
-          {content.problemes.map(item => <li>{item}</li>)}
-        </ul>
-      </section>
-
-      <section class="zone-card">
-        <h2>Nous proposons</h2>
-        <ul>
-          {content.approche.map(item => <li>{item}</li>)}
-        </ul>
-      </section>
-    </div>
-
-    <!-- Bénéfices -->
-    <section class="benefits-section">
-      <h2>Ce que nous offrons</h2>
-      <div class="grid-3">
-        {content.benefices.map(benefice => (
-          <div class="feature-badge">
-            <h3>{benefice.titre}</h3>
-            <p>{benefice.desc}</p>
-          </div>
-        ))}
+  <main>
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="container">
+        <h1 id="hero-title" class="title">{content.hero.title}</h1>
+        <p class="subtitle">{content.hero.subtitle}</p>
       </div>
     </section>
 
-    <!-- Processus -->
-    <section class="zone-card">
-      <h2>Le processus, étape par étape</h2>
-      <ol class="process-list">
-        {content.processus.map(step => <li>{step}</li>)}
-      </ol>
-    </section>
+    <div class="container">
+      <!-- Problèmes & Solutions -->
+      <div class="grid" role="region" aria-label="Problèmes et solutions">
+        <section class="zone-card">
+          <h2>Problèmes actuels</h2>
+          <ul>
+            {content.problemes.map((item) => <li>{item}</li>)}
+          </ul>
+        </section>
 
-    <!-- CTA -->
-    <section class="cta-box">
-      <button class="cta-button">{content.cta.texte}</button>
-      <p class="subtext">{content.cta.subtexte}</p>
-    </section>
+        <section class="zone-card">
+          <h2>Nous proposons</h2>
+          <ul>
+            {content.approche.map((item) => <li>{item}</li>)}
+          </ul>
+        </section>
+      </div>
+
+      <!-- Processus -->
+      <section class="zone-card" aria-labelledby="process-title">
+        <h2 id="process-title">Le processus, étape par étape</h2>
+        <ol class="process-list">
+          {content.processus.map((step) => <li>{step}</li>)}
+        </ol>
+      </section>
+
+      <!-- CTA -->
+      <section class="cta-box">
+        <button class="cta-button" type="button" aria-label="Demander un audit IA pour votre structure">
+          {content.cta.texte}
+        </button>
+        <p class="subtext">{content.cta.subtexte}</p>
+      </section>
+    </div>
   </main>
 </Layout>
 
-<style scoped>
+<style>
+  main {
+    min-height: 100vh;
+  }
   
   .hero {
     text-align: center;
     margin-top: 8vh;
-    padding: var(--spacing-4xl) 0 var(--spacing-3xl);
-    background: var(--color-bg);
+    padding: var(--spacing-4xl, 4rem) 0 var(--spacing-3xl, 3rem);
+    background: var(--color-bg, #fff);
   }
 
-  .hero h1 { 
-    font-size: clamp(var(--font-size-3xl), 6vw, var(--font-size-5xl)); 
-    font-weight: var(--font-weight-extrabold);
-    margin-bottom: var(--spacing-md);
-    color: var(--color-text);
+  .hero .title { 
+    font-size: clamp(2rem, 6vw, 3.5rem); 
+    font-weight: 800;
+    margin-bottom: var(--spacing-md, 1rem);
+    color: var(--color-text, #000);
+    line-height: 1.2;
   }
 
-  .hero-lead { 
-    font-size: clamp(var(--font-size-lg), 2.5vw, var(--font-size-xl)); 
-    margin-bottom: var(--spacing-xl);
-    color: var(--color-text-light);
-    max-width: 700px;
+  /* Typography */
+  .subtitle {
+    font-size: clamp(1.125rem, 2.5vw, 1.25rem);
+    margin-top: var(--spacing-xl, 2rem);
+    line-height: 1.6;
+    color: var(--color-text-light, #666);
+    max-width: 800px;
     margin-left: auto;
     margin-right: auto;
-  } 
-  /* Typography */
-  .title {
-    font-size: var(--font-size-3xl);
-    font-weight: bold;
-    text-align: center;
-  }
-
-  .subtitle {
-    font-size: var(--font-size-xl);
-    margin-top: 5rem;
-    line-height: 1.6;
-    color: var(--color-text-light);
+    padding: 0 var(--spacing-md, 1rem);
   }
 
   .subtext {
-    margin-top: var(--spacing-sm);
+    margin-top: var(--spacing-sm, 0.5rem);
     font-size: 0.875rem;
-    color: var(--color-text-light);
+    color: var(--color-text-light, #666);
   }
 
   /* Layout */
   .container {
-    max-width: var(--container-xl);
+    max-width: min(var(--container-xl, 1280px), 100% - 2rem);
     margin: 0 auto;
-    padding: 0 var(--spacing-md);
-  }
-
-  .hero-section {
-    text-align: center; 
+    padding: 0 var(--spacing-md, 1rem);
   }
 
   .benefits-section {
-    margin: var(--spacing-3xl) 0;
+    margin: var(--spacing-3xl, 3rem) 0;
   }
 
   .benefits-section h2 {
     text-align: center;
-    margin-bottom: var(--spacing-xl);
+    margin-bottom: var(--spacing-xl, 2rem);
+    font-size: clamp(1.5rem, 4vw, 2rem);
   }
 
   /* Grids */
   .grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: var(--spacing-xl);
-    margin: var(--spacing-2xl) 0;
+    grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr));
+    gap: var(--spacing-xl, 2rem);
+    margin: var(--spacing-2xl, 2.5rem) 0;
   }
 
   .grid-3 {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: var(--spacing-lg);
+    grid-template-columns: repeat(auto-fit, minmax(min(250px, 100%), 1fr));
+    gap: var(--spacing-lg, 1.5rem);
   }
 
   /* Lists */
   ul {
     list-style: none;
     padding: 0;
+    margin: 0;
   }
 
   li {
-    margin-bottom: var(--spacing-md);
-    padding-left: var(--spacing-md);
+    margin-bottom: var(--spacing-md, 1rem);
+    padding-left: var(--spacing-md, 1rem);
     position: relative;
+    line-height: 1.6;
   }
 
   li::before {
@@ -186,16 +170,19 @@ const content = {
     position: absolute;
     left: 0;
     color: var(--color-primary, #000);
+    font-weight: bold;
   }
 
   .process-list {
-    padding-left: var(--spacing-xl);
+    padding-left: var(--spacing-xl, 2rem);
     list-style: decimal;
+    margin: var(--spacing-lg, 1.5rem) 0;
   }
 
   .process-list li {
-    font-size: var(--font-size-lg);
-    padding-left: var(--spacing-sm);
+    font-size: clamp(1rem, 2vw, 1.125rem);
+    padding-left: var(--spacing-sm, 0.5rem);
+    margin-bottom: var(--spacing-lg, 1.5rem);
   }
 
   .process-list li::before {
@@ -204,45 +191,92 @@ const content = {
 
   /* Cards */
   .zone-card {
-    padding: var(--spacing-xl);
-    border: var(--brutal-border, 2px solid #000);
+    padding: var(--spacing-xl, 2rem);
+    border: 2px solid currentColor;
     background: var(--color-bg-card, #fff);
+    border-radius: 0;
   }
 
   .zone-card h2 {
-    margin-bottom: var(--spacing-lg);
+    margin-bottom: var(--spacing-lg, 1.5rem);
+    font-size: clamp(1.25rem, 3vw, 1.5rem);
+    margin-top: 0;
   }
 
   .feature-badge {
-    padding: var(--spacing-lg);
-    border: var(--brutal-border, 2px solid #000);
-    box-shadow: var(--shadow-md, 4px 4px 0 rgba(0,0,0,0.1));
+    padding: var(--spacing-lg, 1.5rem);
+    border: 2px solid currentColor;
+    box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.1);
     background: var(--color-bg-card, #fff);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .feature-badge:hover {
+    transform: translateY(-2px);
+    box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.15);
   }
 
   .feature-badge h3 {
-    margin-bottom: var(--spacing-sm);
+    margin-bottom: var(--spacing-sm, 0.5rem);
+    margin-top: 0;
+    font-size: clamp(1.125rem, 2.5vw, 1.25rem);
+  }
+
+  .feature-badge p {
+    margin: 0;
+    line-height: 1.6;
   }
 
   /* CTA */
   .cta-box {
     text-align: center;
-    margin: var(--spacing-4xl) 0;
-    padding-bottom: var(--spacing-4xl);
+    margin: var(--spacing-4xl, 4rem) 0;
+    padding-bottom: var(--spacing-4xl, 4rem);
   }
 
   .cta-button {
-    padding: var(--spacing-md) var(--spacing-xl);
-    font-size: var(--font-size-lg);
-    font-weight: bold;
+    padding: var(--spacing-md, 1rem) var(--spacing-xl, 2rem);
+    font-size: clamp(1rem, 2.5vw, 1.125rem);
+    font-weight: 700;
     background: var(--color-primary, #000);
     color: var(--color-bg, #fff);
-    border: var(--brutal-border, 2px solid #000);
+    border: 2px solid var(--color-primary, #000);
     cursor: pointer;
-    transition: transform 0.2s;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.1);
   }
 
-  .cta-button:hover {
+  .cta-button:hover,
+  .cta-button:focus-visible {
     transform: translateY(-2px);
+    box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.2);
+  }
+
+  .cta-button:focus-visible {
+    outline: 2px solid var(--color-primary, #000);
+    outline-offset: 4px;
+  }
+
+  .cta-button:active {
+    transform: translateY(0);
+    box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.1);
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .hero {
+      margin-top: 4vh;
+      padding: var(--spacing-2xl, 2.5rem) 0 var(--spacing-xl, 2rem);
+    }
+
+    .grid,
+    .grid-3 {
+      gap: var(--spacing-lg, 1.5rem);
+    }
+
+    .zone-card,
+    .feature-badge {
+      padding: var(--spacing-lg, 1.5rem);
+    }
   }
 </style>

@@ -30,7 +30,6 @@ const fullOgImage = ogImage.startsWith('http')
   ? ogImage 
   : `${siteUrl}${ogImage}`;
 
-// Ensure description is between 50-160 characters
 const seoDescription = description.length > 160 
   ? description.substring(0, 157) + '...' 
   : description;

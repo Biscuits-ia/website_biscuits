@@ -9,10 +9,6 @@ import BaseLayout from '@layouts/Layout.astro';
   <section class="hero-resources">
     <div class="container">
       <div class="hero-content">
-        <span class="badge">100% Gratuit</span>
-        <h1 class="hero-title">
-          Guides & <span class="gradient-text">Ressources</span>
-        </h1>
         <p class="hero-subtitle">
           Accédez à des guides pratiques et documents pour vous aider à intégrer l'IA dans vos projets, à votre rythme.
         </p>
@@ -20,7 +16,7 @@ import BaseLayout from '@layouts/Layout.astro';
           <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
             <path d="M9 17A8 8 0 1 0 9 1a8 8 0 0 0 0 16zM19 19l-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
-          <input type="text" placeholder="Rechercher un guide ou une ressource...">
+          <input type="text" placeholder="Rechercher une ressource..">
         </div>
       </div>
     </div>
@@ -272,24 +268,7 @@ import BaseLayout from '@layouts/Layout.astro';
     text-align: center;
     max-width: 800px;
     margin: 0 auto;
-    color: var(--color-gray-100);
-  }
-
-  .badge {
-    display: inline-block;
-    padding: 8px 16px;
-    backdrop-filter: blur(10px);
-    border-radius: 0px;
-    font-size: 14px;
-    font-weight: 600;
-    border: 3px solid var(--color-gray-100);
-  }
-
-  .hero-title {
-    font-size: clamp(2.5rem, 5vw, 4rem);
-    font-weight: 800;
-    line-height: 1.1;
-    letter-spacing: -0.02em;
+    color: var(--color-gray-900);
   }
 
   .gradient-text {
@@ -357,7 +336,7 @@ import BaseLayout from '@layouts/Layout.astro';
 
   .section-header p {
     font-size: 1.1rem;
-    color: var(--color-gray-300);
+    color: var(--color-gray-100);
   }
 
   .resources-grid {
@@ -533,7 +512,7 @@ import BaseLayout from '@layouts/Layout.astro';
   }
 
   .category-card {
-    background: var(--color-secondary);
+    background: var(--color-accent-honey);
     padding: 32px 24px;
     border-color: 10px solid var(--border-color);
     text-align: center;
@@ -561,8 +540,9 @@ import BaseLayout from '@layouts/Layout.astro';
 
   .category-card p {
     font-size: 0.9rem;
-    color: var(--color-gray-200);
+    color: var(--color-gray-100);
   }
+
 
   .newsletter-section {
     padding: 80px 0;
@@ -579,11 +559,13 @@ import BaseLayout from '@layouts/Layout.astro';
   .newsletter-text h2 {
     font-size: clamp(1.8rem, 4vw, 2.5rem);
     font-weight: 700;
+    color: var(--color-gray-900);
     margin-bottom: 12px;
   }
 
   .newsletter-text p {
     font-size: 1.1rem;
+    color: var(--color-gray-800);
     opacity: 0.9;
     margin-bottom: 32px;
   }

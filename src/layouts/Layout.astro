@@ -19,7 +19,7 @@ export interface Props {
   ogType?: 'website' | 'article';
   noindex?: boolean;
   schema?: {
-    type: 'Organization' | 'ProfessionalService' | 'FAQPage' | 'Article' | 'WebPage';
+    type: 'Organization' | 'Service' | 'FAQPage' | 'Article' | 'WebPage';
     data?: Record<string, any>;
   };
   loadGSAP?: boolean;
@@ -50,7 +50,7 @@ const organizationSchema = {
   "name": "Biscuits IA",
   "url": siteUrl,
   "logo": `${siteUrl}/logo.png`,
-  "description": "Solutions IA et automatisation pour développeurs et startups tech",
+  "description": "Biscuits IA fournit des outils, pour accompagner associations et TPE/PME dans leurs projets. Créez efficacement avec des bases fiables et accessibles à tous.",
   "email": "contact@biscuits.dev",
   "address": {
     "@type": "PostalAddress",

@@ -352,7 +352,6 @@ import BaseLayout from '@layouts/Layout.astro';
   }
 
   .resource-card:hover {
-    transform: translateY(-8px);
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
   }
 
@@ -361,8 +360,8 @@ import BaseLayout from '@layouts/Layout.astro';
     top: 20px;
     right: 20px;
     padding: 4px 12px;
-    background: var(--color-first);
-    color: var(--color-gray-800);
+    background: var(--color-accent-honey);
+    color: var(--color-gray-200);
     border-radius: 0px;
     font-size: 0.75rem;
     font-weight: 700;
@@ -370,13 +369,13 @@ import BaseLayout from '@layouts/Layout.astro';
   }
 
   .type-toolkit .card-badge {
-    background: var(--color-first);
-    color: var(--color-gray-800);
+    background: var(--color-accent-honey);
+    color: var(--color-gray-200);
   }
 
   .type-code .card-badge {
-    background: var(--color-first);
-    color: var(--color-gray-800);
+    background: var(--color-accent-honey);
+    color: var(--color-gray-200);
   }
 
   .card-icon .icon-wrapper {
@@ -386,19 +385,21 @@ import BaseLayout from '@layouts/Layout.astro';
     align-items: center;
     justify-content: center;
     font-size: 36px;
-    background: var(--color-bg);
-    border-radius: 0px;
-    box-shadow: 0 8px 16px var(--color-text);
+    background: var(--color-primary);
+    border: 3px solid var(--color-border-second);
+    border-radius: 10%;
   }
 
   .type-toolkit .icon-wrapper {
-    background: var(--color-bg);
-    box-shadow: 0 8px 16px rgba(255, 152, 0, 0.3);
+    background: var(--color-primary);
+    border: 3px solid var(--color-border-second);
+    border-radius: 10%;
   }
 
   .type-code .icon-wrapper {
-    background: var(--color-bg);
-    box-shadow: 0 8px 16px var(--color-first);
+    background: var(--color-primary);
+    border: 3px solid var(--color-border-second);
+    border-radius: 10%;
   }
 
   .card-content h3 {
@@ -479,11 +480,11 @@ import BaseLayout from '@layouts/Layout.astro';
     color: var(--color-gray-800);
     font-weight: 600;
     text-decoration: none;
-    transition: all 0.3s ease;
   }
 
   .btn-download:hover {
-    transform: translateY(-2px);
+    background-color: var(--color-accent-honey);
+    color: var(--color-gray-200);
   }
 
   .categories-section {

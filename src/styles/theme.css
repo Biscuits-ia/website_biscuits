@@ -78,7 +78,8 @@
   --color-bg-elevated: oklch(95.509% 0.05337 88.363);    /* Blanc cassé crémeux */
   
   /* Bordure chocolat noir profond */
-  --color-border: oklch(15% 0.03 40);          /* Chocolat 85% intense */
+  --color-border: oklch(15% 0.03 40);   
+  --color-border-second: oklch(30.35% 0.06015 52.097);
   
   /* Texte chocolat foncé */
   --color-text: oklch(20% 0.03 40);            /* Chocolat noir riche */

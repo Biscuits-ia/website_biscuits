@@ -134,6 +134,7 @@ import BaseLayout from '@layouts/Layout.astro';
     text-align: center;
     padding: 2.5rem 1.5rem;
     background: var(--color-secondary);
+    border-radius: 12px;
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
   }
 
@@ -183,15 +184,21 @@ import BaseLayout from '@layouts/Layout.astro';
   }
 
   .examples,
-  .useful-examples {
+  .examples-sharing,
+  .transparency {
     background: linear-gradient(135deg, #f8f9fa 0%, #f1f3f5 100%);
     padding: 2rem 2.5rem;
+    border-radius: 8px;
     margin-top: 2.5rem;
     border-left: 4px solid #4a5568;
   }
 
-  .useful-examples {
-    border-left-color: #2d882d;
+  .examples-sharing {
+    border-left-color: #e2a72e;
+  }
+
+  .transparency {
+    border-left-color: #4a90e2;
   }
 
   .note {
@@ -210,15 +217,8 @@ import BaseLayout from '@layouts/Layout.astro';
   }
 
   .actions ul li,
-  .examples ul li {
-    padding-left: 2rem;
-    margin-bottom: 1.25rem;
-    position: relative;
-    line-height: 1.75;
-    color: #2d3748;
-  }
-
-  .useful-examples ul li {
+  .examples ul li,
+  .examples-sharing ul li {
     padding-left: 2rem;
     margin-bottom: 1.25rem;
     position: relative;
@@ -227,7 +227,8 @@ import BaseLayout from '@layouts/Layout.astro';
   }
 
   .actions ul li::before,
-  .examples ul li::before {
+  .examples ul li::before,
+  .examples-sharing ul li::before {
     content: "→";
     position: absolute;
     left: 0;
@@ -236,18 +237,10 @@ import BaseLayout from '@layouts/Layout.astro';
     font-size: 1.25rem;
   }
 
-  .useful-examples ul li::before {
-    content: "✓";
-    position: absolute;
-    left: 0;
-    color: #2d882d;
-    font-weight: bold;
-    font-size: 1.25rem;
-  }
-
   .cta {
     background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
     padding: 0;
+    border-radius: 12px;
     margin-top: 5rem;
     margin-bottom: 4rem;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
@@ -281,6 +274,7 @@ import BaseLayout from '@layouts/Layout.astro';
     display: inline-block;
     padding: 0.875rem 2rem;
     text-decoration: none;
+    border-radius: 8px;
     font-weight: 600;
     font-size: 1rem;
     transition: all 0.2s ease;
@@ -324,7 +318,8 @@ import BaseLayout from '@layouts/Layout.astro';
     }
 
     .examples,
-    .useful-examples {
+    .examples-sharing,
+    .transparency {
       padding: 1.5rem 1.75rem;
     }
 

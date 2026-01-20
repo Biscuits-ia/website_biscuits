@@ -284,7 +284,7 @@
   .cookie-close svg {
     width: 20px;
     height: 20px;
-    color: var(--color-text);
+    color: var(--color-text );
   }
 
   .cookie-actions {

@@ -248,8 +248,9 @@
 
   .cookie-text p {
     margin: 0;
+    margin-bottom: 15px;
     font-size: var(--font-size-sm);
-    color: var(--color-text-light);
+    color: var(--color-gray-100);
     line-height: 1.6;
     font-weight: var(--font-weight-medium);
   }
@@ -262,7 +263,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--color-text-light);
+    color: var(--color-text);
     box-shadow: var(--shadow-sm);
     transition: all var(--transition-fast);
     flex-shrink: 0;
@@ -283,6 +284,7 @@
   .cookie-close svg {
     width: 20px;
     height: 20px;
+    color: var(--color-text);
   }
 
   .cookie-actions {
@@ -335,7 +337,8 @@
   }
 
   .cookie-btn-secondary {
-    background: var(--color-bg);
+    background: var(--color-secondary);
+    font-size: 13px;
     color: var(--color-text);
     border-color: var(--color-border);
   }

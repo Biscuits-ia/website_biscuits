@@ -12,6 +12,9 @@ import compress from 'astro-compress';
 import robots from 'astro-robots';
 
 
+import icon from 'astro-icon';
+
+
 // https://astro.build/config
 export default defineConfig({
   site: 'https://biscuits-ia.com',
@@ -25,30 +28,27 @@ export default defineConfig({
 changefreq: 'weekly',
 priority: 0.7,
 lastmod: new Date(),
-}), vercel(),
-
-robots({
-      host: 'biscuits-ia.com',
-      sitemap: [
-        "https://biscuits-ia.com//sitemap-index.xml",
-      ],
-      policy: [
-        {
-          userAgent: [
-            "Applebot",
-            "Googlebot",
-            "bingbot",
-            "Yandex",
-            "Yeti",
-            "Baiduspider",
-            "360Spider",
-            "*",
-          ],
-          allow: ["/"],
-        },
-      ],
-    }),
-  ],
+}), vercel(), robots({
+        host: 'biscuits-ia.com',
+        sitemap: [
+          "https://biscuits-ia.com//sitemap-index.xml",
+        ],
+        policy: [
+          {
+            userAgent: [
+              "Applebot",
+              "Googlebot",
+              "bingbot",
+              "Yandex",
+              "Yeti",
+              "Baiduspider",
+              "360Spider",
+              "*",
+            ],
+            allow: ["/"],
+          },
+        ],
+      }), icon()],
 
   output: 'static',
   

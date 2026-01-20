@@ -2,7 +2,7 @@
 import BaseLayout from '@/layouts/Layout.astro';
 import Hero from '@/components/Hero.astro';
 import AnimatedFeatureGrid from '@/components/AnimatedFeaturesGrid.astro';
-import AnimatedProcessTimeline from '@/components/AnimatedProcessTimeline.astro';
+import Confidentialité from '@/components/Confidentialité.astro';
 
 ---
 
@@ -12,17 +12,5 @@ import AnimatedProcessTimeline from '@/components/AnimatedProcessTimeline.astro'
 >
   <Hero />
   <AnimatedFeatureGrid />
-  <AnimatedProcessTimeline />  
+  <Confidentialité />
 </BaseLayout>
-
-<style is:global>
-  html {
-    scroll-behavior: smooth;
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    html {
-      scroll-behavior: auto;
-    }
-  }
-</style>

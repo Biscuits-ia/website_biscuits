@@ -239,10 +239,6 @@
   background: var(--color-bg-elevated);
 }
 
-/* Logo avec effet pop */
-:root[data-theme='light'] {
-  text-shadow: 3px 3px 0px rgba(0, 0, 0, 0.2);
-}
 
 /* Titres avec effet cartoon */
 :root[data-theme='light'] h1,

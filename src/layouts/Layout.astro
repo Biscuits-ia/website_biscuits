@@ -94,7 +94,6 @@ const isProd = import.meta.env.PROD;
   {isProd && (
     <>
       <link rel="preconnect" href="https://www.googletagmanager.com" crossorigin />
-      <link rel="preconnect" href="https://plausible.io" crossorigin />
     </>
   )}
   
@@ -156,22 +155,6 @@ const isProd = import.meta.env.PROD;
         initGSAP();
       });
     </script>
-  )}
-  
-  {isProd && (
-    <>
-      <script 
-        defer 
-        data-domain="biscuits-ia.com" 
-        src="https://plausible.io/js/script.js"
-      ></script>
-      
-      <script is:inline>
-        window.plausible = window.plausible || function() {
-          (plausible.q = plausible.q || []).push(arguments)
-        };
-      </script>
-    </>
   )}
   
   <script is:inline>

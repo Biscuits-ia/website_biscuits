@@ -2,23 +2,23 @@
 import BaseLayout from "@/layouts/Layout.astro";
 ---
 
-<BaseLayout title="Politique de Confidentialité - Biscuits du Dev" description="Politique de confidentialité du site Biscuits du Dev, conforme RGPD et CNIL.">
+<BaseLayout title="Politique de Confidentialité - Biscuits IA" description="Politique de confidentialité du site Biscuits IA, conforme RGPD et CNIL.">
   <main class="legal-wrapper">
     <h1 class="title">Politique de Confidentialité</h1>
-    <p><strong>Dernière mise à jour :</strong> 20/11/2025</p>
+    <p><strong>Dernière mise à jour :</strong> 23/01/2026</p>
 
     <p>
-      La présente politique explique comment <strong>Biscuits du Dev</strong> collecte,
-      utilise et protège vos données personnelles dans le cadre de ses prestations
-      d’assistance informatique et services associés.
+      La présente politique explique comment <strong>Biscuits IA</strong> collecte,
+      utilise et protège vos données personnelles dans le cadre de ses activités associatives et services numériques.
     </p>
 
     <h2>1. Responsable du traitement</h2>
     <p>
-      <strong>Biscuits du Dev</strong><br />
-      Auto-entrepreneur : Sweetosky<br />
-      Email : <a href="mailto:contact@optea-tech.fr">contact@biscuits-ia.com</a><br />
-      Site : <a href="https://optea-tech.fr">biscuits-ia.com  </a>
+      <strong>Biscuits IA</strong><br />
+      Association Loi 1901<br />
+      Responsable : Alexis Gallard<br />
+      Email : <a href="mailto:contact@biscuits-ia.com">contact@biscuits-ia.com</a><br />
+      Site : <a href="https://biscuits-ia.com">https://biscuits-ia.com</a>
     </p>
 
     <h2>2. Données collectées</h2>
@@ -28,14 +28,14 @@ import BaseLayout from "@/layouts/Layout.astro";
       <li>Nom et prénom</li>
       <li>Adresse e-mail</li>
       <li>Numéro de téléphone</li>
-      <li>Type de service demandé</li>
+      <li>Objet de la demande</li>
       <li>Message envoyé</li>
-      <li>Adresse IP (Cloudflare – sécurité uniquement)</li>
+      <li>Adresse IP (uniquement pour la sécurité)</li>
     </ul>
 
     <h3>2.2 Données techniques</h3>
     <p>
-      Le site utilise uniquement des cookies techniques nécessaires au fonctionnement :
+      Le site utilise uniquement des cookies techniques nécessaires au bon fonctionnement :
     </p>
     <ul>
       <li>Protection Cloudflare</li>
@@ -45,24 +45,24 @@ import BaseLayout from "@/layouts/Layout.astro";
     <h2>3. Finalités des données</h2>
     <p>Vos données sont utilisées uniquement pour :</p>
     <ul>
-      <li>Répondre à votre demande de contact</li>
+      <li>Répondre à vos demandes</li>
       <li>Vous recontacter</li>
-      <li>Assurer la sécurité du site et du formulaire</li>
+      <li>Assurer la sécurité du site et des formulaires</li>
     </ul>
 
     <p>Aucune donnée n’est utilisée à des fins marketing ou publicitaires.</p>
 
     <h2>4. Base légale</h2>
     <ul>
-      <li><strong>Article 6(1)(b)</strong> du RGPD : exécution d’un contrat ou mesures précontractuelles</li>
-      <li><strong>Article 6(1)(f)</strong> : intérêt légitime (sécurité du site)</li>
+      <li><strong>Article 6(1)(b)</strong> du RGPD : exécution d’une demande ou mesures précontractuelles</li>
+      <li><strong>Article 6(1)(f)</strong> du RGPD : intérêt légitime (sécurité du site)</li>
     </ul>
 
     <h2>5. Destinataires</h2>
     <ul>
-      <li>Biscuits du Dev (Alexis Gallard)</li>
-      <li>Cloudflare (sécurité, anti-bot)</li>
-      <li>Service de traitement du formulaire (FormSubmit ou Web3Forms)</li>
+      <li>Biscuits IA (Alexis Gallard)</li>
+      <li>Cloudflare (sécurité et anti-bot)</li>
+      <li>Service de traitement du formulaire (Web3Forms)</li>
     </ul>
 
     <h2>6. Durée de conservation</h2>
@@ -84,24 +84,24 @@ import BaseLayout from "@/layouts/Layout.astro";
     <h2>8. Vos droits (RGPD)</h2>
     <p>Vous pouvez demander :</p>
     <ul>
-      <li>L’accès à vos données</li>
+      <li>L'accès à vos données</li>
       <li>La rectification</li>
-      <li>L’effacement</li>
-      <li>L’opposition</li>
+      <li>L'effacement</li>
+      <li>L'opposition</li>
       <li>La limitation du traitement</li>
     </ul>
-    <p>Contact : <a href="mailto:contact@optea-tech.fr">contact@optea-tech.fr</a></p>
+    <p>Contact : <a href="mailto:contact@biscuits-ia.com">contact@biscuits-ia.com</a></p>
 
     <h2>9. Hébergement</h2>
     <p>
       Le site est hébergé par :<br />
       <strong>Vercel Inc.</strong><br />
-      340 S Lemon Ave #4133, Walnut, CA 91789, USA.
+      340 S Lemon Ave #4133, Walnut, CA 91789, USA
     </p>
 
     <h2>10. Modifications</h2>
     <p>
-      Cette politique peut être mise à jour en cas d’évolution légale ou technique.
+      Cette politique peut être mise à jour en cas d'évolution légale ou technique.
     </p>
   </main>
 
@@ -112,8 +112,18 @@ import BaseLayout from "@/layouts/Layout.astro";
       padding: 1.5rem;
       line-height: 1.7;
     }
+    
+    .title {
+      font-size: clamp(2rem, 5vw, 3rem);
+      font-weight: 800;
+      margin-bottom: 1.8rem;
+      color: var(--color-text);
+      text-align: center;
+    }
+
     h1, h2, h3 {
       margin-top: 1.8rem;
+      color: var(--color-text)
     }
   </style>
 </BaseLayout>

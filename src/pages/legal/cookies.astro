@@ -2,75 +2,64 @@
 import BaseLayout from "@/layouts/Layout.astro";
 ---
 
-<BaseLayout title="Politique Cookies - Biscuits du Dev" description="Politique cookies conforme CNIL. Cookies techniques uniquement.">
+<BaseLayout title="Politique Cookies - Biscuits IA" description="Politique cookies conforme CNIL et RGPD. Cookies techniques et mesure d’audience.">
   <main class="legal-wrapper">
     <h1>Politique Cookies</h1>
-    <p><strong>Dernière mise à jour :</strong> 20/11/2025</p>
+    <p><strong>Dernière mise à jour :</strong> 23/01/2026</p>
 
     <p>
-      Le site <strong>Biscuits du Dev</strong> utilise uniquement des cookies
-      <strong>techniques nécessaires</strong> au fonctionnement et à la sécurité.
-      Aucun cookie publicitaire ou de suivi n’est utilisé.
+      Le site <strong>Biscuits IA</strong> utilise des cookies pour assurer le fonctionnement du site, la sécurité et la mesure d’audience. 
+      Certains cookies nécessitent votre consentement avant leur activation (Google Tag / Google Analytics), tandis que d'autres sont strictement techniques et exemptés.
     </p>
 
-    <h2>1. Cookies techniques utilisés</h2>
+    <h2>1. Cookies techniques</h2>
 
-    <h3>1.1. Cookies Cloudflare</h3>
+    <h3>1.1. Cloudflare</h3>
     <p>
-      Cloudflare utilise des cookies indispensables pour :
+      Ces cookies sont indispensables pour :
     </p>
     <ul>
-      <li>la protection anti-bot</li>
-      <li>la prévention des attaques DDoS</li>
-      <li>l’identification du trafic légitime</li>
+      <li>protéger le site contre les bots</li>
+      <li>prévenir les attaques DDoS</li>
+      <li>identifier le trafic légitime</li>
     </ul>
-
-    <p>Cookies concernés :</p>
-    <ul>
-      <li><code>__cf_bm</code></li>
-      <li><code>cf_clearance</code></li>
-    </ul>
-
+    <p>Cookies concernés : <code>__cf_bm</code>, <code>cf_clearance</code></p>
     <p>
-      Ces cookies sont strictement nécessaires au fonctionnement du site
-      et sont <strong>exemptés de consentement</strong> (CNIL).
+      Ces cookies sont strictement nécessaires et sont <strong>exemptés de consentement</strong> selon la CNIL.
     </p>
 
     <h3>1.2. Cloudflare Turnstile</h3>
     <p>
-      Le système anti-bot Turnstile utilise un jeton technique pour vérifier que la
-      soumission du formulaire provient bien d’un humain.
+      Ce cookie vérifie que les formulaires sont soumis par des humains. 
+      Il est également exempté de consentement car il sert uniquement à la sécurité.
     </p>
 
+    <h2>2. Cookies de mesure d’audience (Google Tag / Analytics)</h2>
     <p>
-      Ce cookie est également <strong>exempté</strong>, car il sert uniquement à la sécurité.
+      Nous utilisons Google Tag pour analyser l’utilisation du site et améliorer l’expérience utilisateur. 
+      Ces cookies permettent de mesurer le trafic, les pages visitées, le temps passé sur le site et les interactions.
     </p>
-
-    <h2>2. Absence de cookies non essentiels</h2>
+    <p>Cookies concernés : <code>_ga</code>, <code>_gid</code>, <code>_gat</code> (ou similaires selon Google Tag)</p>
     <p>
-      Le site n’utilise :
-    </p>
-    <ul>
-      <li>aucun cookie de publicité</li>
-      <li>aucun cookie de mesure d’audience</li>
-      <li>aucun cookie tiers de suivi</li>
-    </ul>
-
-    <p>
-      Ainsi, aucun mécanisme de consentement (“Accepter / Refuser”) n’est nécessaire.
+      Ces cookies <strong>ne sont activés qu’avec votre consentement</strong>. Vous pouvez accepter ou refuser à tout moment via le bandeau cookie ou vos paramètres.
     </p>
 
     <h2>3. Gestion des cookies</h2>
     <p>
-      Vous pouvez configurer votre navigateur pour bloquer les cookies techniques,
-      mais certaines fonctionnalités essentielles (sécurité, protection anti-bot) 
-      pourraient ne plus fonctionner.
+      Vous pouvez configurer votre navigateur pour bloquer certains cookies, mais certaines fonctionnalités (sécurité, protection anti-bot, mesure d’audience) pourraient ne plus fonctionner correctement.
     </p>
+    <p>
+      Pour retirer votre consentement aux cookies Google, vous pouvez : 
+    </p>
+    <ul>
+      <li>Cliquer sur le bouton “Refuser” du bandeau cookie si présent</li>
+      <li>Utiliser les <a href="https://tools.google.com/dlpage/gaoptout" target="_blank" rel="noopener noreferrer">outils de désactivation Google Analytics</a></li>
+      <li>Supprimer les cookies via votre navigateur</li>
+    </ul>
 
     <h2>4. Mise à jour</h2>
     <p>
-      Cette politique sera modifiée si de nouveaux outils non-exemptés
-      venaient à être ajoutés (ex : analytics).
+      Cette politique sera mise à jour si de nouveaux cookies ou outils de suivi sont ajoutés. La version la plus récente est toujours publiée sur ce site.
     </p>
   </main>
 
@@ -82,7 +71,17 @@ import BaseLayout from "@/layouts/Layout.astro";
       line-height: 1.7;
     }
     h1, h2, h3 {
-      margin-top: 1.8rem;
+      margin-top: 4rem;
+    }
+    ul {
+      margin: 0.5rem 0 1rem 1.5rem;
+    }
+    a {
+      color: var(--color-primary);
+      text-decoration: underline;
+    }
+    a:hover {
+      color: var(--color-primary-dark);
     }
   </style>
 </BaseLayout>

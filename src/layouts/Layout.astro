@@ -90,7 +90,6 @@ const isProd = import.meta.env.PROD;
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
   <link rel="sitemap" href="/sitemap-index.xml" />
   
-  <!-- Preconnect to external domains (performance) -->
   {isProd && (
     <>
       <link rel="preconnect" href="https://www.googletagmanager.com" crossorigin />
@@ -156,26 +155,6 @@ const isProd = import.meta.env.PROD;
       });
     </script>
   )}
-  
-  <script is:inline>
-    (function() {
-      const STORAGE_KEY = 'theme-preference';
-      
-      function getThemePreference() {
-        if (typeof localStorage !== 'undefined' && localStorage.getItem(STORAGE_KEY)) {
-          return localStorage.getItem(STORAGE_KEY);
-        }
-        return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
-      }
-
-      const theme = getThemePreference();
-      document.documentElement.setAttribute('data-theme', theme);
-      
-      if (theme === 'dark') {
-        document.documentElement.classList.add('dark');
-      }
-    })();
-  </script>
 </body>
 
 <style is:global>

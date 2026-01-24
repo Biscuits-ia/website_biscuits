@@ -43,90 +43,7 @@
   --transition-fast: 0.2s ease;
   --transition-base: 0.3s ease;
   --transition-slow: 0.5s ease;
-}
 
-/* ========================================
-   DARK THEME - Style moderne
-   ======================================== */
-:root,
-:root[data-theme='dark'] {
-  /* 🍪 PALETTE BISCUITS NOCTURNE - Tons chauds sur fond sombre */
-  --color-primary: oklch(54.737% 0.14363 50.501);         /* Caramel doré lumineux */
-  --color-primary-light: oklch(92.397% 0.04768 58.943);   /* Caramel clair */
-  --color-primary-dark: oklch(52% 0.16 45);    /* Caramel brûlé */
-  --color-secondary: oklch(45.388% 0.1315 39.495);       /* Orange cuivré chaud */
-  --color-first: oklch(53.717% 0.11801 60.834);           /* Miel ambré doré */
-  
-  /* Palette gourmande nocturne */
-  --color-accent-yellow: oklch(53.717% 0.11801 60.834);   /* Miel doré brillant */
-  --color-accent-orange: oklch(55.426% 0.15987 44.467);   /* Caramel intense */
-  --color-accent-cream: oklch(85% 0.08 75);    /* Crème vanillée */
-  --color-accent-cinnamon: oklch(51.448% 0.15841 40.94); /* Cannelle chaude */
-  --color-accent-toffee: oklch(49.648% 0.13668 46.597);   /* Toffee riche */
-  
-  /* Palette de gris avec teinte chaude biscuit */
-  --color-gray-50: oklch(92% 0.02 50);         /* Crème claire */
-  --color-gray-100: oklch(85% 0.02 50);
-  --color-gray-200: oklch(75% 0.02 50);
-  --color-gray-300: oklch(62% 0.02 50);
-  --color-gray-400: oklch(48% 0.02 50);
-  --color-gray-500: oklch(38% 0.02 50);
-  --color-gray-600: oklch(28% 0.02 40);
-  --color-gray-700: oklch(22% 0.02 40);        /* Chocolat noir */
-  --color-gray-800: oklch(16% 0.02 40);        /* Cacao profond */
-  --color-gray-900: oklch(12% 0.02 40);        /* Noir chocolat */
-
-  /* Fonds sombres chaleureux - Ambiance biscuiterie la nuit */
-  --color-bg: oklch(8% 0.02 40);         /* Noir chocolat chaud */
-  --color-bg-alt: oklch(20% 0.02 40);          /* Cacao foncé */
-  --color-bg-elevated: oklch(25% 0.02 45);     /* Chocolat au lait foncé */
-  
-  /* Bordure caramel doré - Signature gourmande */
-  --color-border: oklch(70.303% 0.09035 65.994);          /* Caramel doré */
-  
-  /* Texte crème chaleureux */
-  --color-text: oklch(95% 0.02 70);            /* Crème vanillée */
-  --color-text-light: oklch(72% 0.02 60);      /* Beige doux */
-
-  /* ⚡ OMBRES NÉO-BRUTALISME BISCUITS DARK ⚡ */
-  --shadow-sm: 3px 3px 0px var(--color-border);
-  --shadow-md: 5px 5px 0px var(--color-border);
-  --shadow-lg: 7px 7px 0px var(--color-border);
-  --shadow-xl: 10px 10px 0px var(--color-border);
-  --shadow-2xl: 14px 14px 0px var(--color-border);
-  
-  /* Ombres avec lueur chaude (effet four) */
-  --shadow-glow: 0 0 40px oklch(68% 0.24 50 / 0.7), 
-                 5px 5px 0px var(--color-border);
-
-  --shadow-glow-hover: 0 0 35px oklch(68% 0.18 50 / 0.6), 8px 8px 0px var(--color-border);
-  --shadow-press: 2px 2px 0px var(--color-border);
-
-  /* Pas de glassmorphism */
-  --glass-bg: var(--color-bg-elevated);
-  --glass-border: var(--color-border);
-  --glass-blur: blur(0px);
-
-  /* ⚡ ANGLES DROITS PURS ⚡ */
-  --radius-sm: 0px;
-  --radius-md: 0px;
-  --radius-lg: 0px;
-  --radius-xl: 0px;
-  --radius-2xl: 0px;
-  --radius-full: 0px;
-
-  /* Variables néo-brutalisme dark */
-  --brutal-border-thin: 3px solid var(--color-border);
-  --brutal-border: 4px solid var(--color-border);
-  --brutal-border-thick: 5px solid var(--color-border);
-  
-  --brutal-hover-lift: -4px;
-  --brutal-hover-shadow-x: 11px;
-  --brutal-hover-shadow-y: 11px;
-  --brutal-press-translate: 4px;
-}
-
-:root[data-theme='light'] {
   /* 🍪 PALETTE GOURMANDE BISCUITS */
   --color-primary: oklch(60.201% 0.11053 58.986);
   --color-primary-dark: oklch(46.911% 0.08436 59.46);
@@ -204,7 +121,7 @@
 /* ========================================
    STYLES SPÉCIFIQUES NÉO-BRUTALISME
    ======================================== */
-:root[data-theme='light'] {
+:root {
   --brutal-border: 4px solid var(--color-border);
   
   --brutal-hover-translate: -3px;
@@ -213,13 +130,13 @@
 }
 
 
-:root[data-theme='light'] {
+:root {
   color-scheme: light;
 }
 
-:root[data-theme='light'] .cta-button,
-:root[data-theme='light'] .btn-primary,
-:root[data-theme='light'] button {
+:root .cta-button,
+:root .btn-primary,
+:root button {
   border: var(--brutal-border);
   color: var(--color-bg);
   padding: 10px;
@@ -230,51 +147,51 @@
   letter-spacing: 0.5px;
 }
 
-:root[data-theme='light'] .cta-button:hover,
-:root[data-theme='light'] .btn-primary:hover,
-:root[data-theme='light'] button:hover {
+:root .cta-button:hover,
+:root .btn-primary:hover,
+:root button:hover {
   transform: translate(-3px, -3px);
   box-shadow: var(--shadow-xl);
 }
 
-:root[data-theme='light'] .cta-button:active,
-:root[data-theme='light'] .btn-primary:active,
-:root[data-theme='light'] button:active {
+:root .cta-button:active,
+:root .btn-primary:active,
+:root button:active {
   transform: translate(3px, 3px);
   box-shadow: var(--shadow-sm);
 }
 
 /* Cards avec bordures épaisses et ombres fortes */
-:root[data-theme='light'] .zone-card,
-:root[data-theme='light'] .feature-badge,
-:root[data-theme='light'] .contact-form,
-:root[data-theme='light'] .stat-item {
+:root .zone-card,
+:root .feature-badge,
+:root .contact-form,
+:root .stat-item {
   border: var(--brutal-border);
   box-shadow: var(--shadow-lg);
   transition: all var(--transition-fast);
   background: var(--color-bg-elevated);
 }
 
-:root[data-theme='light'] .zone-card:hover,
-:root[data-theme='light'] .stat-item:hover {
+:root .zone-card:hover,
+:root .stat-item:hover {
   transform: translate(-3px, -3px);
   box-shadow: var(--shadow-xl);
 }
 
 
 /* Cards avec bordures épaisses et ombres fortes */
-:root[data-theme='light'] .zone-card,
-:root[data-theme='light'] .feature-badge,
-:root[data-theme='light'] .contact-form,
-:root[data-theme='light'] .stat-item {
+:root .zone-card,
+:root .feature-badge,
+:root .contact-form,
+:root .stat-item {
   border: var(--brutal-border);
   box-shadow: var(--shadow-lg);
   transition: all var(--transition-fast);
   background: var(--color-bg-elevated);
 }
 
-:root[data-theme='light'] .zone-card:hover,
-:root[data-theme='light'] .stat-item:hover {
+:root .zone-card:hover,
+:root .stat-item:hover {
   transform: translate(-3px, -3px);
   box-shadow: var(--shadow-xl);
 }
@@ -286,18 +203,18 @@
 .feature-badge:nth-child(4) { background: var(--color-accent-cinnamon); }
 
 /* Inputs avec style brutal */
-:root[data-theme='light'] input,
-:root[data-theme='light'] select,
-:root[data-theme='light'] textarea {
+:root input,
+:root select,
+:root textarea {
   border: var(--brutal-border);
   box-shadow: var(--shadow-md);
   background: var(--color-bg-elevated);
   font-weight: 600;
 }
 
-:root[data-theme='light'] input:focus,
-:root[data-theme='light'] select:focus,
-:root[data-theme='light'] textarea:focus {
+:root input:focus,
+:root select:focus,
+:root textarea:focus {
   outline: none;
   box-shadow: var(--shadow-lg);
   transform: translate(-2px, -2px);
@@ -305,43 +222,43 @@
 }
 
 /* Header avec bordure noire ultra-épaisse */
-:root[data-theme='light'] .site-header {
+:root .site-header {
   border-bottom: 5px solid var(--color-border);
   box-shadow: none;
   background: var(--color-bg);
 }
 
-:root[data-theme='light'] .site-header.scrolled {
+:root .site-header.scrolled {
   box-shadow: 0 6px 0px rgba(0, 0, 0, 1);
   background: var(--color-bg-elevated);
 }
 
 
 /* Titres avec effet cartoon */
-:root[data-theme='light'] h1,
-:root[data-theme='light'] h2,
-:root[data-theme='light'] h3 {
+:root h1,
+:root h2,
+:root h3 {
   font-weight: 900;
   letter-spacing: -0.03em;
   text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.1);
 }
 
 /* Trust indicators avec backgrounds colorés */
-:root[data-theme='light'] .trust-item:nth-child(1) strong {
+:root .trust-item:nth-child(1) strong {
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
   filter: drop-shadow(2px 2px 0px rgba(0, 0, 0, 0.15));
 }
 
-:root[data-theme='light'] .trust-item:nth-child(2) strong {
+:root .trust-item:nth-child(2) strong {
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
   filter: drop-shadow(2px 2px 0px rgba(0, 0, 0, 0.15));
 }
 
-:root[data-theme='light'] .trust-item:nth-child(3) strong {
+:root .trust-item:nth-child(3) strong {
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;

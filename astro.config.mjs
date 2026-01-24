@@ -13,7 +13,6 @@ import icon from 'astro-icon';
 // https://astro.build/config
 export default defineConfig({
   site: 'https://biscuits-ia.com',
-
   integrations: [mdx(), svelte(), compress({
     CSS: true,
     HTML: true,
@@ -47,11 +46,11 @@ lastmod: new Date(),
       }), icon()],
 
   output: 'static',
-
+  
   build: {
     inlineStylesheets: 'auto',
   },
-
+  
   vite: {
     build: {
       minify: 'terser',
@@ -83,11 +82,9 @@ lastmod: new Date(),
     
     assetsInclude: ['**\/*.webp', '**\/*.png'],
   },
-
+  
   prefetch: {
     prefetchAll: true,
     defaultStrategy: 'viewport',
   },
-
-  adapter: vercel(),
 });

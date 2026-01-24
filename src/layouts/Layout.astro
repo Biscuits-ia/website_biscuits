@@ -5,9 +5,6 @@ import SEOHead from '@/components/SEO/SEOHead.astro';
 import SchemaOrg from '@/components/SEO/SchemaOrg.astro';
 import CookieConsent from '@/components/svelte/CookieConsent.svelte';
 
-import Analytics from '@vercel/analytics/astro';
-import SpeedInsights from '@vercel/speed-insights/astro';
-
 import '@/styles/theme.css';
 import '@/styles/global.css';
 
@@ -33,7 +30,6 @@ const {
   ogType = 'website',
   noindex = false,
   schema,
-  loadGSAP = false
 } = Astro.props;
 
 const siteUrl = import.meta.env.SITE || 'https://biscuits.dev';
@@ -132,29 +128,6 @@ const isProd = import.meta.env.PROD;
   <Footer />
 
   <CookieConsent client:idle />
-
-  {isProd && (
-    <>
-      <Analytics />
-      <SpeedInsights />
-    </>
-  )}
-  
-  {loadGSAP && (
-    <script>
-      import { initGSAP, killAllAnimations } from '@/animations/core/gsap-config';
-
-      initGSAP();
-      
-      document.addEventListener('astro:before-swap', () => {
-        killAllAnimations();
-      });
-      
-      document.addEventListener('astro:after-swap', () => {
-        initGSAP();
-      });
-    </script>
-  )}
 </body>
 
 <style is:global>

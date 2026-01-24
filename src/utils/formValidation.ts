@@ -31,9 +31,6 @@ export const BUDGET_OPTIONS = [
   { value: '> 20000€', label: 'Plus de 20 000€' },
 ];
 
-/**
- * Règles de validation par champ
- */
 export type ValidationRule = (value: string) => string | null;
 
 export const validationRules: Record<string, ValidationRule> = {
@@ -96,9 +93,17 @@ export const validationRules: Record<string, ValidationRule> = {
     return null;
   },
 
-  budget: (value: string) => {
-    // Optionnel
-    return null;
+  budget: (value: string | null | undefined): string | null => {
+    if (typeof value !== 'string') return null;
+    if (value.trim() === '') return null;
+    try {
+      if (isNaN(parseFloat(value))) return 'Le budget doit être un nombre';
+      if (parseFloat(value) < 0) return 'Le budget ne peut pas être négatif';
+      return null;
+    } catch (error) {
+      console.error('Error validating budget', error);
+      return 'Erreur lors de la validation du budget';
+    }
   },
 };
 

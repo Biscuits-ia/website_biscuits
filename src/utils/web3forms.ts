@@ -24,19 +24,13 @@ export async function submitToWeb3Forms(
   const ENDPOINT = 'https://api.web3forms.com/submit';
   const TIMEOUT = 15000;
 
-  console.log('🌐 === submitToWeb3Forms appelé ===');
-  console.log('📍 Endpoint:', ENDPOINT);
-  console.log('📦 Payload reçu:', payload);
-  console.log('🔑 Access key:', payload.access_key?.substring(0, 8) + '...');
 
   const controller = new AbortController();
   const timeoutId = setTimeout(() => {
-    console.log('⏱️ TIMEOUT atteint');
     controller.abort();
   }, TIMEOUT);
 
-  try {
-    console.log('📤 Envoi de la requête fetch...');
+  try { 
     
     const response = await fetch(ENDPOINT, {
       method: 'POST',
@@ -49,19 +43,10 @@ export async function submitToWeb3Forms(
     });
 
     clearTimeout(timeoutId);
-    
-    console.log('📥 Réponse reçue');
-    console.log('   Status:', response.status);
-    console.log('   OK:', response.ok);
-    console.log('   Headers:', Object.fromEntries(response.headers.entries()));
 
     const result = await response.json();
-    console.log('📄 Body parsé:', result);
 
     if (!response.ok) {
-      console.error('❌ Response not OK');
-      console.error('   Status:', response.status);
-      console.error('   Result:', result);
       throw new Error(result.message || 'Erreur lors de l\'envoi du formulaire');
     }
 
@@ -73,11 +58,8 @@ export async function submitToWeb3Forms(
     console.error('💥 Erreur dans submitToWeb3Forms:');
     
     if (error instanceof Error) {
-      console.error('   Type:', error.constructor.name);
-      console.error('   Message:', error.message);
       
       if (error.name === 'AbortError') {
-        console.error('   Cause: TIMEOUT');
         throw new Error('La requête a expiré. Veuillez réessayer.');
       }
       throw error;

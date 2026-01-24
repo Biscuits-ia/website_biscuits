@@ -1,42 +1,103 @@
 <script lang="ts">
   import { onMount } from 'svelte';
 
-  type CookieCategory = 'necessary' | 'analytics' | 'marketing';
+  type CookieCategory = 'necessary' | 'analytics';
   
   type CookiePreferences = {
     necessary: boolean;
     analytics: boolean;
-    marketing: boolean;
   };
 
   type CookieConsentData = CookiePreferences & {
     date: string;
+    version: string; // Ajout du versioning pour tracer les changements de politique
   };
 
   export let defaultPreferences: Partial<CookiePreferences> | undefined = undefined;
+  export let consentVersion: string = '1.0'; // Version de la politique de cookies
 
   let showBanner = false;
   let showSettings = false;
   let preferences: CookiePreferences = {
     necessary: true,
     analytics: defaultPreferences?.analytics ?? false,
-    marketing: defaultPreferences?.marketing ?? false,
   };
 
   onMount(() => {
-    const consent = localStorage.getItem('cookie-consent');
-    if (!consent) {
-      const timer = setTimeout(() => showBanner = true, 1000);
-      return () => clearTimeout(timer);
+    // RGPD: Vérifier si un consentement existe déjà
+    const consentStr = localStorage.getItem('cookie-consent');
+    const consentDateStr = localStorage.getItem('cookie-consent-date');
+    const consentVersionStr = localStorage.getItem('cookie-consent-version');
+    
+    if (!consentStr || !consentDateStr) {
+      // Pas de consentement = afficher la bannière
+      showBanner = true;
+      return;
     }
-    return undefined;
+
+    // RGPD: Vérifier si le consentement est toujours valide (< 13 mois selon CNIL)
+    const consentDate = new Date(consentDateStr);
+    const thirteenMonthsAgo = new Date();
+    thirteenMonthsAgo.setMonth(thirteenMonthsAgo.getMonth() - 13);
+    
+    // RGPD: Vérifier si la version du consentement a changé
+    const needsNewConsent = consentDate < thirteenMonthsAgo || consentVersionStr !== consentVersion;
+    
+    if (needsNewConsent) {
+      // Consentement expiré ou version obsolète = redemander le consentement
+      showBanner = true;
+      // RGPD: Nettoyer les anciennes préférences
+      cleanupExpiredConsent();
+      return;
+    }
+
+    // Consentement valide = charger les préférences
+    try {
+      const consent: CookiePreferences = JSON.parse(consentStr);
+      preferences = { ...preferences, ...consent };
+      
+      // RGPD: Charger les scripts UNIQUEMENT si le consentement est explicite
+      if (consent.analytics) {
+        loadAnalytics();
+      }
+    } catch (e) {
+      console.error('Erreur lors du chargement des préférences:', e);
+      showBanner = true;
+    }
   });
+
+  // RGPD: Fonction pour nettoyer les cookies et le consentement expiré
+  const cleanupExpiredConsent = () => {
+    localStorage.removeItem('cookie-consent');
+    localStorage.removeItem('cookie-consent-date');
+    localStorage.removeItem('cookie-consent-version');
+    
+    // Réinitialiser les préférences par défaut (opt-out)
+    preferences = {
+      necessary: true,
+      analytics: false,
+    };
+  };
+
+  // RGPD: Charger Analytics uniquement après consentement explicite
+  const loadAnalytics = () => {
+    const script = document.createElement('script');
+    script.src = '/_vercel/insights/script.js';
+    script.async = true;
+    script.setAttribute('data-consent', 'analytics');
+    document.head.appendChild(script);
+  };
+
+  // RGPD: Charger Marketing uniquement après consentement explicite
+  const loadMarketing = () => {
+    // Placeholder pour les scripts marketing
+    console.log('Marketing scripts loaded');
+  };
 
   const acceptAll = () => {
     const allPreferences: CookiePreferences = {
       necessary: true,
       analytics: true,
-      marketing: true,
     };
     savePreferences(allPreferences);
   };
@@ -45,7 +106,6 @@
     const necessaryOnly: CookiePreferences = {
       necessary: true,
       analytics: false,
-      marketing: false,
     };
     savePreferences(necessaryOnly);
   };
@@ -58,28 +118,33 @@
     const consentData: CookieConsentData = {
       ...prefs,
       date: new Date().toISOString(),
+      version: consentVersion,
     };
 
+    // RGPD: Stocker le consentement avec la date et la version
     localStorage.setItem('cookie-consent', JSON.stringify(prefs));
     localStorage.setItem('cookie-consent-date', consentData.date);
+    localStorage.setItem('cookie-consent-version', consentData.version);
 
-    // Dispatcher un événement personnalisé pour Astro
+    // Dispatcher un événement pour notifier les autres composants
     window.dispatchEvent(
       new CustomEvent('cookieConsentUpdated', {
-        detail: prefs,
+        detail: consentData,
       })
     );
 
-    if (prefs.analytics) {
-      console.log('Analytics activé');
-    }
-    
-    if (prefs.marketing) {
-      console.log('Marketing activé');
+    // RGPD: Charger les scripts UNIQUEMENT après consentement explicite
+    if (prefs.analytics && !isScriptLoaded('analytics')) {
+      loadAnalytics();
     }
 
     showBanner = false;
     showSettings = false;
+  };
+
+  // RGPD: Vérifier si un script est déjà chargé
+  const isScriptLoaded = (type: string): boolean => {
+    return !!document.querySelector(`script[data-consent="${type}"]`);
   };
 
   const togglePreference = (key: CookieCategory) => {
@@ -105,7 +170,7 @@
             <div class="cookie-text">
               <h3 id="cookie-banner-title">🍪 Cookies</h3>
               <p id="cookie-banner-description">
-                Nous utilisons des cookies pour améliorer votre expérience. Les cookies nécessaires sont requis pour le fonctionnement du site.
+                Nous utilisons des cookies pour améliorer votre expérience. Les cookies nécessaires sont requis pour le fonctionnement du site. Vous pouvez personnaliser vos préférences à tout moment.
               </p>
             </div>
             <button
@@ -157,7 +222,7 @@
             <div class="cookie-pref-item">
               <div class="cookie-pref-text">
                 <p class="cookie-pref-title">Cookies nécessaires</p>
-                <p class="cookie-pref-desc">Requis pour le fonctionnement du site</p>
+                <p class="cookie-pref-desc">Requis pour le fonctionnement du site (toujours activés)</p>
               </div>
               <div class="cookie-toggle cookie-toggle-active">
                 <div class="cookie-toggle-thumb"></div>
@@ -168,7 +233,7 @@
             <div class="cookie-pref-item">
               <div class="cookie-pref-text">
                 <p class="cookie-pref-title">Cookies analytiques</p>
-                <p class="cookie-pref-desc">Nous aident à améliorer le site</p>
+                <p class="cookie-pref-desc">Nous aident à comprendre comment vous utilisez le site</p>
               </div>
               <button
                 on:click={() => togglePreference('analytics')}

@@ -88,12 +88,6 @@
     document.head.appendChild(script);
   };
 
-  // RGPD: Charger Marketing uniquement après consentement explicite
-  const loadMarketing = () => {
-    // Placeholder pour les scripts marketing
-    console.log('Marketing scripts loaded');
-  };
-
   const acceptAll = () => {
     const allPreferences: CookiePreferences = {
       necessary: true,

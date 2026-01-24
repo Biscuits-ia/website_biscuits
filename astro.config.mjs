@@ -8,7 +8,6 @@ import svelte from '@astrojs/svelte';
 import compress from 'astro-compress';
 import robots from 'astro-robots';
 import icon from 'astro-icon';
-import cloudflare from '@astrojs/cloudflare';
 
 
 // https://astro.build/config
@@ -90,5 +89,5 @@ lastmod: new Date(),
     defaultStrategy: 'viewport',
   },
 
-  adapter: cloudflare() // or cloudflare(),
+  adapter: vercel(),
 });

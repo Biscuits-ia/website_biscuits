@@ -90,5 +90,5 @@ lastmod: new Date(),
     defaultStrategy: 'viewport',
   },
 
-  adapter: vercel() // or cloudflare(),
+  adapter: cloudflare() // or cloudflare(),
 });

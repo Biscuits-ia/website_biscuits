@@ -50,7 +50,6 @@ export async function submitToWeb3Forms(
       throw new Error(result.message || 'Erreur lors de l\'envoi du formulaire');
     }
 
-    console.log('✅ Succès Web3Forms');
     return result;
   } catch (error) {
     clearTimeout(timeoutId);

@@ -1,0 +1,8 @@
+- [x] Mettre à jour les descriptions de toutes les pages pour refléter l’association
+- [x] Enrichir le schéma JSON‑LD (Organization) avec contact, adresse détaillée et informations légales
+- [x] Ajouter SEOHead à la page services
+- [x] Mettre à jour le layout pour utiliser le schéma enrichi
+- [x] Supprimer le schema déclaré mais non utilisé
+- [x] Ajouter SEOHead aux pages principales (index, tarifs, services)
+- [x] Vérifier et mettre à jour sitemap.xml et robots.txt
+- [x] Exécuter Lighthouse pour valider le score SEO (> 95)

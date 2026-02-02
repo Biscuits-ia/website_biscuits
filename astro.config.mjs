@@ -9,8 +9,6 @@ import compress from 'astro-compress';
 import robots from 'astro-robots';
 import icon from 'astro-icon';
 
-
-// https://astro.build/config
 export default defineConfig({
   site: 'https://biscuits-ia.com',
   integrations: [mdx(), svelte(), compress({
@@ -64,19 +62,18 @@ lastmod: new Date(),
       rollupOptions: {
         output: {
           manualChunks: {
-            'gsap': ['gsap'],
-            'animations': ['gsap/ScrollTrigger', 'gsap/ScrollToPlugin'],
+              
           },
         },
       },
     },
     
     optimizeDeps: {
-      include: ['gsap', 'gsap/ScrollTrigger', 'gsap/ScrollToPlugin'],
+      
     },
     
     ssr: {
-      noExternal: ['gsap', 'gsap/ScrollTrigger', 'gsap/ScrollToPlugin'],
+      
     },
     
     

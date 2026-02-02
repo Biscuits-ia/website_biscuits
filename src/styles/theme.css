@@ -264,3 +264,11 @@
   -webkit-text-fill-color: transparent;
   filter: drop-shadow(2px 2px 0px rgba(0, 0, 0, 0.15));
 }
+
+/* Responsive : images & vidéos – aucun impact visuel */
+img,
+video,
+canvas {
+  max-width: 100%;
+  height: auto;
+}

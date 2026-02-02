@@ -19,7 +19,6 @@ export interface Props {
     type: 'Organization' | 'Service' | 'FAQPage' | 'Article' | 'WebPage';
     data?: Record<string, any>;
   };
-  loadGSAP?: boolean;
 }
 
 const {
@@ -40,23 +39,12 @@ const fullCanonical = canonical
 
 const fullTitle = title.includes('|') ? title : `${title} | Biscuits IA`;
 
-const organizationSchema = {
-  "@context": "https://schema.org",
-  "@type": "Organization",
-  "name": "Biscuits IA",
-  "url": siteUrl,
-  "logo": `${siteUrl}/logo.png`,
-  "description": "Biscuits IA fournit des outils, pour accompagner associations et TPE/PME dans leurs projets. Créez efficacement avec des bases fiables et accessibles à tous.",
-  "email": "contact@biscuits.dev",
-  "address": {
-    "@type": "PostalAddress",
-    "addressCountry": "FR"
-  },
-  "sameAs": [
-    "https://linkedin.com/company/biscuits-ia",
-    "https://twitter.com/biscuitsIA"
-  ]
-};
+/* --------------------------------------------------------------------
+ * L'objet `organizationSchema` a été remplacé par le composant
+ * <SchemaOrg type="Organization" /> afin de centraliser les données
+ * structurées et d'éviter la redondance. Le code ci‑dessus a donc été
+ * supprimé.
+ * -------------------------------------------------------------------- */
 
 const isProd = import.meta.env.PROD;
 ---
@@ -78,13 +66,22 @@ const isProd = import.meta.env.PROD;
   
   {schema && <SchemaOrg type={schema.type} data={schema.data} />}
   
-  {!schema && (
-    <script type="application/ld+json" set:html={JSON.stringify(organizationSchema)} />
-  )}
+{!schema && (
+  <>
+    <SchemaOrg type="Organization" />
+    <script type="application/ld+json" set:html={JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "url": fullCanonical,
+      "name": fullTitle,
+      "description": description
+    })} />
+  </>
+)}
   
   <link rel="icon" type="image/svg+xml" href="/favicon.webp" />
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-  <link rel="sitemap" href="/sitemap-index.xml" />
+<link rel="sitemap" href="/sitemap.xml" />
   
   {isProd && (
     <>

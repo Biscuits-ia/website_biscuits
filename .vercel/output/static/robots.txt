@@ -1,0 +1,13 @@
+User-agent: Applebot
+User-agent: Googlebot
+User-agent: bingbot
+User-agent: Yandex
+User-agent: Yeti
+User-agent: Baiduspider
+User-agent: 360Spider
+User-agent: *
+Allow: /
+
+Sitemap: https://biscuits-ia.com//sitemap-index.xml
+
+Host: biscuits-ia.com

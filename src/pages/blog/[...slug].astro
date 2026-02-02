@@ -1,5 +1,6 @@
 ---
 import { getCollection, getEntry, type CollectionEntry } from 'astro:content';
+import { Image } from 'astro:assets';
 import Layout from '@/layouts/BlogLayout.astro';
 import ReadingTime from '@/components/ReadingTime.astro';
 import TableOfContents from '@/components/TableOfContents.astro';
@@ -119,7 +120,7 @@ const { body } = entry;
       
       {entry.data.thumbnail && (
         <div class="article-thumbnail">
-          <img src={entry.data.thumbnail} alt={entry.data.title} />
+          <Image src={entry.data.thumbnail} alt={entry.data.title} loading="lazy" format="webp" />
         </div>
       )}
       

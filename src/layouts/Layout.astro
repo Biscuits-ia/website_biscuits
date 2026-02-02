@@ -56,6 +56,8 @@ const criticalCSS = `
 <!DOCTYPE html>
 <html lang="fr">
 <head>
+  <!-- Preload hero logo for LCP -->
+  <link rel="preload" as="image" href="/assets/logo.png" />
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
@@ -73,6 +75,7 @@ const criticalCSS = `
   
   <!-- Preload des ressources critiques -->
   <link rel="preload" href="/favicon.webp" as="image" type="image/webp" />
+    <link rel="preload" href="/assets/logo.png" as="image" type="image/png" />
   
   <SEOHead 
     title={fullTitle}
@@ -104,7 +107,7 @@ const criticalCSS = `
   
   <!-- GTM avec chargement optimisé -->
   {isProd && (
-    <script is:inline>
+    <script is:inline crossorigin="anonymous">
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       

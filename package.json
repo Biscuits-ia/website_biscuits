@@ -9,7 +9,7 @@
     "send-newsletter": "tsx scripts/send-newsletter.ts",
     "astro": "astro",
     "optimize": "npm run build && npm run compress",
-  "compress": "astro-compress",
+    "compress": "astro-compress",
     "analyze": "astro build --analyze",
     "lighthouse": "lighthouse https://localhost:4321 --view"
   },

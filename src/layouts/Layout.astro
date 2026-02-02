@@ -4,6 +4,7 @@ import Footer from '@/components/Footer.astro';
 import SEOHead from '@/components/SEO/SEOHead.astro';
 import SchemaOrg from '@/components/SEO/SchemaOrg.astro';
 import CookieConsent from '@/components/svelte/CookieConsent.svelte';
+import SpeedInsights from '@vercel/speed-insights/astro';
 
 import '@/styles/theme.css';
 import '@/styles/global.css';
@@ -38,13 +39,6 @@ const fullCanonical = canonical
   : `${siteUrl}${Astro.url.pathname}`;
 
 const fullTitle = title.includes('|') ? title : `${title} | Biscuits IA`;
-
-/* --------------------------------------------------------------------
- * L'objet `organizationSchema` a été remplacé par le composant
- * <SchemaOrg type="Organization" /> afin de centraliser les données
- * structurées et d'éviter la redondance. Le code ci‑dessus a donc été
- * supprimé.
- * -------------------------------------------------------------------- */
 
 const isProd = import.meta.env.PROD;
 ---
@@ -124,7 +118,8 @@ const isProd = import.meta.env.PROD;
 
   <Footer />
 
-  <CookieConsent client:idle />
+<CookieConsent client:idle />
+<SpeedInsights />
 </body>
 
 <style is:global>
@@ -149,5 +144,5 @@ const isProd = import.meta.env.PROD;
   main {
     min-height: 60vh;
   }
-</style>
+<style/>
 </html>

@@ -272,7 +272,7 @@ export const csr = false;
 </BaseLayout>
 
 <style>
-  /* Classe utilitaire pour l'accessibilité */
+  /* Optimisation critique pour FCP */
   .visually-hidden {
     position: absolute;
     width: 1px;
@@ -285,11 +285,13 @@ export const csr = false;
     border: 0;
   }
 
+  /* Variables CSS optimisées - utiliser contain-intrinsic-size si possible */
   .hero-resources {
     padding: 70px 0 50px;
     background: var(--color-primary);
     position: relative;
     overflow: hidden;
+    content-visibility: auto;
   }
 
   .hero-resources::before {
@@ -297,6 +299,7 @@ export const csr = false;
     position: absolute;
     inset: 0;
     opacity: 0.4;
+    will-change: auto;
   }
 
   .hero-content {
@@ -352,6 +355,8 @@ export const csr = false;
 
   .resources-section {
     padding: 80px 0;
+    content-visibility: auto;
+    contain-intrinsic-size: auto 800px;
   }
 
   .section-header {
@@ -386,12 +391,19 @@ export const csr = false;
     flex-direction: column;
     gap: 24px;
     position: relative;
+    will-change: auto;
   }
 
   .resource-card:hover,
   .resource-card:focus-within {
     box-shadow: 0 20px 40px rgb(0 0 0 / 0.1);
     transform: translateY(-2px);
+  }
+
+  @media (hover: hover) {
+    .resource-card {
+      will-change: transform;
+    }
   }
 
   .card-badge {
@@ -527,7 +539,7 @@ export const csr = false;
     transform: translateY(-1px);
   }
 
-  .btn-download:focus {
+  .btn-download:focus-visible {
     outline: 2px solid currentColor;
     outline-offset: 2px;
   }
@@ -539,6 +551,8 @@ export const csr = false;
   .categories-section {
     padding: 80px 0;
     background: var(--color-bg);
+    content-visibility: auto;
+    contain-intrinsic-size: auto 500px;
   }
 
   .categories-section h2 {
@@ -562,12 +576,16 @@ export const csr = false;
     text-decoration: none;
     transition: background 0.3s ease, transform 0.3s ease;
     border: 2px solid transparent;
+    will-change: auto;
   }
 
   .category-card:hover,
   .category-card:focus {
     background: var(--color-secondary-hover);
     transform: translateY(-4px);
+  }
+
+  .category-card:focus-visible {
     outline: 2px solid currentColor;
     outline-offset: 2px;
   }
@@ -594,6 +612,8 @@ export const csr = false;
     padding: 80px 0;
     background: var(--color-secondary);
     color: var(--color-text);
+    content-visibility: auto;
+    contain-intrinsic-size: auto 400px;
   }
 
   .newsletter-content {
@@ -632,7 +652,7 @@ export const csr = false;
     outline: none;
   }
 
-  .newsletter-form input:focus {
+  .newsletter-form input:focus-visible {
     outline: 2px solid var(--color-bg);
     outline-offset: 2px;
   }
@@ -655,7 +675,7 @@ export const csr = false;
     box-shadow: 0 4px 12px rgb(0 0 0 / 0.2);
   }
 
-  .newsletter-form button:focus {
+  .newsletter-form button:focus-visible {
     outline: 2px solid currentColor;
     outline-offset: 2px;
   }
@@ -663,6 +683,8 @@ export const csr = false;
   .cta-modern {
     padding: 80px 0;
     color: var(--color-gray-100);
+    content-visibility: auto;
+    contain-intrinsic-size: auto 400px;
   }
 
   .cta-content {
@@ -715,7 +737,7 @@ export const csr = false;
     transform: translateY(-2px);
   }
 
-  .btn-primary:focus {
+  .btn-primary:focus-visible {
     outline: 2px solid currentColor;
     outline-offset: 2px;
   }
@@ -737,13 +759,7 @@ export const csr = false;
     padding: 0 24px;
   }
 
-  /* Amélioration des focus pour l'accessibilité clavier */
-  *:focus-visible {
-    outline: 2px solid currentColor;
-    outline-offset: 2px;
-  }
-
-  /* Optimisation des animations avec prefers-reduced-motion */
+  /* Optimisations de performance pour animations */
   @media (prefers-reduced-motion: reduce) {
     *,
     *::before,
@@ -752,6 +768,12 @@ export const csr = false;
       animation-iteration-count: 1 !important;
       transition-duration: 0.01ms !important;
     }
+  }
+
+  /* Amélioration focus pour accessibilité */
+  *:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
   }
 
   @media (max-width: 768px) {

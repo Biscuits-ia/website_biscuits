@@ -1,47 +1,215 @@
 ---
-export interface SchemaOrgProps {
-  type: 'Organization' | 'ProfessionalService' | 'FAQPage' | 'Article' | 'WebPage';
+export interface Props {
+  type: 'Organization' | 'Service' | 'FAQPage' | 'Article' | 'WebPage' | 'LocalBusiness' | 'Course' | 'Product';
   data?: Record<string, any>;
 }
 
-const { type, data = {} } = Astro.props as SchemaOrgProps;
+const { type, data = {} } = Astro.props;
+const siteUrl = import.meta.env.SITE || 'https://biscuits-ia.com';
 
-const baseOrganization = {
+// Schema de base pour l'organisation (présent sur toutes les pages)
+const organizationSchema = {
   "@context": "https://schema.org",
   "@type": "Organization",
+  "@id": `${siteUrl}/#organization`,
   "name": "Biscuits IA",
-  "url": "https://biscuits.dev",
-  "logo": "https://biscuits.dev/logo.png",
-  "description": "Biscuits IA fournit des outils, kits de démarrage et automatisations pour accompagner associations et professionnels dans leurs projets. Créez efficacement avec des bases fiables et accessibles à tous.",
-  "email": "contact@biscuits.dev",
+  "legalName": "Biscuits IA",
+  "url": siteUrl,
+  "logo": {
+    "@type": "ImageObject",
+    "@id": `${siteUrl}/#logo`,
+    "url": `${siteUrl}/assets/logo.webp`,
+    "contentUrl": `${siteUrl}/assets/logo.webp`,
+    "caption": "Biscuits IA Logo",
+    "inLanguage": "fr-FR",
+    "width": "512",
+    "height": "512"
+  },
+  "image": {
+    "@type": "ImageObject",
+    "url": `${siteUrl}/assets/logo.webp`,
+    "width": "512",
+    "height": "512"
+  },
+  "description": "Expert en Intelligence Artificielle pour entreprises. Formation, consulting et solutions IA sur mesure.",
+  "email": "contact@biscuits-ia.com",
+  "telephone": "+33-X-XX-XX-XX-XX",
   "address": {
     "@type": "PostalAddress",
-    "addressCountry": "FR"
+    "streetAddress": "Votre adresse",
+    "addressLocality": "Votre ville",
+    "postalCode": "XXXXX",
+    "addressCountry": "FR",
+    "addressRegion": "Votre région"
+  },
+  "geo": {
+    "@type": "GeoCoordinates",
+    "latitude": "48.8566",
+    "longitude": "2.3522"
   },
   "sameAs": [
-    "https://linkedin.com/company/biscuits-ia",
-    "https://twitter.com/biscuitsIA"
+    "https://www.facebook.com/biscuitsIA",
+    "https://twitter.com/biscuitsIA",
+    "https://www.linkedin.com/company/biscuitsIA",
+    "https://www.instagram.com/biscuitsIA",
+    "https://www.youtube.com/@biscuitsIA"
+  ],
+  "contactPoint": [
+    {
+      "@type": "ContactPoint",
+      "telephone": "+33-X-XX-XX-XX-XX",
+      "contactType": "customer service",
+      "email": "contact@biscuits-ia.com",
+      "areaServed": "FR",
+      "availableLanguage": ["French", "English"]
+    },
+    {
+      "@type": "ContactPoint",
+      "telephone": "+33-X-XX-XX-XX-XX",
+      "contactType": "sales",
+      "email": "ventes@biscuits-ia.com",
+      "areaServed": "FR",
+      "availableLanguage": ["French"]
+    }
+  ],
+  "foundingDate": "2024",
+  "founders": [
+    {
+      "@type": "Person",
+      "name": "Fondateur Biscuits IA"
+    }
+  ],
+  "numberOfEmployees": {
+    "@type": "QuantitativeValue",
+    "value": "1-10"
+  },
+  "areaServed": {
+    "@type": "Place",
+    "name": "France"
+  },
+  "knowsAbout": [
+    "Intelligence Artificielle",
+    "Machine Learning",
+    "Deep Learning",
+    "NLP",
+    "Computer Vision",
+    "Automation",
+    "Data Science",
+    "IA Générative"
+  ],
+  "slogan": "L'expertise IA pour votre entreprise",
+  "brand": {
+    "@type": "Brand",
+    "name": "Biscuits IA",
+    "logo": `${siteUrl}/assets/logo.webp`
+  }
+};
+
+// Website Schema
+const websiteSchema = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "@id": `${siteUrl}/#website`,
+  "url": siteUrl,
+  "name": "Biscuits IA",
+  "description": "Expert en Intelligence Artificielle pour entreprises",
+  "publisher": {
+    "@id": `${siteUrl}/#organization`
+  },
+  "inLanguage": "fr-FR",
+  "potentialAction": {
+    "@type": "SearchAction",
+    "target": {
+      "@type": "EntryPoint",
+      "urlTemplate": `${siteUrl}/recherche?q={search_term_string}`
+    },
+    "query-input": "required name=search_term_string"
+  }
+};
+
+// Breadcrumb Schema (automatique basé sur l'URL)
+const currentPath = Astro.url.pathname;
+const pathParts = currentPath.split('/').filter(Boolean);
+const breadcrumbSchema = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Accueil",
+      "item": siteUrl
+    },
+    ...pathParts.map((part, index) => ({
+      "@type": "ListItem",
+      "position": index + 2,
+      "name": part.charAt(0).toUpperCase() + part.slice(1).replace(/-/g, ' '),
+      "item": `${siteUrl}/${pathParts.slice(0, index + 1).join('/')}`
+    }))
   ]
 };
 
-const schemas = {
-  Organization: baseOrganization,
-  
-  ProfessionalService: {
+// Schémas spécifiques selon le type de page
+let specificSchema = {};
+
+if (type === 'Service') {
+  specificSchema = {
     "@context": "https://schema.org",
-    "@type": "ProfessionalService",
-    "name": data.name || "Services Biscuits IA",
-    "description": data.description || "Solutions IA personnalisées",
-    "provider": baseOrganization,
+    "@type": "Service",
+    "@id": `${Astro.url.href}#service`,
+    "serviceType": data.serviceType || "Intelligence Artificielle",
+    "provider": {
+      "@id": `${siteUrl}/#organization`
+    },
+    "name": data.name || "Services IA",
+    "description": data.description || "Services d'intelligence artificielle pour entreprises",
     "areaServed": {
       "@type": "Country",
       "name": "France"
     },
-    "serviceType": data.serviceType || "Développement IA",
-    ...data
-  },
-  
-  FAQPage: {
+    "hasOfferCatalog": {
+      "@type": "OfferCatalog",
+      "name": "Services IA",
+      "itemListElement": [
+        {
+          "@type": "OfferCatalog",
+          "name": "Formation IA",
+          "itemListElement": [
+            {
+              "@type": "Offer",
+              "itemOffered": {
+                "@type": "Service",
+                "name": "Formation Intelligence Artificielle"
+              }
+            }
+          ]
+        },
+        {
+          "@type": "OfferCatalog",
+          "name": "Consulting IA",
+          "itemListElement": [
+            {
+              "@type": "Offer",
+              "itemOffered": {
+                "@type": "Service",
+                "name": "Consulting IA pour entreprises"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "offers": {
+      "@type": "AggregateOffer",
+      "priceCurrency": "EUR",
+      "availability": "https://schema.org/InStock",
+      "seller": {
+        "@id": `${siteUrl}/#organization`
+      }
+    }
+  };
+} else if (type === 'FAQPage') {
+  specificSchema = {
     "@context": "https://schema.org",
     "@type": "FAQPage",
     "mainEntity": data.questions?.map((q: any) => ({
@@ -52,36 +220,128 @@ const schemas = {
         "text": q.answer
       }
     })) || []
-  },
-  
-  Article: {
+  };
+} else if (type === 'Article') {
+  specificSchema = {
     "@context": "https://schema.org",
     "@type": "Article",
+    "@id": `${Astro.url.href}#article`,
     "headline": data.headline || data.title,
     "description": data.description,
+    "image": data.image ? {
+      "@type": "ImageObject",
+      "url": data.image,
+      "width": 1200,
+      "height": 630
+    } : undefined,
     "datePublished": data.datePublished,
     "dateModified": data.dateModified || data.datePublished,
     "author": {
       "@type": "Person",
-      "name": data.author || "Biscuits du Dev"
+      "name": data.author || "Biscuits IA",
+      "url": `${siteUrl}/auteur/${data.authorSlug || 'biscuits-ia'}`
     },
-    "publisher": baseOrganization,
-    "image": data.image,
-    "url": data.url
-  },
-  
-  WebPage: {
+    "publisher": {
+      "@id": `${siteUrl}/#organization`
+    },
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": Astro.url.href
+    },
+    "articleSection": data.category || "Intelligence Artificielle",
+    "keywords": data.keywords?.join(', '),
+    "wordCount": data.wordCount,
+    "inLanguage": "fr-FR"
+  };
+} else if (type === 'Course') {
+  specificSchema = {
     "@context": "https://schema.org",
-    "@type": "WebPage",
-    "name": data.name || "Biscuits IA",
+    "@type": "Course",
+    "@id": `${Astro.url.href}#course`,
+    "name": data.name,
     "description": data.description,
-    "url": data.url,
-    "publisher": baseOrganization,
-    "breadcrumb": data.breadcrumb
-  }
-};
+    "provider": {
+      "@id": `${siteUrl}/#organization`
+    },
+    "image": data.image,
+    "hasCourseInstance": {
+      "@type": "CourseInstance",
+      "courseMode": data.courseMode || "online",
+      "instructor": {
+        "@type": "Person",
+        "name": data.instructor || "Expert Biscuits IA"
+      }
+    },
+    "offers": data.price ? {
+      "@type": "Offer",
+      "price": data.price,
+      "priceCurrency": "EUR",
+      "availability": "https://schema.org/InStock"
+    } : undefined,
+    "teaches": data.skills || [],
+    "educationalLevel": data.level || "Débutant à Avancé",
+    "inLanguage": "fr-FR"
+  };
+} else if (type === 'LocalBusiness') {
+  specificSchema = {
+    "@context": "https://schema.org",
+    "@type": "LocalBusiness",
+    "@id": `${siteUrl}/#localbusiness`,
+    "name": "Biscuits IA",
+    "image": `${siteUrl}/assets/logo.webp`,
+    "address": organizationSchema.address,
+    "geo": organizationSchema.geo,
+    "url": siteUrl,
+    "telephone": organizationSchema.telephone,
+    "priceRange": "€€€",
+    "openingHoursSpecification": [
+      {
+        "@type": "OpeningHoursSpecification",
+        "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+        "opens": "09:00",
+        "closes": "18:00"
+      }
+    ],
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "5",
+      "reviewCount": "50"
+    }
+  };
+}
 
-const schema = schemas[type as keyof typeof schemas];
+// Combinaison de tous les schémas dans un graph
+const graphSchema = {
+  "@context": "https://schema.org",
+  "@graph": [
+    organizationSchema,
+    websiteSchema,
+    ...(pathParts.length > 0 ? [breadcrumbSchema] : []),
+    ...(Object.keys(specificSchema).length > 0 ? [specificSchema] : [])
+  ]
+};
 ---
 
-<script type="application/ld+json" set:html={JSON.stringify(schema)} />
+<!-- Schema.org Structured Data (JSON-LD) -->
+<script type="application/ld+json" set:html={JSON.stringify(graphSchema)} />
+
+<!-- Additional Rich Snippets -->
+{type === 'Article' && data.rating && (
+  <script type="application/ld+json" set:html={JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "Review",
+    "itemReviewed": {
+      "@type": "Article",
+      "name": data.title
+    },
+    "reviewRating": {
+      "@type": "Rating",
+      "ratingValue": data.rating,
+      "bestRating": "5"
+    },
+    "author": {
+      "@type": "Person",
+      "name": data.reviewAuthor || "Biscuits IA"
+    }
+  })} />
+)}

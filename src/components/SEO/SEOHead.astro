@@ -10,80 +10,188 @@ export interface Props {
   publishedTime?: string;
   modifiedTime?: string;
   tags?: string[];
+  keywords?: string[];
 }
 
 const {
   title,
   description,
   canonical,
-  ogImage = '/og-default.jpg',
+  ogImage = '/og-default.webp',
   ogType = 'website',
   noindex = false,
   author,
   publishedTime,
   modifiedTime,
-  tags = []
+  tags = [],
+  keywords = []
 } = Astro.props;
 
-const siteUrl = import.meta.env.SITE || 'https://biscuits.dev';
+const siteUrl = import.meta.env.SITE || 'https://biscuits-ia.com';
 const fullOgImage = ogImage.startsWith('http') 
   ? ogImage 
   : `${siteUrl}${ogImage}`;
 
-const seoDescription = description.length > 160 
-  ? description.substring(0, 157) + '...' 
+// Optimisation longueur description (SEO 2026)
+const seoDescription = description.length > 155 
+  ? description.substring(0, 152) + '...' 
   : description;
+
+// Optimisation longueur titre (SEO 2026)
+const seoTitle = title.length > 60 
+  ? title.substring(0, 57) + '...' 
+  : title;
 ---
 
-<!-- Primary Meta Tags -->
-<title>{title}</title>
-<meta name="title" content={title} />
+<!-- ============================================
+     PRIMARY META TAGS (Lighthouse SEO)
+     ============================================ -->
+<title>{seoTitle}</title>
+<meta name="title" content={seoTitle} />
 <meta name="description" content={seoDescription} />
 
-<!-- Canonical URL -->
+<!-- Keywords (toujours utile en 2026 pour certains moteurs) -->
+{keywords.length > 0 && (
+  <meta name="keywords" content={keywords.join(', ')} />
+)}
+
+<!-- Author et Copyright -->
+<meta name="author" content={author || "Biscuits IA"} />
+<meta name="copyright" content="© 2026 Biscuits IA. Tous droits réservés." />
+
+<!-- Canonical URL (crucial pour éviter duplicate content) -->
 <link rel="canonical" href={canonical} />
 
-<!-- Open Graph / Facebook -->
+<!-- ============================================
+     OPEN GRAPH / FACEBOOK (Social SEO)
+     ============================================ -->
 <meta property="og:type" content={ogType} />
 <meta property="og:url" content={canonical} />
-<meta property="og:title" content={title} />
+<meta property="og:title" content={seoTitle} />
 <meta property="og:description" content={seoDescription} />
 <meta property="og:image" content={fullOgImage} />
+<meta property="og:image:secure_url" content={fullOgImage} />
 <meta property="og:image:width" content="1200" />
 <meta property="og:image:height" content="630" />
+<meta property="og:image:alt" content={seoTitle} />
 <meta property="og:locale" content="fr_FR" />
 <meta property="og:site_name" content="Biscuits IA" />
 
 <!-- Article specific meta tags -->
 {ogType === 'article' && (
   <>
+    <meta property="article:publisher" content="https://www.facebook.com/biscuitsIA" />
     {author && <meta property="article:author" content={author} />}
     {publishedTime && <meta property="article:published_time" content={publishedTime} />}
     {modifiedTime && <meta property="article:modified_time" content={modifiedTime} />}
     {tags.map(tag => (
       <meta property="article:tag" content={tag} />
     ))}
+    <meta property="article:section" content="Intelligence Artificielle" />
   </>
 )}
 
-<!-- Twitter Card -->
+<!-- ============================================
+     TWITTER CARD (Social SEO)
+     ============================================ -->
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:url" content={canonical} />
-<meta name="twitter:title" content={title} />
+<meta name="twitter:title" content={seoTitle} />
 <meta name="twitter:description" content={seoDescription} />
 <meta name="twitter:image" content={fullOgImage} />
+<meta name="twitter:image:alt" content={seoTitle} />
 <meta name="twitter:site" content="@biscuitsIA" />
 <meta name="twitter:creator" content="@biscuitsIA" />
 
-<!-- Robots -->
+<!-- ============================================
+     ROBOTS & CRAWLING (Lighthouse SEO)
+     ============================================ -->
 {noindex ? (
   <meta name="robots" content="noindex, nofollow" />
 ) : (
   <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
 )}
+<meta name="googlebot" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+<meta name="bingbot" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
 
-<!-- Additional SEO -->
-<meta name="theme-color" content="#faca6f" />
-<meta name="color-scheme" content="Biscuits UI" />
+<!-- ============================================
+     MOBILE & PWA (Best Practices)
+     ============================================ -->
+<meta name="theme-color" content="#faca6f" media="(prefers-color-scheme: light)" />
+<meta name="theme-color" content="#2C2C2C" media="(prefers-color-scheme: dark)" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Biscuits IA" />
+<meta name="application-name" content="Biscuits IA" />
+<meta name="msapplication-TileColor" content="#faca6f" />
+<meta name="msapplication-config" content="/browserconfig.xml" />
+
+<!-- ============================================
+     LANGUAGE & LOCALIZATION (SEO International)
+     ============================================ -->
 <link rel="alternate" hreflang="fr" href={canonical} />
+<link rel="alternate" hreflang="fr-FR" href={canonical} />
+<link rel="alternate" hreflang="fr-CA" href={canonical} />
+<link rel="alternate" hreflang="fr-BE" href={canonical} />
+<link rel="alternate" hreflang="fr-CH" href={canonical} />
 <link rel="alternate" hreflang="x-default" href={canonical} />
+
+<!-- ============================================
+     VERIFICATION & OWNERSHIP (Webmaster Tools)
+     ============================================ -->
+<meta name="google-site-verification" content="YOUR_GOOGLE_VERIFICATION_CODE" />
+<meta name="msvalidate.01" content="YOUR_BING_VERIFICATION_CODE" />
+<meta name="yandex-verification" content="YOUR_YANDEX_VERIFICATION_CODE" />
+<meta name="p:domain_verify" content="YOUR_PINTEREST_VERIFICATION_CODE" />
+
+<!-- ============================================
+     PERFORMANCE HINTS (Core Web Vitals)
+     ============================================ -->
+<meta name="format-detection" content="telephone=no" />
+<link rel="dns-prefetch" href="https://www.googletagmanager.com" />
+<link rel="dns-prefetch" href="https://www.google-analytics.com" />
+
+<!-- ============================================
+     GEO TARGETING (Local SEO)
+     ============================================ -->
+<meta name="geo.region" content="FR" />
+<meta name="geo.placename" content="France" />
+<meta name="geo.position" content="48.8566;2.3522" />
+<meta name="ICBM" content="48.8566, 2.3522" />
+
+<!-- ============================================
+     CONTENT RATING & AUDIENCE
+     ============================================ -->
+<meta name="rating" content="general" />
+<meta name="audience" content="all" />
+<meta name="distribution" content="global" />
+
+<!-- ============================================
+     ADDITIONAL SEO SIGNALS (2026)
+     ============================================ -->
+<meta name="classification" content="Intelligence Artificielle, Formation IA, Consulting" />
+<meta name="category" content="Technology" />
+<meta name="coverage" content="Worldwide" />
+<meta name="reply-to" content="contact@biscuits-ia.com" />
+<meta name="owner" content="Biscuits IA" />
+<meta name="url" content={canonical} />
+<meta name="identifier-URL" content={canonical} />
+<meta name="directory" content="submission" />
+<meta name="pagename" content={seoTitle} />
+<meta name="revisit-after" content="7 days" />
+
+<!-- Dublin Core Metadata -->
+<meta name="DC.title" content={seoTitle} />
+<meta name="DC.creator" content="Biscuits IA" />
+<meta name="DC.subject" content="Intelligence Artificielle" />
+<meta name="DC.description" content={seoDescription} />
+<meta name="DC.publisher" content="Biscuits IA" />
+<meta name="DC.type" content="Text" />
+<meta name="DC.format" content="text/html" />
+<meta name="DC.language" content="fr" />
+<meta name="DC.rights" content="© 2026 Biscuits IA" />
+
+<!-- RSS/Atom Feed -->
+<link rel="alternate" type="application/rss+xml" title="Biscuits IA - RSS Feed" href={`${siteUrl}/rss.xml`} />
+<link rel="alternate" type="application/atom+xml" title="Biscuits IA - Atom Feed" href={`${siteUrl}/atom.xml`} />

@@ -14,11 +14,13 @@
     "lighthouse": "lighthouse https://localhost:4321 --view"
   },
   "dependencies": {
-    "@astrojs/mdx": "4.3.13",
+    "@astrojs/mdx": "^4.3.13",
     "@astrojs/node": "9.5.2",
     "@astrojs/sitemap": "3.7.0",
     "@astrojs/svelte": "7.2.5",
-    "@astrojs/vercel": "9.0.4",
+    "@astrojs/tailwind": "^6.0.2",
+    "@astrojs/vercel": "^9.0.4",
+    "@fullhuman/postcss-purgecss": "^8.0.0",
     "@playform/compress": "^0.2.0",
     "@studio-freight/lenis": "^1.0.42",
     "@tailwindcss/vite": "^4.1.17",
@@ -28,10 +30,12 @@
     "astro-compress": "^2.3.8",
     "astro-icon": "^1.1.5",
     "astro-robots": "^2.3.1",
+    "astro-robots-txt": "^1.0.0",
+    "cssnano": "^7.1.2",
     "eslint": "^9.39.2",
     "rehype-pretty-code": "^0.14.1",
     "svelte": "^5.46.0",
-    "tailwindcss": "^4.1.17",
+    "tailwindcss": "^3.4.19",
     "zod": "^4.1.13"
   },
   "devDependencies": {

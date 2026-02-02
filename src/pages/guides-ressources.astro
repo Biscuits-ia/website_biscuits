@@ -1,8 +1,5 @@
 ---
 import BaseLayout from '@layouts/Layout.astro';
-
-export const prerender = true;
-export const csr = false;
 ---
 
 <BaseLayout
@@ -12,36 +9,30 @@ export const csr = false;
   <section class="hero-resources">
     <div class="container">
       <div class="hero-content">
-        <h1 class="visually-hidden">Guides et Ressources IA</h1>
         <p class="hero-subtitle">
           Accédez à des guides pratiques et documents pour vous aider à intégrer l'IA dans vos projets, à votre rythme.
         </p>
-        <div class="search-bar" role="search">
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true" focusable="false">
+        <div class="search-bar">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
             <path d="M9 17A8 8 0 1 0 9 1a8 8 0 0 0 0 16zM19 19l-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
-          <input 
-            type="search" 
-            placeholder="Rechercher une ressource..." 
-            aria-label="Rechercher une ressource"
-            autocomplete="off"
-          />
+          <input type="text" placeholder="Rechercher une ressource..">
         </div>
       </div>
     </div>
   </section>
 
-  <section class="resources-section" aria-labelledby="guides-title">
+  <section class="resources-section">
     <div class="container">
-      <header class="section-header">
-        <h2 id="guides-title">Nos Guides Essentiels</h2>
+      <div class="section-header">
+        <h2>Nos Guides Essentiels</h2>
         <p>Téléchargez gratuitement nos ressources pour démarrer avec l'IA</p>
-      </header>
+      </div>
       
       <div class="resources-grid">
         <article class="resource-card type-guide">
-          <div class="card-badge" aria-label="Type: Guide PDF">Guide PDF</div>
-          <div class="card-icon" aria-hidden="true">
+          <div class="card-badge">Guide PDF</div>
+          <div class="card-icon">
             <span class="icon-wrapper">📚</span>
           </div>
           
@@ -49,30 +40,27 @@ export const csr = false;
             <h3>Guide IA pour Associations</h3>
             <p>Comprendre les usages, bonnes pratiques et outils accessibles pour vos projets associatifs.</p>
             
-            <dl class="resource-meta">
+            <div class="resource-meta">
               <div class="meta-item">
-                <dt class="visually-hidden">Nombre de pages</dt>
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true" focusable="false">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                   <path d="M8 2v12M2 8h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                 </svg>
-                <dd>42 pages</dd>
+                <span>42 pages</span>
               </div>
               <div class="meta-item">
-                <dt class="visually-hidden">Temps de lecture</dt>
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true" focusable="false">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                   <path d="M8 14A6 6 0 1 0 8 2a6 6 0 0 0 0 12z" stroke="currentColor" stroke-width="2"/>
                   <path d="M8 4v4l2 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                 </svg>
-                <dd>30 min lecture</dd>
+                <span>30 min lecture</span>
               </div>
               <div class="meta-item">
-                <dt class="visually-hidden">Nombre de téléchargements</dt>
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true" focusable="false">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                   <path d="M14 10v2a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-2M4 6l4-4 4 4M8 2v10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
-                <dd>2.3k téléchargements</dd>
+                <span>2.3k téléchargements</span>
               </div>
-            </dl>
+            </div>
 
             <ul class="content-list">
               <li>Introduction à l'IA pour associations</li>
@@ -83,18 +71,18 @@ export const csr = false;
           </div>
 
           <div class="card-footer">
-            <a href="#download-guide-associations" class="btn-download" aria-label="Télécharger le guide IA pour associations (format PDF)">
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true" focusable="false">
+            <a href="#" class="btn-download">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
                 <path d="M17.5 12.5v3.333a1.667 1.667 0 0 1-1.667 1.667H4.167A1.667 1.667 0 0 1 2.5 15.833V12.5M5.833 8.333L10 12.5l4.167-4.167M10 12.5V2.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
-              <span>Télécharger (PDF)</span>
+              Télécharger (PDF)
             </a>
           </div>
         </article>
 
         <article class="resource-card type-toolkit">
-          <div class="card-badge" aria-label="Type: Toolkit">Toolkit</div>
-          <div class="card-icon" aria-hidden="true">
+          <div class="card-badge">Toolkit</div>
+          <div class="card-icon">
             <span class="icon-wrapper">⚙️</span>
           </div>
           
@@ -102,30 +90,27 @@ export const csr = false;
             <h3>Workflow & Automatisation</h3>
             <p>Centralisez vos tâches et automatisez les processus répétitifs avec des outils IA.</p>
             
-            <dl class="resource-meta">
+            <div class="resource-meta">
               <div class="meta-item">
-                <dt class="visually-hidden">Nombre de templates</dt>
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true" focusable="false">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                   <path d="M8 2v12M2 8h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                 </svg>
-                <dd>15 templates</dd>
+                <span>15 templates</span>
               </div>
               <div class="meta-item">
-                <dt class="visually-hidden">Temps de configuration</dt>
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true" focusable="false">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                   <path d="M8 14A6 6 0 1 0 8 2a6 6 0 0 0 0 12z" stroke="currentColor" stroke-width="2"/>
                   <path d="M8 4v4l2 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                 </svg>
-                <dd>1h configuration</dd>
+                <span>1h configuration</span>
               </div>
               <div class="meta-item">
-                <dt class="visually-hidden">Nombre de téléchargements</dt>
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true" focusable="false">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                   <path d="M14 10v2a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-2M4 6l4-4 4 4M8 2v10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
-                <dd>1.8k téléchargements</dd>
+                <span>1.8k téléchargements</span>
               </div>
-            </dl>
+            </div>
 
             <ul class="content-list">
               <li>Templates d'automatisation prêts à l'emploi</li>
@@ -136,18 +121,18 @@ export const csr = false;
           </div>
 
           <div class="card-footer">
-            <a href="#download-workflow" class="btn-download" aria-label="Télécharger le toolkit workflow et automatisation (format ZIP)">
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true" focusable="false">
+            <a href="#" class="btn-download">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
                 <path d="M17.5 12.5v3.333a1.667 1.667 0 0 1-1.667 1.667H4.167A1.667 1.667 0 0 1 2.5 15.833V12.5M5.833 8.333L10 12.5l4.167-4.167M10 12.5V2.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
-              <span>Télécharger (ZIP)</span>
+              Télécharger (ZIP)
             </a>
           </div>
         </article>
 
         <article class="resource-card type-code">
-          <div class="card-badge" aria-label="Type: Open Source">Open Source</div>
-          <div class="card-icon" aria-hidden="true">
+          <div class="card-badge">Open Source</div>
+          <div class="card-icon">
             <span class="icon-wrapper">💻</span>
           </div>
           
@@ -155,30 +140,27 @@ export const csr = false;
             <h3>Ressources Open-Source</h3>
             <p>Starter kits, modèles et outils prêts à l'emploi pour votre association ou TPE/PME.</p>
             
-            <dl class="resource-meta">
+            <div class="resource-meta">
               <div class="meta-item">
-                <dt class="visually-hidden">Nombre de projets</dt>
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true" focusable="false">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                   <path d="M8 2v12M2 8h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                 </svg>
-                <dd>8 projets</dd>
+                <span>8 projets</span>
               </div>
               <div class="meta-item">
-                <dt class="visually-hidden">Temps d'installation</dt>
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true" focusable="false">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                   <path d="M8 14A6 6 0 1 0 8 2a6 6 0 0 0 0 12z" stroke="currentColor" stroke-width="2"/>
                   <path d="M8 4v4l2 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                 </svg>
-                <dd>2h installation</dd>
+                <span>2h installation</span>
               </div>
               <div class="meta-item">
-                <dt class="visually-hidden">Nombre de clones</dt>
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true" focusable="false">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                   <path d="M14 10v2a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-2M4 6l4-4 4 4M8 2v10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
-                <dd>3.1k clones</dd>
+                <span>3.1k clones</span>
               </div>
-            </dl>
+            </div>
 
             <ul class="content-list">
               <li>Code source commenté et documenté</li>
@@ -189,11 +171,11 @@ export const csr = false;
           </div>
 
           <div class="card-footer">
-            <a href="#github" class="btn-download" aria-label="Voir les ressources open-source sur GitHub" rel="noopener noreferrer">
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true" focusable="false">
+            <a href="#" class="btn-download">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
                 <path d="M10 1.667v11.666M6.667 9.167L10 12.5l3.333-3.333M3.333 18.333h13.334" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
-              <span>Voir sur GitHub</span>
+              Voir sur GitHub
             </a>
           </div>
         </article>
@@ -201,67 +183,58 @@ export const csr = false;
     </div>
   </section>
 
-  <section class="categories-section" aria-labelledby="categories-title">
+  <section class="categories-section">
     <div class="container">
-      <h2 id="categories-title">Explorer par catégorie</h2>
-      <nav class="categories-grid" aria-label="Catégories de ressources">
-        <a href="#demarrage-rapide" class="category-card">
-          <div class="category-icon" aria-hidden="true">🎯</div>
+      <h2>Explorer par catégorie</h2>
+      <div class="categories-grid">
+        <a href="#" class="category-card">
+          <div class="category-icon">🎯</div>
           <h3>Démarrage rapide</h3>
           <p>12 ressources</p>
         </a>
-        <a href="#outils-templates" class="category-card">
-          <div class="category-icon" aria-hidden="true">🛠️</div>
+        <a href="#" class="category-card">
+          <div class="category-icon">🛠️</div>
           <h3>Outils & Templates</h3>
           <p>24 ressources</p>
         </a>
-        <a href="#tutoriels-video" class="category-card">
-          <div class="category-icon" aria-hidden="true">📖</div>
+        <a href="#" class="category-card">
+          <div class="category-icon">📖</div>
           <h3>Tutoriels vidéo</h3>
           <p>18 ressources</p>
         </a>
-        <a href="#formation-avancee" class="category-card">
-          <div class="category-icon" aria-hidden="true">🎓</div>
+        <a href="#" class="category-card">
+          <div class="category-icon">🎓</div>
           <h3>Formation avancée</h3>
           <p>8 ressources</p>
         </a>
-      </nav>
+      </div>
     </div>
   </section>
 
-  <section class="newsletter-section" aria-labelledby="newsletter-title">
+  <section class="newsletter-section">
     <div class="container">
       <div class="newsletter-content">
         <div class="newsletter-text">
-          <h2 id="newsletter-title">Recevez nos nouvelles ressources</h2>
+          <h2>Recevez nos nouvelles ressources</h2>
           <p>Abonnez-vous pour être notifié des nouveaux guides, templates et outils IA.</p>
         </div>
-        <form class="newsletter-form" aria-label="Formulaire d'inscription à la newsletter">
-          <label for="newsletter-email" class="visually-hidden">Adresse e-mail</label>
-          <input 
-            type="email" 
-            id="newsletter-email" 
-            name="email" 
-            placeholder="Votre email" 
-            required 
-            autocomplete="email"
-            aria-required="true"
-          />
+        <form class="newsletter-form">
+          <input type="email" placeholder="Votre email" required>
           <button type="submit">S'abonner</button>
         </form>
       </div>
     </div>
   </section>
 
-  <section class="cta-modern" aria-labelledby="cta-title">
+  <section class="cta-modern">
     <div class="container">
       <div class="cta-content">
-        <h2 id="cta-title">Commencez dès maintenant</h2>
+        <h2>Commencez dès maintenant</h2>
         <p>Téléchargez nos guides et mettez l'IA au service de votre association ou entreprise.</p>
         <div class="cta-buttons">
           <a href="/register" class="btn-primary">
-            <span>Accéder aux ressources</span>
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true" focusable="false">
+            Accéder aux ressources
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
               <path d="M7.5 15L12.5 10L7.5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
           </a>
@@ -272,34 +245,21 @@ export const csr = false;
 </BaseLayout>
 
 <style>
-  /* Optimisation critique pour FCP */
-  .visually-hidden {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    margin: -1px;
-    padding: 0;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-    border: 0;
-  }
-
-  /* Variables CSS optimisées - utiliser contain-intrinsic-size si possible */
   .hero-resources {
     padding: 70px 0 50px;
     background: var(--color-primary);
     position: relative;
     overflow: hidden;
-    content-visibility: auto;
   }
 
   .hero-resources::before {
     content: '';
     position: absolute;
-    inset: 0;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
     opacity: 0.4;
-    will-change: auto;
   }
 
   .hero-content {
@@ -317,7 +277,8 @@ export const csr = false;
     opacity: 0.95;
     max-width: 600px;
     color: var(--color-gray-900);
-    margin-inline: auto;
+    margin-left: auto;
+    margin-right: auto;
   }
 
   .search-bar {
@@ -338,7 +299,6 @@ export const csr = false;
 
   .search-bar input {
     flex: 1;
-    min-width: 0;
     margin-left: 10px;
     outline: none;
     border: none;
@@ -355,8 +315,6 @@ export const csr = false;
 
   .resources-section {
     padding: 80px 0;
-    content-visibility: auto;
-    contain-intrinsic-size: auto 800px;
   }
 
   .section-header {
@@ -377,33 +335,24 @@ export const csr = false;
 
   .resources-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(340px, 100%), 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
     gap: 32px;
   }
 
   .resource-card {
     background: var(--color-secondary);
     padding: 32px;
-    box-shadow: 0 4px 6px rgb(0 0 0 / 0.05);
-    transition: box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     border: 2px solid transparent;
     display: flex;
     flex-direction: column;
     gap: 24px;
     position: relative;
-    will-change: auto;
   }
 
-  .resource-card:hover,
-  .resource-card:focus-within {
-    box-shadow: 0 20px 40px rgb(0 0 0 / 0.1);
-    transform: translateY(-2px);
-  }
-
-  @media (hover: hover) {
-    .resource-card {
-      will-change: transform;
-    }
+  .resource-card:hover {
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
   }
 
   .card-badge {
@@ -413,13 +362,17 @@ export const csr = false;
     padding: 4px 12px;
     background: var(--color-accent-honey);
     color: var(--color-gray-200);
-    border-radius: 0;
+    border-radius: 0px;
     font-size: 0.75rem;
     font-weight: 700;
     text-transform: uppercase;
   }
 
-  .type-toolkit .card-badge,
+  .type-toolkit .card-badge {
+    background: var(--color-accent-honey);
+    color: var(--color-gray-200);
+  }
+
   .type-code .card-badge {
     background: var(--color-accent-honey);
     color: var(--color-gray-200);
@@ -428,15 +381,21 @@ export const csr = false;
   .card-icon .icon-wrapper {
     width: 72px;
     height: 72px;
-    display: inline-flex;
+    display: flex;
     align-items: center;
     justify-content: center;
     font-size: 36px;
     background: var(--color-primary);
+    border: 3px solid var(--color-border-second);
     border-radius: 10%;
   }
 
-  .type-toolkit .icon-wrapper,
+  .type-toolkit .icon-wrapper {
+    background: var(--color-primary);
+    border: 3px solid var(--color-border-second);
+    border-radius: 10%;
+  }
+
   .type-code .icon-wrapper {
     background: var(--color-primary);
     border: 3px solid var(--color-border-second);
@@ -462,7 +421,8 @@ export const csr = false;
     flex-wrap: wrap;
     gap: 16px;
     padding: 16px 0;
-    border-block: 1px solid;
+    border-top: 1px solid;
+    border-bottom: 1px solid;
     margin-bottom: 20px;
   }
 
@@ -474,14 +434,6 @@ export const csr = false;
     color: var(--color-gray-900);
   }
 
-  .meta-item dt {
-    display: contents;
-  }
-
-  .meta-item dd {
-    margin: 0;
-  }
-
   .meta-item svg {
     stroke: var(--color-gray-900);
     flex-shrink: 0;
@@ -490,7 +442,6 @@ export const csr = false;
   .content-list {
     list-style: none;
     padding: 0;
-    margin: 0;
     color: var(--color-gray-100);
     display: flex;
     flex-direction: column;
@@ -519,7 +470,7 @@ export const csr = false;
   }
 
   .btn-download {
-    display: inline-flex;
+    display: flex;
     align-items: center;
     justify-content: center;
     gap: 10px;
@@ -529,30 +480,16 @@ export const csr = false;
     color: var(--color-gray-800);
     font-weight: 600;
     text-decoration: none;
-    transition: background-color 0.3s ease, color 0.3s ease, transform 0.2s ease;
   }
 
-  .btn-download:hover,
-  .btn-download:focus {
+  .btn-download:hover {
     background-color: var(--color-accent-honey);
     color: var(--color-gray-200);
-    transform: translateY(-1px);
-  }
-
-  .btn-download:focus-visible {
-    outline: 2px solid currentColor;
-    outline-offset: 2px;
-  }
-
-  .btn-download:active {
-    transform: translateY(0);
   }
 
   .categories-section {
     padding: 80px 0;
     background: var(--color-bg);
-    content-visibility: auto;
-    contain-intrinsic-size: auto 500px;
   }
 
   .categories-section h2 {
@@ -565,29 +502,23 @@ export const csr = false;
 
   .categories-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
     gap: 24px;
   }
 
   .category-card {
     background: var(--color-accent-honey);
     padding: 32px 24px;
+    border-color: 10px solid var(--border-color);
     text-align: center;
     text-decoration: none;
-    transition: background 0.3s ease, transform 0.3s ease;
+    transition: all 0.3s ease;
     border: 2px solid transparent;
-    will-change: auto;
   }
 
-  .category-card:hover,
-  .category-card:focus {
+  .category-card:hover {
     background: var(--color-secondary-hover);
     transform: translateY(-4px);
-  }
-
-  .category-card:focus-visible {
-    outline: 2px solid currentColor;
-    outline-offset: 2px;
   }
 
   .category-icon {
@@ -605,15 +536,13 @@ export const csr = false;
   .category-card p {
     font-size: 0.9rem;
     color: var(--color-gray-100);
-    margin: 0;
   }
+
 
   .newsletter-section {
     padding: 80px 0;
     background: var(--color-secondary);
     color: var(--color-text);
-    content-visibility: auto;
-    contain-intrinsic-size: auto 400px;
   }
 
   .newsletter-content {
@@ -645,16 +574,10 @@ export const csr = false;
 
   .newsletter-form input {
     flex: 1;
-    min-width: 0;
     padding: 14px 20px;
     border: none;
     font-size: 1rem;
     outline: none;
-  }
-
-  .newsletter-form input:focus-visible {
-    outline: 2px solid var(--color-bg);
-    outline-offset: 2px;
   }
 
   .newsletter-form button {
@@ -665,26 +588,18 @@ export const csr = false;
     font-weight: 600;
     font-size: 1rem;
     cursor: pointer;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    transition: all 0.3s ease;
     white-space: nowrap;
   }
 
-  .newsletter-form button:hover,
-  .newsletter-form button:focus {
+  .newsletter-form button:hover {
     transform: scale(1.05);
-    box-shadow: 0 4px 12px rgb(0 0 0 / 0.2);
-  }
-
-  .newsletter-form button:focus-visible {
-    outline: 2px solid currentColor;
-    outline-offset: 2px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   }
 
   .cta-modern {
     padding: 80px 0;
-    color: var(--color-gray-100);
-    content-visibility: auto;
-    contain-intrinsic-size: auto 400px;
+    color: var(--color-gray-1 00);
   }
 
   .cta-content {
@@ -713,14 +628,13 @@ export const csr = false;
     flex-wrap: wrap;
   }
 
-  .btn-primary,
-  .btn-secondary {
+  .btn-primary, .btn-secondary {
     padding: 16px 32px;
-    border-radius: 0;
+    border-radius: 0px;
     font-weight: 600;
     font-size: 1rem;
     text-decoration: none;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    transition: all 0.3s ease;
     display: inline-flex;
     align-items: center;
     gap: 8px;
@@ -732,48 +646,24 @@ export const csr = false;
     box-shadow: 0 8px 16px var(--color-text);
   }
 
-  .btn-primary:hover,
-  .btn-primary:focus {
+  .btn-primary:hover {
     transform: translateY(-2px);
-  }
-
-  .btn-primary:focus-visible {
-    outline: 2px solid currentColor;
-    outline-offset: 2px;
   }
 
   .btn-secondary {
     background: var(--color-secondary);
-    color: var(--color-text);
+    color: var(--color-tex);
   }
 
-  .btn-secondary:hover,
-  .btn-secondary:focus {
-    background: rgb(255 255 255 / 0.1);
-    border-color: rgb(255 255 255 / 0.5);
+  .btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.5);
   }
 
   .container {
     max-width: 1200px;
     margin: 0 auto;
     padding: 0 24px;
-  }
-
-  /* Optimisations de performance pour animations */
-  @media (prefers-reduced-motion: reduce) {
-    *,
-    *::before,
-    *::after {
-      animation-duration: 0.01ms !important;
-      animation-iteration-count: 1 !important;
-      transition-duration: 0.01ms !important;
-    }
-  }
-
-  /* Amélioration focus pour accessibilité */
-  *:focus-visible {
-    outline: 2px solid currentColor;
-    outline-offset: 2px;
   }
 
   @media (max-width: 768px) {
@@ -784,15 +674,11 @@ export const csr = false;
     .search-bar {
       padding: 4px 8px 4px 16px;
     }
-
     .resources-grid {
       grid-template-columns: 1fr;
     }
 
-    .resources-section,
-    .categories-section,
-    .newsletter-section,
-    .cta-modern {
+    .resources-section, .categories-section, .newsletter-section, .cta-modern {
       padding: 60px 0;
     }
 
@@ -812,8 +698,7 @@ export const csr = false;
       flex-direction: column;
     }
 
-    .btn-primary,
-    .btn-secondary {
+    .btn-primary, .btn-secondary {
       width: 100%;
       justify-content: center;
     }

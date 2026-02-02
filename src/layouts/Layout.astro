@@ -4,7 +4,6 @@ import Footer from '@/components/Footer.astro';
 import SEOHead from '@/components/SEO/SEOHead.astro';
 import SchemaOrg from '@/components/SEO/SchemaOrg.astro';
 import CookieConsent from '@/components/svelte/CookieConsent.svelte';
-import SpeedInsights from '@vercel/speed-insights/astro';
 
 import '@/styles/theme.css';
 import '@/styles/global.css';
@@ -20,6 +19,7 @@ export interface Props {
     type: 'Organization' | 'Service' | 'FAQPage' | 'Article' | 'WebPage';
     data?: Record<string, any>;
   };
+  loadGSAP?: boolean;
 }
 
 const {
@@ -40,16 +40,25 @@ const fullCanonical = canonical
 
 const fullTitle = title.includes('|') ? title : `${title} | Biscuits IA`;
 
-const isProd = import.meta.env.PROD;
+const organizationSchema = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "Biscuits IA",
+  "url": siteUrl,
+  "logo": `${siteUrl}/logo.png`,
+  "description": "Biscuits IA fournit des outils, pour accompagner associations et TPE/PME dans leurs projets. Créez efficacement avec des bases fiables et accessibles à tous.",
+  "email": "contact@biscuits.dev",
+  "address": {
+    "@type": "PostalAddress",
+    "addressCountry": "FR"
+  },
+  "sameAs": [
+    "https://linkedin.com/company/biscuits-ia",
+    "https://twitter.com/biscuitsIA"
+  ]
+};
 
-const criticalCSS = `
-  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-  html{-webkit-text-size-adjust:100%;tab-size:4}
-  body{font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;line-height:1.5;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
-  .skip-link{position:absolute;top:-100px;left:0;background:#F5E6D3;color:#2C2C2C;padding:0.5rem 1rem;z-index:9999;font-weight:600;text-decoration:none;border-radius:0 0 0.5rem 0;transition:top 0.2s}
-  .skip-link:focus{top:0;outline:2px solid currentColor;outline-offset:2px}
-  main{min-height:60vh}
-`;
+const isProd = import.meta.env.PROD;
 ---
 
 <!DOCTYPE html>
@@ -58,18 +67,6 @@ const criticalCSS = `
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  
-  <style set:html={criticalCSS}></style>
-  
-  {isProd && (
-    <>
-      <link rel="preconnect" href="https://www.googletagmanager.com" />
-      <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
-    </>
-  )}
-  
-  <link rel="preload" href="/favicon.webp" as="image" type="image/webp" />
-  
   <SEOHead 
     title={fullTitle}
     description={description}
@@ -82,45 +79,26 @@ const criticalCSS = `
   {schema && <SchemaOrg type={schema.type} data={schema.data} />}
   
   {!schema && (
-    <>
-      <SchemaOrg type="Organization" />
-      <script type="application/ld+json" set:html={JSON.stringify({
-        "@context": "https://schema.org",
-        "@type": "WebPage",
-        "url": fullCanonical,
-        "name": fullTitle,
-        "description": description
-      })} />
-    </>
+    <script type="application/ld+json" set:html={JSON.stringify(organizationSchema)} />
   )}
   
   <link rel="icon" type="image/svg+xml" href="/favicon.webp" />
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-  <link rel="sitemap" href="/sitemap.xml" />
+  <link rel="sitemap" href="/sitemap-index.xml" />
+  
+  {isProd && (
+    <>
+      <link rel="preconnect" href="https://www.googletagmanager.com" crossorigin />
+    </>
+  )}
   
   {isProd && (
     <script is:inline>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      
-      // Defer GTM loading after page interactive
-      if ('requestIdleCallback' in window) {
-        requestIdleCallback(function() {
-          (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-          new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-          j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-          'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-          })(window,document,'script','dataLayer','GTM-W2273TRX');
-        });
-      } else {
-        setTimeout(function() {
-          (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-          new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-          j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-          'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-          })(window,document,'script','dataLayer','GTM-W2273TRX');
-        }, 2000);
-      }
+      (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+      new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+      j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+      'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+      })(window,document,'script','dataLayer','GTM-W2273TRX');
     </script>
   )}
 </head>
@@ -133,7 +111,6 @@ const criticalCSS = `
         height="0" 
         width="0" 
         style="display:none;visibility:hidden"
-        title="Google Tag Manager"
       ></iframe>
     </noscript>
   )}
@@ -151,7 +128,6 @@ const criticalCSS = `
   <Footer />
 
   <CookieConsent client:idle />
-  <SpeedInsights />
 </body>
 
 <style is:global>

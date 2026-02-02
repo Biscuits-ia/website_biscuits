@@ -1,7 +1,4 @@
-export const prerender = true;
-
 export async function GET() {
-  const siteUrl = import.meta.env.SITE || 'https://biscuits.dev';
   const robotsTxt = `
 User-agent: *
 Allow: /
@@ -21,7 +18,7 @@ Allow: /
 User-agent: Claude-Web
 Allow: /
 
-Sitemap: ${siteUrl}/sitemap.xml
+Sitemap: https://biscuits-ia.com/sitemap.xml
   `.trim();
 
   return new Response(robotsTxt, {

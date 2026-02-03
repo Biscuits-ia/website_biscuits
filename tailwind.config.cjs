@@ -12,7 +12,6 @@ module.exports = {
   },
   darkMode: "class",
   corePlugins: {
-    // keep preflight for basic resets
     preflight: true
   }
 };

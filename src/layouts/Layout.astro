@@ -43,17 +43,17 @@ const fullTitle = title.includes('|') ? title : `${title} | Biscuits IA`;
 const isProd = import.meta.env.PROD;
 
 // Critical CSS inline pour améliorer le FCP (First Contentful Paint)
-// Optimisé pour un chargement < 1.36s selon les standards Lighthouse 2026
+// Optimisation 2026: CSS minimal inline pour render immédiat
 const criticalCSS = `
   *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
   html{-webkit-text-size-adjust:100%;tab-size:4;scroll-behavior:smooth}
   body{font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubuntu,Cantarell,'Helvetica Neue',Arial,sans-serif;line-height:1.5;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;color:#2C2C2C;background:#fff}
-  .skip-link{position:absolute;top:-100px;left:0;background:#faca6f;color:#2C2C2C;padding:0.75rem 1.25rem;z-index:9999;font-weight:600;text-decoration:none;border-radius:0 0 0.5rem 0;transition:top 0.2s ease-in-out}
-  .skip-link:focus{top:0;outline:3px solid #2C2C2C;outline-offset:3px}
+  .skip-link{position:absolute;top:-100px;left:0;background:#faca6f;color:#2C2C2C;padding:0.75rem 1.5rem;z-index:9999;font-weight:600;text-decoration:none;border-radius:0 0 0.5rem 0;transition:top 0.2s ease-in-out;font-size:1rem}
+  .skip-link:focus{top:0;outline:3px solid #2C2C2C;outline-offset:2px}
   main{min-height:60vh;display:block}
   img{max-width:100%;height:auto;display:block}
-  a{color:#2C2C2C;text-decoration-skip-ink:auto}
-  button{font:inherit;cursor:pointer}
+  a{color:inherit;text-decoration:underline}
+  button{cursor:pointer;font:inherit}
 `;
 ---
 
@@ -64,21 +64,18 @@ const criticalCSS = `
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   
-  <!-- Critical CSS inline pour FCP optimal < 1.36s -->
+  <!-- Critical CSS inline pour FCP optimal (Lighthouse Performance) -->
   <style set:html={criticalCSS}></style>
   
-  <!-- Preconnect aux domaines critiques pour réduire DNS/TLS time -->
+  <!-- Preconnect aux domaines critiques (améliore LCP) -->
   {isProd && (
     <>
       <link rel="preconnect" href="https://www.googletagmanager.com" crossorigin />
+      <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
       <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
-      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+      <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
     </>
   )}
-  
-  <!-- Preload des ressources critiques pour améliorer LCP -->
-  <link rel="preload" href="/fonts/main.woff2" as="font" type="font/woff2" crossorigin />
-  <link rel="preload" href="/favicon.webp" as="image" type="image/webp" fetchpriority="low" />
   
   <SEOHead 
     title={fullTitle}
@@ -94,7 +91,7 @@ const criticalCSS = `
   {!schema && (
     <>
       <SchemaOrg type="Organization" />
-      <script type="application/ld+json" set:html={JSON.stringify({
+      <script is:inline type="application/ld+json" set:html={JSON.stringify({
         "@context": "https://schema.org",
         "@type": "WebPage",
         "url": fullCanonical,
@@ -110,46 +107,63 @@ const criticalCSS = `
     </>
   )}
   
-  <!-- Favicons optimisés -->
-  <link rel="icon" type="image/webp" href="/favicon.webp" />
+  <!-- Favicons optimisés (format moderne) -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="icon" type="image/webp" sizes="32x32" href="/favicon-32x32.webp" />
+  <link rel="icon" type="image/webp" sizes="16x16" href="/favicon-16x16.webp" />
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
   <link rel="manifest" href="/manifest.webmanifest" />
-  <link rel="sitemap" href="/sitemap.xml" />
+  <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
   
-  <!-- Theme color pour PWA -->
-  <meta name="theme-color" content="#faca6f" media="(prefers-color-scheme: light)" />
-  <meta name="theme-color" content="#2C2C2C" media="(prefers-color-scheme: dark)" />
+  <!-- Security : X-Content-Type-Options fonctionne en meta -->
+  <!-- X-Frame-Options et Permissions-Policy : à configurer dans vercel.json ou _headers uniquement -->
+  <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+  <meta name="referrer" content="strict-origin-when-cross-origin" />
   
-  <!-- GTM avec chargement différé après interaction utilisateur (améliore TTI) -->
+  <!-- GTM avec chargement ultra-optimisé (après interaction) -->
   {isProd && (
     <script is:inline type="text/partytown">
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'GTM-W2273TRX', {
+        'anonymize_ip': true,
+        'cookie_flags': 'SameSite=None;Secure'
+      });
       
-      // Chargement différé avec requestIdleCallback pour ne pas bloquer TTI
+      // Defer GTM loading jusqu'à ce que la page soit interactive (améliore TBT)
       const loadGTM = () => {
         if (window.gtmLoaded) return;
         window.gtmLoaded = true;
         
-        (function(w,d,s,l,i){
-          w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});
-          var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';
-          j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;
-          f.parentNode.insertBefore(j,f);
-        })(window,document,'script','dataLayer','GTM-W2273TRX');
+        const script = document.createElement('script');
+        script.async = true;
+        script.src = 'https://www.googletagmanager.com/gtm.js?id=GTM-W2273TRX';
+        document.head.appendChild(script);
       };
       
-      // Charge GTM après que la page soit interactive
+      // Charge GTM au premier événement utilisateur ou après 3s
       if ('requestIdleCallback' in window) {
-        requestIdleCallback(loadGTM, { timeout: 2000 });
+        requestIdleCallback(loadGTM, { timeout: 3000 });
       } else {
-        setTimeout(loadGTM, 2000);
+        setTimeout(loadGTM, 3000);
       }
       
-      // Charge aussi sur première interaction utilisateur
-      ['mousedown', 'touchstart', 'keydown', 'scroll'].forEach(event => {
+      // Charge aussi sur première interaction
+      ['mousedown', 'touchstart', 'keydown', 'wheel'].forEach(event => {
         document.addEventListener(event, loadGTM, { once: true, passive: true });
       });
+    </script>
+  )}
+  
+  <!-- Service Worker pour PWA (Best Practices) -->
+  {isProd && (
+    <script is:inline>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js').catch(() => {});
+        });
+      }
     </script>
   )}
 </head>
@@ -163,12 +177,12 @@ const criticalCSS = `
         width="0" 
         style="display:none;visibility:hidden"
         title="Google Tag Manager"
-        loading="lazy"
+        aria-hidden="true"
       ></iframe>
     </noscript>
   )}
 
-  <!-- Skip link pour accessibilité (WCAG 2.1 Level AA) -->
+  <!-- Skip link pour l'accessibilité (Lighthouse Accessibility) -->
   <a href="#main-content" class="skip-link">
     Aller au contenu principal
   </a>
@@ -181,42 +195,62 @@ const criticalCSS = `
 
   <Footer />
 
-  <!-- Composants non-critiques chargés après le contenu avec client:idle -->
+  <!-- Composants non-critiques chargés après le contenu (améliore TBT) -->
   <CookieConsent client:idle />
-  <SpeedInsights />
+  
+  {isProd && <SpeedInsights />}
 </body>
 
 <style is:global>
-  /* Fallback styles - le critical CSS inline assure un rendu rapide */
+  /* Styles non-critiques pour éviter le FOUC */
   .skip-link {
     position: absolute;
     top: -100px;
     left: 0;
     background: var(--color-primary, #faca6f);
     color: var(--color-text, #2C2C2C);
-    padding: var(--spacing-sm, 0.75rem) var(--spacing-md, 1.25rem);
+    padding: var(--spacing-sm, 0.75rem) var(--spacing-md, 1.5rem);
     z-index: var(--z-tooltip, 9999);
     font-weight: var(--font-weight-semibold, 600);
     text-decoration: none;
     border-radius: 0 0 var(--radius-md, 0.5rem) 0;
     transition: top var(--transition-fast, 0.2s) ease-in-out;
+    font-size: 1rem;
   }
 
   .skip-link:focus {
     top: 0;
-    outline: 3px solid currentColor;
-    outline-offset: 3px;
+    outline: 3px solid var(--color-text, #2C2C2C);
+    outline-offset: 2px;
   }
 
   .skip-link:focus-visible {
-    outline-color: var(--color-text, #2C2C2C);
+    outline: 3px solid var(--color-text, #2C2C2C);
+    outline-offset: 2px;
   }
 
   main {
     min-height: 60vh;
   }
+    
+  /* Prévention du CLS pour les images */
+  img:not([width]):not([height]) {
+    aspect-ratio: attr(width) / attr(height);
+  }
   
-  /* Optimisations pour Core Web Vitals */
+  /* Amélioration du contraste pour l'accessibilité */
+  ::selection {
+    background-color: #faca6f;
+    color: #2C2C2C;
+  }
+  
+  /* Focus visible amélioré (Accessibility) */
+  :focus-visible {
+    outline: 3px solid #faca6f;
+    outline-offset: 2px;
+  }
+  
+  /* Réduction du mouvement pour accessibilité */
   @media (prefers-reduced-motion: reduce) {
     *,
     *::before,
@@ -225,6 +259,13 @@ const criticalCSS = `
       animation-iteration-count: 1 !important;
       transition-duration: 0.01ms !important;
       scroll-behavior: auto !important;
+    }
+  }
+  
+  /* Dark mode support */
+  @media (prefers-color-scheme: dark) {
+    :root {
+      color-scheme: dark;
     }
   }
 </style>

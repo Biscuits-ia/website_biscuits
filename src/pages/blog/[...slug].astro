@@ -120,7 +120,14 @@ const { body } = entry;
       
       {entry.data.thumbnail && (
         <div class="article-thumbnail">
-          <Image src={entry.data.thumbnail} alt={entry.data.title} loading="lazy" format="webp" />
+          <Image
+            src={entry.data.thumbnail}
+            alt={entry.data.title}
+            width={800}
+            height={450}
+            loading="lazy"
+            format="webp"
+          />
         </div>
       )}
       
@@ -402,7 +409,7 @@ const { body } = entry;
 }
 
 .prose :global(blockquote::before) {
-  content: """;
+  content: "";
   position: absolute;
   top: -0.5rem;
   left: 1rem;

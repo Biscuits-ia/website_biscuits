@@ -125,7 +125,6 @@
 
 # Headers spécifiques pour la page d'accueil (Performance critique)
 /
-  Link: </fonts/inter-var.woff2>; rel=preload; as=font; type=font/woff2; crossorigin
   Link: </assets/logo.webp>; rel=preload; as=image; type=image/webp; fetchpriority=high
   Link: <https://www.googletagmanager.com>; rel=preconnect; crossorigin
   Cache-Control: public, max-age=0, must-revalidate

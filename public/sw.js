@@ -14,7 +14,6 @@ const STATIC_ASSETS = [
   '/offline',
   '/manifest.json',
   '/assets/logo.webp',
-  '/fonts/inter-var.woff2',
 ];
 
 // Installation du Service Worker

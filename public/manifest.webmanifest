@@ -1,0 +1,41 @@
+{
+  "name": "Biscuits IA - Solutions Intelligence Artificielle",
+  "short_name": "Biscuits IA",
+  "description": "Nous fournisons des outils, pour accompagner associations et TPE/PME dans leurs projets. Créez efficacement avec des bases fiables et accessibles à tous.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#ffffff",
+  "theme_color": "#faca6f",
+  "lang": "fr-FR",
+  "dir": "ltr",
+  "categories": ["associations", "tpe/pme", "productivity", "utilities"],
+  "shortcuts": [
+    {
+      "name": "Services",
+      "short_name": "Services",
+      "description": "Découvrir nos services IA",
+      "url": "/services",
+      "icons": [
+        {
+          "src": "/icons/shortcut-services.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Contact",
+      "short_name": "Contact",
+      "description": "Nous contacter",
+      "url": "/contact",
+      "icons": [
+        {
+          "src": "/icons/shortcut-contact.png",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ],
+  "prefer_related_applications": false
+}

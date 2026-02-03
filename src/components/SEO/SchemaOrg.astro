@@ -323,11 +323,11 @@ const graphSchema = {
 ---
 
 <!-- Schema.org Structured Data (JSON-LD) -->
-<script type="application/ld+json" set:html={JSON.stringify(graphSchema)} />
+<script is:inline type="application/ld+json" set:html={JSON.stringify(graphSchema)} />
 
 <!-- Additional Rich Snippets -->
 {type === 'Article' && data.rating && (
-  <script type="application/ld+json" set:html={JSON.stringify({
+  <script is:inline type="application/ld+json" set:html={JSON.stringify({
     "@context": "https://schema.org",
     "@type": "Review",
     "itemReviewed": {

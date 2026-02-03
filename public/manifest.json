@@ -1,7 +1,7 @@
 {
-  "name": "Biscuits IA - Expert Intelligence Artificielle",
+  "name": "Biscuits IA",
   "short_name": "Biscuits IA",
-  "description": "Expert en Intelligence Artificielle pour entreprises. Formation, consulting et solutions IA sur mesure.",
+  "description": "Nous fournisons des outils, pour accompagner associations et TPE/PME dans leurs projets. Créez efficacement avec des bases fiables et accessibles à tous.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
@@ -12,112 +12,24 @@
   "lang": "fr-FR",
   "categories": [
     "education",
-    "business",
+    "associations",
+    "tpe/pme",
     "productivity",
     "technology"
   ],
-  "icons": [
-    {
-      "src": "/assets/icon-72.png",
-      "sizes": "72x72",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "/assets/icon-96.png",
-      "sizes": "96x96",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "/assets/icon-128.png",
-      "sizes": "128x128",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "/assets/icon-144.png",
-      "sizes": "144x144",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "/assets/icon-152.png",
-      "sizes": "152x152",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "/assets/icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "/assets/icon-384.png",
-      "sizes": "384x384",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "/assets/icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "/assets/icon-maskable-192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "maskable"
-    },
-    {
-      "src": "/assets/icon-maskable-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "maskable"
-    }
-  ],
-  "screenshots": [
-    {
-      "src": "/assets/screenshot-mobile.png",
-      "sizes": "540x720",
-      "type": "image/png",
-      "form_factor": "narrow",
-      "label": "Biscuits IA Mobile"
-    },
-    {
-      "src": "/assets/screenshot-desktop.png",
-      "sizes": "1920x1080",
-      "type": "image/png",
-      "form_factor": "wide",
-      "label": "Biscuits IA Desktop"
-    }
-  ],
+
   "shortcuts": [
     {
       "name": "Services IA",
       "short_name": "Services",
-      "description": "Découvrir nos services d'intelligence artificielle",
-      "url": "/services",
-      "icons": [
-        {
-          "src": "/assets/shortcut-services.png",
-          "sizes": "96x96"
-        }
-      ]
+      "description": "Nous fournisons des outils, pour accompagner associations et TPE/PME dans leurs projets. Créez efficacement avec des bases fiables et accessibles à tous.",
+      "url": "/services"
     },
     {
       "name": "Formation IA",
       "short_name": "Formation",
       "description": "Formations en intelligence artificielle",
-      "url": "/atelier-ia",
-      "icons": [
-        {
-          "src": "/assets/shortcut-formation.png",
-          "sizes": "96x96"
-        }
-      ]
+      "url": "/atelier-ia"
     },
     {
       "name": "Guides & Ressources",
@@ -132,16 +44,10 @@
       ]
     },
     {
-      "name": "Demander un devis",
-      "short_name": "Devis",
-      "description": "Obtenir un devis personnalisé",
-      "url": "/devis",
-      "icons": [
-        {
-          "src": "/assets/shortcut-devis.png",
-          "sizes": "96x96"
-        }
-      ]
+      "name": "Devenir bénévole",
+      "short_name": "bénévole",
+      "description": "Devenez bénévole",
+      "url": "/login"
     }
   ],
   "share_target": {

@@ -92,7 +92,7 @@ const jsonLd = {
   <meta name="twitter:image" content={ogImage}>
   
   <!-- JSON-LD -->
-  <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+  <script is:inline type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
 </head>
 
 <body>

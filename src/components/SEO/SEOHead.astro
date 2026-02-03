@@ -140,10 +140,10 @@ const seoTitle = title.length > 60
 <!-- ============================================
      VERIFICATION & OWNERSHIP (Webmaster Tools)
      ============================================ -->
-<meta name="google-site-verification" content="YOUR_GOOGLE_VERIFICATION_CODE" />
-<meta name="msvalidate.01" content="YOUR_BING_VERIFICATION_CODE" />
-<meta name="yandex-verification" content="YOUR_YANDEX_VERIFICATION_CODE" />
-<meta name="p:domain_verify" content="YOUR_PINTEREST_VERIFICATION_CODE" />
+<!-- Ajouter vos codes de vérification ici une fois obtenus :
+<meta name="google-site-verification" content="VOTRE_CODE" />
+<meta name="msvalidate.01" content="VOTRE_CODE" />
+-->
 
 <!-- ============================================
      PERFORMANCE HINTS (Core Web Vitals)
@@ -151,14 +151,8 @@ const seoTitle = title.length > 60
 <meta name="format-detection" content="telephone=no" />
 <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
 <link rel="dns-prefetch" href="https://www.google-analytics.com" />
-
-<!-- ============================================
-     GEO TARGETING (Local SEO)
-     ============================================ -->
-<meta name="geo.region" content="FR" />
-<meta name="geo.placename" content="France" />
-<meta name="geo.position" content="48.8566;2.3522" />
-<meta name="ICBM" content="48.8566, 2.3522" />
+<link rel="preconnect" href="https://www.googletagmanager.com" crossorigin />
+<link rel="preconnect" href="https://www.google-analytics.com" crossorigin />
 
 <!-- ============================================
      CONTENT RATING & AUDIENCE
@@ -170,27 +164,8 @@ const seoTitle = title.length > 60
 <!-- ============================================
      ADDITIONAL SEO SIGNALS (2026)
      ============================================ -->
-<meta name="classification" content="Intelligence Artificielle, Formation IA, Consulting" />
-<meta name="category" content="Technology" />
-<meta name="coverage" content="Worldwide" />
-<meta name="reply-to" content="contact@biscuits-ia.com" />
-<meta name="owner" content="Biscuits IA" />
 <meta name="url" content={canonical} />
-<meta name="identifier-URL" content={canonical} />
-<meta name="directory" content="submission" />
 <meta name="pagename" content={seoTitle} />
-<meta name="revisit-after" content="7 days" />
-
-<!-- Dublin Core Metadata -->
-<meta name="DC.title" content={seoTitle} />
-<meta name="DC.creator" content="Biscuits IA" />
-<meta name="DC.subject" content="Intelligence Artificielle" />
-<meta name="DC.description" content={seoDescription} />
-<meta name="DC.publisher" content="Biscuits IA" />
-<meta name="DC.type" content="Text" />
-<meta name="DC.format" content="text/html" />
-<meta name="DC.language" content="fr" />
-<meta name="DC.rights" content="© 2026 Biscuits IA" />
 
 <!-- RSS/Atom Feed -->
 <link rel="alternate" type="application/rss+xml" title="Biscuits IA - RSS Feed" href={`${siteUrl}/rss.xml`} />

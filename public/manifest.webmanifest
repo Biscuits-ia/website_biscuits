@@ -16,13 +16,7 @@
       "name": "Services",
       "short_name": "Services",
       "description": "Découvrir nos services IA",
-      "url": "/services",
-      "icons": [
-        {
-          "src": "/icons/shortcut-services.png",
-          "sizes": "96x96"
-        }
-      ]
+      "url": "/pourquoi-biscuits-ia"
     },
     {
       "name": "Contact",

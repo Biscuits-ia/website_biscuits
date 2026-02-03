@@ -9,6 +9,9 @@ import SpeedInsights from '@vercel/speed-insights/astro';
 import '@/styles/theme.css';
 import '@/styles/global.css';
 
+
+const isProduction = import.meta.env.PROD;
+
 export interface Props {
   title: string;
   description: string;
@@ -42,8 +45,6 @@ const fullTitle = title.includes('|') ? title : `${title} | Biscuits IA`;
 
 const isProd = import.meta.env.PROD;
 
-// Critical CSS inline pour améliorer le FCP (First Contentful Paint)
-// Optimisation 2026: CSS minimal inline pour render immédiat
 const criticalCSS = `
   *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
   html{-webkit-text-size-adjust:100%;tab-size:4;scroll-behavior:smooth}
@@ -62,7 +63,6 @@ const criticalCSS = `
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   
   <!-- Critical CSS inline pour FCP optimal (Lighthouse Performance) -->
   <style set:html={criticalCSS}></style>
@@ -76,7 +76,7 @@ const criticalCSS = `
       <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
     </>
   )}
-  
+    
   <SEOHead 
     title={fullTitle}
     description={description}
@@ -106,6 +106,17 @@ const criticalCSS = `
       })} />
     </>
   )}
+
+  {isProduction && (
+  <script is:inline>
+    if (window.location.hostname === 'biscuits-ia.com') {
+      window.__PARTYTOWN_CONFIG = {
+        disableSandbox: true,
+        skipDeprecatedAPIs: true,
+      };
+    }
+  </script>
+  )}
   
   <!-- Favicons optimisés (format moderne) -->
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
@@ -131,7 +142,6 @@ const criticalCSS = `
         'cookie_flags': 'SameSite=None;Secure'
       });
       
-      // Defer GTM loading jusqu'à ce que la page soit interactive (améliore TBT)
       const loadGTM = () => {
         if (window.gtmLoaded) return;
         window.gtmLoaded = true;
@@ -232,7 +242,16 @@ const criticalCSS = `
   main {
     min-height: 60vh;
   }
-    
+  
+  /* Optimisation des polices (réduit CLS) */
+  @font-face {
+    font-family: 'Inter var';
+    font-style: normal;
+    font-weight: 100 900;
+    font-display: swap;
+    src: url('/fonts/inter-var.woff2') format('woff2');
+  }
+  
   /* Prévention du CLS pour les images */
   img:not([width]):not([height]) {
     aspect-ratio: attr(width) / attr(height);

@@ -1,89 +1,15 @@
 {
   "extends": "astro/tsconfigs/strict",
   "compilerOptions": {
-    // Cible moderne pour de meilleures performances
-    "target": "ES2022",
-    "lib": ["ES2022", "DOM", "DOM.Iterable"],
-    "module": "ESNext",
-  
-    // Module resolution
-    "moduleResolution": "bundler",
-    "resolveJsonModule": true,
-    "allowJs": true,
-    "checkJs": false,
-    
-    // Interop avec CommonJS
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
-    "forceConsistentCasingInFileNames": true,
-    
-    // Type checking strict
-    "strict": true,
-    "noImplicitAny": true,
-    "strictNullChecks": true,
-    "strictFunctionTypes": true,
-    "strictBindCallApply": true,
-    "strictPropertyInitialization": true,
-    "noImplicitThis": true,
-    "alwaysStrict": true,
-    
-    // Vérifications supplémentaires
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "noImplicitReturns": true,
-    "noFallthroughCasesInSwitch": true,
-    "verbatimModuleSyntax": true,
-    "noUncheckedIndexedAccess": true,
-    "noImplicitOverride": true,
-    "noPropertyAccessFromIndexSignature": false,
-    
-    // Support JSX pour React
-    "jsx": "react-jsx",
-    "jsxImportSource": "react",
-    
-    // Paths & Base
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"],
-      "@components/*": ["src/components/*"],
-      "@layouts/*": ["src/layouts/*"],
-      "@pages/*": ["src/pages/*"],
-      "@lib/*": ["src/lib/*"],
-      "@/db/*": ["src/db/*"],
-      "@styles/*": ["src/styles/*"],
-      "@utils/*": ["src/utils/*"],
-      "@types/*": ["src/types/*"]
-    },
-    
-    // Output
-    "outDir": "./dist",
-    "declaration": true,
-    "declarationMap": true,
-    "sourceMap": true,
-    
-    // Performance
-    "skipLibCheck": true,
-    "isolatedModules": true,
-    "incremental": true,
-    
-    // Types
-    "types": ["astro/client", "svelte", "node"],
-    
-    // Module detection
-    "moduleDetection": "force"
+      "@/*": ["src/*"]
+    }
   },
   "include": [
+    ".astro/types.d.ts",
     "src/**/*",
-    "src/**/*.ts",
-    "src/**/*.tsx",
-    "src/**/*.astro",
-    "src/**/*.svelte",
-    ".astro/types.d.ts"
-, "src/db/drizzle.config.tsnfig.ts"  ],
-  "exclude": [
-    "node_modules",
-    "dist",
-    ".astro",
-    "public"
-  ]
+    "astro.config.*"
+  ],
+  "exclude": ["dist", "node_modules"]
 }

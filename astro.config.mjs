@@ -9,8 +9,6 @@ import svelte from '@astrojs/svelte';
 
 import vercel from '@astrojs/vercel';
 
-import partytown from '@astrojs/partytown';
-
 import icon from 'astro-icon';
 
 // https://astro.build/config
@@ -37,21 +35,7 @@ export default defineConfig({
     // Limiter la taille du sitemap
     entryLimit: 50000,
   }), // Partytown configuré pour éviter les warnings
-  partytown({
-    config: {
-      forward: ['dataLayer.push', 'gtag'],
-      resolveUrl: function(url) {
-        const deprecatedPatterns = [
-          'attribution',
-          'shared-storage',
-          'attribution-reporting'
-        ];
-        
-        return url;
-      },
-      debug: process.env.NODE_ENV === 'development',
-    },
-  }), robotsTxt({
+ robotsTxt({
     sitemap: [
       'https://biscuits-ia.com/sitemap-index.xml',
       'https://biscuits-ia.com/sitemap-0.xml',

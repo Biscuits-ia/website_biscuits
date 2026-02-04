@@ -16,7 +16,7 @@ import icon from 'astro-icon';
 // https://astro.build/config
 export default defineConfig({
   site: 'https://biscuits-ia.com',
-  
+
   integrations: [svelte({
     preprocess: [],
   }), sitemap({
@@ -44,7 +44,6 @@ export default defineConfig({
         const deprecatedPatterns = [
           'attribution',
           'shared-storage',
-          'sharedstorage',
           'attribution-reporting'
         ];
         

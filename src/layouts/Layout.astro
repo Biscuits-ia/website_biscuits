@@ -216,15 +216,7 @@ const criticalCSS = `
   main {
     min-height: 60vh;
   }
-  
-  /* Optimisation des polices (réduit CLS) */
-  @font-face {
-    font-family: 'Inter var';
-    font-style: normal;
-    font-weight: 100 900;
-    font-display: swap;
-  }
-  
+    
   /* Prévention du CLS pour les images */
   img:not([width]):not([height]) {
     aspect-ratio: attr(width) / attr(height);

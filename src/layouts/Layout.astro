@@ -73,7 +73,6 @@ const criticalCSS = `
       <link rel="preconnect" href="https://www.googletagmanager.com" crossorigin />
       <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
       <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
-      <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
     </>
   )}
     
@@ -120,15 +119,11 @@ const criticalCSS = `
   
   <!-- Favicons optimisés (format moderne) -->
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-  <link rel="icon" type="image/webp" sizes="32x32" href="/favicon.webp" />
   <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
   
-  <!-- Security : X-Content-Type-Options fonctionne en meta -->
-  <!-- X-Frame-Options et Permissions-Policy : à configurer dans vercel.json ou _headers uniquement -->
   <meta http-equiv="X-Content-Type-Options" content="nosniff" />
   <meta name="referrer" content="strict-origin-when-cross-origin" />
   
-  <!-- GTM avec chargement ultra-optimisé (après interaction) -->
   {isProd && (
     <script is:inline type="text/partytown">
       window.dataLayer = window.dataLayer || [];
@@ -149,28 +144,15 @@ const criticalCSS = `
         document.head.appendChild(script);
       };
       
-      // Charge GTM au premier événement utilisateur ou après 3s
       if ('requestIdleCallback' in window) {
         requestIdleCallback(loadGTM, { timeout: 3000 });
       } else {
         setTimeout(loadGTM, 3000);
       }
       
-      // Charge aussi sur première interaction
       ['mousedown', 'touchstart', 'keydown', 'wheel'].forEach(event => {
         document.addEventListener(event, loadGTM, { once: true, passive: true });
       });
-    </script>
-  )}
-  
-  <!-- Service Worker pour PWA (Best Practices) -->
-  {isProd && (
-    <script is:inline>
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js').catch(() => {});
-        });
-      }
     </script>
   )}
 </head>
@@ -189,7 +171,6 @@ const criticalCSS = `
     </noscript>
   )}
 
-  <!-- Skip link pour l'accessibilité (Lighthouse Accessibility) -->
   <a href="#main-content" class="skip-link">
     Aller au contenu principal
   </a>

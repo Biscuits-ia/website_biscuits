@@ -1,4 +1,6 @@
 ---
+import { Icon } from 'astro-icon/components';
+
 const currentYear = new Date().getFullYear();
 ---
 <footer class="site-footer">
@@ -51,8 +53,8 @@ const currentYear = new Date().getFullYear();
 
         <nav aria-label="Navigation légale">
           <ul class="legal-links">
-            <li><a href="https://discord.gg/5CkRSWEehy" target="_blank" rel="noopener noreferrer" aria-label="Notre serveur Discord" class="social-icon">Discord</a></li>
-            <li><a href="https://github.com/Biscuits-Dev" target="_blank" rel="noopener noreferrer" aria-label="Notre compte GitHub" class="social-icon">GitHub</a></li>
+            <li><a href="https://discord.gg/5CkRSWEehy" target="_blank" rel="noopener noreferrer" aria-label="Notre serveur Discord" class="social-icon"><Icon name="mdi:discord" /></a></li>
+            <li><a href="https://github.com/Biscuits-Dev" target="_blank" rel="noopener noreferrer" aria-label="Notre compte GitHub" class="social-icon"><Icon name="mdi:github" /></a></li>
           </ul>
         </nav>
       </div>
@@ -182,20 +184,11 @@ const currentYear = new Date().getFullYear();
     height: 40px;
     padding: 0 12px;
     background: var(--glass-bg);
-    border: 1px solid var(--glass-border);
-    border-radius: 50%;
-    color: var(--color-text);
-    font-size: var(--font-size-xs);
-    font-weight: 700;
-    text-decoration: none;
     transition: all var(--transition-base);
   }
 
-  .social-icon:hover {
-    background: var(--color-primary);
-    border-color: var(--color-primary);
-    transform: translateY(-3px);
-    box-shadow: var(--shadow-glow);
+  .social-icon svg {
+    font-size: 35px;
   }
 
   @media (max-width: 768px) {

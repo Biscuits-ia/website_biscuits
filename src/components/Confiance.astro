@@ -1,0 +1,157 @@
+---
+// PartnersSlider.astro
+// Composant de slider infini pour afficher les logos des partenaires
+
+interface Props {
+  title?: string;
+}
+
+const { title = "Ils nous soutiennent" } = Astro.props;
+
+// Liste des logos (à adapter selon vos fichiers)
+const logos = [
+  { src: "/logos/partner1.png", alt: "Partenaire 1" },
+  { src: "/logos/partner2.png", alt: "Partenaire 2" },
+  { src: "/logos/partner3.png", alt: "Partenaire 3" },
+  { src: "/logos/partner4.png", alt: "Partenaire 4" },
+  { src: "/logos/partner5.png", alt: "Partenaire 5" },
+  { src: "/logos/partner6.png", alt: "Partenaire 6" },
+];
+---
+
+<section class="partners-section">
+  <div class="container">
+    <h1 class="title">{title}</h1>
+    
+    <div class="slider-container">
+      <div class="slider-track">
+        <!-- Premier set de logos -->
+        {logos.map((logo) => (
+          <div class="slide">
+            <img src={logo.src} alt={logo.alt} />
+          </div>
+        ))}
+        <!-- Duplication pour l'effet infini -->
+        {logos.map((logo) => (
+          <div class="slide">
+            <img src={logo.src} alt={logo.alt} />
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .partners-section {
+    padding: 4rem 2rem;
+    overflow: hidden;
+  }
+
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .title {
+    text-align: center;
+    margin-bottom: 3rem;
+    color: #1a1a1a;
+  }
+
+  .slider-container {
+    overflow: hidden;
+    position: relative;
+    width: 100%;
+  }
+
+  .slider-track {
+    display: flex;
+    gap: 3rem;
+    animation: scroll 30s linear infinite;
+    width: fit-content;
+  }
+
+  .slide {
+    flex-shrink: 0;
+    width: 180px;
+    height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    padding: 1.5rem;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .slide:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  }
+
+  .slide img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    filter: grayscale(100%);
+    opacity: 0.7;
+    transition: filter 0.3s ease, opacity 0.3s ease;
+  }
+
+  .slide:hover img {
+    filter: grayscale(0%);
+    opacity: 1;
+  }
+
+  @keyframes scroll {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(-50%);
+    }
+  }
+
+  /* Pause l'animation au survol */
+  .slider-container:hover .slider-track {
+    animation-play-state: paused;
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .partners-section {
+      padding: 3rem 1rem;
+    }
+
+    .title {
+      font-size: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    .slide {
+      width: 140px;
+      height: 80px;
+      padding: 1rem;
+    }
+
+    .slider-track {
+      gap: 2rem;
+      animation-duration: 20s;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .title {
+      font-size: 1.5rem;
+    }
+
+    .slide {
+      width: 120px;
+      height: 70px;
+    }
+
+    .slider-track {
+      gap: 1.5rem;
+    }
+  }
+</style>

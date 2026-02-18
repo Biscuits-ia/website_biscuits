@@ -10,12 +10,12 @@ const { title = "Ils nous soutiennent" } = Astro.props;
 
 // Liste des logos (à adapter selon vos fichiers)
 const logos = [
-  { src: "/logos/helloassologo.webp", alt: "Partenaire 1" },
-  { src: "/logos/partner2.png", alt: "Partenaire 2" },
-  { src: "/logos/partner3.png", alt: "Partenaire 3" },
-  { src: "/logos/partner4.png", alt: "Partenaire 4" },
-  { src: "/logos/partner5.png", alt: "Partenaire 5" },
-  { src: "/logos/partner6.png", alt: "Partenaire 6" },
+  { src: "/logos/helloassologo.webp", alt: "Partenaire 1", width: 150, height: 60 },
+  { src: "/logos/partner2.png", alt: "Partenaire 2", width: 150, height: 60 },
+  { src: "/logos/partner3.png", alt: "Partenaire 3", width: 150, height: 60 },
+  { src: "/logos/partner4.png", alt: "Partenaire 4", width: 150, height: 60 },
+  { src: "/logos/partner5.png", alt: "Partenaire 5", width: 150, height: 60 },
+  { src: "/logos/partner6.png", alt: "Partenaire 6", width: 150, height: 60 },
 ];
 ---
 
@@ -28,13 +28,13 @@ const logos = [
         <!-- Premier set de logos -->
         {logos.map((logo) => (
           <div class="slide">
-            <img src={logo.src} alt={logo.alt} />
+            <img src={logo.src} alt={logo.alt} width={logo.width} height={logo.height} loading="lazy" />
           </div>
         ))}
         <!-- Duplication pour l'effet infini -->
         {logos.map((logo) => (
           <div class="slide">
-            <img src={logo.src} alt={logo.alt} />
+            <img src={logo.src} alt={logo.alt} width={logo.width} height={logo.height} loading="lazy" />
           </div>
         ))}
       </div>

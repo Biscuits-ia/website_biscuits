@@ -6,5 +6,283 @@ import BaseLayout from '@/layouts/Layout.astro';
   title="Ils nous font confiance | Biscuits IA"
   description="Chez Biscuits IA, nous accompagnons des associations, TPE et PME dans leur transition vers des outils éthiques, open-source et accessibles. Découvrez comment nos solutions les aident au quotidien."
 >
+  <main class="utilisateurs-page">
+    <!-- Hero Section -->
+    <section class="hero">
+      <h1>Ils nous font confiance</h1>
+      <p class="hero-subtitle">
+        Des associations, TPE et PME qui ont choisi l'IA éthique et accessible pour accompagner leur transformation numérique.
+      </p>
+    </section>
 
+    <!-- Section: Témoignages -->
+    <section class="testimonials-section">
+      <h2>Ce qu'ils disent de nous</h2>
+
+      <div class="testimonials-grid">
+        <article class="testimonial-card">
+          <blockquote>
+            "Biscuits IA nous a permis de démystifier l'intelligence artificielle. Notre équipe utilise maintenant des outils IA au quotidien, en toute confiance."
+          </blockquote>
+          <footer>
+            <span class="author">Marie D.</span>
+            <span class="role">Directrice d'association</span>
+          </footer>
+        </article>
+
+        <article class="testimonial-card">
+          <blockquote>
+            "L'accompagnement personnalisé a fait toute la différence. Nous avons gagné un temps précieux sur nos tâches administratives."
+          </blockquote>
+          <footer>
+            <span class="author">Thomas L.</span>
+            <span class="role">Gérant de TPE</span>
+          </footer>
+        </article>
+
+        <article class="testimonial-card">
+          <blockquote>
+            "Enfin une approche de l'IA qui prend en compte les besoins des petites structures. Les ateliers sont adaptés à notre niveau et notre budget."
+          </blockquote>
+          <footer>
+            <span class="author">Sophie M.</span>
+            <span class="role">Responsable formation</span>
+          </footer>
+        </article>
+      </div>
+    </section>
+
+    <!-- Section: Chiffres clés -->
+    <section class="stats-section">
+      <h2>Notre impact</h2>
+
+      <div class="stats-grid">
+        <div class="stat-item">
+          <span class="stat-number">50+</span>
+          <span class="stat-label">Structures accompagnées</span>
+        </div>
+
+        <div class="stat-item">
+          <span class="stat-number">200+</span>
+          <span class="stat-label">Personnes formées</span>
+        </div>
+
+        <div class="stat-item">
+          <span class="stat-number">95%</span>
+          <span class="stat-label">Taux de satisfaction</span>
+        </div>
+
+        <div class="stat-item">
+          <span class="stat-number">100%</span>
+          <span class="stat-label">Outils open-source</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section: CTA -->
+    <section class="cta-section">
+      <h2>Rejoignez-les !</h2>
+      <p>
+        Vous aussi, vous souhaitez intégrer l'IA de manière éthique et accessible dans votre structure ?
+      </p>
+      <a href="/devis" class="cta-button">Demander un rendez-vous</a>
+    </section>
+  </main>
 </BaseLayout>
+
+<style>
+  .utilisateurs-page {
+    padding-top: calc(var(--header-height-desktop) + var(--spacing-2xl));
+    min-height: 60vh;
+  }
+
+  /* Hero Section */
+  .hero {
+    text-align: center;
+    padding: var(--spacing-3xl) var(--spacing-lg);
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .hero h1 {
+    font-size: clamp(var(--font-size-3xl), 5vw, var(--font-size-5xl));
+    font-weight: var(--font-weight-extrabold);
+    color: var(--color-text);
+    margin-bottom: var(--spacing-lg);
+  }
+
+  .hero-subtitle {
+    font-size: var(--font-size-lg);
+    color: var(--color-text-light);
+    line-height: 1.6;
+  }
+
+  /* Testimonials Section */
+  .testimonials-section {
+    padding: var(--spacing-3xl) var(--spacing-lg);
+    background: var(--color-bg-alt);
+  }
+
+  .testimonials-section h2 {
+    text-align: center;
+    font-size: var(--font-size-2xl);
+    font-weight: var(--font-weight-bold);
+    margin-bottom: var(--spacing-2xl);
+    color: var(--color-text);
+  }
+
+  .testimonials-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr));
+    gap: var(--spacing-xl);
+    max-width: var(--container-xl);
+    margin: 0 auto;
+  }
+
+  .testimonial-card {
+    background: var(--color-bg-elevated);
+    border: var(--brutal-border);
+    box-shadow: var(--shadow-md);
+    padding: var(--spacing-xl);
+    transition: all var(--transition-fast);
+  }
+
+  .testimonial-card:hover {
+    transform: translate(-3px, -3px);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .testimonial-card blockquote {
+    font-size: var(--font-size-lg);
+    font-style: italic;
+    color: var(--color-text);
+    margin-bottom: var(--spacing-lg);
+    line-height: 1.6;
+  }
+
+  .testimonial-card footer {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+  }
+
+  .testimonial-card .author {
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text);
+  }
+
+  .testimonial-card .role {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-light);
+  }
+
+  /* Stats Section */
+  .stats-section {
+    padding: var(--spacing-3xl) var(--spacing-lg);
+    text-align: center;
+  }
+
+  .stats-section h2 {
+    font-size: var(--font-size-2xl);
+    font-weight: var(--font-weight-bold);
+    margin-bottom: var(--spacing-2xl);
+    color: var(--color-text);
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--spacing-xl);
+    max-width: var(--container-lg);
+    margin: 0 auto;
+  }
+
+  .stat-item {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-xl);
+    background: var(--color-bg-elevated);
+    border: var(--brutal-border);
+    box-shadow: var(--shadow-md);
+  }
+
+  .stat-number {
+    font-size: var(--font-size-4xl);
+    font-weight: var(--font-weight-extrabold);
+    color: var(--color-primary);
+  }
+
+  .stat-label {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-light);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  /* CTA Section */
+  .cta-section {
+    text-align: center;
+    padding: var(--spacing-3xl) var(--spacing-lg);
+    background: var(--color-bg-alt);
+  }
+
+  .cta-section h2 {
+    font-size: var(--font-size-2xl);
+    font-weight: var(--font-weight-bold);
+    margin-bottom: var(--spacing-md);
+    color: var(--color-text);
+  }
+
+  .cta-section p {
+    font-size: var(--font-size-lg);
+    color: var(--color-text-light);
+    margin-bottom: var(--spacing-xl);
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .cta-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--spacing-md) var(--spacing-xl);
+    background: var(--color-primary);
+    color: var(--color-bg);
+    font-weight: var(--font-weight-bold);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    text-decoration: none;
+    border: var(--brutal-border);
+    box-shadow: var(--shadow-md);
+    transition: all var(--transition-fast);
+  }
+
+  .cta-button:hover {
+    transform: translate(-3px, -3px);
+    box-shadow: var(--shadow-lg);
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .utilisateurs-page {
+      padding-top: calc(var(--header-height-mobile) + var(--spacing-xl));
+    }
+
+    .hero {
+      padding: var(--spacing-xl) var(--spacing-md);
+    }
+
+    .testimonials-section,
+    .stats-section,
+    .cta-section {
+      padding: var(--spacing-xl) var(--spacing-md);
+    }
+
+    .stats-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+</style>

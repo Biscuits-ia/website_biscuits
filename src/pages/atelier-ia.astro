@@ -206,7 +206,7 @@ import BaseLayout from '@/layouts/Layout.astro';
               <path d="M7.5 15L12.5 10L7.5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
           </a>
-          <a href="/contact" class="btn-secondary">Poser une question</a>
+          <a href="/devis" class="btn-secondary">Poser une question</a>
         </div>
       </div>
     </div>
@@ -277,7 +277,7 @@ import BaseLayout from '@/layouts/Layout.astro';
 
   .workshops-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
     gap: 32px;
   }
 

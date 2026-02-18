@@ -16,15 +16,17 @@
   --spacing-4xl: 5rem;
 
   /* Typographie */
-  --font-size-xs: 0.85rem;
-  --font-size-sm: 0.975rem;
-  --font-size-base: 1.6rem;
-  --font-size-lg: 1.215rem;
-  --font-size-xl: 1.35rem;
-  --font-size-2xl: 1.6rem;
-  --font-size-3xl: 2.5rem;
-  --font-size-4xl: 3rem;
-  --font-size-5xl: 4rem;
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-base: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.25rem;
+  --font-size-2xl: 1.5rem;
+  --font-size-3xl: 1.875rem;
+  --font-size-4xl: 2.25rem;
+  --font-size-5xl: 3rem;
+  --font-size-6xl: 3.75rem;
+  --font-size-7xl: 4.5rem;
 
   --font-weight-normal: 400;
   --font-weight-medium: 500;
@@ -38,6 +40,23 @@
   --container-lg: 1024px;
   --container-xl: 1200px;
   --container-2xl: 1400px;
+
+  /* Responsive Breakpoints (Tailwind standards) */
+  --breakpoint-sm: 640px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1280px;
+  --breakpoint-2xl: 1536px;
+
+  /* Header Heights */
+  --header-height-mobile: 70px;
+  --header-height-desktop: 80px;
+
+  /* Section Padding */
+  --section-padding-mobile: 2rem;
+  --section-padding-tablet: 3rem;
+  --section-padding-desktop: 4rem;
+  --section-padding-large: 6rem;
 
   /* Transitions */
   --transition-fast: 0.2s ease;
@@ -53,9 +72,10 @@
   
   /* Palette gourmande étendue */
   --color-accent-cream: oklch(60.201% 0.11053 58.986);
-  --color-accent-caramel: oklch(60.201% 0.11053 58.986) ;
+  --color-accent-caramel: oklch(60.201% 0.11053 58.986);
   --color-accent-honey: oklch(86.335% 0.11215 81.912 / 0.808);
   --color-accent-vanilla: oklch(86.335% 0.11215 81.912 / 0.808);
+  --color-accent-cinnamon: oklch(55% 0.12 35);
   
   /* Gris chauds terreux */
   --color-gray-50: oklch(8% 0.01 40);          /* Cacao noir */
@@ -109,27 +129,14 @@
   --brutal-border-thin: 3px solid var(--color-border);
   --brutal-border: 4px solid var(--color-border);
   --brutal-border-thick: 5px solid var(--color-border);
-  
+
   --brutal-hover-lift: -4px;
   --brutal-hover-shadow-x: 11px;
   --brutal-hover-shadow-y: 11px;
   --brutal-press-translate: 4px;
-}
 
-
-/* ========================================
-   STYLES SPÉCIFIQUES NÉO-BRUTALISME
-   ======================================== */
-:root {
-  --brutal-border: 4px solid var(--color-border);
-  
   --brutal-hover-translate: -3px;
-  --brutal-hover-shadow-x: 9px;
-  --brutal-hover-shadow-y: 9px;
-}
 
-
-:root {
   color-scheme: light;
 }
 
@@ -159,24 +166,6 @@
   transform: translate(3px, 3px);
   box-shadow: var(--shadow-sm);
 }
-
-/* Cards avec bordures épaisses et ombres fortes */
-:root .zone-card,
-:root .feature-badge,
-:root .contact-form,
-:root .stat-item {
-  border: var(--brutal-border);
-  box-shadow: var(--shadow-lg);
-  transition: all var(--transition-fast);
-  background: var(--color-bg-elevated);
-}
-
-:root .zone-card:hover,
-:root .stat-item:hover {
-  transform: translate(-3px, -3px);
-  box-shadow: var(--shadow-xl);
-}
-
 
 /* Cards avec bordures épaisses et ombres fortes */
 :root .zone-card,
@@ -239,7 +228,6 @@
 :root h3 {
   font-weight: 900;
   letter-spacing: -0.03em;
-  text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.1);
 }
 
 /* Trust indicators avec backgrounds colorés */

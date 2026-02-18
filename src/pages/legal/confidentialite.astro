@@ -111,8 +111,10 @@ import BaseLayout from "@/layouts/Layout.astro";
       margin: 2rem auto;
       padding: 1.5rem;
       line-height: 1.7;
+      overflow-wrap: break-word;
+      word-break: break-word;
     }
-    
+
     .title {
       font-size: clamp(2rem, 5vw, 3rem);
       font-weight: 800;
@@ -124,6 +126,22 @@ import BaseLayout from "@/layouts/Layout.astro";
     h1, h2, h3 {
       margin-top: 1.8rem;
       color: var(--color-text)
+    }
+
+    a {
+      overflow-wrap: break-word;
+      word-break: break-word;
+    }
+
+    ul, li {
+      overflow-wrap: break-word;
+    }
+
+    @media (max-width: 640px) {
+      .legal-wrapper {
+        padding: 1rem;
+        margin: 1rem auto;
+      }
     }
   </style>
 </BaseLayout>

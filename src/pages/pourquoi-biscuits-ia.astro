@@ -3,41 +3,94 @@ import Layout from "../layouts/Layout.astro";
 
 const content = {
   hero: {
-    title: "L'ingénierie de l'IA au service de votre structure.",
-    subtitle: "Nous concevons des architectures d'automatisation sur-mesure pour rationaliser vos flux de travail et maximiser l'efficacité, que vous soyez association ou TPE/PME. Nous utilisons Mistral et toutes nos autres IA sont entièrement développées en France."
+    title: "Biscuits IA : L’IA au service des structures engagées",
+    subtitle:
+      "Nous accompagnons associations, TPE/PME et collectivités dans l’intégration responsable de solutions d’IA et d’automatisation concrètes, fiables et conformes aux standards réglementaires.",
   },
-  problemes: [
-    "Fragmentation des processus internes due à de nombreuses tâches manuelles répétitives.",
-    "Complexité excessive des outils standards, souvent inadaptés aux structures légères ou associatives.",
-    "Manque de visibilité sur les bénéfices concrets et mesurables des solutions d'intelligence artificielle."
+
+  mission: {
+    title: "Notre mission",
+    text: "Rendre l’intelligence artificielle accessible et utile aux structures disposant de ressources limitées. Nous développons des outils pratiques, accompagnons les équipes et assurons un transfert de compétences pour renforcer l’impact social et opérationnel.",
+  },
+
+  activites: [
+    {
+      titre: "Projets collaboratifs",
+      desc: "Co-création et initiatives conjointes entre structures pour mutualiser ressources et bonnes pratiques.",
+    },
+    {
+      titre: "Ateliers IA",
+      desc: "Formation et sensibilisation pratique à l'IA pour bénévoles, équipes et petites structures.",
+    },
+    {
+      titre: "Guides & Ressources",
+      desc: "Documentation, tutoriels et fiches pratiques pour accompagner vos projets numériques.",
+    },
+    {
+      titre: "Arnaques numériques",
+      desc: "Prévention et éducation pour protéger vos membres contre les fraudes et risques en ligne.",
+    },
+    {
+      titre: "IA Accessible",
+      desc: "Développement d'outils simples et utilisables par tous, sans compétences techniques avancées.",
+    },
+    {
+      titre: "IA Utile",
+      desc: "Automatisations pragmatiques répondant à de vrais besoins, mesurables et fiables.",
+    },
+    {
+      titre: "Partage de connaissance",
+      desc: "Centralisation et diffusion de savoirs entre structures pour favoriser autonomie et montée en compétences.",
+    },
+    {
+      titre: "Plateformes ouvertes",
+      desc: "Solutions transparentes et conformes aux normes RGPD et aux bonnes pratiques numériques.",
+    },
   ],
-  approche: [
-    "Analyse Globale : Identification des leviers d'automatisation et de simplification à forte valeur pour votre structure.",
-    "Solutions Compatibles : Intégration fluide avec vos outils existants pour une continuité opérationnelle sans friction.",
-    "Approche Pragmatique : Priorisation des développements générant un gain de temps ou une réduction de coûts tangible."
+
+  publics: [
+    {
+      titre: "Associations",
+      desc: "Libérer du temps pour les bénévoles et renforcer l'impact social des actions.",
+    },
+    {
+      titre: "TPE / PME",
+      desc: "Structurer et automatiser les process sans complexifier l'organisation.",
+    },
+    {
+      titre: "Collectivités",
+      desc: "Moderniser les flux administratifs tout en respectant les contraintes légales et les standards de sécurité.",
+    },
   ],
+
   processus: [
-    "Audit & Diagnostic : Analyse des processus, identification des flux de données et points critiques.",
-    "Conception & Déploiement : Mise en place de solutions IA adaptées aux besoins réels et aux contraintes de votre structure.",
-    "Transfert de Compétences : Formation et accompagnement pour assurer l'autonomie de vos équipes et bénévoles."
+    "Analyse et diagnostic : évaluation des flux, des besoins et des contraintes des structures.",
+    "Conception et prototypage : définition doutils IA adaptés, simples et fiables.",
+    "Déploiement et accompagnement : mise en production progressive avec formation des équipes.",
+    "Suivi et amélioration continue : ajustement des outils pour garantir impact et pérennité.",
   ],
-  benefices: [
-    { titre: "Optimisation des ressources", desc: "Réallocation du temps et de l'énergie de vos équipes vers des missions à forte valeur ajoutée." },
-    { titre: "Fiabilisation des flux", desc: "Réduction des erreurs et traitement des données de manière systématique et sécurisée." },
-    { titre: "Montée en capacité", desc: "Facilitation de l'absorption de nouveaux projets ou volumes d'activité sans surcharge." }
+
+  engagements: [
+    "Accessibilité : outils et ressources compréhensibles par tous, sans jargon technique.",
+    "Responsabilité : respect des données, RGPD et bonnes pratiques numériques.",
+    "Transparence : solutions ouvertes et communication claire sur le fonctionnement.",
+    "Autonomie : transfert de compétences pour que chaque structure devienne indépendante.",
   ],
+
   cta: {
-    texte: "Demander un audit IA pour ma structure",
-    subtexte: "Analyse de faisabilité et estimation de l'impact sur vos process et votre efficacité."
-  }
+    texte: "Demander un rendez-vous institutionnel",
+    subtexte:
+      "Échange préalable pour évaluer les opportunités d'automatisation et l'impact sur votre structure.",
+  },
 };
 ---
 
 <Layout
-  title="Biscuits IA - Solutions d'automatisation IA sur-mesure"
-  description="Biscuits IA conçoit des architectures d'automatisation basées sur l'IA pour rationaliser vos flux de travail. Solutions adaptées aux associations et TPE/PME."
+  title="Biscuits IA - Solutions IA pour associations, TPE/PME et collectivités"
+  description="Biscuits IA accompagne les petites structures et collectivités dans l'intégration responsable de solutions d'automatisation et d'IA. Efficacité, conformité et impact mesurable."
 >
   <main>
+    <!-- Hero -->
     <section class="hero" aria-labelledby="hero-title">
       <div class="container">
         <h1 id="hero-title" class="title">{content.hero.title}</h1>
@@ -46,36 +99,71 @@ const content = {
     </section>
 
     <div class="container">
-      <!-- Problèmes & Solutions -->
-      <div class="grid" role="region" aria-label="Problèmes et solutions">
-        <section class="zone-card">
-          <h2>Problèmes actuels</h2>
-          <ul>
-            {content.problemes.map((item) => <li>{item}</li>)}
-          </ul>
-        </section>
+      <!-- Mission -->
+      <section class="zone-card" aria-labelledby="mission-title">
+        <h2 id="mission-title">{content.mission.title}</h2>
+        <p>{content.mission.text}</p>
+      </section>
 
-        <section class="zone-card">
-          <h2>Nous proposons</h2>
-          <ul>
-            {content.approche.map((item) => <li>{item}</li>)}
-          </ul>
-        </section>
-      </div>
+      <!-- Activités -->
+      <section class="zone-card" aria-labelledby="activites-title">
+        <h2 id="activites-title">Nos activités</h2>
+        <div class="grid-3">
+          {
+            content.activites.map((a) => {
+              return (
+                <div class="feature-badge">
+                  <h3>{a.titre}</h3>
+                  <p>{a.desc}</p>
+                </div>
+              );
+            })
+          }
+        </div>
+      </section>
+
+      <!-- Publics -->
+      <section class="zone-card" aria-labelledby="publics-title">
+        <h2 id="publics-title">Pour qui nous intervenons</h2>
+        <div class="grid-3">
+          {
+            content.publics.map((p) => {
+              return (
+                <div class="feature-badge">
+                  <h3>{p.titre}</h3>
+                  <p>{p.desc}</p>
+                </div>
+              );
+            })
+          }
+        </div>
+      </section>
 
       <!-- Processus -->
       <section class="zone-card" aria-labelledby="process-title">
-        <h2 id="process-title">Le processus, étape par étape</h2>
+        <h2 id="process-title">Notre méthodologie</h2>
         <ol class="process-list">
           {content.processus.map((step) => <li>{step}</li>)}
         </ol>
       </section>
 
+      <!-- Engagements -->
+      <section class="zone-card" aria-labelledby="engagements-title">
+        <h2 id="engagements-title">Nos engagements</h2>
+        <ul>
+          {content.engagements.map((e) => <li>{e}</li>)}
+        </ul>
+      </section>
+
       <!-- CTA -->
       <section class="cta-box">
-        <button class="cta-button" type="button" aria-label="Demander un audit IA pour votre structure">
+        <a
+          href="/devis"
+          class="cta-button"
+          aria-label="Demander un rendez-vous institutionnel"
+        >
           {content.cta.texte}
-        </button>
+        </a>
         <p class="subtext">{content.cta.subtexte}</p>
       </section>
     </div>
@@ -86,85 +174,57 @@ const content = {
   main {
     min-height: 100vh;
   }
-  
+
   .hero {
     text-align: center;
     margin-top: 8vh;
-    padding: var(--spacing-4xl, 4rem) 0 var(--spacing-3xl, 3rem);
+    padding: 4rem 0 3rem;
     background: var(--color-bg, #fff);
   }
-
-  .hero .title { 
-    font-size: clamp(2rem, 6vw, 3.5rem); 
+  .hero .title {
+    font-size: clamp(2rem, 6vw, 3.5rem);
     font-weight: 800;
-    margin-bottom: var(--spacing-md, 1rem);
+    margin-bottom: 1rem;
     color: var(--color-text, #000);
     line-height: 1.2;
   }
-
-  /* Typography */
   .subtitle {
     font-size: clamp(1.125rem, 2.5vw, 1.25rem);
-    margin-top: var(--spacing-xl, 2rem);
+    margin-top: 2rem;
     line-height: 1.6;
     color: var(--color-text-light, #666);
     max-width: 800px;
-    margin-left: auto;
-    margin-right: auto;
-    padding: 0 var(--spacing-md, 1rem);
+    margin: auto;
+    padding: 0 1rem;
   }
-
   .subtext {
-    margin-top: var(--spacing-sm, 0.5rem);
+    margin-top: 0.5rem;
     font-size: 0.875rem;
     color: var(--color-text-light, #666);
   }
 
-  /* Layout */
   .container {
-    max-width: min(var(--container-xl, 1280px), 100% - 2rem);
+    max-width: min(1280px, calc(100% - 2rem));
     margin: 0 auto;
-    padding: 0 var(--spacing-md, 1rem);
+    padding: 0 1rem;
   }
-
-  .benefits-section {
-    margin: var(--spacing-3xl, 3rem) 0;
-  }
-
-  .benefits-section h2 {
-    text-align: center;
-    margin-bottom: var(--spacing-xl, 2rem);
-    font-size: clamp(1.5rem, 4vw, 2rem);
-  }
-
-  /* Grids */
-  .grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr));
-    gap: var(--spacing-xl, 2rem);
-    margin: var(--spacing-2xl, 2.5rem) 0;
-  }
-
   .grid-3 {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(min(250px, 100%), 1fr));
-    gap: var(--spacing-lg, 1.5rem);
+    gap: 1.5rem;
   }
 
-  /* Lists */
   ul {
     list-style: none;
     padding: 0;
     margin: 0;
   }
-
   li {
-    margin-bottom: var(--spacing-md, 1rem);
-    padding-left: var(--spacing-md, 1rem);
+    margin-bottom: 1rem;
+    padding-left: 1rem;
     position: relative;
     line-height: 1.6;
   }
-
   li::before {
     content: "→";
     position: absolute;
@@ -174,109 +234,98 @@ const content = {
   }
 
   .process-list {
-    padding-left: var(--spacing-xl, 2rem);
+    padding-left: 2rem;
     list-style: decimal;
-    margin: var(--spacing-lg, 1.5rem) 0;
+    margin: 1.5rem 0;
   }
-
   .process-list li {
     font-size: clamp(1rem, 2vw, 1.125rem);
-    padding-left: var(--spacing-sm, 0.5rem);
-    margin-bottom: var(--spacing-lg, 1.5rem);
+    padding-left: 0.5rem;
+    margin-bottom: 1.5rem;
   }
-
   .process-list li::before {
     content: none;
   }
 
-  /* Cards */
   .zone-card {
-    padding: var(--spacing-xl, 2rem);
+    padding: 2rem;
     border: 2px solid currentColor;
     background: var(--color-bg-card, #fff);
     border-radius: 0;
+    margin-bottom: 2rem;
   }
-
   .zone-card h2 {
-    margin-bottom: var(--spacing-lg, 1.5rem);
+    margin-bottom: 1.5rem;
     font-size: clamp(1.25rem, 3vw, 1.5rem);
     margin-top: 0;
   }
 
   .feature-badge {
-    padding: var(--spacing-lg, 1.5rem);
+    padding: 1.5rem;
     border: 2px solid currentColor;
     box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.1);
     background: var(--color-bg-card, #fff);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition:
+      transform 0.2s ease,
+      box-shadow 0.2s ease;
   }
-
   .feature-badge:hover {
     transform: translateY(-2px);
     box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.15);
   }
-
   .feature-badge h3 {
-    margin-bottom: var(--spacing-sm, 0.5rem);
+    margin-bottom: 0.5rem;
     margin-top: 0;
     font-size: clamp(1.125rem, 2.5vw, 1.25rem);
   }
-
   .feature-badge p {
     margin: 0;
     line-height: 1.6;
   }
 
-  /* CTA */
   .cta-box {
     text-align: center;
-    margin: var(--spacing-4xl, 4rem) 0;
-    padding-bottom: var(--spacing-4xl, 4rem);
+    margin: 4rem 0;
+    padding-bottom: 4rem;
   }
-
   .cta-button {
-    padding: var(--spacing-md, 1rem) var(--spacing-xl, 2rem);
+    padding: 1rem 2rem;
     font-size: clamp(1rem, 2.5vw, 1.125rem);
     font-weight: 700;
     background: var(--color-primary, #000);
     color: var(--color-bg, #fff);
     border: 2px solid var(--color-primary, #000);
     cursor: pointer;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition:
+      transform 0.2s ease,
+      box-shadow 0.2s ease;
     box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.1);
   }
-
   .cta-button:hover,
   .cta-button:focus-visible {
     transform: translateY(-2px);
     box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.2);
   }
-
   .cta-button:focus-visible {
     outline: 2px solid var(--color-primary, #000);
     outline-offset: 4px;
   }
-
   .cta-button:active {
     transform: translateY(0);
     box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.1);
   }
 
-  /* Responsive */
   @media (max-width: 768px) {
     .hero {
       margin-top: 4vh;
-      padding: var(--spacing-2xl, 2.5rem) 0 var(--spacing-xl, 2rem);
+      padding: 2.5rem 0 2rem;
     }
-
-    .grid,
     .grid-3 {
-      gap: var(--spacing-lg, 1.5rem);
+      gap: 1rem;
     }
-
     .zone-card,
     .feature-badge {
-      padding: var(--spacing-lg, 1.5rem);
+      padding: 1rem;
     }
   }
 </style>

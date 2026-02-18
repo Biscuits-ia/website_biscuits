@@ -11,15 +11,14 @@
   padding: 0;
 }
 
-html {
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+html {    
   scroll-behavior: smooth;
   -webkit-text-size-adjust: 100%;
   scroll-padding-top: 80px;
 }
 
 body {
-  line-height: 1.6;
+  font-family: "Zalando Sans SemiExpanded", sans-serif;
   color: var(--color-text);
   background-color: var(--color-bg);
   -webkit-font-smoothing: antialiased;

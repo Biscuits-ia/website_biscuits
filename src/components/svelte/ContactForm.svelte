@@ -153,7 +153,8 @@
           stroke-width="2"
           fill="none"
         />
-      </svg>
+      </svg>      
+      <span>Votre demande a été envoyée avec succès ! Nous vous répondrons dans les plus brefs délais.</span>
     </div>
   {/if}
 
@@ -313,6 +314,7 @@
   textarea {
     padding: 0.8rem;
     border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
     background: var(--color-bg-alt);
     color: var(--color-text);
     font-family: inherit;

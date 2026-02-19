@@ -225,7 +225,7 @@
 
   <div class="form-group full" class:error={errors.message}>
     <label for="message">
-      Détails supplémentaires <span class="required">*</span>
+      Votre message <span class="required">*</span>
     </label>
     <textarea
       id="message"

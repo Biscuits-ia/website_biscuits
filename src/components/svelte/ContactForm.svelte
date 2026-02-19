@@ -313,7 +313,6 @@
   textarea {
     padding: 0.8rem;
     border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
     background: var(--color-bg-alt);
     color: var(--color-text);
     font-family: inherit;
@@ -369,7 +368,6 @@
     gap: 1rem;
     margin-bottom: 1.5rem;
     padding: 1.25rem;
-    border-radius: var(--radius-lg);
     font-size: 0.95rem;
     font-weight: 500;
     animation: slideDown 0.3s ease-out;
@@ -412,7 +410,6 @@
     transform: translate(-50%, -50%);
     width: 24px;
     height: 24px;
-    border-radius: 50%;
     animation: spin 0.6s linear infinite;
   }
 

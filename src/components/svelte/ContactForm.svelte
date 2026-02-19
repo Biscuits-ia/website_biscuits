@@ -2,14 +2,11 @@
   import { createEventDispatcher } from 'svelte';
   import {
     validateField,
-    SERVICES_CONFIG,
-    BUDGET_OPTIONS,
   } from '@/utils/formValidation';
   import {
     submitToWeb3Forms,
     sanitizeInput,
     isTooFast,
-    trackFormSubmit,
   } from '@/utils/web3forms';
 
   const dispatch = createEventDispatcher();
@@ -19,11 +16,7 @@
   type FormDataType = {
     name: string;
     email: string;
-    phone: string;
-    address: string;
-    zip_code: string;
-    budget: string;
-    service: string;
+    sujet: string;
     message: string;
     honey: string;
   };
@@ -31,11 +24,7 @@
   let formData: FormDataType = {
     name: '',
     email: '',
-    phone: '',
-    address: '',
-    zip_code: '',
-    budget: '',
-    service: '',
+    sujet: '',
     message: '',
     honey: '',
   };
@@ -87,9 +76,7 @@
     const fieldsToValidate: (keyof FormDataType)[] = [
       'name',
       'email',
-      'address',
-      'zip_code',
-      'service',
+      'sujet',
       'message',
     ];
     let hasErrors = false;
@@ -102,18 +89,8 @@
       }
     });
 
-    // Validation optionnelle du téléphone (si rempli)
-    if (formData.phone) {
-      const phoneError = validateField('phone', formData.phone);
-      if (phoneError) {
-        errors.phone = phoneError;
-        hasErrors = true;
-      }
-    }
-
     if (hasErrors) {
       errors = { ...errors };
-      // Focus sur le premier champ en erreur
       const firstErrorField = Object.keys(errors)[0] as string;
       document.getElementById(firstErrorField)?.focus();
       return;
@@ -122,57 +99,33 @@
     isSubmitting = true;
 
     try {
-      // 📤 Préparation du payload pour Web3Forms
       const payload = {
         access_key: ACCESS_KEY,
         name: sanitizeInput(formData.name),
         email: sanitizeInput(formData.email),
-        phone: sanitizeInput(formData.phone) || 'Non renseigné',
-        address: sanitizeInput(formData.address),
-        zip_code: sanitizeInput(formData.zip_code),
-        service: formData.service,
-        budget: formData.budget || 'Non renseigné',
+        sujet: sanitizeInput(formData.sujet),
         message: sanitizeInput(formData.message),
         from_name: sanitizeInput(formData.name),
-        subject: `[Devis] ${formData.service} - ${formData.name}`,
-        'Adresse complète': `${formData.address}, ${formData.zip_code}`,
       };
 
-      // 🚀 Envoi vers Web3Forms
       await submitToWeb3Forms(payload);
 
-      // ✅ Succès
       submitSuccess = true;
 
-      // 📊 Tracking analytics
-      trackFormSubmit('quote', {
-        service: formData.service,
-        budget: formData.budget,
-        has_phone: !!formData.phone,
-      });
-
-      // 🔄 Reset du formulaire
       formData = {
         name: '',
         email: '',
-        phone: '',
-        address: '',
-        zip_code: '',
-        budget: '',
-        service: '',
+        sujet: '',
         message: '',
         honey: '',
       };
 
-      // 📜 Scroll vers le haut
       window.scrollTo({ top: 0, behavior: 'smooth' });
 
-      // ⏱️ Cache le message de succès après 10s
       setTimeout(() => {
         submitSuccess = false;
       }, 10000);
 
-      // 🎉 Event personnalisé pour le parent
       dispatch('success');
     } catch (error: any) {
       console.error('❌ Erreur soumission:', error);
@@ -191,7 +144,6 @@
   novalidate
   aria-label="Formulaire de demande de devis"
 >
-  <!-- ✅ Message de succès -->
   {#if submitSuccess}
     <div class="alert alert-success" role="status" aria-live="polite">
       <svg class="alert-icon" viewBox="0 0 24 24" aria-hidden="true">
@@ -205,7 +157,6 @@
     </div>
   {/if}
 
-  <!-- ❌ Message d'erreur -->
   {#if submitError}
     <div class="alert alert-error" role="alert" aria-live="assertive">
       <svg class="alert-icon" viewBox="0 0 24 24" aria-hidden="true">
@@ -223,10 +174,9 @@
     </div>
   {/if}
 
-  <!-- 📝 Champ Nom / association -->
   <div class="form-group" class:error={errors.name}>
     <label for="name">
-      Nom / association <span class="required">*</span>
+      Nom <span class="required">*</span>
     </label>
     <input
       type="text"
@@ -234,7 +184,7 @@
       bind:value={formData.name}
       on:blur={() => handleBlur('name')}
       on:input={() => handleInput('name')}
-      placeholder="Votre nom ou association"
+      placeholder="Nom"
       required
       maxlength="100"
       autocomplete="name"
@@ -249,9 +199,8 @@
     {/if}
   </div>
 
-  <!-- 📧 Champ Email -->
   <div class="form-group" class:error={errors.email}>
-    <label for="email"> Email professionnel <span class="required">*</span> </label>
+    <label for="email"> Email <span class="required">*</span> </label>
     <input
       type="email"
       id="email"
@@ -273,130 +222,6 @@
     {/if}
   </div>
 
-  <!-- 📞 Champ Téléphone (optionnel) -->
-  <div class="form-group" class:error={errors.phone}>
-    <label for="phone">Téléphone</label>
-    <input
-      type="tel"
-      id="phone"
-      bind:value={formData.phone}
-      on:blur={() => handleBlur('phone')}
-      on:input={() => handleInput('phone')}
-      placeholder="+33 6 00 00 00 00"
-      maxlength="20"
-      autocomplete="tel"
-      aria-invalid={errors.phone ? 'true' : 'false'}
-      aria-describedby={errors.phone ? 'phone-error' : undefined}
-      disabled={isSubmitting}
-    />
-    {#if errors.phone}
-      <span class="error-message" id="phone-error" role="alert"
-        >{errors.phone}</span
-      >
-    {/if}
-  </div>
-
-  <!-- 💰 Champ Budget (optionnel) -->
-  <div class="form-group">
-    <label for="budget">Budget estimé</label>
-    <select id="budget" bind:value={formData.budget} disabled={isSubmitting}>
-      <option value="">-- Budget indicatif --</option>
-      {#each BUDGET_OPTIONS as option}
-        <option value={option.value}>{option.label}</option>
-      {/each}
-    </select>
-  </div>
-
-  <!-- 📍 Champ Adresse -->
-  <div class="form-group full" class:error={errors.address}>
-    <label for="address"> Adresse <span class="required">*</span> </label>
-    <input
-      type="text"
-      id="address"
-      bind:value={formData.address}
-      on:blur={() => handleBlur('address')}
-      on:input={() => handleInput('address')}
-      placeholder="123 rue de la République"
-      required
-      maxlength="255"
-      autocomplete="street-address"
-      aria-invalid={errors.address ? 'true' : 'false'}
-      aria-describedby={errors.address ? 'address-error' : undefined}
-      disabled={isSubmitting}
-    />
-    {#if errors.address}
-      <span class="error-message" id="address-error" role="alert"
-        >{errors.address}</span
-      >
-    {/if}
-  </div>
-
-  <!-- 📮 Champ Code postal -->
-  <div class="form-group" class:error={errors.zip_code}>
-    <label for="zip_code"> Code postal <span class="required">*</span> </label>
-    <input
-      type="text"
-      id="zip_code"
-      bind:value={formData.zip_code}
-      on:blur={() => handleBlur('zip_code')}
-      on:input={() => handleInput('zip_code')}
-      placeholder="86000"
-      required
-      maxlength="5"
-      pattern="[0-9]{5}"
-      autocomplete="postal-code"
-      aria-invalid={errors.zip_code ? 'true' : 'false'}
-      aria-describedby={errors.zip_code ? 'zip_code-error' : undefined}
-      disabled={isSubmitting}
-    />
-    {#if errors.zip_code}
-      <span class="error-message" id="zip_code-error" role="alert"
-        >{errors.zip_code}</span
-      >
-    {/if}
-  </div>
-
-  <!-- 🛠️ Champ Service -->
-  <div class="form-group full" class:error={errors.service}>
-    <label for="service">
-      Service souhaité <span class="required">*</span>
-    </label>
-    <select
-      id="service"
-      bind:value={formData.service}
-      on:blur={() => handleBlur('service')}
-      on:change={() => handleInput('service')}
-      required
-      aria-required="true"
-      aria-invalid={errors.service ? 'true' : 'false'}
-      aria-describedby={errors.service ? 'service-error' : undefined}
-      disabled={isSubmitting}
-    >
-      <option value="">Sélectionnez un service…</option>
-      <optgroup label="Starter Kits">
-        {#each SERVICES_CONFIG['starter-kits'] as service}
-          <option value={service}>{service}</option>
-        {/each}
-      </optgroup>
-      <optgroup label="Solutions IA">
-        {#each SERVICES_CONFIG.ia as service}
-          <option value={service}>{service}</option>
-        {/each}
-      </optgroup>
-      <optgroup label="Consulting & Coaching">
-        {#each SERVICES_CONFIG.consulting as service}
-          <option value={service}>{service}</option>
-        {/each}
-      </optgroup>
-    </select>
-    {#if errors.service}
-      <span class="error-message" id="service-error" role="alert"
-        >{errors.service}</span
-      >
-    {/if}
-  </div>
-
-  <!-- 💬 Champ Message -->
   <div class="form-group full" class:error={errors.message}>
     <label for="message">
       Détails supplémentaires <span class="required">*</span>
@@ -431,7 +256,6 @@
     {/if}
   </div>
 
-  <!-- 🍯 Honeypot (caché pour les humains, visible pour les bots) -->
   <input
     type="text"
     name="honey"
@@ -442,7 +266,6 @@
     aria-hidden="true"
   />
 
-  <!-- 🚀 Bouton de soumission -->
   <button
     type="submit"
     class="btn-primary"
@@ -450,7 +273,7 @@
     disabled={isSubmitting}
     aria-busy={isSubmitting}
   >
-    <span class="btn-text">Envoyer ma demande</span>
+    <span>Envoyer ma demande</span>
     {#if isSubmitting}
       <span class="btn-loader" aria-hidden="true"></span>
     {/if}
@@ -487,7 +310,6 @@
   }
 
   input,
-  select,
   textarea {
     padding: 0.8rem;
     border: 1px solid var(--color-border);
@@ -500,23 +322,10 @@
   }
 
   input:focus,
-  select:focus,
-  textarea:focus {
-    outline: none;
-    border-color: var(--color-primary);
-    box-shadow: 0 0 0 3px var(--color-primary-light);
-  }
-
   input:disabled,
-  select:disabled,
-  textarea:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
 
   .form-group.error input,
-  .form-group.error textarea,
-  .form-group.error select {
+  .form-group.error textarea {
     border-color: var(--color-danger);
     background-color: var(--color-danger-light);
   }
@@ -596,47 +405,6 @@
     border: 1px solid var(--color-danger);
   }
 
-  /* Bouton principal */
-  .btn-primary {
-    position: relative;
-    width: 100%;
-    padding: 1.25rem;
-    background: linear-gradient(
-      135deg,
-      var(--color-primary),
-      var(--color-primary-dark)
-    );
-    color: var(--color-bg);
-    border: none;
-    border-radius: var(--radius-lg);
-    font-size: 1.1rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s;
-    margin-top: 1rem;
-    box-shadow: var(--shadow-glow);
-    grid-column: 1 / -1;
-  }
-
-  .btn-primary:hover:not(:disabled) {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-glow-hover);
-  }
-
-  .btn-primary:focus-visible {
-    outline: 3px solid var(--color-primary);
-    outline-offset: 3px;
-  }
-
-  .btn-primary:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
-
-  .btn-primary.loading .btn-text {
-    opacity: 0;
-  }
-
   .btn-loader {
     position: absolute;
     top: 50%;
@@ -644,8 +412,6 @@
     transform: translate(-50%, -50%);
     width: 24px;
     height: 24px;
-    border: 3px solid rgba(255, 255, 255, 0.3);
-    border-top-color: white;
     border-radius: 50%;
     animation: spin 0.6s linear infinite;
   }

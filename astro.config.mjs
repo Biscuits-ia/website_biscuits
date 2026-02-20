@@ -6,10 +6,10 @@ import robotsTxt from 'astro-robots-txt';
 import sitemap from '@astrojs/sitemap';
 import tailwindcss from '@tailwindcss/vite';
 import svelte from '@astrojs/svelte';
-
 import vercel from '@astrojs/vercel';
-
 import icon from 'astro-icon';
+
+import mdx from '@astrojs/mdx';
 
 // https://astro.build/config
 export default defineConfig({
@@ -17,14 +17,15 @@ export default defineConfig({
 
   integrations: [svelte({
     preprocess: [],
-  }), sitemap({
+  }),
+  sitemap({
     changefreq: 'weekly',
     priority: 0.7,
     filter: (page) => {
       const excludePaths = ['/admin', '/api', '/login', '/register', '/dashboard'];
       return !excludePaths.some(path => page.includes(path));
     },
-    // Entrées personnalisées
+    
     customPages: ['https://biscuits-ia.com/'],
     i18n: {
       defaultLocale: 'fr',
@@ -32,29 +33,28 @@ export default defineConfig({
         fr: 'fr-FR',
       },
     },
-    // Limiter la taille du sitemap
+    
     entryLimit: 50000,
-  }), // Partytown configuré pour éviter les warnings
- robotsTxt({
-    sitemap: [
-      'https://biscuits-ia.com/sitemap-index.xml',
-      'https://biscuits-ia.com/sitemap-0.xml',
-    ],
-    policy: [
-      {
-        userAgent: '*',
-        allow: '/',
-        crawlDelay: 1,
-      },
-      // Règles spécifiques pour Google
-      {
-        userAgent: 'Googlebot',
-        allow: '/',
-        disallow: ['/admin', '/api'],
-        crawlDelay: 0.5,
-      },
-    ],
-  }), icon()],
+  }), robotsTxt({
+     sitemap: [
+       'https://biscuits-ia.com/sitemap-index.xml',
+       'https://biscuits-ia.com/sitemap-0.xml',
+     ],
+     policy: [
+       {
+         userAgent: '*',
+         allow: '/',
+         crawlDelay: 1,
+       },
+       
+       {
+         userAgent: 'Googlebot',
+         allow: '/',
+         disallow: ['/admin', '/api'],
+         crawlDelay: 0.5,
+       },
+     ],
+   }), icon(), mdx()],
 
 
   vite: {

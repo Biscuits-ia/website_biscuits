@@ -6,6 +6,7 @@ import SchemaOrg from '@/components/SEO/SchemaOrg.astro';
 import CookieConsent from '@/components/svelte/CookieConsent.svelte';
 import SpeedInsights from '@vercel/speed-insights/astro';
 import PostHog from '@/components/posthog.astro';
+import PostHogLayout from '../layouts/PostHogLayout.astro';
 
 import '@/styles/theme.css';
 import '@/styles/global.css';
@@ -58,7 +59,7 @@ const criticalCSS = `
   button{cursor:pointer;font:inherit}
 `;
 ---
-
+<PostHogLayout>
 <!DOCTYPE html>
 <html lang="fr" dir="ltr">
 <head>
@@ -267,3 +268,4 @@ const criticalCSS = `
   }
 </style>
 </html>
+</PostHogLayout>

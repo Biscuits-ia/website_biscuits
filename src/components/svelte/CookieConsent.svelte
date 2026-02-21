@@ -93,6 +93,11 @@
       necessary: true,
       analytics: true,
     };
+    // Track consent acceptance before saving
+    (window as any).posthog?.capture('cookie_consent_accepted', {
+      analytics: true,
+      consent_version: consentVersion,
+    });
     savePreferences(allPreferences);
   };
 
@@ -101,6 +106,11 @@
       necessary: true,
       analytics: false,
     };
+    // Track consent decline
+    (window as any).posthog?.capture('cookie_consent_declined', {
+      analytics: false,
+      consent_version: consentVersion,
+    });
     savePreferences(necessaryOnly);
   };
 

@@ -112,6 +112,12 @@
 
       submitSuccess = true;
 
+      // Track successful contact form submission
+      (window as any).posthog?.capture('contact_form_submitted', {
+        subject: sanitizeInput(formData.sujet),
+        message_length: formData.message.length,
+      });
+
       formData = {
         name: '',
         email: '',
@@ -131,6 +137,14 @@
       console.error('❌ Erreur soumission:', error);
       submitError =
         error.message || 'Une erreur est survenue. Veuillez réessayer.';
+
+      // Track form submission error
+      (window as any).posthog?.capture('contact_form_error', {
+        error_message: error.message || 'unknown_error',
+      });
+      // Also capture the exception for error tracking
+      (window as any).posthog?.captureException(error);
+
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } finally {
       isSubmitting = false;

@@ -5,6 +5,7 @@ import SEOHead from '@/components/SEO/SEOHead.astro';
 import SchemaOrg from '@/components/SEO/SchemaOrg.astro';
 import CookieConsent from '@/components/svelte/CookieConsent.svelte';
 import SpeedInsights from '@vercel/speed-insights/astro';
+import PostHog from '@/components/posthog.astro';
 
 import '@/styles/theme.css';
 import '@/styles/global.css';
@@ -74,7 +75,10 @@ const criticalCSS = `
       <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
     </>
   )}
-    
+
+  <!-- PostHog analytics -->
+  <PostHog />
+
   <SEOHead 
     title={fullTitle}
     description={description}
@@ -115,6 +119,13 @@ const criticalCSS = `
     }
   </script>
   )}
+
+  <script define:vars={{ posthogKey: import.meta.env.PUBLIC_POSTHOG_KEY, posthogHost: import.meta.env.PUBLIC_POSTHOG_HOST }}>
+    posthog.init(posthogKey, {
+      api_host: posthogHost,
+      person_profiles: 'identified_only',
+    })
+  </script>
   
   <!-- Favicons optimisés (format moderne) -->
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />

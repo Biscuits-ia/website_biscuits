@@ -8,9 +8,18 @@
     status = 'loading';
 
     try {
+      // Pass PostHog session ID and distinct ID to the server for correlation
+      const posthog = (window as any).posthog;
+      const sessionId = posthog?.get_session_id?.() || '';
+      const distinctId = posthog?.get_distinct_id?.() || '';
+
       const response = await fetch('/api/newsletter/subscribe', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'X-PostHog-Session-Id': sessionId,
+          'X-PostHog-Distinct-Id': distinctId,
+        },
         body: JSON.stringify({ email }),
       });
 
@@ -19,14 +28,32 @@
       if (response.ok) {
         status = 'success';
         message = '🎉 Inscription réussie ! Vérifie tes emails.';
+
+        // Track successful newsletter subscription client-side
+        posthog?.capture('newsletter_subscribed', {
+          email_domain: email.split('@')[1],
+        });
+
         email = '';
       } else {
         status = 'error';
         message = data.error || 'Une erreur est survenue';
+
+        // Track newsletter subscription error
+        posthog?.capture('newsletter_subscription_error', {
+          error_message: data.error || 'api_error',
+          status_code: response.status,
+        });
       }
     } catch (error) {
       status = 'error';
       message = 'Erreur réseau. Réessaye plus tard.';
+
+      // Track network error
+      (window as any).posthog?.capture('newsletter_subscription_error', {
+        error_message: 'network_error',
+      });
+      (window as any).posthog?.captureException(error);
     }
   };
 </script>

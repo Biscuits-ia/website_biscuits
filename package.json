@@ -19,6 +19,8 @@
     "astro": "^5.17.1",
     "astro-icon": "^1.1.5",
     "astro-robots-txt": "^1.0.0",
+    "posthog-js": "^1.352.0",
+    "posthog-node": "^5.24.17",
     "svelte": "^5.49.1",
     "tailwindcss": "^4.1.18",
     "typescript": "^5.9.3"

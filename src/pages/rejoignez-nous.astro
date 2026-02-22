@@ -1,0 +1,11 @@
+---
+import BaseLayout from '@/layouts/Layout.astro';
+import RecruitmentForm from '@/components/svelte/Recruitmentform.svelte';
+---
+
+<BaseLayout
+  title="Candidature"
+  description="Rejoignez l'équipe Biscuits IA ! Déposez votre candidature et contribuez à notre mission."
+>
+  <RecruitmentForm client:load />
+</BaseLayout>

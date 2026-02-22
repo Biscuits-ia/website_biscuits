@@ -56,14 +56,12 @@
 
     await new Promise((resolve) => setTimeout(resolve, 800));
 
-    // Log des données pour l'exemple
     console.log('📋 Nouvelle candidature Biscuits IA :', formData);
 
     loading = false;
     submitted = true;
   }
 
-  // --- Réinitialisation du formulaire ---
   function reset() {
     submitted = false;
     formData = {
@@ -78,12 +76,7 @@
   }
 </script>
 
-<!-- =========================================================
-     COMPOSANT : Formulaire de recrutement — Biscuits IA
-     ========================================================= -->
-
 {#if submitted}
-  <!-- ✅ Message de confirmation après soumission -->
   <div class="confirmation" role="alert" aria-live="polite">
     <div class="confirmation__icon" aria-hidden="true">🎉</div>
     <h2 class="confirmation__title">Candidature envoyée !</h2>

@@ -238,15 +238,31 @@
     border: 0;
   }
 
+  /* Mobile First - styles par défaut pour mobile */
   .form {
     background: var(--color-bg-elevated);
     border: var(--brutal-border);
     box-shadow: var(--shadow-lg);
     max-width: 1080px;
-    margin: 5rem auto;
-    padding: var(--spacing-xl) var(--spacing-lg);
+    padding: var(--spacing-md) var(--spacing-sm);
     color: var(--color-text);
     transition: box-shadow var(--transition-fast);
+  }
+
+  /* Tablet */
+  @media (min-width: 768px) {
+    .form {
+      margin: 3rem auto;
+      padding: var(--spacing-lg) var(--spacing-md);
+    }
+  }
+
+  /* Desktop */
+  @media (min-width: 1024px) {
+    .form {
+      position: relative;
+      padding: var(--spacing-xl) var(--spacing-lg);
+    }
   }
 
   /* ── En-tête ── */

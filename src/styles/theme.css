@@ -147,7 +147,7 @@
   color: var(--color-bg);
   padding: 10px;
   box-shadow: var(--shadow-lg);
-  transition: all var(--transition-fast);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -174,7 +174,7 @@
 :root .stat-item {
   border: var(--brutal-border);
   box-shadow: var(--shadow-lg);
-  transition: all var(--transition-fast);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
   background: var(--color-bg-elevated);
 }
 

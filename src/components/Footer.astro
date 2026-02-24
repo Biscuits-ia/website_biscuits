@@ -108,7 +108,7 @@ const currentYear = new Date().getFullYear();
   }
 
   .footer-section a {
-    transition: all var(--transition-fast);
+    transition: color var(--transition-fast), transform var(--transition-fast);
     display: inline-flex;
     align-items: center;
     gap: var(--spacing-xs);
@@ -133,7 +133,7 @@ const currentYear = new Date().getFullYear();
     border: 1px solid var(--glass-border);
     border-radius: 50%;
     color: var(--color-text);
-    transition: all var(--transition-base);
+    transition: background-color var(--transition-base), border-color var(--transition-base), transform var(--transition-base), box-shadow var(--transition-base);
   }
 
   .social-links a:hover {
@@ -184,7 +184,7 @@ const currentYear = new Date().getFullYear();
     height: 40px;
     padding: 0 12px;
     background: var(--glass-bg);
-    transition: all var(--transition-base);
+    transition: color var(--transition-base), transform var(--transition-base), background-color var(--transition-base);
   }
 
   .social-icon svg {

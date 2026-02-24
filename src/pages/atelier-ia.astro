@@ -284,7 +284,7 @@ import BaseLayout from '@/layouts/Layout.astro';
   .workshop-card {
     background: var(--color-bg);
     padding: 32px;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     border: 2px solid transparent;
     display: flex;
     flex-direction: column;
@@ -442,7 +442,7 @@ import BaseLayout from '@/layouts/Layout.astro';
     color: white;
     font-weight: 600;
     text-decoration: none;
-    transition: all 0.3s ease;
+    transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
     box-shadow: 0 4px 12px rgba(234, 166, 102, 0.3);
   }
 
@@ -534,7 +534,7 @@ import BaseLayout from '@/layouts/Layout.astro';
     font-weight: 600;
     font-size: 1rem;
     text-decoration: none;
-    transition: all 0.3s ease;
+    transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
     display: inline-flex;
     align-items: center;
     gap: 8px;

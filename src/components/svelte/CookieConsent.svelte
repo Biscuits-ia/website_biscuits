@@ -334,7 +334,7 @@
     justify-content: center;
     color: var(--color-text);
     box-shadow: var(--shadow-sm);
-    transition: all var(--transition-fast);
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast), background-color var(--transition-fast), color var(--transition-fast);
     flex-shrink: 0;
   }
 
@@ -368,7 +368,7 @@
     cursor: pointer;
     font-size: var(--font-size-sm);
     font-weight: var(--font-weight-extrabold);
-    transition: all var(--transition-fast);
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast), background-color var(--transition-fast);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -450,7 +450,7 @@
     background: var(--color-bg);
     border: var(--brutal-border-thin);
     box-shadow: var(--shadow-md);
-    transition: all var(--transition-fast);
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast);
   }
 
   .cookie-pref-item:hover {
@@ -483,7 +483,7 @@
     height: 28px;
     background: var(--color-gray-400);
     position: relative;
-    transition: all var(--transition-base);
+    transition: background-color var(--transition-base), box-shadow var(--transition-base);
     border: var(--brutal-border-thin);
     cursor: pointer;
     flex-shrink: 0;
@@ -513,7 +513,7 @@
     position: absolute;
     top: 3px;
     left: 3px;
-    transition: all var(--transition-base);
+    transition: transform var(--transition-base), background-color var(--transition-base);
   }
 
   .cookie-toggle-active .cookie-toggle-thumb {

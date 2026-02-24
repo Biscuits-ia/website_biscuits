@@ -189,7 +189,7 @@
           id="competences"
           class="field__input field__textarea"
           bind:value={formData.competences}
-          placeholder="Ex : Machine Learning, Python, NLP, design UX/UI…"
+          placeholder="Ex : IA Engineer, Développement, Médiation etc..."
           rows="3"
         ></textarea>
       </div>

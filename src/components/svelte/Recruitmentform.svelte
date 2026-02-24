@@ -1,24 +1,24 @@
 <script>
   // --- État du formulaire ---
-  let submitted = false;
-  let loading = false;
+  let submitted = $state(false);
+  let loading = $state(false);
 
   // Données du formulaire avec valeurs initiales vides
-  let formData = {
+  let formData = $state({
     nom: '',
     prenom: '',
     email: '',
     motivation: '',
     competences: '',
     disponibilite: ''
-  };
+  });
 
   // Erreurs de validation par champ
-  let errors = {
+  let errors = $state({
     nom: '',
     prenom: '',
     email: ''
-  };
+  });
 
   // --- Validation minimale ---
   function validateEmail(value) {
@@ -26,34 +26,58 @@
   }
 
   function validate() {
-    let valid = true;
-    errors = { nom: '', prenom: '', email: '' };
+    // Réinitialiser les erreurs
+    errors = {
+      nom: '',
+      prenom: '',
+      email: ''
+    };
 
-    if (!formData.nom.trim()) {
-      errors.nom = 'Le nom est obligatoire.';
-      valid = false;
-    }
+    let hasErrors = false;
+
+    // Validation du prénom
     if (!formData.prenom.trim()) {
       errors.prenom = 'Le prénom est obligatoire.';
-      valid = false;
-    }
-    if (!formData.email.trim()) {
-      errors.email = "L'email est obligatoire.";
-      valid = false;
-    } else if (!validateEmail(formData.email)) {
-      errors.email = 'Veuillez entrer un email valide.';
-      valid = false;
+      hasErrors = true;
     }
 
-    return valid;
+    // Validation du nom
+    if (!formData.nom.trim()) {
+      errors.nom = 'Le nom est obligatoire.';
+      hasErrors = true;
+    }
+
+    // Validation de l'email
+    if (!formData.email.trim()) {
+      errors.email = "L'email est obligatoire.";
+      hasErrors = true;
+    } else if (!validateEmail(formData.email)) {
+      errors.email = 'Veuillez entrer un email valide.';
+      hasErrors = true;
+    }
+
+    return !hasErrors;
   }
 
   // --- Soumission du formulaire ---
-  async function handleSubmit() {
-    if (!validate()) return;
+  async function handleSubmit(e) {
+    e.preventDefault();
+    
+    // Valider le formulaire
+    const isValid = validate();
+    
+    if (!isValid) {
+      // Focus sur le premier champ en erreur
+      const firstErrorField = Object.keys(errors).find(key => errors[key]);
+      if (firstErrorField) {
+        document.getElementById(firstErrorField)?.focus();
+      }
+      return;
+    }
 
     loading = true;
 
+    // Simulation d'envoi
     await new Promise((resolve) => setTimeout(resolve, 800));
 
     console.log('📋 Nouvelle candidature Biscuits IA :', formData);
@@ -72,7 +96,18 @@
       competences: '',
       disponibilite: ''
     };
-    errors = { nom: '', prenom: '', email: '' };
+    errors = {
+      nom: '',
+      prenom: '',
+      email: ''
+    };
+  }
+
+  // Effacer l'erreur quand l'utilisateur tape
+  function clearError(field) {
+    if (errors[field]) {
+      errors[field] = '';
+    }
   }
 </script>
 
@@ -85,14 +120,14 @@
         Merci <strong>{formData.prenom} {formData.nom}</strong>, nous avons bien reçu votre candidature.
         Notre équipe vous contactera prochainement à l'adresse <strong>{formData.email}</strong>.
       </p>
-      <button class="btn btn--secondary" on:click={reset}>
+      <button class="btn btn--secondary" onclick={reset}>
         Soumettre une nouvelle candidature
       </button>
     </div>
   {:else}
     <form
       class="form"
-      on:submit|preventDefault={handleSubmit}
+      onsubmit={handleSubmit}
       novalidate
       aria-label="Formulaire de candidature Biscuits IA"
     >
@@ -115,9 +150,11 @@
             class="field__input"
             type="text"
             bind:value={formData.prenom}
+            oninput={() => clearError('prenom')}
             placeholder="Marie"
             autocomplete="given-name"
             aria-required="true"
+            aria-invalid={errors.prenom ? 'true' : 'false'}
             aria-describedby={errors.prenom ? 'prenom-error' : undefined}
           />
           {#if errors.prenom}
@@ -135,9 +172,11 @@
             class="field__input"
             type="text"
             bind:value={formData.nom}
+            oninput={() => clearError('nom')}
             placeholder="Dupont"
             autocomplete="family-name"
             aria-required="true"
+            aria-invalid={errors.nom ? 'true' : 'false'}
             aria-describedby={errors.nom ? 'nom-error' : undefined}
           />
           {#if errors.nom}
@@ -156,9 +195,11 @@
           class="field__input"
           type="email"
           bind:value={formData.email}
+          oninput={() => clearError('email')}
           placeholder="marie.dupont@exemple.fr"
           autocomplete="email"
           aria-required="true"
+          aria-invalid={errors.email ? 'true' : 'false'}
           aria-describedby={errors.email ? 'email-error' : undefined}
         />
         {#if errors.email}

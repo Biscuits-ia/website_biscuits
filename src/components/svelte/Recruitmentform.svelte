@@ -1,130 +1,134 @@
 <script>
-  // --- État du formulaire ---
-  let submitted = $state(false);
-  let loading = $state(false);
+  // ─── Config ───────────────────────────────────────────────────────────────
+  const API_URL = `${import.meta.env.PUBLIC_API_URL ?? 'http://localhost:8000'}/api/volunteer-applications`;
 
-  // Données du formulaire avec valeurs initiales vides
+  // ─── État ─────────────────────────────────────────────────────────────────
+  let submitted  = $state(false);
+  let loading    = $state(false);
+  let serverError = $state('');
+
   let formData = $state({
-    nom: '',
-    prenom: '',
-    email: '',
-    motivation: '',
-    competences: '',
-    disponibilite: ''
+    prenom:       '',
+    nom:          '',
+    email:        '',
+    motivation:   '',
+    competences:  '',
+    disponibilite: '',
   });
 
-  // Erreurs de validation par champ
   let errors = $state({
-    nom: '',
     prenom: '',
-    email: ''
+    nom:    '',
+    email:  '',
   });
 
-  // --- Validation minimale ---
-  function validateEmail(value) {
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
-  }
+  // ─── Validation ───────────────────────────────────────────────────────────
+  const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
   function validate() {
-    // Réinitialiser les erreurs
-    errors = {
-      nom: '',
-      prenom: '',
-      email: ''
-    };
+    errors = { prenom: '', nom: '', email: '' };
+    let ok = true;
 
-    let hasErrors = false;
-
-    // Validation du prénom
     if (!formData.prenom.trim()) {
       errors.prenom = 'Le prénom est obligatoire.';
-      hasErrors = true;
+      ok = false;
     }
-
-    // Validation du nom
     if (!formData.nom.trim()) {
       errors.nom = 'Le nom est obligatoire.';
-      hasErrors = true;
+      ok = false;
     }
-
-    // Validation de l'email
     if (!formData.email.trim()) {
       errors.email = "L'email est obligatoire.";
-      hasErrors = true;
-    } else if (!validateEmail(formData.email)) {
+      ok = false;
+    } else if (!EMAIL_RE.test(formData.email)) {
       errors.email = 'Veuillez entrer un email valide.';
-      hasErrors = true;
+      ok = false;
     }
 
-    return !hasErrors;
+    return ok;
   }
 
-  // --- Soumission du formulaire ---
+  function clearError(field) {
+    if (errors[field]) errors[field] = '';
+    if (serverError)   serverError   = '';
+  }
+
+  // ─── Soumission ───────────────────────────────────────────────────────────
   async function handleSubmit(e) {
     e.preventDefault();
-    
-    // Valider le formulaire
-    const isValid = validate();
-    
-    if (!isValid) {
-      // Focus sur le premier champ en erreur
-      const firstErrorField = Object.keys(errors).find(key => errors[key]);
-      if (firstErrorField) {
-        document.getElementById(firstErrorField)?.focus();
-      }
+    serverError = '';
+
+    if (!validate()) {
+      const firstField = Object.keys(errors).find(k => errors[k]);
+      document.getElementById(firstField)?.focus();
       return;
     }
 
     loading = true;
 
-    // Simulation d'envoi
-    await new Promise((resolve) => setTimeout(resolve, 800));
+    try {
+      const res = await fetch(API_URL, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify({
+          first_name:   formData.prenom,
+          last_name:    formData.nom,
+          email:        formData.email,
+          motivation:   formData.motivation   || null,
+          skills:       formData.competences  || null,
+          availability: formData.disponibilite || null,
+        }),
+      });
 
-    console.log('📋 Nouvelle candidature Biscuits IA :', formData);
+      if (res.ok) {
+        submitted = true;
+        return;
+      }
 
-    loading = false;
-    submitted = true;
+      const body = await res.json().catch(() => null);
+
+      // Erreurs de validation Laravel 422
+      if (res.status === 422 && body?.errors) {
+        if (body.errors.first_name) errors.prenom = body.errors.first_name[0];
+        if (body.errors.last_name)  errors.nom    = body.errors.last_name[0];
+        if (body.errors.email)      errors.email  = body.errors.email[0];
+        return;
+      }
+
+      serverError = body?.message ?? 'Une erreur est survenue. Veuillez réessayer.';
+
+    } catch {
+      serverError = 'Impossible de contacter le serveur. Vérifiez votre connexion.';
+    } finally {
+      loading = false;
+    }
   }
 
   function reset() {
-    submitted = false;
-    formData = {
-      nom: '',
-      prenom: '',
-      email: '',
-      motivation: '',
-      competences: '',
-      disponibilite: ''
-    };
-    errors = {
-      nom: '',
-      prenom: '',
-      email: ''
-    };
-  }
-
-  // Effacer l'erreur quand l'utilisateur tape
-  function clearError(field) {
-    if (errors[field]) {
-      errors[field] = '';
-    }
+    submitted   = false;
+    serverError = '';
+    formData    = { prenom: '', nom: '', email: '', motivation: '', competences: '', disponibilite: '' };
+    errors      = { prenom: '', nom: '', email: '' };
   }
 </script>
 
 <div class="recruitment-page">
   {#if submitted}
+    <!-- ── Confirmation ── -->
     <div class="confirmation" role="alert" aria-live="polite">
       <div class="confirmation__icon" aria-hidden="true">🎉</div>
       <h2 class="confirmation__title">Candidature envoyée !</h2>
       <p class="confirmation__text">
         Merci <strong>{formData.prenom} {formData.nom}</strong>, nous avons bien reçu votre candidature.
-        Notre équipe vous contactera prochainement à l'adresse <strong>{formData.email}</strong>.
+        Notre équipe vous contactera prochainement à <strong>{formData.email}</strong>.
       </p>
       <button class="btn btn--secondary" onclick={reset}>
         Soumettre une nouvelle candidature
       </button>
     </div>
+
   {:else}
+    <!-- ── Formulaire ── -->
     <form
       class="form"
       onsubmit={handleSubmit}
@@ -138,9 +142,13 @@
         </p>
       </header>
 
-      <!-- ── Identité ── -->
+      <!-- Erreur serveur globale -->
+      {#if serverError}
+        <div class="alert alert--error" role="alert">{serverError}</div>
+      {/if}
+
+      <!-- Identité -->
       <div class="form__row">
-        <!-- Prénom -->
         <div class="field" class:field--error={errors.prenom}>
           <label class="field__label" for="prenom">
             Prénom <span class="field__required" aria-hidden="true">*</span>
@@ -162,7 +170,6 @@
           {/if}
         </div>
 
-        <!-- Nom -->
         <div class="field" class:field--error={errors.nom}>
           <label class="field__label" for="nom">
             Nom <span class="field__required" aria-hidden="true">*</span>
@@ -185,7 +192,7 @@
         </div>
       </div>
 
-      <!-- ── Email ── -->
+      <!-- Email -->
       <div class="field" class:field--error={errors.email}>
         <label class="field__label" for="email">
           Email <span class="field__required" aria-hidden="true">*</span>
@@ -207,7 +214,7 @@
         {/if}
       </div>
 
-      <!-- ── Motivation ── -->
+      <!-- Motivation -->
       <div class="field">
         <label class="field__label" for="motivation">
           Pourquoi souhaitez-vous nous rejoindre ?
@@ -221,21 +228,19 @@
         ></textarea>
       </div>
 
-      <!-- ── Compétences ── -->
+      <!-- Compétences -->
       <div class="field">
-        <label class="field__label" for="competences">
-          Spécialités / Compétences
-        </label>
+        <label class="field__label" for="competences">Spécialités / Compétences</label>
         <textarea
           id="competences"
           class="field__input field__textarea"
           bind:value={formData.competences}
-          placeholder="Ex : IA Engineer, Développement, Médiation etc..."
+          placeholder="Ex : IA Engineer, Développement, Médiation…"
           rows="3"
         ></textarea>
       </div>
 
-      <!-- ── Disponibilité ── -->
+      <!-- Disponibilité -->
       <div class="field">
         <label class="field__label" for="disponibilite">Disponibilité</label>
         <select id="disponibilite" class="field__input field__select" bind:value={formData.disponibilite}>
@@ -248,11 +253,9 @@
         </select>
       </div>
 
-      <!-- ── Bouton de soumission ── -->
+      <!-- Footer -->
       <div class="form__footer">
-        <p class="form__note">
-          <span aria-hidden="true">*</span> Champs obligatoires
-        </p>
+        <p class="form__note"><span aria-hidden="true">*</span> Champs obligatoires</p>
         <button class="btn btn--primary" type="submit" disabled={loading} aria-busy={loading}>
           {#if loading}
             <span class="btn__spinner" aria-hidden="true"></span>
@@ -267,7 +270,6 @@
 </div>
 
 <style>
-  /* ===== CONTENEUR PRINCIPAL ===== */
   .recruitment-page {
     min-height: 100vh;
     padding: calc(var(--header-height-mobile) + 2rem) 1rem 3rem;
@@ -280,7 +282,7 @@
     }
   }
 
-  /* ===== FORMULAIRE ===== */
+  /* Formulaire */
   .form {
     background: var(--color-bg-elevated);
     border: var(--brutal-border);
@@ -291,12 +293,10 @@
   }
 
   @media (min-width: 768px) {
-    .form {
-      padding: 3rem 2.5rem;
-    }
+    .form { padding: 3rem 2.5rem; }
   }
 
-  /* ===== EN-TÊTE ===== */
+  /* En-tête */
   .form__header {
     text-align: center;
     margin-bottom: 2.5rem;
@@ -313,20 +313,29 @@
     color: var(--color-text);
   }
 
-  .form__title .highlight {
-    color: var(--color-primary);
-  }
+  .form__title .highlight { color: var(--color-primary); }
 
   .form__subtitle {
     color: var(--color-text-light);
     font-size: var(--font-size-base);
-    margin: 0;
+    margin: 0 auto;
     line-height: 1.6;
     max-width: 500px;
-    margin-inline: auto;
   }
 
-  /* ===== LIGNE DE CHAMPS (2 colonnes) ===== */
+  /* Alerte serveur */
+  .alert--error {
+    padding: 0.875rem 1rem;
+    border: var(--brutal-border);
+    border-color: var(--color-danger);
+    background: color-mix(in srgb, var(--color-danger) 10%, transparent);
+    color: var(--color-danger);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-bold);
+    margin-bottom: 1.5rem;
+  }
+
+  /* Grille 2 colonnes */
   .form__row {
     display: grid;
     grid-template-columns: 1fr;
@@ -335,15 +344,11 @@
   }
 
   @media (min-width: 640px) {
-    .form__row {
-      grid-template-columns: 1fr 1fr;
-    }
+    .form__row { grid-template-columns: 1fr 1fr; }
   }
 
-  /* ===== CHAMPS ===== */
-  .field {
-    margin-bottom: 1.5rem;
-  }
+  /* Champs */
+  .field { margin-bottom: 1.5rem; }
 
   .field__label {
     display: block;
@@ -355,10 +360,7 @@
     text-transform: uppercase;
   }
 
-  .field__required {
-    color: var(--color-primary);
-    margin-left: 2px;
-  }
+  .field__required { color: var(--color-primary); margin-left: 2px; }
 
   .field__input {
     width: 100%;
@@ -372,10 +374,7 @@
     transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
   }
 
-  .field__input::placeholder {
-    color: var(--color-text-light);
-    opacity: 0.7;
-  }
+  .field__input::placeholder { color: var(--color-text-light); opacity: 0.7; }
 
   .field__input:focus {
     outline: none;
@@ -383,11 +382,7 @@
     box-shadow: var(--shadow-md);
   }
 
-  .field__textarea {
-    resize: vertical;
-    min-height: 120px;
-    line-height: 1.6;
-  }
+  .field__textarea { resize: vertical; min-height: 120px; line-height: 1.6; }
 
   .field__select {
     appearance: none;
@@ -398,15 +393,12 @@
     cursor: pointer;
   }
 
-  /* ── État erreur ── */
   .field--error .field__input {
     border-color: var(--color-danger);
     box-shadow: 4px 4px 0px var(--color-danger);
   }
 
-  .field--error .field__input:focus {
-    box-shadow: 6px 6px 0px var(--color-danger);
-  }
+  .field--error .field__input:focus { box-shadow: 6px 6px 0px var(--color-danger); }
 
   .field__error {
     display: block;
@@ -416,7 +408,7 @@
     font-weight: var(--font-weight-bold);
   }
 
-  /* ===== PIED DE FORMULAIRE ===== */
+  /* Pied */
   .form__footer {
     display: flex;
     flex-direction: column;
@@ -427,20 +419,12 @@
   }
 
   @media (min-width: 640px) {
-    .form__footer {
-      flex-direction: row;
-      align-items: center;
-      justify-content: space-between;
-    }
+    .form__footer { flex-direction: row; align-items: center; justify-content: space-between; }
   }
 
-  .form__note {
-    font-size: var(--font-size-xs);
-    color: var(--color-text-light);
-    margin: 0;
-  }
+  .form__note { font-size: var(--font-size-xs); color: var(--color-text-light); margin: 0; }
 
-  /* ===== BOUTONS ===== */
+  /* Boutons */
   .btn {
     display: inline-flex;
     align-items: center;
@@ -458,40 +442,18 @@
     transition: transform var(--transition-fast), box-shadow var(--transition-fast);
   }
 
-  .btn:hover:not(:disabled) {
-    transform: translate(-2px, -2px);
-    box-shadow: var(--shadow-lg);
-  }
+  .btn:hover:not(:disabled) { transform: translate(-2px, -2px); box-shadow: var(--shadow-lg); }
+  .btn:active:not(:disabled) { transform: translate(2px, 2px); box-shadow: var(--shadow-sm); }
+  .btn:disabled { opacity: 0.6; cursor: not-allowed; }
 
-  .btn:active:not(:disabled) {
-    transform: translate(2px, 2px);
-    box-shadow: var(--shadow-sm);
-  }
-
-  .btn:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
-
-  .btn--primary {
-    background: var(--color-primary);
-    color: var(--color-bg);
-    width: 100%;
-  }
+  .btn--primary { background: var(--color-primary); color: var(--color-bg); width: 100%; }
 
   @media (min-width: 640px) {
-    .btn--primary {
-      width: auto;
-    }
+    .btn--primary { width: auto; }
   }
 
-  .btn--secondary {
-    background: var(--color-bg);
-    color: var(--color-text);
-    border: var(--brutal-border);
-  }
+  .btn--secondary { background: var(--color-bg); color: var(--color-text); border: var(--brutal-border); }
 
-  /* ── Spinner ── */
   .btn__spinner {
     width: 16px;
     height: 16px;
@@ -501,11 +463,9 @@
     animation: spin 0.6s linear infinite;
   }
 
-  @keyframes spin {
-    to { transform: rotate(360deg); }
-  }
+  @keyframes spin { to { transform: rotate(360deg); } }
 
-  /* ===== CONFIRMATION ===== */
+  /* Confirmation */
   .confirmation {
     background: var(--color-bg-elevated);
     border: var(--brutal-border);
@@ -519,21 +479,11 @@
   }
 
   @keyframes popIn {
-    from { 
-      opacity: 0; 
-      transform: translateY(20px); 
-    }
-    to { 
-      opacity: 1; 
-      transform: translateY(0); 
-    }
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
   }
 
-  .confirmation__icon {
-    font-size: 4rem;
-    margin-bottom: 1.5rem;
-    display: block;
-  }
+  .confirmation__icon { font-size: 4rem; margin-bottom: 1.5rem; display: block; }
 
   .confirmation__title {
     font-size: clamp(1.5rem, 4vw, 2rem);
@@ -550,8 +500,5 @@
     margin: 0 0 2rem;
   }
 
-  .confirmation__text strong {
-    color: var(--color-text);
-    font-weight: var(--font-weight-bold);
-  }
+  .confirmation__text strong { color: var(--color-text); font-weight: var(--font-weight-bold); }
 </style>

@@ -2,7 +2,7 @@
   import { onMount } from 'svelte';
 
   type CookieCategory = 'necessary' | 'analytics';
-  
+
   type CookiePreferences = {
     necessary: boolean;
     analytics: boolean;
@@ -10,11 +10,11 @@
 
   type CookieConsentData = CookiePreferences & {
     date: string;
-    version: string; // Ajout du versioning pour tracer les changements de politique
+    version: string;
   };
 
   export let defaultPreferences: Partial<CookiePreferences> | undefined = undefined;
-  export let consentVersion: string = '1.0'; // Version de la politique de cookies
+  export let consentVersion: string = '1.0';
 
   let showBanner = false;
   let showSettings = false;
@@ -24,39 +24,31 @@
   };
 
   onMount(() => {
-    // RGPD: Vérifier si un consentement existe déjà
-    const consentStr = localStorage.getItem('cookie-consent');
-    const consentDateStr = localStorage.getItem('cookie-consent-date');
+    const consentStr        = localStorage.getItem('cookie-consent');
+    const consentDateStr    = localStorage.getItem('cookie-consent-date');
     const consentVersionStr = localStorage.getItem('cookie-consent-version');
-    
+
     if (!consentStr || !consentDateStr) {
-      // Pas de consentement = afficher la bannière
       showBanner = true;
       return;
     }
 
-    // RGPD: Vérifier si le consentement est toujours valide (< 13 mois selon CNIL)
-    const consentDate = new Date(consentDateStr);
+    const consentDate       = new Date(consentDateStr);
     const thirteenMonthsAgo = new Date();
     thirteenMonthsAgo.setMonth(thirteenMonthsAgo.getMonth() - 13);
-    
-    // RGPD: Vérifier si la version du consentement a changé
+
     const needsNewConsent = consentDate < thirteenMonthsAgo || consentVersionStr !== consentVersion;
-    
+
     if (needsNewConsent) {
-      // Consentement expiré ou version obsolète = redemander le consentement
       showBanner = true;
-      // RGPD: Nettoyer les anciennes préférences
       cleanupExpiredConsent();
       return;
     }
 
-    // Consentement valide = charger les préférences
     try {
       const consent: CookiePreferences = JSON.parse(consentStr);
       preferences = { ...preferences, ...consent };
-      
-      // RGPD: Charger les scripts UNIQUEMENT si le consentement est explicite
+
       if (consent.analytics) {
         loadAnalytics();
       }
@@ -66,52 +58,31 @@
     }
   });
 
-  // RGPD: Fonction pour nettoyer les cookies et le consentement expiré
   const cleanupExpiredConsent = () => {
     localStorage.removeItem('cookie-consent');
     localStorage.removeItem('cookie-consent-date');
     localStorage.removeItem('cookie-consent-version');
-    
-    // Réinitialiser les préférences par défaut (opt-out)
+
     preferences = {
       necessary: true,
       analytics: false,
     };
   };
 
-  // RGPD: Charger Analytics uniquement après consentement explicite
   const loadAnalytics = () => {
     const script = document.createElement('script');
-    script.src = '/_vercel/insights/script.js';
+    script.src   = '/_vercel/insights/script.js';
     script.async = true;
     script.setAttribute('data-consent', 'analytics');
     document.head.appendChild(script);
   };
 
   const acceptAll = () => {
-    const allPreferences: CookiePreferences = {
-      necessary: true,
-      analytics: true,
-    };
-    // Track consent acceptance before saving
-    (window as any).posthog?.capture('cookie_consent_accepted', {
-      analytics: true,
-      consent_version: consentVersion,
-    });
-    savePreferences(allPreferences);
+    savePreferences({ necessary: true, analytics: true });
   };
 
   const acceptNecessary = () => {
-    const necessaryOnly: CookiePreferences = {
-      necessary: true,
-      analytics: false,
-    };
-    // Track consent decline
-    (window as any).posthog?.capture('cookie_consent_declined', {
-      analytics: false,
-      consent_version: consentVersion,
-    });
-    savePreferences(necessaryOnly);
+    savePreferences({ necessary: true, analytics: false });
   };
 
   const saveCustomPreferences = () => {
@@ -121,42 +92,33 @@
   const savePreferences = (prefs: CookiePreferences) => {
     const consentData: CookieConsentData = {
       ...prefs,
-      date: new Date().toISOString(),
+      date:    new Date().toISOString(),
       version: consentVersion,
     };
 
-    // RGPD: Stocker le consentement avec la date et la version
-    localStorage.setItem('cookie-consent', JSON.stringify(prefs));
-    localStorage.setItem('cookie-consent-date', consentData.date);
+    localStorage.setItem('cookie-consent',         JSON.stringify(prefs));
+    localStorage.setItem('cookie-consent-date',    consentData.date);
     localStorage.setItem('cookie-consent-version', consentData.version);
 
-    // Dispatcher un événement pour notifier les autres composants
     window.dispatchEvent(
-      new CustomEvent('cookieConsentUpdated', {
-        detail: consentData,
-      })
+      new CustomEvent('cookieConsentUpdated', { detail: consentData })
     );
 
-    // RGPD: Charger les scripts UNIQUEMENT après consentement explicite
     if (prefs.analytics && !isScriptLoaded('analytics')) {
       loadAnalytics();
     }
 
-    showBanner = false;
-    showSettings = false;
+    showBanner    = false;
+    showSettings  = false;
   };
 
-  // RGPD: Vérifier si un script est déjà chargé
   const isScriptLoaded = (type: string): boolean => {
     return !!document.querySelector(`script[data-consent="${type}"]`);
   };
 
   const togglePreference = (key: CookieCategory) => {
     if (key === 'necessary') return;
-    preferences = {
-      ...preferences,
-      [key]: !preferences[key],
-    };
+    preferences = { ...preferences, [key]: !preferences[key] };
   };
 </script>
 
@@ -222,7 +184,6 @@
           </div>
 
           <div class="cookie-preferences">
-            <!-- Cookies nécessaires -->
             <div class="cookie-pref-item">
               <div class="cookie-pref-text">
                 <p class="cookie-pref-title">Cookies nécessaires</p>
@@ -233,7 +194,6 @@
               </div>
             </div>
 
-            <!-- Cookies analytiques -->
             <div class="cookie-pref-item">
               <div class="cookie-pref-text">
                 <p class="cookie-pref-title">Cookies analytiques</p>
@@ -249,7 +209,6 @@
                 <div class="cookie-toggle-thumb"></div>
               </button>
             </div>
-
           </div>
 
           <div class="cookie-actions">
@@ -283,16 +242,10 @@
   }
 
   @keyframes slideUp {
-    from {
-      opacity: 0;
-      transform: translateX(-50%) translateY(30px);
-    }
-    to {
-      opacity: 1;
-      transform: translateX(-50%) translateY(0);
-    }
+    from { opacity: 0; transform: translateX(-50%) translateY(30px); }
+    to   { opacity: 1; transform: translateX(-50%) translateY(0); }
   }
-  
+
   .cookie-banner-content {
     display: flex;
     flex-direction: column;
@@ -316,8 +269,7 @@
   }
 
   .cookie-text p {
-    margin: 0;
-    margin-bottom: 15px;
+    margin: 0 0 15px 0;
     font-size: var(--font-size-sm);
     color: var(--color-gray-100);
     line-height: 1.6;
@@ -334,7 +286,7 @@
     justify-content: center;
     color: var(--color-text);
     box-shadow: var(--shadow-sm);
-    transition: transform var(--transition-fast), box-shadow var(--transition-fast), background-color var(--transition-fast), color var(--transition-fast);
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast), background-color var(--transition-fast);
     flex-shrink: 0;
   }
 
@@ -342,7 +294,6 @@
     transform: translate(var(--brutal-hover-lift), var(--brutal-hover-lift));
     box-shadow: var(--shadow-md);
     background: var(--color-primary-light);
-    color: var(--color-text);
   }
 
   .cookie-close:active {
@@ -353,7 +304,7 @@
   .cookie-close svg {
     width: 20px;
     height: 20px;
-    color: var(--color-text );
+    color: var(--color-text);
   }
 
   .cookie-actions {
@@ -380,10 +331,7 @@
     box-shadow: var(--shadow-lg);
   }
 
-  .cookie-btn svg {
-    width: 18px;
-    height: 18px;
-  }
+  .cookie-btn svg { width: 18px; height: 18px; }
 
   .cookie-btn:hover {
     transform: translate(var(--brutal-hover-lift), var(--brutal-hover-lift));
@@ -401,19 +349,13 @@
     border-color: var(--color-border);
   }
 
-  .cookie-btn-primary:hover {
-    background: var(--color-primary-dark);
-  }
+  .cookie-btn-primary:hover { background: var(--color-primary-dark); }
 
   .cookie-btn-secondary {
     background: var(--color-secondary);
     font-size: 13px;
     color: var(--color-text);
     border-color: var(--color-border);
-  }
-
-  .cookie-btn-secondary:hover {
-    background: var(--color-secondary);
   }
 
   .cookie-settings-header {
@@ -458,9 +400,7 @@
     box-shadow: var(--shadow-lg);
   }
 
-  .cookie-pref-text {
-    flex: 1;
-  }
+  .cookie-pref-text { flex: 1; }
 
   .cookie-pref-title {
     margin: 0 0 4px 0;
@@ -523,32 +463,16 @@
 
   @media (max-width: 640px) {
     .cookie-banner {
-      left: 50%;
       bottom: 16px;
       width: calc(100% - 32px);
       padding: 24px;
     }
 
-    .cookie-text h3 {
-      font-size: var(--font-size-lg);
-    }
+    .cookie-text h3 { font-size: var(--font-size-lg); }
+    .cookie-text p  { font-size: var(--font-size-sm); }
 
-    .cookie-text p {
-      font-size: var(--font-size-sm);
-    }
-
-    .cookie-actions {
-      flex-direction: column;
-      gap: var(--spacing-sm);
-    }
-
-    .cookie-btn {
-      width: 100%;
-      min-width: unset;
-    }
-
-    .cookie-pref-item {
-      padding: 12px;
-    }
+    .cookie-actions { flex-direction: column; }
+    .cookie-btn     { width: 100%; min-width: unset; }
+    .cookie-pref-item { padding: 12px; }
   }
 </style>

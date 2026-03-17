@@ -1,7 +1,6 @@
 ---
 import BaseLayout from '@/layouts/Layout.astro';
-import ContactForm from '@/components/svelte/ContactForm.svelte';
-
+import ContactForm from '@/components/ContactForm.astro';
 ---
 
 <BaseLayout
@@ -18,10 +17,10 @@ import ContactForm from '@/components/svelte/ContactForm.svelte';
   <section class="quote-form-section">
     <div class="container">
       <h2>Informations nécessaires</h2>
-      <ContactForm client:load />
+      <!-- ContactForm gère lui-même l'import de son script côté client -->
+      <ContactForm />
     </div>
   </section>
-
 </BaseLayout>
 
 <style>
@@ -45,155 +44,11 @@ import ContactForm from '@/components/svelte/ContactForm.svelte';
     margin: 0 auto;
   }
 
-  .quote-form-section {
-  }
-
   .quote-form-section h2 {
     text-align: center;
     font-size: clamp(2rem, 4vw, 2.5rem);
     font-weight: 800;
     color: var(--color-text);
     margin-bottom: var(--spacing-2xl);
-  }
-
-  .quote-info {
-    padding: 4rem var(--spacing-lg);
-    background: var(--color-bg-alt);
-  }
-
-  .quote-info h2 {
-    text-align: center;
-    font-size: clamp(2rem, 4vw, 2.5rem);
-    font-weight: 800;
-    color: var(--color-text);
-    margin-bottom: var(--spacing-2xl);
-  }
-
-  .steps {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: var(--spacing-2xl);
-    max-width: 1200px;
-    margin: 0 auto;
-  }
-
-  .step {
-    background: var(--color-bg);
-    padding: var(--spacing-2xl);
-    border-radius: var(--radius-lg);
-    text-align: center;
-    border: 2px solid var(--color-border);
-    transition: transform var(--transition-base), box-shadow var(--transition-base), border-color var(--transition-base), background-color var(--transition-base);
-  }
-
-  .step:hover {
-    transform: translateY(-5px);
-    border-color: var(--color-primary);
-  }
-
-  .step .icon {
-    font-size: 3rem;
-    display: block;
-    margin-bottom: var(--spacing-md);
-  }
-
-  .step h3 {
-    font-size: 1.375rem;
-    font-weight: 700;
-    color: var(--color-text);
-    margin-bottom: var(--spacing-sm);
-  }
-
-  .step p {
-    color: var(--color-text-light);
-    line-height: 1.6;
-  }
-
-  .final-cta {
-    padding: 4rem var(--spacing-lg);
-    text-align: center;
-    background: var(--color-bg);
-  }
-
-  .final-cta h2 {
-    font-size: clamp(2rem, 4vw, 2.5rem);
-    font-weight: 800;
-    color: var(--color-text);
-    margin-bottom: var(--spacing-md);
-  }
-
-  .final-cta p {
-    font-size: clamp(1rem, 2.5vw, 1.25rem);
-    color: var(--color-text-light);
-    margin-bottom: var(--spacing-xl);
-  }
-
-  .cta-buttons {
-    display: flex;
-    gap: var(--spacing-md);
-    justify-content: center;
-    flex-wrap: wrap;
-  }
-
-  .btn-primary,
-  .btn-secondary {
-    display: inline-flex;
-    align-items: center;
-    padding: var(--spacing-md) var(--spacing-xl);
-    border-radius: var(--radius-lg);
-    font-weight: 600;
-    text-decoration: none;
-    transition: transform var(--transition-base), box-shadow var(--transition-base), border-color var(--transition-base), background-color var(--transition-base);
-  }
-
-  .btn-primary {
-    background: var(--color-primary-dark);
-    color: #000000;
-  }
-
-  .btn-primary:hover {
-    background: var(--color-primary-dark);
-    transform: translateY(-2px);
-  }
-
-  .btn-secondary {
-    background: var(--color-bg-alt);
-    color: var(--color-text);
-  }
-
-  .btn-secondary:hover {
-    background: var(--color-bg-elevated);
-  }
-
-  .btn-primary:focus-visible,
-  .btn-secondary:focus-visible {
-    outline: 3px solid var(--color-primary);
-    outline-offset: 3px;
-  }
-
-  @media (max-width: 768px) {
-    .steps {
-      grid-template-columns: 1fr;
-    }
-
-    .cta-buttons {
-      flex-direction: column;
-      align-items: stretch;
-    }
-
-    .btn-primary,
-    .btn-secondary {
-      justify-content: center;
-    }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .step {
-      transition: none;
-    }
-    
-    .step:hover {
-      transform: none;
-    }
   }
 </style>

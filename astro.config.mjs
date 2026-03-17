@@ -58,7 +58,19 @@ export default defineConfig({
 
 
   vite: {
-    plugins: [tailwindcss()]
+    plugins: [tailwindcss()],
+    define: {
+      'import.meta.env.PUBLIC_API_URL': JSON.stringify(process.env.PUBLIC_API_URL || 'http://localhost:8000'),
+    },
+    server: {
+      proxy: {
+        '/api': {
+          target: process.env.PUBLIC_API_URL || 'http://localhost:8000',
+          changeOrigin: true,
+          secure: false,
+        },
+      },
+    },
   },
 
   output: 'static',

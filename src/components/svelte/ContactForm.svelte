@@ -302,6 +302,7 @@
     gap: 1.8rem;
     max-width: 900px;
     margin: 0 auto;
+    padding-bottom: 2rem;
   }
 
   .form-group {

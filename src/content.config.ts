@@ -13,5 +13,5 @@ const blog = defineCollection({
     draft: z.boolean().optional().default(false),
   }),
 });
-    
+
 export const collections = { blog };

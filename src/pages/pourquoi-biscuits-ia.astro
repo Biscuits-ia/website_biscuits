@@ -109,16 +109,12 @@ const content = {
       <section class="zone-card" aria-labelledby="activites-title">
         <h2 id="activites-title">Nos activités</h2>
         <div class="grid-3">
-          {
-            content.activites.map((a) => {
-              return (
-                <div class="feature-badge">
-                  <h3>{a.titre}</h3>
-                  <p>{a.desc}</p>
-                </div>
-              );
-            })
-          }
+          {content.activites.map((a) => (
+            <div class="feature-badge">
+              <h3>{a.titre}</h3>
+              <p>{a.desc}</p>
+            </div>
+          ))}
         </div>
       </section>
 
@@ -126,16 +122,12 @@ const content = {
       <section class="zone-card" aria-labelledby="publics-title">
         <h2 id="publics-title">Pour qui nous intervenons</h2>
         <div class="grid-3">
-          {
-            content.publics.map((p) => {
-              return (
-                <div class="feature-badge">
-                  <h3>{p.titre}</h3>
-                  <p>{p.desc}</p>
-                </div>
-              );
-            })
-          }
+          {content.publics.map((p) => (
+            <div class="feature-badge">
+              <h3>{p.titre}</h3>
+              <p>{p.desc}</p>
+            </div>
+          ))}
         </div>
       </section>
 
@@ -173,6 +165,7 @@ const content = {
 <style>
   main {
     min-height: 100vh;
+    background: var(--color-bg, #fff);
   }
 
   .hero {
@@ -207,6 +200,7 @@ const content = {
     max-width: min(1280px, calc(100% - 2rem));
     margin: 0 auto;
     padding: 0 1rem;
+    background: var(--color-bg, #fff);
   }
   .grid-3 {
     display: grid;
@@ -253,6 +247,7 @@ const content = {
     background: var(--color-bg-card, #fff);
     border-radius: 0;
     margin-bottom: 2rem;
+    margin-top: 2rem;
   }
   .zone-card h2 {
     margin-bottom: 1.5rem;
@@ -268,6 +263,10 @@ const content = {
     transition:
       transform 0.2s ease,
       box-shadow 0.2s ease;
+    color: var(--color-text, #000);
+    display: block;
+    visibility: visible;
+    opacity: 1;
   }
   .feature-badge:hover {
     transform: translateY(-2px);

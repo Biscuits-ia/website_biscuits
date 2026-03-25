@@ -305,7 +305,7 @@ const apiUrl = `${import.meta.env.PUBLIC_BACKEND_URL ?? 'http://localhost:8000'}
       try {
         await submitForm(payload);
       } catch {
-        showGlobalError('Impossible de contacter le serveur. Vérifiez votre connexion.');
+        showGlobalError('Un problème est survenue. Vérifiez votre connexion.');
       } finally {
         setLoading(false);
       }

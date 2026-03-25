@@ -670,19 +670,122 @@
       menu?.classList.toggle('active');
     }
 
+    function closeAllDropdowns() {
+      dropdowns.forEach(dropdown => {
+        dropdown.setAttribute('aria-expanded', 'false');
+        const menu = dropdown.nextElementSibling as HTMLElement;
+        menu?.classList.remove('active');
+      });
+    }
+
+    function focusNextDropdown(current: Element) {
+      const index = Array.from(dropdowns).indexOf(current);
+      const next = dropdowns[index + 1] || dropdowns[0];
+      (next as HTMLElement).focus();
+      next.setAttribute('aria-expanded', 'true');
+      const menu = next.nextElementSibling as HTMLElement;
+      menu?.classList.add('active');
+    }
+
+    function focusPrevDropdown(current: Element) {
+      const index = Array.from(dropdowns).indexOf(current);
+      const prev = dropdowns[index - 1] || dropdowns[dropdowns.length - 1];
+      (prev as HTMLElement).focus();
+      prev.setAttribute('aria-expanded', 'true');
+      const menu = prev.nextElementSibling as HTMLElement;
+      menu?.classList.add('active');
+    }
+
     dropdowns.forEach(dropdown => {
       dropdown.addEventListener('click', (e) => {
         e.preventDefault();
         toggleDropdown(dropdown);
       });
 
-      // Support clavier (Enter et Space)
+      // Support clavier (Enter, Space, Flèches)
       dropdown.addEventListener('keydown', (e: Event) => {
         const keyEvent = e as KeyboardEvent;
-        if (keyEvent.key === 'Enter' || keyEvent.key === ' ' || keyEvent.key === 'Spacebar') {
-          keyEvent.preventDefault();
-          toggleDropdown(dropdown);
+        const isOpen = dropdown.getAttribute('aria-expanded') === 'true';
+        
+        switch (keyEvent.key) {
+          case 'Enter':
+          case ' ':
+          case 'Spacebar':
+            keyEvent.preventDefault();
+            toggleDropdown(dropdown);
+            break;
+          case 'ArrowDown':
+            keyEvent.preventDefault();
+            if (!isOpen) {
+              toggleDropdown(dropdown);
+            }
+            // Focus sur le premier lien du dropdown
+            const menu = dropdown.nextElementSibling as HTMLElement;
+            const firstLink = menu?.querySelector('.dropdown-link') as HTMLElement;
+            firstLink?.focus();
+            break;
+          case 'ArrowUp':
+            keyEvent.preventDefault();
+            if (!isOpen) {
+              toggleDropdown(dropdown);
+            }
+            // Focus sur le dernier lien du dropdown
+            const menuUp = dropdown.nextElementSibling as HTMLElement;
+            const links = menuUp?.querySelectorAll('.dropdown-link') as NodeListOf<HTMLElement>;
+            const lastLink = links[links.length - 1];
+            lastLink?.focus();
+            break;
+          case 'ArrowRight':
+            keyEvent.preventDefault();
+            focusNextDropdown(dropdown);
+            break;
+          case 'ArrowLeft':
+            keyEvent.preventDefault();
+            focusPrevDropdown(dropdown);
+            break;
+          case 'Escape':
+            keyEvent.preventDefault();
+            closeAllDropdowns();
+            break;
         }
+      });
+    });
+
+    // Navigation flèches Up/Down dans les dropdowns
+    document.querySelectorAll('.dropdown-menu').forEach(menu => {
+      const links = menu.querySelectorAll('.dropdown-link') as NodeListOf<HTMLElement>;
+      
+      links.forEach((link, index) => {
+        link.addEventListener('keydown', (e: Event) => {
+          const keyEvent = e as KeyboardEvent;
+          const dropdown = menu.previousElementSibling as HTMLElement;
+          
+          switch (keyEvent.key) {
+            case 'ArrowDown':
+              keyEvent.preventDefault();
+              const nextLink = links[index + 1] || links[0];
+              nextLink.focus();
+              break;
+            case 'ArrowUp':
+              keyEvent.preventDefault();
+              const prevLink = links[index - 1] || links[links.length - 1];
+              prevLink.focus();
+              break;
+            case 'ArrowRight':
+              keyEvent.preventDefault();
+              focusNextDropdown(dropdown);
+              break;
+            case 'ArrowLeft':
+              keyEvent.preventDefault();
+              focusPrevDropdown(dropdown);
+              break;
+            case 'Escape':
+              keyEvent.preventDefault();
+              closeAllDropdowns();
+              dropdown.focus();
+              break;
+          }
+        });
       });
     });
 

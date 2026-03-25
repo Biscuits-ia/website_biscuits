@@ -250,7 +250,7 @@ const API_URL = `${import.meta.env.PUBLIC_API_URL ?? 'http://localhost:8000'}/ap
       serverError.style.display = 'block';
 
     } catch {
-      serverError.textContent   = 'Impossible de contacter le serveur. Vérifiez votre connexion internet.';
+      serverError.textContent   = 'Un problème est survenue. Vérifiez votre connexion internet.';
       serverError.style.display = 'block';
     } finally {
       setLoading(false);

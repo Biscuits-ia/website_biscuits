@@ -27,7 +27,6 @@ declare global {
   interface WindowEventMap {
     'cookieConsentUpdated': CustomEvent<{
       analytics: boolean;
-      marketing: boolean;
     }>;
   }
 }

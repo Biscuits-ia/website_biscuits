@@ -107,6 +107,23 @@ const apiUrl = `${import.meta.env.PUBLIC_BACKEND_URL ?? 'http://localhost:8000'}
 
     const API_URL = wrapper.dataset.apiUrl ?? 'http://localhost:8000/api/forms';
 
+    // Récupérer le token CSRF depuis un cookie ou une balise meta
+    function getCsrfToken(): string {
+      // Méthode 1 : depuis un cookie (typique Django)
+      const match = document.cookie.match(/csrftoken=([^;]+)/);
+      if (match) return match[1];
+
+      // Méthode 2 : depuis une balise meta
+      const meta = document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement;
+      if (meta) return meta.content;
+
+      // Méthode 3 : depuis une balise meta avec nom csrfmiddlewaretoken
+      const meta2 = document.querySelector('meta[name="csrfmiddlewaretoken"]') as HTMLMetaElement;
+      if (meta2) return meta2.content;
+
+      return '';
+    }
+
     // Éléments requis — on sort si l'un est absent
     const formEl      = document.getElementById('cf-form')    as HTMLFormElement    | null;
     const btnSubmitEl = document.getElementById('cf-submit')  as HTMLButtonElement  | null;
@@ -130,6 +147,11 @@ const apiUrl = `${import.meta.env.PUBLIC_BACKEND_URL ?? 'http://localhost:8000'}
     const elCount   = document.getElementById('cf-char-count') as HTMLElement      | null;
     const elHoney   = document.getElementById('cf-honey')      as HTMLInputElement | null;
     const elCsrf    = document.getElementById('cf-csrf')       as HTMLInputElement | null;
+
+    // Remplir le champ CSRF au chargement
+    if (elCsrf) {
+      elCsrf.value = getCsrfToken();
+    }
 
     // ── Helpers UI ────────────────────────────────────────────────────────
 
@@ -209,18 +231,12 @@ const apiUrl = `${import.meta.env.PUBLIC_BACKEND_URL ?? 'http://localhost:8000'}
 
     // ── Lecture formulaire ─────────────────────────────────────────────────
 
-    function sanitizeInput(value: string): string {
-      return value.replace(/[<>]/g, (match) => {
-        return match === '<' ? '<' : '>';
-      });
-    }
-
     function readPayload(): ContactPayload {
       return {
-        name:    sanitizeInput((document.getElementById('cf-name')  as HTMLInputElement).value.trim()),
-        email:   sanitizeInput((document.getElementById('cf-email') as HTMLInputElement).value.trim().toLowerCase()),
-        subject: sanitizeInput((document.getElementById('cf-sujet') as HTMLInputElement).value.trim()),
-        message: sanitizeInput(elMessage.value.trim()),
+        name:    (document.getElementById('cf-name')  as HTMLInputElement).value.trim(),
+        email:   (document.getElementById('cf-email') as HTMLInputElement).value.trim().toLowerCase(),
+        subject: (document.getElementById('cf-sujet') as HTMLInputElement).value.trim(),
+        message: elMessage.value.trim(),
         type:    'contact',
       };
     }

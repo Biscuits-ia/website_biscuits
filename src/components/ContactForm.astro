@@ -61,6 +61,7 @@ const apiUrl = `${import.meta.env.PUBLIC_BACKEND_URL ?? 'http://localhost:8000'}
 
     <input type="text" name="honey" id="cf-honey"
       tabindex="-1" autocomplete="off" class="cf-honeypot" aria-hidden="true" />
+    <input type="hidden" name="csrfmiddlewaretoken" id="cf-csrf" value="" />
 
     <div class="cf-footer">
       <p class="cf-note"><span aria-hidden="true">*</span> Champs obligatoires</p>
@@ -128,6 +129,7 @@ const apiUrl = `${import.meta.env.PUBLIC_BACKEND_URL ?? 'http://localhost:8000'}
     const elErrTxt  = document.getElementById('cf-error-text') as HTMLElement      | null;
     const elCount   = document.getElementById('cf-char-count') as HTMLElement      | null;
     const elHoney   = document.getElementById('cf-honey')      as HTMLInputElement | null;
+    const elCsrf    = document.getElementById('cf-csrf')       as HTMLInputElement | null;
 
     // ── Helpers UI ────────────────────────────────────────────────────────
 
@@ -207,12 +209,18 @@ const apiUrl = `${import.meta.env.PUBLIC_BACKEND_URL ?? 'http://localhost:8000'}
 
     // ── Lecture formulaire ─────────────────────────────────────────────────
 
+    function sanitizeInput(value: string): string {
+      return value.replace(/[<>]/g, (match) => {
+        return match === '<' ? '<' : '>';
+      });
+    }
+
     function readPayload(): ContactPayload {
       return {
-        name:    (document.getElementById('cf-name')  as HTMLInputElement).value.trim(),
-        email:   (document.getElementById('cf-email') as HTMLInputElement).value.trim().toLowerCase(),
-        subject: (document.getElementById('cf-sujet') as HTMLInputElement).value.trim(),
-        message: elMessage.value.trim(),
+        name:    sanitizeInput((document.getElementById('cf-name')  as HTMLInputElement).value.trim()),
+        email:   sanitizeInput((document.getElementById('cf-email') as HTMLInputElement).value.trim().toLowerCase()),
+        subject: sanitizeInput((document.getElementById('cf-sujet') as HTMLInputElement).value.trim()),
+        message: sanitizeInput(elMessage.value.trim()),
         type:    'contact',
       };
     }
@@ -220,12 +228,14 @@ const apiUrl = `${import.meta.env.PUBLIC_BACKEND_URL ?? 'http://localhost:8000'}
     // ── Appel API ──────────────────────────────────────────────────────────
 
     async function submitForm(payload: ContactPayload): Promise<void> {
+      const csrfToken = elCsrf?.value || '';
       const res = await fetch(API_URL, {
         method:  'POST',
         headers: {
           'Content-Type':     'application/json',
           'Accept':           'application/json',
           'X-Requested-With': 'XMLHttpRequest',
+          'X-CSRFToken':      csrfToken,
         },
         body: JSON.stringify(payload),
       });

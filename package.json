@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@astrojs/mdx": "^5.0.1",
+    "@astrojs/rss": "^4.0.17",
     "@astrojs/sitemap": "^3.7.1",
     "@astrojs/svelte": "^8.0.1",
     "@astrojs/ts-plugin": "^1.10.7",
@@ -19,6 +20,8 @@
     "astro": "^6.0.5",
     "astro-icon": "^1.1.5",
     "astro-robots-txt": "^1.0.0",
+    "markdown-it": "^14.1.1",
+    "sanitize-html": "^2.17.2",
     "svelte": "^5.49.1",
     "tailwindcss": "^4.1.18",
     "typescript": "^5.9.3"

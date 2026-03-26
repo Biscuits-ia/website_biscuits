@@ -1,6 +1,6 @@
 export const SITE = {
   title: 'Biscuits du Dev',
-  description: 'Des biscuits numériques pour développeurs curieux',
+  description: 'Des biscuits numériques pour les curieux',
   defaultLanguage: 'fr',
   author: 'Sweetosky',
   email: 'contact@biscuitsdu.dev',

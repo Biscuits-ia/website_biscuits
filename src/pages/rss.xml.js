@@ -5,7 +5,7 @@ import MarkdownIt from 'markdown-it';
 
 const SITE = {
   title: 'Biscuits du Dev',
-  description: 'Des biscuits numériques pour développeurs curieux',
+  description: 'Des biscuits numériques pour les curieux',
   author: 'Sweetosky',
   email: 'contact@biscuitsdu.dev',
 };

@@ -50,10 +50,6 @@ const seoTitle = title.length > 60
 <meta name="title" content={seoTitle} />
 <meta name="description" content={seoDescription} />
 
-<!-- Keywords (toujours utile en 2026 pour certains moteurs) -->
-{keywords.length > 0 && (
-  <meta name="keywords" content={keywords.join(', ')} />
-)}
 
 <!-- Author et Copyright -->
 <meta name="author" content={author || "Biscuits IA"} />

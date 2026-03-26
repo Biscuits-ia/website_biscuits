@@ -20,8 +20,15 @@ const allTags = [...new Set(sortedArticles.flatMap((a: CollectionEntry<'blog'>) 
 ---
 
 <Layout
-  title="blog"
-  description="Articles, guides et tutoriels pour développeurs et vibe coders"
+  title="Biscuits du Dev | Articles DevOps, IA & Développement"
+  description="Articles techniques sur le DevOps, l'Intelligence Artificielle et les bonnes pratiques de développement pour développeurs et équipes techniques."
+  schema={{
+    type: 'WebPage',
+    data: {
+      author: 'Biscuits IA',
+      keywords: ['DevOps', 'IA', 'développement', 'tutoriels', 'bonnes pratiques']
+    }
+  }}
 >
   <div class="blog-wrapper">
     <header class="blog-hero">
@@ -85,7 +92,7 @@ const allTags = [...new Set(sortedArticles.flatMap((a: CollectionEntry<'blog'>) 
           <div class="featured-grid">
             {featuredArticles.map((article: CollectionEntry<'blog'>, index: number) => (
               <article class="featured-card" style={`animation-delay: ${index * 0.1}s`}>
-                <a href={`/blog/${article.slug}`} class="card-link">
+                <a href={`/blog/${article.id}`} class="card-link">
                   {article.data.thumbnail && (
                     <div class="card-thumbnail">
                       <img src={article.data.thumbnail} alt={article.data.title} loading="lazy" />
@@ -172,7 +179,7 @@ const allTags = [...new Set(sortedArticles.flatMap((a: CollectionEntry<'blog'>) 
         <div class="articles-grid">
           {regularArticles.map((article: CollectionEntry<'blog'>, index: number) => (
             <article class="article-card" style={`animation-delay: ${index * 0.05}s`}>
-              <a href={`/blog/${article.slug}`} class="card-link">
+              <a href={`/blog/${article.id}`} class="card-link">
                 <div class="card-content">
                   <div class="card-meta">
                     <time datetime={article.data.pubDate.toISOString()}>

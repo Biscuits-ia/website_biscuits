@@ -316,7 +316,7 @@ const graphSchema = {
   "@graph": [
     organizationSchema,
     websiteSchema,
-    ...(pathParts.length > 0 ? [breadcrumbSchema] : []),
+    ...(pathParts.length >= 0 ? [breadcrumbSchema] : []),
     ...(Object.keys(specificSchema).length > 0 ? [specificSchema] : [])
   ]
 };

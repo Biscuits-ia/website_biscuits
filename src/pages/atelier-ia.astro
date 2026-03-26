@@ -165,7 +165,7 @@ import BaseLayout from '@/layouts/Layout.astro';
       </div>
     </div>
   </section>
-
+  
   <section class="benefits-section">
     <div class="container">
       <h2>Pourquoi nos ateliers ?</h2>
@@ -214,6 +214,209 @@ import BaseLayout from '@/layouts/Layout.astro';
 </BaseLayout>
 
 <style>
+  /* === Calendar Styles (Theme Integration) === */
+  .calendar-section {
+    padding: 80px 0;
+    background: var(--color-bg);
+  }
+
+  .calendar-container {
+    background: var(--color-bg);
+    border: 4px solid var(--color-border);
+    box-shadow: 7px 7px 0px var(--color-border);
+    padding: 24px;
+    min-height: 600px;
+  }
+
+  /* FullCalendar theme integration - Biscuits IA theme */
+  .fc {
+    --fc-bg-color: var(--color-bg);
+    --fc-text-color: var(--color-text);
+    --fc-border-color: var(--color-border);
+    --fc-button-bg-color: var(--color-primary);
+    --fc-button-text-color: var(--color-bg);
+    --fc-button-hover-bg-color: var(--color-accent-honey);
+    --fc-button-active-bg-color: var(--color-primary);
+    --fc-event-bg-color: var(--color-primary);
+    --fc-event-text-color: var(--color-bg);
+    --fc-event-border-color: var(--color-primary);
+    --fc-today-highlight-color: var(--color-accent-honey);
+    --fc-list-event-hover-bg-color: var(--color-secondary);
+    --fc-header-bg: var(--color-gray-100);
+    --fc-header-text: var(--color-text);
+    --fc-cell-hover: var(--color-secondary);
+    --fc-calendar-bg: var(--color-bg);
+  }
+
+  .fc .fc-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .fc .fc-toolbar-title {
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    font-weight: 900;
+    letter-spacing: -0.03em;
+    color: var(--color-text);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .fc .fc-toolbar-chunk {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .fc .fc-button-group {
+    display: flex;
+    gap: 4px;
+  }
+
+  .fc .fc-button {
+    padding: 10px 20px;
+    background: var(--color-primary);
+    color: var(--color-bg);
+    border: 3px solid var(--color-border);
+    box-shadow: 3px 3px 0px var(--color-border);
+    font-weight: 800;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: 0;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .fc .fc-button:hover {
+    background: var(--color-accent-honey);
+    transform: translate(-2px, -2px);
+    box-shadow: 5px 5px 0px var(--color-border);
+  }
+
+  .fc .fc-button:active {
+    transform: translate(2px, 2px);
+    box-shadow: 1px 1px 0px var(--color-border);
+  }
+
+  .fc .fc-button-active {
+    background: var(--color-accent-honey);
+    box-shadow: 4px 4px 0px var(--color-border);
+  }
+
+  .fc .fc-col-header-cell {
+    background: var(--color-gray-100);
+    color: var(--color-text);
+    border: 3px solid var(--color-border);
+    padding: 12px 8px;
+    font-weight: 800;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+  }
+
+  .fc .fc-daygrid-day {
+    border: 2px solid var(--color-border);
+    background: var(--color-bg);
+    padding: 8px;
+    vertical-align: top;
+  }
+
+  .fc .fc-day-today {
+    background: var(--color-accent-honey);
+  }
+
+  .fc .fc-day-today .fc-daygrid-day-number {
+    color: var(--color-primary);
+    font-weight: 800;
+  }
+
+  .fc .fc-daygrid-day-number {
+    font-weight: 700;
+    color: var(--color-text);
+  }
+
+  .fc .fc-event {
+    background: var(--color-primary);
+    color: var(--color-bg);
+    border: 2px solid var(--color-primary);
+    box-shadow: 3px 3px 0px var(--color-border);
+    border-radius: 0;
+    padding: 4px 8px;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .fc .fc-event:hover {
+    transform: translateY(-2px);
+    box-shadow: 4px 4px 0px var(--color-border);
+    opacity: 0.95;
+  }
+
+  /* DayGrid event styling */
+  .fc .fc-daygrid-event {
+    margin-bottom: 4px;
+  }
+
+  /* Agenda/List view styling */
+  .fc .fc-list-event {
+    background: var(--color-bg);
+    border-left: 4px solid var(--color-primary);
+    border-radius: 0;
+  }
+
+  .fc .fc-list-event-dot {
+    background: var(--color-primary);
+    border: 2px solid var(--color-border);
+  }
+
+  .fc .fc-list-day-cushion {
+    background: var(--color-gray-100);
+    border-bottom: 3px solid var(--color-border);
+    padding: 12px;
+  }
+
+  .fc .fc-list-event-time {
+    color: var(--color-primary);
+    font-weight: 700;
+  }
+
+  .fc .fc-list-event-title {
+    color: var(--color-text);
+  }
+
+  /* Responsive calendar */
+  @media (max-width: 768px) {
+    .calendar-container {
+      padding: 16px;
+    }
+
+    .fc .fc-toolbar-title {
+      font-size: 1.25rem;
+    }
+
+    .fc .fc-col-header-cell {
+      padding: 6px 4px;
+      font-size: 0.7rem;
+    }
+
+    .fc .fc-button {
+      padding: 8px 12px;
+      font-size: 0.75rem;
+    }
+
+    .fc .fc-daygrid-day {
+      padding: 4px;
+    }
+
+    .calendar-section {
+      padding: 60px 0;
+    }
+  }
+
+  /* Hero section */
   .hero-workshops {
     padding: 120px 0 80px;
     position: relative;

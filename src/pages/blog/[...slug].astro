@@ -41,7 +41,7 @@ const sortedArticles = publishedArticles.sort(
     b.data.pubDate.getTime() - a.data.pubDate.getTime()
 );
 
-const isFeatured = sortedArticles.length > 0 && sortedArticles[0] && entry.slug === sortedArticles[0].slug;
+const isFeatured = sortedArticles.length > 0 && sortedArticles[0] && entry.id === sortedArticles[0].id;
 
 const { Content, headings } = await entry.render();
 const { body } = entry;
@@ -133,7 +133,7 @@ const { body } = entry;
       
       <TableOfContents headings={headings} />
       
-      <div class="prose">
+        <div class="prose">
         <Content />
       </div>
       

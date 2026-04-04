@@ -44,25 +44,37 @@ const messageInput = getEl<HTMLTextAreaElement>('message');
 const charCount    = getEl<HTMLElement>('message-count');
 const honeyInput   = getEl<HTMLInputElement>('honey');
 
+function validateName(value: string): string {
+  if (!value)             return 'Le nom est obligatoire.';
+  if (value.length > 100) return 'Le nom ne doit pas dépasser 100 caractères.';
+  return '';
+}
+
+function validateEmail(value: string): string {
+  if (!value)                return "L'email est obligatoire.";
+  if (!EMAIL_RE.test(value)) return 'Veuillez entrer un email valide.';
+  return '';
+}
+
+function validateSujet(value: string): string {
+  if (!value)             return 'Le sujet est obligatoire.';
+  if (value.length > 150) return 'Le sujet ne doit pas dépasser 150 caractères.';
+  return '';
+}
+
+function validateMessage(value: string): string {
+  if (!value)                     return 'Le message est obligatoire.';
+  if (value.length < MIN_MESSAGE) return `Le message doit contenir au moins ${MIN_MESSAGE} caractères.`;
+  if (value.length > MAX_MESSAGE) return `Le message ne doit pas dépasser ${MAX_MESSAGE} caractères.`;
+  return '';
+}
+
 function validateField(field: ValidatedField, value: string): string {
   switch (field) {
-    case 'name':
-      if (!value)             return 'Le nom est obligatoire.';
-      if (value.length > 100) return 'Le nom ne doit pas dépasser 100 caractères.';
-      return '';
-    case 'email':
-      if (!value)                return "L'email est obligatoire.";
-      if (!EMAIL_RE.test(value)) return 'Veuillez entrer un email valide.';
-      return '';
-    case 'sujet':
-      if (!value)             return 'Le sujet est obligatoire.';
-      if (value.length > 150) return 'Le sujet ne doit pas dépasser 150 caractères.';
-      return '';
-    case 'message':
-      if (!value)                     return 'Le message est obligatoire.';
-      if (value.length < MIN_MESSAGE) return `Le message doit contenir au moins ${MIN_MESSAGE} caractères.`;
-      if (value.length > MAX_MESSAGE) return `Le message ne doit pas dépasser ${MAX_MESSAGE} caractères.`;
-      return '';
+    case 'name':    return validateName(value);
+    case 'email':   return validateEmail(value);
+    case 'sujet':   return validateSujet(value);
+    case 'message': return validateMessage(value);
   }
 }
 

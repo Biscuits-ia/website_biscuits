@@ -165,9 +165,13 @@ const API_URL = `${import.meta.env.PUBLIC_API_URL ?? 'http://localhost:8000'}/ap
   function setLoading(isLoading) {
     btnSubmit.disabled = isLoading;
     btnSubmit.setAttribute('aria-busy', String(isLoading));
-    btnSubmit.innerHTML = isLoading
-      ? '<span class="btn__spinner" aria-hidden="true"></span> Envoi en cours…'
-      : 'Envoyer ma candidature →';
+    btnSubmit.textContent = isLoading ? 'Envoi en cours…' : 'Envoyer ma candidature →';
+    if (isLoading) {
+      const spinner = document.createElement('span');
+      spinner.className = 'btn__spinner';
+      spinner.setAttribute('aria-hidden', 'true');
+      btnSubmit.prepend(spinner);
+    }
   }
 
   function validate(data) {
@@ -250,7 +254,7 @@ const API_URL = `${import.meta.env.PUBLIC_API_URL ?? 'http://localhost:8000'}/ap
       serverError.style.display = 'block';
 
     } catch {
-      serverError.textContent   = 'Un problème est survenue. Vérifiez votre connexion internet.';
+      serverError.textContent   = 'Un problème est survenu. Vérifiez votre connexion internet.';
       serverError.style.display = 'block';
     } finally {
       setLoading(false);

@@ -1,10 +1,10 @@
 export const SITE = {
-  title: 'Biscuits du Dev',
-  description: 'Des biscuits numériques pour les curieux',
+  title: 'Biscuits IA',
+  description: 'Agir pour une Intelligence Artificielle éthique et solidaire',
   defaultLanguage: 'fr',
-  author: 'Sweetosky',
-  email: 'contact@biscuitsdu.dev',
-  url: 'https://biscuitsdu.dev',
+  author: 'Biscuits IA',
+  email: 'contact@biscuits-ia.com',
+  url: 'https://biscuits-ia.com',
   logo: {
     light: '/favicon.svg',
     dark: '/favicon.svg',
@@ -12,13 +12,11 @@ export const SITE = {
   menu: [
     { name: 'Accueil', link: '/' },
     { name: 'Blog', link: '/blog/' },
-    { name: 'Services', link: '/services/' },
     { name: 'Contact', link: '/contact/' },
   ],
   social: {
-    github: 'https://github.com/Sweetosky',
-    twitter: 'https://twitter.com/Sweetosky',
-    linkedin: 'https://linkedin.com/in/sweetosky',
+    discord: 'https://discord.gg/5CkRSWEehy',
+    github: 'https://github.com/Biscuits-Dev',
   },
   footer: {
     links: [

@@ -7,6 +7,7 @@ declare global {
       targetOrAction: string,
       params?: Record<string, any>
     ) => void;
+    loadGTMIfConsented?: () => void;
   }
 }
 
@@ -28,6 +29,7 @@ declare global {
     'cookieConsentUpdated': CustomEvent<{
       analytics: boolean;
     }>;
+    'showCookieBanner': Event;
   }
 }
 export {};

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
+  import { onMount, onDestroy } from 'svelte';
 
   type CookieCategory = 'necessary' | 'analytics';
 
@@ -23,7 +23,23 @@
     analytics: defaultPreferences?.analytics ?? false,
   };
 
+  // Exposer une fonction globale pour montrer le banner (pour le bouton "Gérer mes cookies")
+  const showBannerFromOutside = () => {
+    showBanner = true;
+    showSettings = false;
+  };
+
   onMount(() => {
+    // Ajouter la fonction globale
+    (window as any).showCookieBanner = showBannerFromOutside;
+
+    // Écouter l'événement pour montrer le banner
+    const showBannerHandler = () => {
+      showBanner = true;
+      showSettings = false;
+    };
+    window.addEventListener('showCookieBanner', showBannerHandler);
+
     const consentStr        = localStorage.getItem('cookie-consent');
     const consentDateStr    = localStorage.getItem('cookie-consent-date');
     const consentVersionStr = localStorage.getItem('cookie-consent-version');
@@ -56,6 +72,12 @@
       console.error('Erreur lors du chargement des préférences:', e);
       showBanner = true;
     }
+
+    // Cleanup listener
+    return () => {
+      window.removeEventListener('showCookieBanner', showBannerHandler);
+      delete (window as any).showCookieBanner;
+    };
   });
 
   const cleanupExpiredConsent = () => {
@@ -104,8 +126,14 @@
       new CustomEvent('cookieConsentUpdated', { detail: consentData })
     );
 
-    if (prefs.analytics && !isScriptLoaded('analytics')) {
-      loadAnalytics();
+    // Charger GTM si analytics accepté et pas déjà chargé
+    if (prefs.analytics && typeof window !== 'undefined') {
+      if (typeof window.loadGTMIfConsented === 'function') {
+        window.loadGTMIfConsented();
+      }
+      if (!isScriptLoaded('analytics')) {
+        loadAnalytics();
+      }
     }
 
     showBanner    = false;

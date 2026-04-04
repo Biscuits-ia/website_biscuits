@@ -48,6 +48,15 @@ const currentYear = new Date().getFullYear();
             <li><a href="/legal/mentions-legales">Mentions légales</a></li>
             <li><a href="/legal/confidentialite">Confidentialité</a></li>
             <li><a href="/legal/cookies">Cookies</a></li>
+            <li>
+              <button
+                onclick="document.dispatchEvent(new CustomEvent('showCookieBanner'))"
+                class="cookie-management-btn"
+                style="background:none;border:none;cursor:pointer;color:inherit;font:inherit;text-decoration:underline;padding:0;"
+              >
+                Gérer mes cookies
+              </button>
+            </li>
           </ul>
         </nav>
 

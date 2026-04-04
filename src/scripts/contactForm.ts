@@ -13,8 +13,6 @@ interface ApiResponse {
   form_id?: string | number;
 }
 
-// ─── Constantes ───────────────────────────────────────────────────────────────
-
 const EMAIL_RE    = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const MAX_MESSAGE = 2000;
 const MIN_MESSAGE = 20;
@@ -24,7 +22,6 @@ const API_URL: string =
   document.querySelector<HTMLElement>('.contact-form-wrapper')?.dataset.apiUrl
   ?? 'http://localhost:8000/api/forms';
 
-// ─── Helpers DOM ──────────────────────────────────────────────────────────────
 
 function getEl<T extends HTMLElement>(id: string): T {
   const el = document.getElementById(id) as T | null;
@@ -36,8 +33,6 @@ function getVal(id: string): string {
   return getEl<HTMLInputElement>(id).value.trim();
 }
 
-// ─── Éléments DOM ─────────────────────────────────────────────────────────────
-
 const form         = getEl<HTMLFormElement>('contact-form');
 const btnSubmit    = getEl<HTMLButtonElement>('btn-submit');
 const btnLabel     = getEl<HTMLElement>('btn-label');
@@ -48,8 +43,6 @@ const alertErrText = getEl<HTMLElement>('alert-error-text');
 const messageInput = getEl<HTMLTextAreaElement>('message');
 const charCount    = getEl<HTMLElement>('message-count');
 const honeyInput   = getEl<HTMLInputElement>('honey');
-
-// ─── Validation ───────────────────────────────────────────────────────────────
 
 function validateField(field: ValidatedField, value: string): string {
   switch (field) {
@@ -211,10 +204,10 @@ form.addEventListener('submit', async (e: Event) => {
   setLoading(true);
 
   try {
+    await submitContact(payload);
     form.reset();
     updateCharCount();
     showSuccess();
-
   } catch (err: unknown) {
     const message = err instanceof Error
       ? err.message
@@ -226,17 +219,3 @@ form.addEventListener('submit', async (e: Event) => {
     setLoading(false);
   }
 });
-
-// ─── Enregistrement du Service Worker ─────────────────────────────────────────
-
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js')
-      .then(registration => {
-        console.log('Service Worker enregistré avec succès:', registration.scope);
-      })
-      .catch(error => {
-        console.log('Échec de l\'enregistrement du Service Worker:', error);
-      });
-  });
-}

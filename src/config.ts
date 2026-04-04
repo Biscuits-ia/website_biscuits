@@ -6,8 +6,10 @@ export const SITE = {
   email: 'contact@biscuits-ia.com',
   url: 'https://biscuits-ia.com',
   logo: {
-    light: '/favicon.svg',
-    dark: '/favicon.svg',
+    src: '/favicon.ico',
+    alt: 'Logo de Biscuits IA',
+    width: 120,
+    height: 120,
   },
   menu: [
     { name: 'Accueil', link: '/' },

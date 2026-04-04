@@ -4,7 +4,6 @@ import Footer from '@/components/Footer.astro';
 import SEOHead from '@/components/SEO/SEOHead.astro';
 import SchemaOrg from '@/components/SEO/SchemaOrg.astro';
 import CookieConsent from '@/components/svelte/CookieConsent.svelte';
-import SpeedInsights from '@vercel/speed-insights/astro';
 
 import '@/styles/theme.css';
 import '@/styles/global.css';
@@ -114,7 +113,7 @@ const criticalCSS = `
   )}
   
   <!-- Favicons optimisés (format moderne) -->
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.ico" />
   <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
   
   <meta http-equiv="X-Content-Type-Options" content="nosniff" />
@@ -170,8 +169,6 @@ const criticalCSS = `
 
   <!-- Composants non-critiques chargés après le contenu (améliore TBT) -->
   <CookieConsent client:idle />
-  
-  {isProd && <SpeedInsights />}
 </body>
 
 <style is:global>

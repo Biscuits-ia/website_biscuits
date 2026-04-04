@@ -82,7 +82,7 @@ const schema = {
 
       {tags && tags.length > 0 && (
         <div class="article-tags">
-          {tags.map(tag => (
+          {tags.map((tag: unknown) => (
             <span class="tag">{tag}</span>
           ))}
         </div>

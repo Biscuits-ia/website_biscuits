@@ -165,6 +165,7 @@
               <h3 id="cookie-banner-title">🍪 Cookies</h3>
               <p id="cookie-banner-description">
                 Nous utilisons des cookies pour améliorer votre expérience. Les cookies nécessaires sont requis pour le fonctionnement du site. Vous pouvez personnaliser vos préférences à tout moment.
+                <a href="/legal/cookies" style="color: inherit; text-decoration: underline;">En savoir plus</a>
               </p>
             </div>
             <button

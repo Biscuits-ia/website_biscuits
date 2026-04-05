@@ -76,7 +76,7 @@ const seoTitle = title.length > 60
 <!-- Article specific meta tags -->
 {ogType === 'article' && (
   <>
-    <meta property="article:publisher" content="https://www.facebook.com/biscuitsIA" />
+    <meta property="article:publisher" content={siteUrl} />
     {author && <meta property="article:author" content={author} />}
     {publishedTime && <meta property="article:published_time" content={publishedTime} />}
     {modifiedTime && <meta property="article:modified_time" content={modifiedTime} />}
@@ -121,16 +121,12 @@ const seoTitle = title.length > 60
 <meta name="apple-mobile-web-app-title" content="Biscuits IA" />
 <meta name="application-name" content="Biscuits IA" />
 <meta name="msapplication-TileColor" content="#faca6f" />
-<meta name="msapplication-config" content="/browserconfig.xml" />
 
 <!-- ============================================
      LANGUAGE & LOCALIZATION (SEO International)
      ============================================ -->
 <link rel="alternate" hreflang="fr" href={canonical} />
 <link rel="alternate" hreflang="fr-FR" href={canonical} />
-<link rel="alternate" hreflang="fr-CA" href={canonical} />
-<link rel="alternate" hreflang="fr-BE" href={canonical} />
-<link rel="alternate" hreflang="fr-CH" href={canonical} />
 <link rel="alternate" hreflang="x-default" href={canonical} />
 
 <!-- ============================================
@@ -145,9 +141,7 @@ const seoTitle = title.length > 60
      PERFORMANCE HINTS (Core Web Vitals)
      ============================================ -->
 <meta name="format-detection" content="telephone=no" />
-<link rel="dns-prefetch" href="https://www.googletagmanager.com" />
 <link rel="dns-prefetch" href="https://www.google-analytics.com" />
-<link rel="preconnect" href="https://www.googletagmanager.com" crossorigin />
 <link rel="preconnect" href="https://www.google-analytics.com" crossorigin />
 
 <!-- ============================================
@@ -163,6 +157,5 @@ const seoTitle = title.length > 60
 <meta name="url" content={canonical} />
 <meta name="pagename" content={seoTitle} />
 
-<!-- RSS/Atom Feed -->
+<!-- RSS Feed -->
 <link rel="alternate" type="application/rss+xml" title="Biscuits IA - RSS Feed" href={`${siteUrl}/rss.xml`} />
-<link rel="alternate" type="application/atom+xml" title="Biscuits IA - Atom Feed" href={`${siteUrl}/atom.xml`} />

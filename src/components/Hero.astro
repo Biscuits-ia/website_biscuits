@@ -13,7 +13,10 @@ import Logo from '../assets/logo.png';
       <h1 class="hero-title text-4xl md:text-6xl lg:text-7xl font-extrabold leading-tight text-[var(--color-text)] animate-fadeInUp opacity-0">
         Ensemble, luttons contre les dérives du web et rendons l'IA accessible à tous
       </h1>
-      
+      <p class="hero-badge animate-fadeInUp opacity-0" style="animation-delay: 0.3s;">
+        Association Loi 1901 — accès libre et gratuit
+      </p>
+
       <!-- CTA Buttons -->
       <div class="hero-cta-grid">
         <div class="hero-cta animate-fadeInUp opacity-0" style="animation-delay: 1s;">
@@ -58,6 +61,17 @@ import Logo from '../assets/logo.png';
 <style>
   h1 {
     text-align: left;
+  }
+  .hero-badge {
+    display: inline-block;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--color-text-light);
+    background: var(--color-bg-alt);
+    border: 1px solid var(--color-border);
+    border-radius: 9999px;
+    padding: 0.25rem 0.875rem;
+    letter-spacing: 0.02em;
   }
   h2 {
     border: 5px solid #000;

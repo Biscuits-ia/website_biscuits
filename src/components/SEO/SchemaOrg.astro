@@ -1,6 +1,6 @@
 ---
 export interface Props {
-  type: 'Organization' | 'Service' | 'FAQPage' | 'Article' | 'WebPage' | 'LocalBusiness' | 'Course' | 'Product';
+  type: 'Organization' | 'NGO' | 'Service' | 'FAQPage' | 'Article' | 'WebPage' | 'Course' | 'Product';
   data?: Record<string, any>;
 }
 
@@ -10,7 +10,7 @@ const siteUrl = import.meta.env.SITE || 'https://biscuits-ia.com';
 // Schema de base pour l'organisation (présent sur toutes les pages)
 const organizationSchema = {
   "@context": "https://schema.org",
-  "@type": "Organization",
+  "@type": "NGO",
   "@id": `${siteUrl}/#organization`,
   "name": "Biscuits IA",
   "legalName": "Biscuits IA",
@@ -31,43 +31,32 @@ const organizationSchema = {
     "width": "512",
     "height": "512"
   },
-  "description": "Expert en Intelligence Artificielle pour entreprises. Formation, consulting et solutions IA sur mesure.",
+  "description": "Association Loi 1901 d'intérêt général. Nous rendons l'IA accessible à tous — associations, collectivités et petites structures — sans jargon et sans but lucratif.",
   "email": "contact@biscuits-ia.com",
-  "telephone": "+33-X-XX-XX-XX-XX",
+  "telephone": "+33952587543",
   "address": {
     "@type": "PostalAddress",
-    "streetAddress": "Votre adresse",
-    "addressLocality": "Votre ville",
-    "postalCode": "XXXXX",
+    "streetAddress": "2 B RUE de la Cueille Mirebalaise, Appartement 4",
+    "addressLocality": "Poitiers",
+    "postalCode": "86000",
     "addressCountry": "FR",
-    "addressRegion": "Votre région"
+    "addressRegion": "Nouvelle-Aquitaine"
   },
   "geo": {
     "@type": "GeoCoordinates",
-    "latitude": "48.8566",
-    "longitude": "2.3522"
+    "latitude": "46.5802",
+    "longitude": "0.3404"
   },
   "sameAs": [
-    "https://www.facebook.com/biscuitsIA",
-    "https://twitter.com/biscuitsIA",
-    "https://www.linkedin.com/company/biscuitsIA",
-    "https://www.instagram.com/biscuitsIA",
-    "https://www.youtube.com/@biscuitsIA"
+    "https://discord.gg/5CkRSWEehy",
+    "https://github.com/Biscuits-Dev"
   ],
   "contactPoint": [
     {
       "@type": "ContactPoint",
-      "telephone": "+33-X-XX-XX-XX-XX",
-      "contactType": "customer service",
+      "telephone": "+33952587543",
+      "contactType": "customer support",
       "email": "contact@biscuits-ia.com",
-      "areaServed": "FR",
-      "availableLanguage": ["French", "English"]
-    },
-    {
-      "@type": "ContactPoint",
-      "telephone": "+33-X-XX-XX-XX-XX",
-      "contactType": "sales",
-      "email": "ventes@biscuits-ia.com",
       "areaServed": "FR",
       "availableLanguage": ["French"]
     }
@@ -76,32 +65,28 @@ const organizationSchema = {
   "founders": [
     {
       "@type": "Person",
-      "name": "Fondateur Biscuits IA"
+      "name": "Alexis Gallard"
     }
   ],
-  "numberOfEmployees": {
-    "@type": "QuantitativeValue",
-    "value": "1-10"
-  },
   "areaServed": {
     "@type": "Place",
     "name": "France"
   },
   "knowsAbout": [
     "Intelligence Artificielle",
-    "Machine Learning",
-    "Deep Learning",
-    "NLP",
-    "Computer Vision",
-    "Automation",
-    "Data Science",
-    "IA Générative"
+    "Éthique de l'IA",
+    "Fracture numérique",
+    "Formation numérique",
+    "Autonomie numérique",
+    "IA Générative",
+    "Open source"
   ],
-  "slogan": "L'expertise IA pour votre entreprise",
-  "brand": {
-    "@type": "Brand",
-    "name": "Biscuits IA",
-    "logo": `${siteUrl}/assets/logo.webp`
+  "slogan": "L'IA accessible à tous, sans jargon et sans but lucratif",
+  "nonprofitStatus": "NonprofitANBI",
+  "identifier": {
+    "@type": "PropertyValue",
+    "name": "RNA",
+    "value": "W863012707"
   }
 };
 
@@ -112,19 +97,11 @@ const websiteSchema = {
   "@id": `${siteUrl}/#website`,
   "url": siteUrl,
   "name": "Biscuits IA",
-  "description": "Expert en Intelligence Artificielle pour entreprises",
+  "description": "Association Loi 1901 — IA accessible à tous, sans jargon et sans but lucratif.",
   "publisher": {
     "@id": `${siteUrl}/#organization`
   },
-  "inLanguage": "fr-FR",
-  "potentialAction": {
-    "@type": "SearchAction",
-    "target": {
-      "@type": "EntryPoint",
-      "urlTemplate": `${siteUrl}/recherche?q={search_term_string}`
-    },
-    "query-input": "required name=search_term_string"
-  }
+  "inLanguage": "fr-FR"
 };
 
 // Breadcrumb Schema (automatique basé sur l'URL)
@@ -281,32 +258,6 @@ if (type === 'Service') {
     "teaches": data.skills || [],
     "educationalLevel": data.level || "Débutant à Avancé",
     "inLanguage": "fr-FR"
-  };
-} else if (type === 'LocalBusiness') {
-  specificSchema = {
-    "@context": "https://schema.org",
-    "@type": "LocalBusiness",
-    "@id": `${siteUrl}/#localbusiness`,
-    "name": "Biscuits IA",
-    "image": `${siteUrl}/assets/logo.webp`,
-    "address": organizationSchema.address,
-    "geo": organizationSchema.geo,
-    "url": siteUrl,
-    "telephone": organizationSchema.telephone,
-    "priceRange": "€€€",
-    "openingHoursSpecification": [
-      {
-        "@type": "OpeningHoursSpecification",
-        "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
-        "opens": "09:00",
-        "closes": "18:00"
-      }
-    ],
-    "aggregateRating": {
-      "@type": "AggregateRating",
-      "ratingValue": "5",
-      "reviewCount": "50"
-    }
   };
 }
 

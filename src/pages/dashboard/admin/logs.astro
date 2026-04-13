@@ -1,0 +1,135 @@
+---
+// src/pages/dashboard/admin/logs.astro
+import DashboardLayout from '../../../layouts/DashboardLayout.astro';
+import { requireAdmin } from '../../../lib/auth';
+
+const result = await requireAdmin(Astro);
+if (result instanceof Response) return result;
+
+const { user, supabase } = result;
+const userName = user.user_metadata?.full_name ?? user.email?.split('@')[0] ?? 'Admin';
+
+const page      = Number(Astro.url.searchParams.get('page') ?? 1);
+const perPage   = 50;
+const from      = (page - 1) * perPage;
+const filterLvl = Astro.url.searchParams.get('level') ?? '';
+const search    = Astro.url.searchParams.get('q') ?? '';
+
+let query = supabase
+  .from('system_logs')
+  .select('id, level, message, service, created_at, metadata', { count: 'exact' })
+  .order('created_at', { ascending: false })
+  .range(from, from + perPage - 1);
+
+if (filterLvl) query = query.eq('level', filterLvl);
+if (search)    query = query.ilike('message', `%${search}%`);
+
+const { data: logs, count } = await query;
+const totalPages = Math.ceil((count ?? 0) / perPage);
+
+// Comptage par niveau
+const { data: levelStats } = await supabase.rpc('log_level_counts').match(() => ({ data: null }));
+---
+
+<DashboardLayout title="Logs système" role="admin" activePage="logs" userName={userName}>
+
+  <div style="margin-bottom: 24px; display:flex; align-items:center; justify-content:space-between;">
+    <div>
+      <h1 style="font-size: 1.2rem; font-weight: 400; letter-spacing: -0.02em;">
+        Logs système
+        <span class="badge badge-info" style="font-size:0.62rem; margin-left:8px; vertical-align:middle;">LIVE</span>
+      </h1>
+      <p style="color: var(--text-muted); font-size: 0.8rem; margin-top: 3px;">{count ?? 0} entrées</p>
+    </div>
+    <!-- Auto-refresh -->
+    <button
+      onclick="location.reload()"
+      class="btn btn-ghost"
+      style="font-size:0.78rem;"
+    >⟳ Rafraîchir</button>
+  </div>
+
+  <!-- Filtres -->
+  <form method="get" class="filters-bar">
+    <input
+      type="search"
+      name="q"
+      placeholder="Rechercher dans les messages..."
+      value={search}
+      class="filter-input"
+      style="min-width:240px;"
+    />
+    <select name="level" class="filter-input" onchange="this.form.submit()">
+      <option value="">Tous les niveaux</option>
+      <option value="INFO"  selected={filterLvl === 'INFO'}>INFO</option>
+      <option value="WARN"  selected={filterLvl === 'WARN'}>WARN</option>
+      <option value="ERROR" selected={filterLvl === 'ERROR'}>ERROR</option>
+      <option value="DEBUG" selected={filterLvl === 'DEBUG'}>DEBUG</option>
+    </select>
+    <button type="submit" class="btn btn-primary" style="font-size:0.8rem;">Filtrer</button>
+    {(filterLvl || search) && (
+      <a href="/dashboard/admin/logs" class="btn btn-ghost" style="font-size:0.78rem;">× Réinitialiser</a>
+    )}
+  </form>
+
+  <!-- Compteurs par niveau -->
+  <div style="display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap;">
+    {[
+      { level: 'INFO',  cls: 'info' },
+      { level: 'WARN',  cls: 'warn' },
+      { level: 'ERROR', cls: 'err' },
+    ].map(({ level, cls }) => (
+      <a href={`?level=${level}`} class={`badge badge-${cls}`} style="cursor:pointer; font-size:0.72rem;">
+        {level}
+        {filterLvl === level && ' ✓'}
+      </a>
+    ))}
+  </div>
+
+  <!-- Log list -->
+  <div class="log-list" style="gap:4px;">
+    {logs && logs.length > 0 ? logs.map((log: any) => {
+      const d   = new Date(log.created_at);
+      const lvl = (log.level ?? 'info').toLowerCase();
+      const svc = log.service ?? '';
+      return (
+        <div class="log-entry" style="grid-template-columns: 170px 60px 90px 1fr;">
+          <span class="log-time">
+            {d.toLocaleDateString('fr-FR')} {d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+          </span>
+          <span class={`log-level ${lvl}`}>{log.level}</span>
+          <span style="font-size:0.72rem; color:var(--text-muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+            {svc || '—'}
+          </span>
+          <span class="log-msg">{log.message}</span>
+        </div>
+      );
+    }) : (
+      <div style="text-align:center; padding:40px; color:var(--text-muted); font-size:0.83rem;">
+        Aucun log trouvé.
+      </div>
+    )}
+  </div>
+
+  <!-- Pagination -->
+  {totalPages > 1 && (
+    <div style="display:flex; gap:8px; justify-content:center; margin-top:20px;">
+      {page > 1 && (
+        <a href={`?page=${page - 1}&level=${filterLvl}&q=${search}`} class="btn btn-ghost">← Précédent</a>
+      )}
+      <span style="padding:7px 14px; font-size:0.82rem; color:var(--text-muted);">{page} / {totalPages}</span>
+      {page < totalPages && (
+        <a href={`?page=${page + 1}&level=${filterLvl}&q=${search}`} class="btn btn-ghost">Suivant →</a>
+      )}
+    </div>
+  )}
+
+  <!-- Auto-refresh JS (optionnel) -->
+  <script>
+    // Refresh automatique toutes les 30s si on est sur la page 1 sans filtre actif
+    if (!new URLSearchParams(location.search).get('page') && !new URLSearchParams(location.search).get('level')) {
+      setTimeout(() => location.reload(), 30_000);
+    }
+  </script>
+
+</DashboardLayout>

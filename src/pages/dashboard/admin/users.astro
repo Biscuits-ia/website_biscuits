@@ -1,0 +1,205 @@
+---
+// src/pages/dashboard/admin/users.astro
+import DashboardLayout from '../../../layouts/DashboardLayout.astro';
+import { requireAdmin } from '../../../lib/auth';
+
+const result = await requireAdmin(Astro);
+if (result instanceof Response) return result;
+
+// requireAdmin retourne { user, supabase } — pas { session, supabase }
+const { user, supabase } = result;
+const userName = user.user_metadata?.full_name ?? user.email?.split('@')[0] ?? 'Admin';
+
+// ── Paramètres de recherche ───────────────────────────────────────────────────
+const page    = Math.max(1, Number(Astro.url.searchParams.get('page') ?? '1'));
+const perPage = 20;
+const from    = (page - 1) * perPage;
+const search  = Astro.url.searchParams.get('q')    ?? '';
+const role    = Astro.url.searchParams.get('role') ?? '';
+
+let query = supabase
+  .from('profiles')
+  .select('id, email, full_name, role, created_at, last_sign_in_at, reports_count', { count: 'exact' })
+  .order('created_at', { ascending: false })
+  .range(from, from + perPage - 1);
+
+if (search) query = query.or(`email.ilike.%${search}%,full_name.ilike.%${search}%`);
+if (role)   query = query.eq('role', role);
+
+const { data: usersRaw, count } = await query;
+
+// ── Types stricts ─────────────────────────────────────────────────────────────
+
+type UserRole = 'admin' | 'moderator' | 'user';
+
+interface ProfileRow {
+  id:               string;
+  email:            string;
+  full_name:        string | null;
+  role:             UserRole;
+  created_at:       string;
+  last_sign_in_at:  string | null;
+  reports_count:    number | null;
+}
+
+function isUserRole(value: unknown): value is UserRole {
+  return value === 'admin' || value === 'moderator' || value === 'user';
+}
+
+const users = (usersRaw ?? []) as ProfileRow[];
+
+interface UserRow {
+  u:           ProfileRow;
+  roleBadge:   string;
+  roleLabel:   string;
+  createdStr:  string;
+  lastSignStr: string;
+  reportsStr:  string;
+}
+
+function roleBadgeClass(r: UserRole): string {
+  if (r === 'admin')     return 'badge-err';
+  if (r === 'moderator') return 'badge-warn';
+  return 'badge-neutral';
+}
+
+const userRows: UserRow[] = users.map((u: ProfileRow): UserRow => {
+  const role = isUserRole(u.role) ? u.role : 'user';
+  return {
+    u,
+    roleBadge:   roleBadgeClass(role),
+    roleLabel:   role,
+    createdStr:  new Date(u.created_at).toLocaleDateString('fr-FR'),
+    lastSignStr: u.last_sign_in_at
+      ? new Date(u.last_sign_in_at).toLocaleDateString('fr-FR')
+      : '—',
+    reportsStr:  u.reports_count != null ? String(u.reports_count) : '—',
+  };
+});
+
+const totalPages    = Math.ceil((count ?? 0) / perPage);
+const hasUsers      = userRows.length !== 0;
+const hasFilters    = search !== '' || role !== '';
+const hasPrevPage   = page !== 1;           // évite page > 1 dans le template
+const hasNextPage   = page !== totalPages && totalPages !== 0; // évite page < totalPages
+const prevPageHref  = `?page=${page - 1}&q=${search}&role=${role}`;
+const nextPageHref  = `?page=${page + 1}&q=${search}&role=${role}`;
+const pageLabel     = `${page} / ${totalPages}`;
+const countLabel    = `${count ?? 0} compte${(count ?? 0) !== 1 ? 's' : ''} enregistré${(count ?? 0) !== 1 ? 's' : ''}`;
+---
+
+<DashboardLayout title="Gestion des utilisateurs" role="admin" activePage="users" userName={userName}>
+
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Utilisateurs</h1>
+      <p class="page-subtitle">{countLabel}</p>
+    </div>
+  </div>
+
+  <!-- Filtres -->
+  <form method="get" class="filters-bar">
+    <input
+      type="search"
+      name="q"
+      placeholder="Email ou nom..."
+      value={search}
+      class="filter-input filter-input--wide"
+    />
+    <select name="role" class="filter-input" onchange="this.form.submit()">
+      <option value="">Tous les rôles</option>
+      <option value="user"      selected={role === 'user'}>Utilisateur</option>
+      <option value="moderator" selected={role === 'moderator'}>Modérateur</option>
+      <option value="admin"     selected={role === 'admin'}>Admin</option>
+    </select>
+    <button type="submit" class="btn btn-primary btn-sm">Filtrer</button>
+    {hasFilters && (
+      <a href="/dashboard/admin/users" class="btn btn-ghost btn-xs">× Réinitialiser</a>
+    )}
+  </form>
+
+  <!-- Table -->
+  <div class="card card-flush">
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Utilisateur</th>
+            <th>Rôle</th>
+            <th>Signalements</th>
+            <th>Inscription</th>
+            <th>Dernière connexion</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {hasUsers ? userRows.map(({ u, roleBadge, roleLabel, createdStr, lastSignStr, reportsStr }) => (
+            <tr>
+              <td>
+                <div class="user-cell">
+                  <span>{u.full_name ?? '—'}</span>
+                  <span class="user-email">{u.email}</span>
+                </div>
+              </td>
+              <td>
+                <span class={`badge ${roleBadge}`}>{roleLabel}</span>
+              </td>
+              <td class="mono sm">{reportsStr}</td>
+              <td class="mono xs muted">{createdStr}</td>
+              <td class="mono xs muted">{lastSignStr}</td>
+              <td>
+                <a href={`/dashboard/admin/users/${u.id}`} class="btn btn-ghost btn-xs">
+                  Voir
+                </a>
+              </td>
+            </tr>
+          )) : (
+            <tr>
+              <td colspan="6" class="empty-row">Aucun utilisateur trouvé.</td>
+            </tr>
+          )}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Pagination — hasPrevPage / hasNextPage pré-calculés (évite < > dans template) -->
+  {totalPages !== 1 && totalPages !== 0 && (
+    <div class="pagination">
+      {hasPrevPage && <a href={prevPageHref} class="btn btn-ghost">← Précédent</a>}
+      <span class="page-indicator">{pageLabel}</span>
+      {hasNextPage && <a href={nextPageHref} class="btn btn-ghost">Suivant →</a>}
+    </div>
+  )}
+
+</DashboardLayout>
+
+<style>
+  /* ── En-tête ── */
+  .page-header   { margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; }
+  .page-title    { font-size: 1.2rem; font-weight: 400; letter-spacing: -0.02em; }
+  .page-subtitle { color: var(--text-muted); font-size: 0.8rem; margin-top: 3px; }
+
+  /* ── Filtres ── */
+  .filters-bar        { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 16px; }
+  .filter-input       { padding: 7px 10px; font-size: 0.82rem; border: var(--brutal-border-thin); background: var(--surface); }
+  .filter-input--wide { min-width: 200px; }
+
+  /* ── Table ── */
+  .card-flush  { padding: 0; overflow: hidden; }
+  .user-cell   { display: flex; flex-direction: column; gap: 1px; }
+  .user-email  { font-size: 0.72rem; color: var(--text-muted); font-family: var(--font-mono); }
+  .mono        { font-family: var(--font-mono); }
+  .sm          { font-size: 0.8rem; }
+  .xs          { font-size: 0.75rem; }
+  .muted       { color: var(--text-muted); }
+  .empty-row   { text-align: center; color: var(--text-muted); padding: 32px 12px; font-size: 0.83rem; }
+
+  /* ── Boutons ── */
+  .btn-sm { font-size: 0.8rem; }
+  .btn-xs { font-size: 0.72rem; padding: 4px 8px; }
+
+  /* ── Pagination ── */
+  .pagination     { display: flex; gap: 8px; justify-content: center; margin-top: 20px; align-items: center; }
+  .page-indicator { padding: 7px 14px; font-size: 0.82rem; color: var(--text-muted); }
+</style>

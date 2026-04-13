@@ -1,0 +1,158 @@
+---
+import DashboardLayout from '../../../layouts/DashboardLayout.astro';
+import { requireAuth } from '../../../lib/auth';
+
+const result = await requireAuth(Astro);
+if (result instanceof Response) return result;
+
+const { user, supabase } = result;
+const userEmail = user.email ?? '';
+const userName  = user.user_metadata?.full_name ?? userEmail.split('@')[0];
+
+const search   = Astro.url.searchParams.get('q')        ?? '';
+const category = Astro.url.searchParams.get('category') ?? '';
+
+let query = supabase
+  .from('resources')
+  .select('id, title, description, category, file_url, created_at, is_free', { count: 'exact' })
+  .eq('published', true)
+  .order('created_at', { ascending: false });
+
+if (search)   query = query.ilike('title', `%${search}%`);
+if (category) query = query.eq('category', category);
+
+const { data: resources, count } = await query;
+
+// Catégories disponibles pour le filtre
+const { data: categories } = await supabase
+  .from('resources')
+  .select('category')
+  .eq('published', true);
+
+const uniqueCategories: string[] = [...new Set((categories ?? []).map((r: any) => r.category).filter(Boolean))];
+
+const categoryIcons: Record<string, string> = {
+  guide:      '📖',
+  template:   '📄',
+  video:      '🎬',
+  formation:  '🎓',
+  outil:      '🔧',
+  default:    '📦',
+};
+---
+
+<DashboardLayout title="Ressources" role="user" activePage="resources" userName={userName} userEmail={userEmail}>
+
+  <div class="mb-6">
+    <h1 class="text-xl font-bold tracking-tight text-primary">
+      Ressources
+    </h1>
+    <p class="text-muted text-sm mt-1">
+      {count ?? 0} ressource{(count ?? 0) > 1 ? 's' : ''} disponible{(count ?? 0) > 1 ? 's' : ''} pour les membres.
+    </p>
+  </div>
+
+  <!-- Filtres -->
+  <form method="get" class="filters-bar">
+    <input
+      type="search"
+      name="q"
+      placeholder="Rechercher une ressource…"
+      value={search}
+      class="filter-input min-w-[240px]"
+    />
+    <select name="category" class="filter-input" onchange="this.form.submit()">
+      <option value="">Toutes les catégories</option>
+      {uniqueCategories.map((cat) => (
+        <option value={cat} selected={category === cat}>
+          {cat.charAt(0).toUpperCase() + cat.slice(1)}
+        </option>
+      ))}
+    </select>
+    <button type="submit" class="btn btn-primary text-xs">Rechercher</button>
+    {(search || category) && (
+      <a href="/dashboard/user/resources" class="btn btn-ghost text-xs">× Réinitialiser</a>
+    )}
+  </form>
+
+  <!-- Grille de ressources -->
+  {resources && resources.length > 0 ? (
+    <div class="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-4">
+      {resources.map((res: any) => {
+        const icon = categoryIcons[res.category?.toLowerCase()] ?? categoryIcons.default;
+        const date = new Date(res.created_at).toLocaleDateString('fr-FR', {
+          day: 'numeric', month: 'short', year: 'numeric'
+        });
+        return (
+          <div class="resource-card card">
+          <div class="flex items-start justify-between gap-3 mb-3">
+            <span class="text-xl" aria-hidden="true">{icon}</span>
+            <div class="flex gap-1.5 flex-wrap justify-end">
+              {res.category && (
+                <span class="badge badge-info text-[0.62rem]">{res.category}</span>
+              )}
+              {res.is_free && (
+                <span class="badge badge-ok text-[0.62rem]">Gratuit</span>
+              )}
+            </div>
+          </div>
+
+            <div class="text-sm font-bold text-primary mb-1.5 leading-tight">
+              {res.title}
+            </div>
+
+            {res.description && (
+              <p class="text-xs text-secondary leading-relaxed mb-3.5 line-clamp-3">
+                {res.description}
+              </p>
+            )}
+
+            <div class="flex items-center justify-between mt-auto pt-3 border-t border-border">
+              <span class="text-[0.68rem] font-mono text-muted">
+                {date}
+              </span>
+              {res.file_url ? (
+                <a
+                  href={res.file_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="btn btn-primary text-[0.72rem] px-2.5 py-1.5"
+                >
+                  Télécharger ↓
+                </a>
+              ) : (
+                <span class="text-[0.72rem] text-muted font-mono">
+                  Bientôt disponible
+                </span>
+              )}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  ) : (
+    <div class="card py-12 px-6 text-center">
+      <p class="text-xl mb-2">📭</p>
+      <p class="text-muted text-sm">
+        {(search || category) ? 'Aucune ressource ne correspond à votre recherche.' : 'Aucune ressource disponible pour le moment.'}
+      </p>
+      {(search || category) && (
+        <a href="/dashboard/user/resources" class="btn btn-ghost mt-4 inline-flex">
+          Voir toutes les ressources
+        </a>
+      )}
+    </div>
+  )}
+
+</DashboardLayout>
+
+<style>
+  .resource-card {
+    display: flex;
+    flex-direction: column;
+  }
+  .resource-card:hover {
+    transform: translate(-3px, -3px);
+    box-shadow: var(--shadow-lg);
+  }
+</style>

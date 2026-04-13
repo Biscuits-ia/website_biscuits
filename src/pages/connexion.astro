@@ -1,0 +1,244 @@
+---
+import AuthLayout from '../layouts/AuthLayout.astro';
+import { createSupabaseClient } from '../lib/supabase';
+
+const supabase = createSupabaseClient(Astro);
+const { data: { user } } = await supabase.auth.getUser();
+if (user) return Astro.redirect('/dashboard/user/');
+---
+
+<AuthLayout title="Connexion" description="Connectez-vous à votre compte Biscuits IA.">
+  <div style="min-height:100vh; display:flex; align-items:center; justify-content:center; padding:2rem 1rem;">
+    <div style="width:100%; max-width:400px;">
+
+      <div style="background:#FDFAF4; border:1.5px solid #DDD0B8; border-radius:16px; padding:36px;">
+        <h1 style="font-size:22px; font-weight:500; color:#2C2014; margin-bottom:6px;">Bonjour 👋</h1>
+        <p style="font-size:14px; color:#271e13; line-height:1.6; margin-bottom:28px;">
+          Connectez-vous pour accéder à vos ateliers et ressources.
+        </p>
+
+        <div style="margin-bottom:18px;">
+          <label for="email" class="auth-label">Adresse email</label>
+          <input type="email" id="email" placeholder="vous@exemple.com" autocomplete="email" class="auth-input" />
+        </div>
+
+        <div style="margin-bottom:18px;">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:7px;">
+            <label for="password" class="auth-label" style="margin:0;">Mot de passe</label>
+            <a href="/mot-de-passe-oublie" class="auth-link-secondary">Oublié ?</a>
+          </div>
+          <input type="password" id="password" placeholder="••••••••" autocomplete="current-password" class="auth-input" />
+        </div>
+
+        <div style="display:flex; align-items:center; gap:9px; margin-bottom:24px;">
+          <input type="checkbox" id="remember-me" class="auth-checkbox" />
+          <label for="remember-me">Se souvenir de moi</label>
+        </div>
+
+        <!-- id="login-btn" — le script y attache l'événement directement -->
+        <button id="login-btn" class="auth-btn-primary" type="button">
+          <span id="btn-text">Se connecter</span>
+          <svg id="btn-loader" class="auth-spinner" style="display:none;" width="14" height="14"
+               viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+            <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+          </svg>
+        </button>
+        
+        <div id="msg" class="auth-msg" style="display:none;" role="alert"></div>
+
+        <div class="auth-divider"><span>ou</span></div>
+
+        <p style="text-align:center; font-size:16px; color:#514330;">
+          Pas encore de compte ?
+          <a href="/inscription" class="auth-link-green">S'inscrire →</a>
+        </p>
+      </div>
+    </div>
+  </div>
+</AuthLayout>
+
+<style>
+  .auth-label {
+    display: block;
+    font-size: 11px;
+    font-family: 'Geist Mono', monospace;
+    color: #9A7E5A;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    margin-bottom: 7px;
+  }
+  .auth-input {
+    width: 100%;
+    padding: 11px 14px;
+    border: 1.5px solid #DDD0B8;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #2C2014;
+    background: #F7F2E8;
+    font-family: 'Geist', sans-serif;
+    font-weight: 400;
+    transition: border-color .15s, background .15s;
+    box-sizing: border-box;
+  }
+  .auth-input:focus {
+    outline: none;
+    border-color: #C4623A;
+    background: #FDFAF4;
+    box-shadow: 0 0 0 3px rgba(196, 98, 58, .12);
+  }
+  .auth-input::placeholder { color: #9A8A76; }
+  .auth-checkbox {
+    width: 15px;
+    height: 15px;
+    accent-color: #5a483d;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .auth-btn-primary {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 20px;
+    background: oklch(56.007% 0.1046 59.407);
+    color: #FDFAF4;
+    font-size: 14px;
+    font-weight: 500;
+    border-radius: 8px;
+    cursor: pointer;
+    border: none;
+    font-family: 'Geist', sans-serif;
+    transition: background .15s;
+  }
+  .auth-btn-primary:hover   { background: oklch(46% 0.1046 59.407); }
+  .auth-btn-primary:active  { background: oklch(40% 0.1046 59.407); }
+  .auth-btn-primary:disabled { opacity: .6; cursor: not-allowed; }
+  .auth-msg {
+    margin-top: 14px;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    text-align: center;
+    line-height: 1.5;
+  }
+  .auth-msg.error   { background:#FAEAE4; border:1px solid #E8B9A6; color:#8B3820; }
+  .auth-msg.warn    { background:#FEF3E2; border:1px solid #E8CFA6; color:#7A4E0A; }
+  .auth-msg.success { background:#E8F0EA; border:1px solid #B5CDB9; color:#2E5A38; }
+  .auth-divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 20px 0;
+  }
+  .auth-divider::before,
+  .auth-divider::after { content:''; flex:1; height:1px; background:#DDD0B8; }
+  .auth-divider span { font-size:12px; color:#B8A88A; }
+  .auth-link-secondary { font-size:12px; color:oklch(67.428% 0.139 70.073); transition:opacity .15s; }
+  .auth-link-secondary:hover { opacity:.75; }
+  .auth-link-green {
+    display: block;
+    margin-top: 0.8rem;
+    color: #e3e3e3;
+    font-weight: 500;
+    background-color: oklch(56.007% 0.1046 59.407);
+    padding: 10px 16px;
+    font-size: 18px;
+    border-radius: 8px;
+    transition: opacity .15s;
+    text-align: center;
+  }
+  .auth-link-green:hover { opacity:.75; }
+  .auth-spinner { animation:spin .7s linear infinite; }
+  @keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+</style>
+<script type="module">
+  const emailInput = document.getElementById('email');
+  const passInput  = document.getElementById('password');
+  const msgEl      = document.getElementById('msg');
+  const btn        = document.getElementById('login-btn');
+  const btnText    = document.getElementById('btn-text');
+  const btnLoader  = document.getElementById('btn-loader');
+
+  function showMsg(text, type = 'error') {
+    msgEl.textContent   = text;
+    msgEl.className     = `auth-msg ${type}`;
+    msgEl.style.display = 'block';
+  }
+  function hideMsg() { msgEl.style.display = 'none'; }
+
+  function setLoading(loading) {
+    btn.disabled            = loading;
+    btnText.style.display   = loading ? 'none'  : 'block';
+    btnLoader.style.display = loading ? 'block' : 'none';
+  }
+
+  emailInput.addEventListener('input', () => {
+    const v = emailInput.value.trim();
+    if (v && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) showMsg('Adresse email invalide.', 'warn');
+    else hideMsg();
+  });
+
+  passInput.addEventListener('input', () => {
+    if (passInput.value && passInput.value.length < 8)
+      showMsg('Au moins 8 caractères requis.', 'warn');
+    else hideMsg();
+  });
+
+  async function handleLogin() {
+    const email    = emailInput.value.trim();
+    const password = passInput.value;
+    const remember = document.getElementById('remember-me').checked;
+
+    hideMsg();
+    if (!email && !password) return showMsg('Veuillez remplir tous les champs.');
+    if (!email)               return showMsg('Veuillez entrer votre adresse email.');
+    if (!password)            return showMsg('Veuillez entrer votre mot de passe.');
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return showMsg('Adresse email invalide.');
+
+    setLoading(true);
+    try {
+      // On passe par la route API serveur qui écrit les cookies HTTP
+      const formData = new FormData();
+      formData.set('email', email);
+      formData.set('password', password);
+
+      const res = await fetch('/auth/connexion', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!res.ok) {
+        const text = await res.text();
+        const msg = text === 'Invalid login credentials'
+          ? 'Email ou mot de passe incorrect.'
+          : (text || 'Erreur de connexion.');
+        return showMsg(msg);
+      }
+
+      // La route API a posé les cookies et renvoyé un redirect —
+      // on suit l'URL retournée
+      if (remember) localStorage.setItem('rememberedEmail', email);
+      else          localStorage.removeItem('rememberedEmail');
+
+      window.location.href = '/dashboard/user/';
+
+    } catch {
+      showMsg('Une erreur est survenue. Veuillez réessayer.');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  btn.addEventListener('click', handleLogin);
+
+  const remembered = localStorage.getItem('rememberedEmail');
+  if (remembered) {
+    emailInput.value = remembered;
+    document.getElementById('remember-me').checked = true;
+  }
+
+  [emailInput, passInput].forEach((el) =>
+    el.addEventListener('keydown', (e) => { if (e.key === 'Enter') handleLogin(); }),
+  );
+</script>

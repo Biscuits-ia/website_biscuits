@@ -1,0 +1,211 @@
+---
+import DashboardLayout from '../../../layouts/DashboardLayout.astro';
+import { requireAuth } from '../../../lib/auth';
+
+const result = await requireAuth(Astro);
+if (result instanceof Response) return result;
+
+const { user, supabase } = result;
+const userEmail    = user.email ?? '';
+const userName     = user.user_metadata?.full_name ?? userEmail.split('@')[0];
+const userPhone    = user.user_metadata?.phone ?? '';
+const userOrg      = user.user_metadata?.organization ?? '';
+const emailConfirmed = !!user.email_confirmed_at;
+
+// Gestion des messages flash via query param
+const saved  = Astro.url.searchParams.get('saved')  === '1';
+const pwSaved = Astro.url.searchParams.get('pw')    === '1';
+const error  = Astro.url.searchParams.get('error')  ?? '';
+---
+
+<DashboardLayout title="Paramètres" role="user" activePage="settings" userName={userName} userEmail={userEmail}>
+
+  <div class="container w-full mb-6 text-center">
+    <h1 class="text-xl font-bold tracking-tight text-primary">
+      Paramètres du compte
+    </h1>
+    <p class="text-muted text-lg mt-1">
+      Gérez vos informations personnelles et la sécurité de votre compte.
+    </p>
+  </div>
+
+  {saved  && <div class="flash flash-ok"  role="alert">✓ Profil mis à jour avec succès.</div>}
+  {pwSaved && <div class="flash flash-ok" role="alert">✓ Mot de passe mis à jour.</div>}
+  {error   && <div class="flash flash-err" role="alert">✗ {decodeURIComponent(error)}</div>}
+
+  <div class="flex flex-row gap-5 flex-wrap justify-between">
+
+    <!-- Profil -->
+    <div class="card flex-1">
+      <div class="card-header">
+        <span class="card-title">Informations personnelles</span>
+        <span class={`badge ${emailConfirmed ? 'badge-ok' : 'badge-warn'}`}>
+          {emailConfirmed ? '✓ Email vérifié' : '⚠ Email non vérifié'}
+        </span>
+      </div>
+
+      <form method="POST" action="/auth/update-profile" class="flex flex-col gap-4">
+
+        <div class="field">
+          <label for="full_name">Nom complet</label>
+          <input
+            type="text"
+            id="full_name"
+            name="full_name"
+            value={userName}
+            placeholder="Votre nom complet"
+            autocomplete="name"
+            class="border border-border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          />
+        </div>
+
+        <div class="field">
+          <label for="email">Adresse email</label>
+          <input
+            type="email"
+            id="email"
+            name="email"
+            value={userEmail}
+            placeholder="vous@exemple.com"
+            autocomplete="email"
+            class="border border-border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          />
+          {!emailConfirmed && (
+            <span class="text-xs text-warn mt-1 font-mono">
+              ⚠ Vérifiez votre boîte mail pour confirmer cette adresse.
+            </span>
+          )}
+        </div>
+
+        <div class="field">
+          <label for="phone">Téléphone <span class="text-muted font-normal">(optionnel)</span></label>
+          <input
+            type="tel"
+            id="phone"
+            name="phone"
+            value={userPhone}
+            placeholder="+33 6 00 00 00 00"
+            autocomplete="tel"
+            class="border border-border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          />
+        </div>
+
+        <div class="field">
+          <label for="organization">Organisation <span class="text-muted font-normal">(optionnel)</span></label>
+          <input
+            type="text"
+            id="organization"
+            name="organization"
+            value={userOrg}
+            placeholder="Nom de votre association / structure"
+            class="border border-border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          />
+        </div>
+
+        <div>
+          <button type="submit" class="btn btn-primary">Sauvegarder</button>
+        </div>
+
+      </form>
+    </div>
+
+    <!-- Mot de passe -->
+    <div class="card flex-1">
+      <div class="card-header">
+        <span class="card-title">Sécurité</span>
+      </div>
+
+      <form method="POST" action="/auth/update-password" class="flex flex-col gap-4">
+
+        <div class="field">
+          <label for="current_password">Mot de passe actuel</label>
+          <input
+            type="password"
+            id="current_password"
+            name="current_password"
+            placeholder="••••••••"
+            autocomplete="current-password"
+            class="border border-border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          />
+        </div>
+
+        <div class="field">
+          <label for="new_password">Nouveau mot de passe</label>
+          <input
+            type="password"
+            id="new_password"
+            name="new_password"
+            placeholder="••••••••"
+            autocomplete="new-password"
+            class="border border-border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          />
+          <span class="text-sm text-muted mt-1 font-mono">
+            Minimum 8 caractères.
+          </span>
+        </div>
+
+        <div class="field">
+          <label for="confirm_password">Confirmer le nouveau mot de passe</label>
+          <input
+            type="password"
+            id="confirm_password"
+            name="confirm_password"
+            placeholder="••••••••"
+            autocomplete="new-password"
+            class="border border-border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          />
+        </div>
+
+        <div>
+          <button type="submit" class="btn btn-primary">Mettre à jour le mot de passe</button>
+        </div>
+
+      </form>
+    </div>
+
+  </div>
+
+  <!-- Danger zone -->
+  <div class="card border-err mt-5">
+    <div class="card-header">
+      <span class="card-title text-err">Zone de danger</span>
+    </div>
+    <p class="text-lg text-secondary mb-4">
+      La suppression de votre compte est irréversible. Toutes vos données seront effacées définitivement.
+    </p>
+    <button
+      type="button"
+      class="btn btn-danger"
+      onclick="if(confirm('Êtes-vous sûr de vouloir supprimer votre compte ? Cette action est irréversible.')) window.location.href='/auth/delete-account'"
+    >
+      Supprimer mon compte
+    </button>
+  </div>
+
+</DashboardLayout>
+
+<style>
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .field label {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-family: var(--font-mono);
+  }
+  .flash {
+    padding: 10px 16px;
+    margin-bottom: 16px;
+    font-size: 0.83rem;
+    font-weight: 600;
+    border: var(--brutal-border-thin);
+    box-shadow: var(--shadow-sm);
+  }
+  .flash-ok  { background: var(--ok-bg);  color: var(--ok-fg);  border-color: var(--ok); }
+  .flash-err { background: var(--err-bg); color: var(--err-fg); border-color: var(--err); }
+</style>

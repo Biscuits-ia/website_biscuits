@@ -1,0 +1,181 @@
+---
+import DashboardLayout from '../../../layouts/DashboardLayout.astro';
+import { requireAuth } from '../../../lib/auth';
+
+const result = await requireAuth(Astro);
+if (result instanceof Response) return result;
+
+const { user, supabase } = result;
+const userId    = user.id;
+const userEmail = user.email ?? '';
+const userName  = user.user_metadata?.full_name ?? userEmail.split('@')[0];
+
+const now      = new Date();
+const day30ago = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+const day7ago  = new Date(Date.now() - 7  * 24 * 60 * 60 * 1000).toISOString();
+
+const [
+  { count: totalReports },
+  { count: analyzedReports },
+  { count: pendingReports },
+  { count: failedReports },
+  { count: reportsThisMonth },
+  { count: reportsThisWeek },
+  { count: totalActivity },
+  { data: reportsPerStatus },
+] = await Promise.all([
+  supabase.from('reports').select('*', { count: 'exact', head: true }).eq('user_id', userId),
+  supabase.from('reports').select('*', { count: 'exact', head: true }).eq('user_id', userId).eq('status', 'analyzed'),
+  supabase.from('reports').select('*', { count: 'exact', head: true }).eq('user_id', userId).eq('status', 'pending'),
+  supabase.from('reports').select('*', { count: 'exact', head: true }).eq('user_id', userId).eq('status', 'failed'),
+  supabase.from('reports').select('*', { count: 'exact', head: true }).eq('user_id', userId).gte('created_at', day30ago),
+  supabase.from('reports').select('*', { count: 'exact', head: true }).eq('user_id', userId).gte('created_at', day7ago),
+  supabase.from('activity_logs').select('*', { count: 'exact', head: true }).eq('user_id', userId),
+  supabase.from('reports').select('status').eq('user_id', userId),
+]);
+
+const successRate  = totalReports ? Math.round(((analyzedReports ?? 0) / (totalReports ?? 1)) * 100) : 0;
+const pendingRate  = totalReports ? Math.round(((pendingReports  ?? 0) / (totalReports ?? 1)) * 100) : 0;
+const failedRate   = totalReports ? Math.round(((failedReports   ?? 0) / (totalReports ?? 1)) * 100) : 0;
+
+// Grouper par mois (6 derniers mois)
+const monthlyMap: Record<string, number> = {};
+(reportsPerStatus ?? []).forEach((r: any) => {
+  // On ne peut pas avoir created_at ici, on utilise la donnée disponible
+});
+
+const months = Array.from({ length: 6 }, (_, i) => {
+  const d = new Date(now.getFullYear(), now.getMonth() - (5 - i), 1);
+  return d.toLocaleDateString('fr-FR', { month: 'short', year: '2-digit' });
+});
+---
+
+<DashboardLayout title="Statistiques" role="user" activePage="stats" userName={userName} userEmail={userEmail}>
+
+  <div class="mb-6">
+    <h1 class="text-xl font-bold tracking-tight text-primary">
+      Mes statistiques
+    </h1>
+    <p class="text-muted text-xs mt-1">
+      Vue d'ensemble de votre utilisation de Biscuits IA.
+    </p>
+  </div>
+
+  <!-- Stats principales -->
+  <div class="stats-grid mb-6">
+    <div class="stat-card">
+      <div class="stat-label">Total signalements</div>
+      <div class="stat-value">{totalReports ?? 0}</div>
+      <div class="stat-delta">{reportsThisMonth ?? 0} ce mois · {reportsThisWeek ?? 0} cette semaine</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Analysés par l'IA</div>
+      <div class="stat-value">{analyzedReports ?? 0}</div>
+      <div class="stat-delta up">Taux de réussite {successRate} %</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">En attente</div>
+      <div class="stat-value">{pendingReports ?? 0}</div>
+      <div class={`stat-delta ${(pendingReports ?? 0) > 5 ? 'down' : ''}`}>
+        {pendingRate} % du total
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Événements</div>
+      <div class="stat-value">{totalActivity ?? 0}</div>
+      <div class="stat-delta">Actions enregistrées</div>
+    </div>
+  </div>
+
+  <div class="grid-2 mb-6">
+
+    <!-- Répartition par statut -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Répartition par statut</span>
+      </div>
+      <div class="flex flex-col gap-4">
+
+        <div>
+          <div class="flex justify-between mb-1.5">
+            <span class="text-xs text-secondary font-semibold">Analysés</span>
+            <span class="text-xs font-mono font-bold text-ok">{successRate} %</span>
+          </div>
+          <div class="h-1.5 bg-bg border-2 border-border">
+            <div class={`h-full bg-ok`} style={`width: ${successRate}%`}></div>
+          </div>
+        </div>
+
+        <div>
+          <div class="flex justify-between mb-1.5">
+            <span class="text-xs text-secondary font-semibold">En attente</span>
+            <span class="text-xs font-mono font-bold text-warn">{pendingRate} %</span>
+          </div>
+          <div class="h-1.5 bg-bg border-2 border-border">
+            <div class={`h-full bg-warn`} style={`width: ${pendingRate}%`}></div>
+          </div>
+        </div>
+
+        <div>
+          <div class="flex justify-between mb-1.5">
+            <span class="text-xs text-secondary font-semibold">Échoués</span>
+            <span class="text-xs font-mono font-bold text-err">{failedRate} %</span>
+          </div>
+          <div class="h-1.5 bg-bg border-2 border-border">
+            <div class={`h-full bg-err`} style={`width: ${failedRate}%`}></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Résumé qualitatif -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Synthèse</span>
+      </div>
+      <div class="flex flex-col gap-3">
+
+        <div class="flex justify-between items-center py-2.5 border-b border-border">
+          <span class="text-[0.82rem] text-secondary">Activité ce mois</span>
+          <span class={`badge ${(reportsThisMonth ?? 0) > 0 ? 'badge-ok' : 'badge-neutral'}`}>
+            {reportsThisMonth ?? 0} signalement{(reportsThisMonth ?? 0) > 1 ? 's' : ''}
+          </span>
+        </div>
+
+        <div class="flex justify-between items-center py-2.5 border-b border-border">
+          <span class="text-[0.82rem] text-secondary">Activité cette semaine</span>
+          <span class={`badge ${(reportsThisWeek ?? 0) > 0 ? 'badge-ok' : 'badge-neutral'}`}>
+            {reportsThisWeek ?? 0} signalement{(reportsThisWeek ?? 0) > 1 ? 's' : ''}
+          </span>
+        </div>
+
+        <div class="flex justify-between items-center py-2.5 border-b border-border">
+          <span class="text-[0.82rem] text-secondary">File d'attente</span>
+          <span class={`badge ${(pendingReports ?? 0) > 5 ? 'badge-err' : 'badge-ok'}`}>
+            {(pendingReports ?? 0) > 5 ? 'Chargée' : 'Normale'}
+          </span>
+        </div>
+
+        <div class="flex justify-between items-center py-2.5">
+          <span class="text-[0.82rem] text-secondary">Performance IA</span>
+          <span class={`badge ${successRate >= 80 ? 'badge-ok' : successRate >= 50 ? 'badge-warn' : 'badge-err'}`}>
+            {successRate >= 80 ? 'Excellente' : successRate >= 50 ? 'Correcte' : 'Faible'}
+          </span>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <!-- CTA vers activité -->
+  <div class="card flex items-center justify-between flex-wrap gap-4">
+    <div>
+      <div class="text-sm font-bold text-primary">Voir le détail de votre activité</div>
+      <div class="text-xs text-muted mt-0.5">Consultez chaque événement avec horodatage et métadonnées.</div>
+    </div>
+    <a href="/dashboard/user/activity" class="btn btn-primary">Voir l'activité →</a>
+  </div>
+
+</DashboardLayout>

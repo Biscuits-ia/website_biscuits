@@ -1,0 +1,231 @@
+---
+import AuthLayout from '../layouts/AuthLayout.astro';
+
+// NE PAS rediriger même si une session existe :
+// Supabase crée une session temporaire quand l'utilisateur arrive
+// depuis le lien de réinitialisation — c'est ce dont on a besoin
+// pour appeler supabase.auth.updateUser().
+
+const supabaseUrl = import.meta.env.SUPABASE_URL;
+const supabaseKey = import.meta.env.SUPABASE_ANON_KEY;
+---
+
+<AuthLayout title="Nouveau mot de passe" description="Créez un nouveau mot de passe pour votre compte Biscuits IA.">
+  <div style="min-height:100vh; display:flex; align-items:center; justify-content:center; padding:2rem 1rem;">
+    <div style="width:100%; max-width:400px;">
+
+      <div style="background:#FDFAF4; border:1.5px solid #DDD0B8; border-radius:16px; padding:36px;">
+        <h1 style="font-size:22px; font-weight:500; color:#2C2014; margin-bottom:6px;">Nouveau mot de passe</h1>
+        <p style="font-size:14px; color:#372c1f; line-height:1.6; margin-bottom:28px;">
+          Choisissez un mot de passe sécurisé pour votre compte.
+        </p>
+
+        <div style="margin-bottom:10px;">
+          <label for="password" class="auth-label">Nouveau mot de passe</label>
+          <input type="password" id="password" placeholder="••••••••" autocomplete="new-password" class="auth-input" />
+        </div>
+
+        <div id="strength-wrap" style="display:none; margin-bottom:18px;" aria-live="polite">
+          <div style="display:flex; gap:4px; margin-bottom:5px;">
+            <div id="s1" class="seg"></div>
+            <div id="s2" class="seg"></div>
+            <div id="s3" class="seg"></div>
+            <div id="s4" class="seg"></div>
+          </div>
+          <span id="strength-label" style="font-size:11px; font-family:'Geist Mono',monospace;"></span>
+        </div>
+
+        <div style="margin-bottom:24px;">
+          <label for="confirm" class="auth-label">Confirmer</label>
+          <input type="password" id="confirm" placeholder="••••••••" autocomplete="new-password" class="auth-input" />
+          <div id="match-hint" style="display:none; font-size:11px; font-family:'Geist Mono',monospace; margin-top:5px;" aria-live="polite"></div>
+        </div>
+
+        <button id="update-btn" class="auth-btn-primary" type="button">
+          <span id="btn-text">Mettre à jour</span>
+          <svg id="btn-loader" class="auth-spinner" style="display:none;" width="14" height="14"
+               viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+            <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+          </svg>
+        </button>
+
+        <div id="msg" class="auth-msg" style="display:none;" role="alert"></div>
+
+        <div style="text-align:center; margin-top:20px;">
+          <a href="/connexion" class="auth-link-back">← Retour à la connexion</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</AuthLayout>
+
+<style>
+  .auth-label {
+    display: block;
+    font-size: 13px;
+    font-family: 'Geist Mono', monospace;
+    font-weight: 600;
+    color: oklch(53.958% 0.10717 58.243);
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    margin-bottom: 7px;
+  }
+  .auth-input {
+    width: 100%;
+    padding: 11px 14px;
+    border: 1.5px solid #DDD0B8;
+    border-radius: 8px;
+    font-size: 16px;
+    color: #2C2014;
+    background: #F7F2E8;
+    font-family: 'Geist', sans-serif;
+    font-weight: 700;
+    box-sizing: border-box;
+    transition: border-color .15s, background .15s;
+  }
+  .auth-input:focus {
+    outline: none;
+    border-color: oklch(53.958% 0.10717 58.243);
+    background: #FDFAF4;
+    box-shadow: 0 0 0 3px rgba(196, 98, 58, .12);
+  }
+  .auth-input::placeholder { color: #C4B89A; }
+  .seg { height:3px; flex:1; border-radius:2px; background:#DDD0B8; transition:background .2s; }
+  .auth-btn-primary {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 20px;
+    background: oklch(53.958% 0.10717 58.243);
+    color: #FDFAF4;
+    font-size: 14px;
+    font-weight: 700;
+    border-radius: 8px;
+    cursor: pointer;
+    border: none;
+    font-family: 'Geist', sans-serif;
+    transition: background .15s;
+  }
+  .auth-btn-primary:hover   { background: oklch(40.672% 0.07757 59.025); }
+  .auth-btn-primary:active  { background: oklch(49.078% 0.09707 57.871); }
+  .auth-btn-primary:disabled { opacity:.6; cursor:not-allowed; }
+  .auth-msg { margin-top:16px; padding:10px 16px; border-radius:8px; font-size:15px; text-align:center; line-height:1.5; }
+  .auth-msg.error   { background:#FAEAE4; border:1px solid #E8B9A6; color:#8B3820; }
+  .auth-msg.success { background:#E8F0EA; border:1px solid #B5CDB9; color:#2E5A38; }
+  .auth-link-back { font-size:15px; color:#9A7E5A; transition:color .15s; }
+  .auth-link-back:hover { color:#2C2014; }
+  .auth-spinner { animation:spin .7s linear infinite; }
+  @keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+</style>
+
+<script define:vars={{ supabaseUrl, supabaseKey }}>
+  window.__SB_URL__ = supabaseUrl;
+  window.__SB_KEY__ = supabaseKey;
+</script>
+
+<script type="module">
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+  const supabase     = createClient(window.__SB_URL__, window.__SB_KEY__);
+  const passInput    = document.getElementById('password');
+  const confirmInput = document.getElementById('confirm');
+  const msgEl        = document.getElementById('msg');
+  const btn          = document.getElementById('update-btn');
+  const btnText      = document.getElementById('btn-text');
+  const btnLoader    = document.getElementById('btn-loader');
+  const segments     = ['s1','s2','s3','s4'].map((id) => document.getElementById(id));
+  const colors       = ['#E24B4A','#E89A3C','#C4623A','#3D5A47'];
+  const labels       = ['Trop court','Faible','Moyen','Fort'];
+
+  // Supabase envoie le token dans le hash de l'URL (#access_token=…&type=recovery)
+  // Il faut le laisser gérer automatiquement via onAuthStateChange
+  supabase.auth.onAuthStateChange((event) => {
+    if (event === 'PASSWORD_RECOVERY') {
+      // L'utilisateur est bien arrivé depuis le lien de réinitialisation
+      msgEl.style.display = 'none';
+    }
+  });
+
+  function showMsg(text, type = 'error') {
+    msgEl.textContent   = text;
+    msgEl.className     = `auth-msg ${type}`;
+    msgEl.style.display = 'block';
+  }
+
+  function setLoading(loading) {
+    btn.disabled            = loading;
+    btnText.style.display   = loading ? 'none'  : 'block';
+    btnLoader.style.display = loading ? 'block' : 'none';
+  }
+
+  function getStrength(pw) {
+    let s = 0;
+    if (pw.length >= 8)  s++;
+    if (pw.length >= 12) s++;
+    if (/[A-Z]/.test(pw) && /[a-z]/.test(pw)) s++;
+    if (/\d/.test(pw) || /[^A-Za-z0-9]/.test(pw)) s++;
+    return Math.max(1, s);
+  }
+
+  function checkMatch() {
+    const hint = document.getElementById('match-hint');
+    const pw   = passInput.value;
+    const cf   = confirmInput.value;
+    if (!cf) { hint.style.display = 'none'; return; }
+    hint.style.display = 'block';
+    if (pw === cf) {
+      hint.textContent = '✓ Les mots de passe correspondent';
+      hint.style.color = '#3D5A47';
+    } else {
+      hint.textContent = '✗ Ne correspondent pas encore';
+      hint.style.color = '#C4623A';
+    }
+  }
+
+  passInput.addEventListener('input', () => {
+    const pw   = passInput.value;
+    const wrap = document.getElementById('strength-wrap');
+    if (!pw) { wrap.style.display = 'none'; return; }
+    wrap.style.display = 'block';
+    const s = getStrength(pw);
+    segments.forEach((seg, i) => { seg.style.background = i < s ? colors[s - 1] : '#DDD0B8'; });
+    const lbl = document.getElementById('strength-label');
+    lbl.textContent = labels[s - 1];
+    lbl.style.color = colors[s - 1];
+    checkMatch();
+  });
+
+  confirmInput.addEventListener('input', checkMatch);
+
+  async function handleUpdate() {
+    const password = passInput.value;
+    const confirm  = confirmInput.value;
+
+    msgEl.style.display = 'none';
+    if (!password || !confirm) return showMsg('Veuillez remplir tous les champs.');
+    if (password.length < 8)   return showMsg('Au moins 8 caractères requis.');
+    if (password !== confirm)  return showMsg('Les mots de passe ne correspondent pas.');
+
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.updateUser({ password });
+      if (error) showMsg(error.message);
+      else {
+        showMsg('Mot de passe mis à jour ! Redirection…', 'success');
+        setTimeout(() => { window.location.href = '/connexion'; }, 2000);
+      }
+    } catch {
+      showMsg('Une erreur est survenue. Veuillez réessayer.');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  btn.addEventListener('click', handleUpdate);
+
+  document.querySelectorAll('input[type="password"]').forEach((el) =>
+    el.addEventListener('keydown', (e) => { if (e.key === 'Enter') handleUpdate(); }),
+  );
+</script>

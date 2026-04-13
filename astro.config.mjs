@@ -22,7 +22,7 @@ export default defineConfig({
     changefreq: 'weekly',
     priority: 0.7,
     filter: (page) => {
-      const excludePaths = ['/admin', '/api', '/login', '/register', '/dashboard'];
+      const excludePaths = ['/admin', '/api', '/connexion', '/inscription', '/dashboard'];
       return !excludePaths.some(path => page.includes(path));
     },
     
@@ -62,18 +62,9 @@ export default defineConfig({
     define: {
       'import.meta.env.PUBLIC_API_URL': JSON.stringify(process.env.PUBLIC_API_URL || 'http://localhost:8000'),
     },
-    server: {
-      proxy: {
-        '/api': {
-          target: process.env.PUBLIC_API_URL || 'http://localhost:8000',
-          changeOrigin: true,
-          secure: false,
-        },
-      },
-    },
   },
 
-  output: 'static',
+  output: 'server',
   build: {
     assets: '_astro',
     inlineStylesheets: 'auto',

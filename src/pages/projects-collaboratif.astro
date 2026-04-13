@@ -47,7 +47,6 @@ import BaseLayout from '@/layouts/Layout.astro';
             <p>Un assistant pour centraliser vos documents et faciliter le travail des bénévoles au sein des associations, dans une logique d'intérêt général, solidaire et d'entraide.</p>
             <div class="card-meta">
               <span class="tag">En Développement</span>
-              <span class="contributors">5 contributeurs</span>
             </div>
           </div>
           <div class="card-footer">
@@ -60,15 +59,14 @@ import BaseLayout from '@/layouts/Layout.astro';
             <span class="icon-wrapper">⚙️</span>
           </div>
           <div class="card-content">
-            <h3>Bocal Anti Pépins</h3>
-            <p>Développement d'une interface solidaire pour identifier et bloquer les arnaques sophistiquées. L'objectif est de transformer chaque citoyen en acteur de la sécurité numérique et de réduire l'impact social des réseaux de brouteurs par le partage d'informations en temps réel.</p>
+            <h3>Anti Pépins</h3>
+            <p>Développement d'un collectif pour identifier et lutter contre les arnaques sophistiquées. L'objectif est de transformer chaque citoyen en acteur de la sécurité numérique et de réduire l'impact social des réseaux de brouteurs par le partage d'informations en temps réel.</p>
             <div class="card-meta">
-              <span class="tag">En Développement</span>
-              <span class="contributors">6 contributeurs</span>
+              <span class="tag-finished">Disponible</span>
             </div>
           </div>
           <div class="card-footer">
-            <a href="#" class="link-arrow">Découvrir le projet</a>
+            <a href="https://anti-pepins.biscuits-ia.com/" class="link-arrow">Découvrir le projet</a>
           </div>
         </article>
 
@@ -81,7 +79,6 @@ import BaseLayout from '@/layouts/Layout.astro';
             <p>Des logiciels pour faciliter la gestion des associations et des TPE, en faveur de l'intérêt général, de la solidarité, de l'entraide et de l'autonomie.</p>
             <div class="card-meta">
               <span class="tag">En Développement</span>
-              <span class="contributors">4 contributeurs</span>
             </div>
           </div>
           <div class="card-footer">
@@ -274,6 +271,15 @@ import BaseLayout from '@/layouts/Layout.astro';
   .tag {
     padding: 4px 12px;
     background: var(--color-first);
+    color: var(--color-gray-900);
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+
+  .tag-finished {
+    padding: 4px 12px;
+    background: var(--color-success);
     color: var(--color-gray-900);
     border-radius: 12px;
     font-size: 0.85rem;

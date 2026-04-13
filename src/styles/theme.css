@@ -1,3 +1,5 @@
+@import url('global.css');
+
 :root {  
   /* Couleurs sémantiques */
   --color-success: oklch(69.588% 0.14907 162.508);

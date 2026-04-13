@@ -1,0 +1,311 @@
+---
+// src/pages/dashboard/user/ateliers.astro
+import DashboardLayout from '../../../layouts/DashboardLayout.astro';
+import { requireAuth }  from '../../../lib/auth';
+// Fragment est disponible globalement dans les templates Astro v3+ — pas d'import nécessaire.
+import type { WorkshopSessionWithSeats } from '../../../types/ateliers';
+import { formatDateLong, formatTimeRange } from '../../../types/ateliers';
+
+const result = await requireAuth(Astro);
+if (result instanceof Response) return result;
+
+const { user, supabase } = result;
+const userId    = user.id;
+const userEmail = user.email ?? '';
+const userName  = user.user_metadata?.full_name ?? userEmail.split('@')[0];
+
+const saved = Astro.url.searchParams.get('saved') === '1';
+const error = Astro.url.searchParams.get('error') ?? '';
+
+// Sessions publiées à venir avec places restantes
+const { data: sessionsRaw } = await supabase
+  .from('workshop_sessions_with_seats')
+  .select('*')
+  .eq('is_published', true)
+  .gte('starts_at', new Date().toISOString())
+  .order('starts_at', { ascending: true });
+
+// IDs des sessions auxquelles l'utilisateur est inscrit
+const { data: myRegsRaw } = await supabase
+  .from('workshop_registrations')
+  .select('session_id')
+  .eq('user_id', userId);
+
+interface RegRow { session_id: string }
+const mySessionIds = new Set(
+  (myRegsRaw ?? []).map((r: RegRow) => r.session_id),
+);
+
+// Sessions passées de l'utilisateur
+const fallbackId = '00000000-0000-0000-0000-000000000000';
+const { data: pastSessionsRaw } = await supabase
+  .from('workshop_sessions_with_seats')
+  .select('*')
+  .in('id', mySessionIds.size > 0 ? [...mySessionIds] : [fallbackId])
+  .lt('starts_at', new Date().toISOString())
+  .order('starts_at', { ascending: false });
+
+// ── Pré-calcul des valeurs dérivées ────────────────────────────────────────
+//
+// RÈGLE ASTRO : les opérateurs < et > dans le template JSX sont interprétés
+// comme des balises Fragment <> → erreur "Unable to assign attributes when
+// using <> Fragment shorthand syntax" (code 1002).
+//
+// Toute logique conditionnelle avec < / > / >= / <= est résolue ici,
+// dans le frontmatter, avant le template.
+
+interface UpcomingRow {
+  session:      WorkshopSessionWithSeats;
+  isRegistered: boolean;
+  isFull:       boolean;   // seats_left <= 0 && !isRegistered
+  dateLabel:    string;
+  timeLabel:    string;
+  seatsLabel:   string;    // texte descriptif des places
+}
+
+interface PastRow {
+  session:   WorkshopSessionWithSeats;
+  dateLabel: string;
+  location:  string;       // '' si null — évite s.location ? dans le template
+}
+
+function pluralPlace(n: number): string {
+  return n === 1 ? '1 place restante' : `${n} places restantes`;
+}
+
+const upcomingRows: UpcomingRow[] = (sessionsRaw ?? []).map(
+  (s: WorkshopSessionWithSeats): UpcomingRow => {
+    const isRegistered = mySessionIds.has(s.id);
+    const isFull       = s.seats_left <= 0 && !isRegistered;
+    const seatsLabel   = isRegistered
+      ? `Inscrit · ${pluralPlace(s.seats_left)}`
+      : isFull
+        ? 'Complet'
+        : `${pluralPlace(s.seats_left)} / ${s.max_seats}`;
+    return {
+      session:      s,
+      isRegistered,
+      isFull,
+      dateLabel:    formatDateLong(s.starts_at),
+      timeLabel:    formatTimeRange(s.starts_at, s.ends_at),
+      seatsLabel,
+    };
+  },
+);
+
+const pastRows: PastRow[] = (pastSessionsRaw ?? []).map(
+  (s: WorkshopSessionWithSeats): PastRow => ({
+    session:   s,
+    dateLabel: new Date(s.starts_at).toLocaleDateString('fr-FR', {
+      day: 'numeric', month: 'long', year: 'numeric',
+    }),
+    location: s.location ?? '',
+  }),
+);
+
+const hasUpcoming = upcomingRows.length !== 0;
+const hasPast     = pastRows.length !== 0;
+---
+
+<DashboardLayout title="Ateliers" role="user" activePage="ateliers" userName={userName} userEmail={userEmail}>
+
+  <div class="mb-7">
+    <h1 class="text-xl font-bold tracking-tight text-primary">
+      Ateliers
+    </h1>
+    <p class="description">
+       Retrouvez ici les ateliers d'initiation à l'IA proposés par Biscuits IA, ainsi que ceux auxquels vous êtes inscrit.
+      Inscrivez-vous aux prochaines sessions disponibles.
+    </p>
+  </div>
+
+  {saved && <div class="flash flash-ok" role="alert">✓ Inscription mise à jour avec succès.</div>}
+  {error  && <div class="flash flash-err" role="alert">✗ {decodeURIComponent(error)}</div>}
+
+  <!-- Sessions à venir -->
+  <div class="card-title section-title">Sessions à venir</div>
+
+  {hasUpcoming ? (
+    <div class="workshop-grid mb-6">
+      {upcomingRows.map(({ session: s, isRegistered, isFull, dateLabel, timeLabel, seatsLabel }) => (
+        <div class={`workshop-card card${isRegistered ? ' registered' : ''}`}>
+
+          {s.workshop_category && (
+            <span class="badge badge-info badge-mb">{s.workshop_category}</span>
+          )}
+
+          <div class="workshop-title">{s.workshop_title}</div>
+
+          {s.workshop_description && (
+            <p class="workshop-desc">{s.workshop_description}</p>
+          )}
+
+          <div class="workshop-meta">
+            <div class="meta-row">
+              <span class="meta-icon">📅</span>
+              <span>{dateLabel}</span>
+            </div>
+            <div class="meta-row">
+              <span class="meta-icon">🕐</span>
+              <span>{timeLabel}</span>
+            </div>
+            {s.location && (
+              <div class="meta-row">
+                <span class="meta-icon">📍</span>
+                <span>{s.location}</span>
+              </div>
+            )}
+            <div class="meta-row">
+              <span class="meta-icon">👥</span>
+              <span>{seatsLabel}</span>
+            </div>
+          </div>
+
+          <div class="workshop-actions">
+            {isRegistered ? (
+              <Fragment>
+                <span class="badge badge-ok">✓ Inscrit</span>
+                <form method="POST" action="/api/ateliers/desinscrire">
+                  <input type="hidden" name="session_id" value={s.id} />
+                  <button type="submit" class="btn btn-ghost btn-sm">
+                    Se désinscrire
+                  </button>
+                </form>
+              </Fragment>
+            ) : isFull ? (
+              <button class="btn btn-ghost btn-disabled" disabled>
+                Complet
+              </button>
+            ) : (
+              <form method="POST" action="/api/ateliers/inscrire">
+                <input type="hidden" name="session_id" value={s.id} />
+                <button type="submit" class="btn btn-primary">
+                  S'inscrire →
+                </button>
+              </form>
+            )}
+          </div>
+
+        </div>
+      ))}
+    </div>
+  ) : (
+    <div class="card mb-6 text-center py-12 px-6">
+      <p class="text-xl mb-2">📭</p>
+      <p>Aucune session disponible pour le moment. Revenez bientôt !</p>
+    </div>
+  )}
+
+  <!-- Sessions passées -->
+  {hasPast && (
+    <Fragment>
+      <div class="card-title section-title">Mes ateliers passés</div>
+      <div class="card card-flush">
+        <div class="timeline">
+          {pastRows.map(({ session: s, dateLabel, location }) => (
+            <div class="timeline-item">
+              <div class="timeline-dot ok" />
+              <div class="timeline-body">
+                <div class="timeline-event">{s.workshop_title}</div>
+                <div class="timeline-meta">
+                  {dateLabel}{location ? ` · ${location}` : ''}
+                </div>
+              </div>
+              <span class="badge badge-neutral">Terminé</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </Fragment>
+  )}
+
+</DashboardLayout>
+
+<style>
+  /* ── Page ── */
+  .page-header { margin-bottom: 28px; }
+  .subtitle    { margin-top: 6px; }
+  .section-title { margin-bottom: 14px; }
+
+  /* ── Grille sessions ── */
+  .workshop-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 18px;
+  }
+
+  .workshop-card {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .workshop-card.registered {
+    border-color: var(--ok);
+    box-shadow: 5px 5px 0px var(--ok-fg);
+  }
+
+  .badge-mb { margin-bottom: 10px; }
+
+  .workshop-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1.3;
+  }
+
+  .workshop-desc {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* ── Meta ── */
+  .workshop-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 12px 0;
+    border-top: var(--brutal-border-thin);
+    border-bottom: var(--brutal-border-thin);
+  }
+
+  .meta-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+  }
+
+  .meta-icon { font-size: 1rem; flex-shrink: 0; }
+
+  /* ── Actions ── */
+  .workshop-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: auto;
+    flex-wrap: wrap;
+  }
+
+  .btn-sm       { font-size: 0.85rem; }
+  .btn-disabled { opacity: 0.5; cursor: not-allowed; }
+
+  /* ── État vide ── */
+  .empty-state  { text-align: center; padding: 48px 24px; }
+  .empty-icon   { font-size: 1.5rem; margin-bottom: 8px; }
+
+  /* ── Card sans padding (timeline) ── */
+  .card-flush { padding: 0; }
+  .timeline   { padding: 0 24px; }
+
+  /* ── Flash ── */
+  .flash     { padding: 12px 18px; margin-bottom: 20px; font-size: 0.95rem; font-weight: 600; border: var(--brutal-border-thin); box-shadow: var(--shadow-sm); }
+  .flash-ok  { background: var(--ok-bg);  color: var(--ok-fg);  border-color: var(--ok); }
+  .flash-err { background: var(--err-bg); color: var(--err-fg); border-color: var(--err); }
+</style>

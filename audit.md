@@ -190,7 +190,7 @@ GTM, une fois autorisé, peut injecter n'importe quel script, contournant partie
 
 ### Ce qui fonctionne bien
 
-- Les pages `nos-missions`, `pourquoi-biscuits-ia` et `atelier-ia` communiquent clairement et avec un ton authentique la mission : accessibilité de l'IA, gratuité par principe, autonomie des bénéficiaires, lutte contre les arnaques numériques.
+- Les pages `nos-missions`, `pourquoi-biscuits-ia` et `atelier` communiquent clairement et avec un ton authentique la mission : accessibilité de l'IA, gratuité par principe, autonomie des bénéficiaires, lutte contre les arnaques numériques.
 - Le ton est humain, sans jargon, adapté au public visé (associations, TPE, collectivités).
 - La page `pourquoi-biscuits-ia` structure bien les engagements et le processus de travail.
 - Les pages `/combats/` illustrent concrètement les valeurs de l'association.

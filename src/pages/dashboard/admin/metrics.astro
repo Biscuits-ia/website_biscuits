@@ -1,0 +1,133 @@
+---
+// src/pages/dashboard/admin/metrics.astro
+import DashboardLayout from '../../../layouts/DashboardLayout.astro';
+import { requireAdmin } from '../../../lib/auth';
+
+const result = await requireAdmin(Astro);
+if (result instanceof Response) return result;
+
+const { user, supabase } = result;
+const userName = user.user_metadata?.full_name ?? user.email?.split('@')[0] ?? 'Admin';
+
+const [
+  { count: totalReports },
+  { count: totalUsers },
+  { count: analyzedReports },
+  { data: topUsers },
+  { data: reportsByStatus },
+  { data: dailyTrend },
+] = await Promise.all([
+  supabase.from('reports').select('*', { count: 'exact', head: true }),
+  supabase.from('profiles').select('*', { count: 'exact', head: true }),
+  supabase.from('reports').select('*', { count: 'exact', head: true }).eq('status', 'analyzed'),
+  supabase.from('profiles').select('id, email, full_name, reports_count').order('reports_count', { ascending: false }).limit(5),
+  supabase.from('reports').select('status'),
+  supabase.rpc('reports_daily_trend'),  // Voir SQL en commentaire ci-dessous
+]);
+
+const statusCounts: Record<string, number> = {};
+(reportsByStatus ?? []).forEach((r: any) => {
+  statusCounts[r.status] = (statusCounts[r.status] ?? 0) + 1;
+});
+
+const analyzeRate = totalReports ? Math.round(((analyzedReports ?? 0) / (totalReports ?? 1)) * 100) : 0;
+---
+
+<DashboardLayout title="Métriques globales" role="admin" activePage="metrics" userName={userName}>
+
+  <div style="margin-bottom: 24px;">
+    <h1 style="font-size: 1.2rem; font-weight: 400; letter-spacing: -0.02em;">Métriques globales</h1>
+    <p style="color: var(--text-muted); font-size: 0.8rem; margin-top: 3px;">Données agrégées de la plateforme</p>
+  </div>
+
+  <!-- KPIs -->
+  <div class="stats-grid mb-6">
+    <div class="stat-card">
+      <div class="stat-label">Utilisateurs inscrits</div>
+      <div class="stat-value">{totalUsers ?? 0}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Signalements totaux</div>
+      <div class="stat-value">{totalReports ?? 0}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Analyses IA complètes</div>
+      <div class="stat-value">{analyzedReports ?? 0}</div>
+      <div class="stat-delta up">{analyzeRate}% du total</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Moy. signalements/user</div>
+      <div class="stat-value" style="font-size:1.6rem;">
+        {totalUsers ? ((totalReports ?? 0) / (totalUsers ?? 1)).toFixed(1) : '0'}
+      </div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <!-- Répartition statuts -->
+    <div class="card">
+      <div class="card-header"><span class="card-title">Répartition des statuts</span></div>
+      <div style="display:flex; flex-direction:column; gap:14px;">
+        {Object.entries(statusCounts).map(([status, count]) => {
+          const pct = Math.round((count / (totalReports ?? 1)) * 100);
+          const colors: { [key: string]: string } = {
+            analyzed: 'var(--ok)',
+            pending: 'var(--warn)',
+            rejected: 'var(--err)',
+          };
+          const color = colors[status] ?? 'var(--info)';
+          return (
+            <div>
+              <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+                <span style="font-size:0.8rem;">{status}</span>
+                <span style="font-size:0.8rem; font-family:var(--font-mono);">
+                  {count} <span style="color:var(--text-muted);">({pct}%)</span>
+                </span>
+              </div>
+              <div style="height:5px; background:var(--border); border-radius:3px; overflow:hidden;">
+                <div style={`width:${pct}%; height:100%; background:${color}; border-radius:3px;`} />
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+
+    <!-- Top utilisateurs -->
+    <div class="card">
+      <div class="card-header"><span class="card-title">Top contributeurs</span></div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Utilisateur</th>
+              <th>Signalements</th>
+            </tr>
+          </thead>
+          <tbody>
+            {topUsers && topUsers.length > 0 ? topUsers.map((u: any, i: number) => (
+              <tr>
+                <td style="font-family:var(--font-mono); color:var(--text-muted); font-size:0.75rem;">{i + 1}</td>
+                <td>
+                  <div>{u.full_name ?? '—'}</div>
+                  <div style="font-size:0.72rem; color:var(--text-muted); font-family:var(--font-mono);">{u.email}</div>
+                </td>
+                <td style="font-family:var(--font-mono); font-size:0.85rem; font-weight:500;">
+                  {u.reports_count ?? 0}
+                </td>
+              </tr>
+            )) : (
+              <tr>
+                <td colspan="3" style="text-align:center; color:var(--text-muted); padding:16px; font-size:0.83rem;">
+                  Aucune donnée disponible.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</DashboardLayout>

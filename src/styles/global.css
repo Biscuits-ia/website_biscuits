@@ -1255,4 +1255,22 @@ section:nth-child(odd) {
   .main-nav li {
     border-bottom-width: 2px;
   }
+
+  /* Styles pour la page de connexion */
+  .login-links {
+    margin: 12px 0;
+    text-align: center;
+  }
+
+  .forgot-password {
+    color: var(--color-primary);
+    font-size: 0.875rem;
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+
+  .forgot-password:hover {
+    color: var(--color-primary-dark);
+    text-decoration: underline;
+  }
 }

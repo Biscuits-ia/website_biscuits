@@ -1,0 +1,232 @@
+---
+// src/pages/dashboard/user/demandes.astro
+import DashboardLayout from '../../../layouts/DashboardLayout.astro';
+import { requireAuth } from '../../../lib/auth';
+
+const result = await requireAuth(Astro);
+if (result instanceof Response) return result;
+
+const { user, supabase } = result;
+const userId    = user.id;
+const userEmail = user.email ?? '';
+const userName  = user.user_metadata?.full_name ?? userEmail.split('@')[0];
+
+const saved = Astro.url.searchParams.get('saved') === '1';
+const error = Astro.url.searchParams.get('error') ?? '';
+
+const { data: requests } = await supabase
+  .from('requests')
+  .select('*')
+  .eq('user_id', userId)
+  .order('created_at', { ascending: false });
+
+const statusLabel: Record<string, string> = {
+  pending:     'En attente',
+  in_progress: 'En cours',
+  resolved:    'Résolu',
+};
+
+const statusBadge: Record<string, string> = {
+  pending:     'badge-warn',
+  in_progress: 'badge-info',
+  resolved:    'badge-ok',
+};
+---
+
+<DashboardLayout title="Mes demandes" role="user" activePage="demandes" userName={userName} userEmail={userEmail}>
+
+  <div class="mb-7 flex items-start justify-between gap-4 flex-wrap">
+    <div>
+      <h1>Mes demandes</h1>
+      <p class="mt-1.5">Suivez l'avancement de vos demandes d'accompagnement.</p>
+    </div>
+    <a href="#nouvelle-demande" class="btn btn-primary">+ Nouvelle demande</a>
+  </div>
+
+  {saved && <div class="flash flash-ok" role="alert">✓ Demande envoyée. Nous vous répondrons rapidement.</div>}
+  {error  && <div class="flash flash-err" role="alert">✗ {decodeURIComponent(error)}</div>}
+
+   <!-- Liste des demandes -->
+   {requests && requests.length > 0 ? (
+     <div class="flex flex-col gap-3.5">
+      {requests.map((req: any) => {
+        const date       = new Date(req.created_at);
+        const repliedAt  = req.replied_at ? new Date(req.replied_at) : null;
+        const badgeClass = statusBadge[req.status] ?? 'badge-neutral';
+        const label      = statusLabel[req.status] ?? req.status;
+
+        return (
+          <div class="request-card card">
+            <div class="request-header">
+              <div class="flex-1 min-w-0">
+                <div class="request-subject">{req.subject}</div>
+                <div class="request-meta">
+                  Envoyée le {date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
+                </div>
+              </div>
+              <span class={`badge ${badgeClass}`}>{label}</span>
+            </div>
+
+            <div class="request-body">{req.description}</div>
+
+            {req.admin_reply && (
+              <div class="admin-reply">
+                <div class="admin-reply-header">
+                  <span>💬 Réponse de l'équipe</span>
+                  {repliedAt && (
+                    <span class="text-xs text-muted font-mono">
+                      {repliedAt.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}
+                    </span>
+                  )}
+                </div>
+                <div class="admin-reply-body">{req.admin_reply}</div>
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  ) : (
+    <div class="card mb-6 text-center py-12 px-6">
+      <p class="text-xl mb-2">📬</p>
+      <p>Vous n'avez pas encore de demande. Utilisez le formulaire ci-dessous.</p>
+    </div>
+  )}
+
+  <!-- Formulaire nouvelle demande -->
+  <div class="card" id="nouvelle-demande">
+    <div class="card-header">
+      <span class="card-title">Nouvelle demande</span>
+    </div>
+
+    <form method="POST" action="/api/demandes/creer" class="flex flex-col gap-4.5">
+
+      <div class="field">
+        <label for="subject">Sujet <span class="required">*</span></label>
+        <input
+          type="text"
+          id="subject"
+          name="subject"
+          required
+          maxlength="200"
+          placeholder="Ex : Besoin d'aide pour automatiser mes emails"
+          class="border border-border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+        />
+      </div>
+
+      <div class="field">
+        <label for="description">Description <span class="required">*</span></label>
+        <textarea
+          id="description"
+          name="description"
+          required
+          rows="5"
+          placeholder="Décrivez votre besoin en détail : contexte, objectif, difficultés rencontrées…"
+          class="resize-y min-h-[120px]"
+        ></textarea>
+      </div>
+
+      <div>
+        <button type="submit" class="btn btn-primary">Envoyer la demande →</button>
+      </div>
+
+    </form>
+  </div>
+
+</DashboardLayout>
+
+<style>
+  .request-card { display: flex; flex-direction: column; gap: 14px; }
+
+  .request-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .request-subject {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1.3;
+  }
+
+  .request-meta {
+    font-size: var(--text-xs);
+    font-family: var(--font-mono);
+    color: var(--text-muted);
+    margin-top: 3px;
+  }
+
+  .request-body {
+    font-size: var(--text-base);
+    color: var(--text-secondary);
+    line-height: 1.6; 
+    white-space: pre-wrap;
+  }
+
+  .admin-reply {
+    background: var(--accent-light);
+    border: var(--brutal-border-thin);
+    border-left: 4px solid var(--accent);
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .admin-reply-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: var(--text-sm);
+    font-weight: 700;
+    color: var(--accent-dark);
+  }
+
+  .admin-reply-body {
+    font-size: var(--text-base);
+    color: var(--text-primary);
+    line-height: 1.6;
+    white-space: pre-wrap;
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+
+  .field label {
+    font-size: var(--text-xs);
+    font-weight: 700;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-family: var(--font-mono);
+  }
+
+  .field input,
+  .field textarea {
+    padding: 11px 14px;
+    font-size: var(--text-base);
+    border: solid var(--border);
+    width: 100%;
+    font-family: var(--font-sans);
+  }
+
+  .required { color: var(--err); }
+
+  .flash {
+    padding: 12px 18px;
+    margin-bottom: 20px;
+    font-size: var(--text-sm);
+    font-weight: 600;
+    border: var(--brutal-border-thin);
+    box-shadow: var(--shadow-sm);
+  }
+  .flash-ok  { background: var(--ok-bg);  color: var(--ok-fg);  border-color: var(--ok); }
+  .flash-err { background: var(--err-bg); color: var(--err-fg); border-color: var(--err); }
+</style>

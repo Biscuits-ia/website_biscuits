@@ -1,0 +1,110 @@
+---
+import DashboardLayout from '../../../layouts/DashboardLayout.astro';
+import { requireAuth } from '../../../lib/auth';
+
+const result = await requireAuth(Astro);
+if (result instanceof Response) return result;
+
+const { user, supabase } = result;
+const userId    = user.id;
+const userEmail = user.email ?? '';
+const userName  = user.user_metadata?.full_name ?? userEmail.split('@')[0];
+
+const page    = Number(Astro.url.searchParams.get('page') ?? 1);
+const perPage = 20;
+const from    = (page - 1) * perPage;
+const filter  = Astro.url.searchParams.get('type') ?? '';
+
+let query = supabase
+  .from('activity_logs')
+  .select('id, event, created_at, metadata', { count: 'exact' })
+  .eq('user_id', userId)
+  .order('created_at', { ascending: false })
+  .range(from, from + perPage - 1);
+
+if (filter) query = query.ilike('event', `%${filter}%`);
+
+const { data: logs, count } = await query;
+const totalPages = Math.ceil((count ?? 0) / perPage);
+---
+
+<DashboardLayout title="Activité" role="user" activePage="activity" userName={userName} userEmail={userEmail}>
+
+  <div class="mb-6">
+    <h1 class="text-xl font-bold tracking-tight text-primary">
+      Historique d'activité
+    </h1>
+    <p class="text-muted text-xs mt-1">
+      {count ?? 0} événement{(count ?? 0) > 1 ? 's' : ''} enregistré{(count ?? 0) > 1 ? 's' : ''}
+    </p>
+  </div>
+
+  <!-- Filtre -->
+  <form method="get" class="filters-bar">
+     <input
+       type="search"
+       name="type"
+       placeholder="Rechercher un événement…"
+       value={filter}
+       class="filter-input min-w-[240px]"
+     />
+    <button type="submit" class="btn btn-primary text-xs">Filtrer</button>
+    {filter && (
+      <a href="/dashboard/user/activity" class="btn btn-ghost text-xs">× Réinitialiser</a>
+    )}
+  </form>
+
+  <!-- Timeline -->
+  <div class="card p-0">
+    {logs && logs.length > 0 ? (
+      <div class="timeline px-6">
+        {logs.map((item: any) => {
+          const date     = new Date(item.created_at);
+          const evtType  = item.event?.toLowerCase() ?? '';
+          const dotClass = evtType.includes('error')  ? 'err'
+            : evtType.includes('analyz') ? 'ok'
+            : evtType.includes('submit') ? 'info'
+            : 'warn';
+          return (
+            <div class="timeline-item">
+              <div class={`timeline-dot ${dotClass}`} />
+              <div class="timeline-body">
+                <div class="timeline-event">{item.event}</div>
+                <div class="timeline-meta">
+                  {date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
+                  &nbsp;à&nbsp;
+                  {date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+                  {item.metadata?.ip    ? ` · ${item.metadata.ip}`     : ''}
+                  {item.metadata?.agent ? ` · ${item.metadata.agent}`  : ''}
+                </div>
+              </div>
+              <div class="text-xs font-mono text-muted whitespace-nowrap pt-0.5">
+                {date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    ) : (
+      <div class="py-12 px-6 text-center">
+        <p class="text-muted text-xs">Aucune activité trouvée.</p>
+      </div>
+    )}
+  </div>
+
+  <!-- Pagination -->
+  {totalPages > 1 && (
+    <div class="flex gap-2 justify-center mt-5">
+      {page > 1 && (
+        <a href={`?page=${page - 1}&type=${filter}`} class="btn btn-ghost">← Précédent</a>
+      )}
+      <span class="px-3.5 py-1.5 text-xs text-muted font-mono">
+        {page} / {totalPages}
+      </span>
+      {page < totalPages && (
+        <a href={`?page=${page + 1}&type=${filter}`} class="btn btn-ghost">Suivant →</a>
+      )}
+    </div>
+  )}
+
+</DashboardLayout>

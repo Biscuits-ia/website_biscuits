@@ -1,0 +1,169 @@
+---
+import AuthLayout from '../layouts/AuthLayout.astro';
+import { createSupabaseClient } from '../lib/supabase';
+
+const supabase = createSupabaseClient(Astro);
+const { data: { session } } = await supabase.auth.getSession();
+if (session) return Astro.redirect('/dashboard/user');
+
+const supabaseUrl = import.meta.env.SUPABASE_URL;
+const supabaseKey = import.meta.env.SUPABASE_ANON_KEY;
+---
+
+<AuthLayout title="Mot de passe oublié" description="Réinitialisez votre mot de passe Biscuits IA.">
+  <div style="min-height:100vh; display:flex; align-items:center; justify-content:center; padding:2rem 1rem;">
+    <div style="width:100%; max-width:400px;">
+
+      <div style="display:flex; align-items:center; gap:12px; margin-bottom:32px;">
+        <div style="width:40px; height:40px; background:oklch(53.958% 0.10717 58.243); border-radius:12px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+          <svg viewBox="0 0 14 14" fill="#F7F2E8" width="18" height="18" aria-hidden="true">
+            <path d="M7 0C3.13 0 0 3.13 0 7s3.13 7 7 7 7-3.13 7-7-3.13-7-7-7zm0 2c.83 0 1.5.67 1.5 1.5S7.83 5 7 5s-1.5-.67-1.5-1.5S6.17 2 7 2zm0 10c-1.75 0-3.29-.9-4.2-2.26C2.85 8.23 5.35 7.5 7 7.5s4.15.73 4.2 2.24C10.29 11.1 8.75 12 7 12z"/>
+          </svg>
+        </div>
+        <div>
+          <div style="font-size:15px; font-weight:500; color:#2C2014;">Biscuits IA</div>
+          <div style="font-size:11px; color:#9A7E5A; font-family:'Geist Mono',monospace;">réinitialisation</div>
+        </div>
+      </div>
+
+      <div style="background:#FDFAF4; border:1.5px solid #DDD0B8; border-radius:16px; padding:36px;">
+        <h1 style="font-size:22px; font-weight:500; color:#2C2014; margin-bottom:6px;">Mot de passe oublié ?</h1>
+        <p style="font-size:14px; color:#7A6040; line-height:1.6; margin-bottom:28px;">
+          Entrez votre email et nous vous envoyons un lien pour en créer un nouveau.
+        </p>
+
+        <div style="margin-bottom:24px;">
+          <label for="email" class="auth-label">Adresse email</label>
+          <input type="email" id="email" placeholder="vous@exemple.com" autocomplete="email" class="auth-input" />
+        </div>
+
+        <button id="reset-btn" class="auth-btn-primary" type="button">
+          <span id="btn-text">Envoyer le lien</span>
+          <svg id="btn-loader" class="auth-spinner" style="display:none;" width="14" height="14"
+               viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+            <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+          </svg>
+        </button>
+
+        <div id="msg" class="auth-msg" style="display:none;" role="alert"></div>
+
+        <div style="text-align:center; margin-top:20px;">
+          <a href="/connexion" class="auth-link-back">← Retour à la connexion</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</AuthLayout>
+
+<style>
+  .auth-label {
+    display: block;
+    font-size: 11px;
+    font-family: 'Geist Mono', monospace;
+    color: #9A7E5A;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    margin-bottom: 7px;
+  }
+  .auth-input {
+    width: 100%;
+    padding: 11px 14px;
+    border: 1.5px solid #DDD0B8;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #2C2014;
+    background: #F7F2E8;
+    font-family: 'Geist', sans-serif;
+    font-weight: 400;
+    box-sizing: border-box;
+    transition: border-color .15s, background .15s;
+  }
+  .auth-input:focus {
+    outline: none;
+    border-color: oklch(53.958% 0.10717 58.243);
+    background: #FDFAF4;
+    box-shadow: 0 0 0 3px rgba(196, 98, 58, .12);
+  }
+  .auth-input::placeholder { color: #C4B89A; }
+  .auth-btn-primary {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 20px;
+    background: oklch(53.958% 0.10717 58.243);
+    color: #FDFAF4;
+    font-size: 14px;
+    font-weight: 500;
+    border-radius: 8px;
+    cursor: pointer;
+    border: none;
+    font-family: 'Geist', sans-serif;
+    transition: background .15s;
+  }
+  .auth-btn-primary:hover   { background: #754819; }
+  .auth-btn-primary:active  { background: #8b5822; }
+  .auth-btn-primary:disabled { opacity:.6; cursor:not-allowed; }
+  .auth-msg { margin-top:14px; padding:10px 14px; border-radius:8px; font-size:13px; text-align:center; line-height:1.5; }
+  .auth-msg.error   { background:#FAEAE4; border:1px solid #E8B9A6; color:#8B3820; }
+  .auth-msg.success { background:#E8F0EA; border:1px solid #B5CDB9; color:#2E5A38; }
+  .auth-link-back { font-size:13px; color:#9A7E5A; transition:color .15s; }
+  .auth-link-back:hover { color:#2C2014; }
+  .auth-spinner { animation:spin .7s linear infinite; }
+  @keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+</style>
+
+<script define:vars={{ supabaseUrl, supabaseKey }}>
+  window.__SB_URL__ = supabaseUrl;
+  window.__SB_KEY__ = supabaseKey;
+</script>
+
+<script type="module">
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+  const supabase  = createClient(window.__SB_URL__, window.__SB_KEY__);
+  const msgEl     = document.getElementById('msg');
+  const btn       = document.getElementById('reset-btn');
+  const btnText   = document.getElementById('btn-text');
+  const btnLoader = document.getElementById('btn-loader');
+
+  function showMsg(text, type = 'error') {
+    msgEl.textContent   = text;
+    msgEl.className     = `auth-msg ${type}`;
+    msgEl.style.display = 'block';
+  }
+
+  function setLoading(loading) {
+    btn.disabled            = loading;
+    btnText.style.display   = loading ? 'none'  : 'block';
+    btnLoader.style.display = loading ? 'block' : 'none';
+  }
+
+  async function handleReset() {
+    const email = document.getElementById('email').value.trim();
+
+    msgEl.style.display = 'none';
+    if (!email) return showMsg('Veuillez entrer votre adresse email.');
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return showMsg('Adresse email invalide.');
+
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reinitialisation-mot-de-passe`,
+      });
+      if (error) showMsg(error.message);
+      else showMsg('Lien envoyé ! Vérifiez votre boîte de réception.', 'success');
+    } catch {
+      showMsg('Une erreur est survenue. Veuillez réessayer.');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  btn.addEventListener('click', handleReset);
+
+  document.getElementById('email').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') handleReset();
+  });
+</script>

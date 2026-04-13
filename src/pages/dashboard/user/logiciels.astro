@@ -1,0 +1,227 @@
+---
+// src/pages/dashboard/user/logiciels.astro
+import DashboardLayout from '../../../layouts/DashboardLayout.astro';
+import { requireAuth } from '../../../lib/auth';
+
+const result = await requireAuth(Astro);
+if (result instanceof Response) return result;
+
+const { user, supabase } = result;
+const userEmail = user.email ?? '';
+const userName  = user.user_metadata?.full_name ?? userEmail.split('@')[0];
+
+const search   = Astro.url.searchParams.get('q')        ?? '';
+const category = Astro.url.searchParams.get('category') ?? '';
+
+let query = supabase
+  .from('software')
+  .select('*')
+  .eq('is_visible', true)
+  .order('name', { ascending: true });
+
+if (search)   query = query.ilike('name', `%${search}%`);
+if (category) query = query.eq('category', category);
+
+const { data: softwares } = await query;
+
+const { data: cats } = await supabase
+  .from('software')
+  .select('category')
+  .eq('is_visible', true);
+
+const uniqueCategories: string[] = [
+  ...new Set((cats ?? []).map((r: any) => r.category).filter(Boolean))
+].sort();
+---
+
+<DashboardLayout title="Logiciels" role="user" activePage="logiciels" userName={userName} userEmail={userEmail}>
+
+  <div class="mb-7">
+    <h1>Logiciels recommandés</h1>
+    <p class="description">
+      Une sélection d'outils libres et gratuits recommandés par Biscuits IA pour les associations.  N'hésitez pas à nous contacter via le formulaire de demande si vous avez des questions sur un logiciel ou besoin d'aide pour choisir.
+    </p>
+  </div>
+
+  <!-- Filtres -->
+  <form method="get" class="filters-bar">
+      <input
+        type="search"
+        name="q"
+        placeholder="Rechercher un logiciel…"
+        value={search}
+        class="filter-input border border-border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 min-w-[220px]"
+      />
+    <select name="category" class="filter-input" onchange="this.form.submit()">
+      <option value="">Toutes les catégories</option>
+      {uniqueCategories.map((cat) => (
+        <option value={cat} selected={category === cat}>{cat}</option>
+      ))}
+    </select>
+    <button type="submit" class="btn btn-primary">Rechercher</button>
+    {(search || category) && (
+      <a href="/dashboard/user/logiciels" class="btn btn-ghost">× Réinitialiser</a>
+    )}
+  </form>
+
+  <!-- Grille -->
+  {softwares && softwares.length > 0 ? (
+    <div class="software-grid">
+      {softwares.map((sw: any) => (
+        <div class="software-card card">
+
+          <div class="software-top">
+            {sw.logo_url ? (
+              <img src={sw.logo_url} alt={`Logo ${sw.name}`} class="software-logo" />
+            ) : (
+              <div class="software-logo-placeholder">
+                {sw.name.charAt(0).toUpperCase()}
+              </div>
+            )}
+            <div class="flex-1 min-w-0">
+              <div class="software-name">{sw.name}</div>
+              {sw.category && (
+                <span class="badge badge-info mt-1">{sw.category}</span>
+              )}
+            </div>
+            {sw.is_free && (
+              <span class="badge badge-ok">Gratuit</span>
+            )}
+          </div>
+
+          {sw.description && (
+            <p class="software-desc">{sw.description}</p>
+          )}
+
+          <div class="software-actions">
+            {sw.website_url && (
+              <a
+                href={sw.website_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="btn btn-ghost text-sm"
+              >
+                Site web ↗
+              </a>
+            )}
+            {sw.download_url && (
+              <a
+                href={sw.download_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="btn btn-primary text-sm"
+              >
+                Télécharger ↓
+              </a>
+            )}
+
+            {sw.install && (
+              <a
+                href={sw.install}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="btn btn-primary text-[0.85rem]"
+              >
+                Demander une installation ↓
+              </a>
+            )}
+          </div>
+
+        </div>
+      ))}
+    </div>
+  ) : (
+    <div class="card text-center py-12 px-6">
+      <p class="text-2xl mb-2">🔍</p>
+      <p>
+        {(search || category)
+          ? 'Aucun logiciel ne correspond à votre recherche.'
+          : 'Aucun logiciel disponible pour le moment.'}
+      </p>
+      {(search || category) && (
+        <a href="/dashboard/user/logiciels" class="btn btn-ghost mt-4 inline-flex">
+          Voir tous les logiciels
+        </a>
+      )}
+    </div>
+  )}
+
+  <p class="warn-text">
+    ⚠️ La demande d’installation peut engendrer des frais d’installation ainsi que des frais de maintenance. le choix d’hébergement, des coûts supplémentaires peuvent s’appliquer : soit vous optez pour un hébergement géré par vos soins, soit nous assurons l’hébergement du serveur (ce qui peut impliquer des frais additionnels plus élevés en cas de prise en charge complète).
+  </p>
+
+</DashboardLayout>
+
+<style>
+  .software-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 26px;
+  }
+
+  .software-card {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .software-top {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .software-logo {
+    width: 48px;
+    height: 48px;
+    object-fit: contain;
+    border: var(--brutal-border-thin);
+    flex-shrink: 0;
+  }
+
+  .software-logo-placeholder {
+    width: 48px;
+    height: 48px;
+    background: var(--accent-light);
+    border: var(--brutal-border-thin);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: var(--accent-dark);
+    flex-shrink: 0;
+  }
+  .warn-text {
+    margin-top: var(--space-lg);
+    padding: var(--space-md);
+    background: var(--warn-bg);
+    color: #000000;
+    border: var(--brutal-border-thin);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .software-name {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1.2;
+  }
+
+  .software-desc {
+    font-size: var(--text-base);
+    color: var(--text-secondary);
+    line-height: 1.6;
+    flex: 1;
+  }
+
+  .software-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: auto;
+    padding-top: 12px;
+    border-top: var(--brutal-border-thin);
+  }
+</style>

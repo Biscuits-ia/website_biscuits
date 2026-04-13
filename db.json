@@ -1,0 +1,142 @@
+[
+  {
+    "tablename": "activity_logs",
+    "policyname": "admins can view all activity",
+    "cmd": "SELECT",
+    "qual": "(EXISTS ( SELECT 1\n   FROM profiles\n  WHERE ((profiles.id = auth.uid()) AND (profiles.role = 'admin'::text))))",
+    "with_check": null
+  },
+  {
+    "tablename": "activity_logs",
+    "policyname": "service can insert activity",
+    "cmd": "INSERT",
+    "qual": null,
+    "with_check": "true"
+  },
+  {
+    "tablename": "activity_logs",
+    "policyname": "users can view own activity",
+    "cmd": "SELECT",
+    "qual": "(auth.uid() = user_id)",
+    "with_check": null
+  },
+  {
+    "tablename": "profiles",
+    "policyname": "Users can read their profile",
+    "cmd": "SELECT",
+    "qual": "(auth.uid() = id)",
+    "with_check": null
+  },
+  {
+    "tablename": "profiles",
+    "policyname": "admins can view all profiles",
+    "cmd": "SELECT",
+    "qual": "(EXISTS ( SELECT 1\n   FROM profiles profiles_1\n  WHERE ((profiles_1.id = auth.uid()) AND (profiles_1.role = 'admin'::text))))",
+    "with_check": null
+  },
+  {
+    "tablename": "profiles",
+    "policyname": "allow read own profile",
+    "cmd": "SELECT",
+    "qual": "(auth.uid() = id)",
+    "with_check": null
+  },
+  {
+    "tablename": "profiles",
+    "policyname": "users can update own profile",
+    "cmd": "UPDATE",
+    "qual": "(auth.uid() = id)",
+    "with_check": null
+  },
+  {
+    "tablename": "profiles",
+    "policyname": "users can view own profile",
+    "cmd": "SELECT",
+    "qual": "(auth.uid() = id)",
+    "with_check": null
+  },
+  {
+    "tablename": "reports",
+    "policyname": "admins can update reports",
+    "cmd": "UPDATE",
+    "qual": "(EXISTS ( SELECT 1\n   FROM profiles\n  WHERE ((profiles.id = auth.uid()) AND (profiles.role = ANY (ARRAY['admin'::text, 'moderator'::text])))))",
+    "with_check": null
+  },
+  {
+    "tablename": "reports",
+    "policyname": "admins can view all reports",
+    "cmd": "SELECT",
+    "qual": "(EXISTS ( SELECT 1\n   FROM profiles\n  WHERE ((profiles.id = auth.uid()) AND (profiles.role = ANY (ARRAY['admin'::text, 'moderator'::text])))))",
+    "with_check": null
+  },
+  {
+    "tablename": "reports",
+    "policyname": "users can insert own reports",
+    "cmd": "INSERT",
+    "qual": null,
+    "with_check": "(auth.uid() = user_id)"
+  },
+  {
+    "tablename": "reports",
+    "policyname": "users can view own reports",
+    "cmd": "SELECT",
+    "qual": "(auth.uid() = user_id)",
+    "with_check": null
+  },
+  {
+    "tablename": "requests",
+    "policyname": "requests_own_insert",
+    "cmd": "INSERT",
+    "qual": null,
+    "with_check": "(auth.uid() = user_id)"
+  },
+  {
+    "tablename": "requests",
+    "policyname": "requests_own_read",
+    "cmd": "SELECT",
+    "qual": "(auth.uid() = user_id)",
+    "with_check": null
+  },
+  {
+    "tablename": "software",
+    "policyname": "software_visible_read",
+    "cmd": "SELECT",
+    "qual": "(is_visible = true)",
+    "with_check": null
+  },
+  {
+    "tablename": "system_logs",
+    "policyname": "admins only",
+    "cmd": "SELECT",
+    "qual": "(EXISTS ( SELECT 1\n   FROM profiles\n  WHERE ((profiles.id = auth.uid()) AND (profiles.role = 'admin'::text))))",
+    "with_check": null
+  },
+  {
+    "tablename": "system_logs",
+    "policyname": "service can insert system logs",
+    "cmd": "INSERT",
+    "qual": null,
+    "with_check": "true"
+  },
+  {
+    "tablename": "workshop_registrations",
+    "policyname": "registrations_own",
+    "cmd": "ALL",
+    "qual": "(auth.uid() = user_id)",
+    "with_check": null
+  },
+  {
+    "tablename": "workshop_sessions",
+    "policyname": "sessions_public_read",
+    "cmd": "SELECT",
+    "qual": "(is_published = true)",
+    "with_check": null
+  },
+  {
+    "tablename": "workshops",
+    "policyname": "workshops_public_read",
+    "cmd": "SELECT",
+    "qual": "true",
+    "with_check": null
+  }
+]

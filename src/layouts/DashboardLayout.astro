@@ -1,55 +1,93 @@
 ---
+// src/layouts/DashboardLayout.astro
 import '../styles/dashboard.css';
+import { requireAuth } from '../lib/auth';
+import type { UserRole } from '../lib/auth';
+
+// ── Props ─────────────────────────────────────────────────────────────────────
+// `role` n'est plus une prop — il est lu depuis la BDD via requireAuth.
+// On garde la prop pour rétrocompatibilité mais elle est ignorée.
 
 export interface NavItem {
-  id: string;
-  label: string;
-  icon: string;
+  id:     string;
+  label:  string;
+  icon:   string;
   badge?: string | null;
 }
 
 export interface Props {
-  title: string;
-  role?: 'user' | 'admin';
+  title:      string;
   activePage?: string;
-  userName?: string;
-  userEmail?: string;
+  userName?:   string;
+  userEmail?:  string;
+  /** @deprecated — le rôle est désormais lu depuis la BDD, pas depuis cette prop */
+  role?:       string;
 }
 
-const { title, role = 'user', activePage = '', userName = 'Utilisateur', userEmail = '' } = Astro.props;
+const { title, activePage = '', userName = 'Utilisateur', userEmail = '' } = Astro.props;
 
-const isAdmin = role === 'admin';
+// ── Rôle réel depuis la BDD ───────────────────────────────────────────────────
+// requireAuth lit le rôle via service_role (bypass RLS) à chaque requête.
+// Cela garantit que le menu reflète toujours le rôle actuel en base,
+// même après un changement sans reconnexion.
+const authResult = await requireAuth(Astro);
+
+// Si non connecté, requireAuth redirige — on ne devrait jamais arriver ici
+if (authResult instanceof Response) return authResult;
+
+const role: UserRole    = authResult.role;
+const isAdmin           = role === 'admin';
+const isModerator       = role === 'moderator';
+const isStaff           = isAdmin || isModerator;
+
+// Nom d'affichage : priorité à la prop (passée depuis la page parente),
+// sinon on prend le user de authResult
+const displayName  = userName !== 'Utilisateur'
+  ? userName
+  : authResult.user.user_metadata?.full_name
+    ?? authResult.user.email?.split('@')[0]
+    ?? 'Utilisateur';
+
+const displayEmail = userEmail || authResult.user.email || '';
+
+// ── Navigation ────────────────────────────────────────────────────────────────
 
 const userNav: NavItem[] = [
-  { id: 'overview',   label: 'Vue d\'ensemble', icon: 'grid' },
-  { id: 'activity',   label: 'Activité',         icon: 'clock' },
-  { id: 'stats',      label: 'Statistiques',     icon: 'bar-chart' },
-  { id: 'resources',  label: 'Ressources',       icon: 'book' },
-  { id: 'settings',   label: 'Paramètres',       icon: 'settings' },
+  { id: 'overview',  label: "Vue d'ensemble", icon: 'grid'      },
+  { id: 'ateliers',  label: 'Ateliers',        icon: 'calendar'  },
+  { id: 'demandes',  label: 'Mes demandes',    icon: 'inbox'     },
+  { id: 'activity',  label: 'Activité',        icon: 'clock'     },
+  { id: 'settings',  label: 'Paramètres',      icon: 'settings'  },
 ];
 
 const adminNav: NavItem[] = [
-  { id: 'overview',  label: 'Vue d\'ensemble', icon: 'grid',    badge: null },
-  { id: 'reports',   label: 'Signalements',    icon: 'flag',    badge: null },
-  { id: 'users',     label: 'Utilisateurs',    icon: 'users',   badge: null },
-  { id: 'metrics',   label: 'Métriques',       icon: 'trending-up', badge: null },
-  { id: 'logs',      label: 'Logs système',    icon: 'terminal', badge: 'LIVE' },
+  { id: 'overview',  label: "Vue d'ensemble", icon: 'grid',         badge: null  },
+  { id: 'reports',   label: 'Signalements',   icon: 'flag',         badge: null  },
+  { id: 'users',     label: 'Utilisateurs',   icon: 'users',        badge: null  },
+  { id: 'ateliers',  label: 'Ateliers',        icon: 'calendar',     badge: null  },
+  { id: 'metrics',   label: 'Métriques',       icon: 'trending-up',  badge: null  },
+  { id: 'logs',      label: 'Logs système',    icon: 'terminal',     badge: 'LIVE'},
 ];
 
 const nav = isAdmin ? adminNav : userNav;
+const dashRole = isAdmin ? 'admin' : 'user';
+
+// ── Icônes SVG ────────────────────────────────────────────────────────────────
 
 const icons: Record<string, string> = {
-  grid: `<svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1.5" y="1.5" width="5" height="5" rx="1"/><rect x="9.5" y="1.5" width="5" height="5" rx="1"/><rect x="1.5" y="9.5" width="5" height="5" rx="1"/><rect x="9.5" y="9.5" width="5" height="5" rx="1"/></svg>`,
-  clock: `<svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/><polyline points="8,4.5 8,8 10.5,9.5"/></svg>`,
-  'bar-chart': `<svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1.5" y="8.5" width="3" height="5.5"/><rect x="6.5" y="5" width="3" height="9"/><rect x="11.5" y="2" width="3" height="12"/></svg>`,
-  settings: `<svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="2.5"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.05 3.05l1.41 1.41M11.54 11.54l1.41 1.41M3.05 12.95l1.41-1.41M11.54 4.46l1.41-1.41"/></svg>`,
-  flag: `<svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 1v14M3 2h8.5L9 6l2.5 4H3"/></svg>`,
-  users: `<svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="6" cy="5" r="2.5"/><path d="M1 14c0-3 2.24-4 5-4s5 1 5 4"/><path d="M11 7.5c1.5 0 2.5.8 2.5 2.5 0 .5-.1.9-.3 1.2M13 4a2 2 0 010 4"/></svg>`,
-  'trending-up': `<svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="1,12 5.5,7 9,9.5 15,3"/><polyline points="11,3 15,3 15,7"/></svg>`,
-  terminal: `<svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="2.5" width="14" height="11" rx="1.5"/><polyline points="4,6.5 7,9 4,11.5"/><line x1="8.5" y1="11.5" x2="12" y2="11.5"/></svg>`,
+  grid:         `<svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1.5" y="1.5" width="5" height="5" rx="1"/><rect x="9.5" y="1.5" width="5" height="5" rx="1"/><rect x="1.5" y="9.5" width="5" height="5" rx="1"/><rect x="9.5" y="9.5" width="5" height="5" rx="1"/></svg>`,
+  clock:        `<svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/><polyline points="8,4.5 8,8 10.5,9.5"/></svg>`,
+  calendar:     `<svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1.5" y="2.5" width="13" height="12" rx="1.5"/><line x1="1.5" y1="6.5" x2="14.5" y2="6.5"/><line x1="5" y1="1" x2="5" y2="4"/><line x1="11" y1="1" x2="11" y2="4"/></svg>`,
+  inbox:        `<svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1.5 10h3l1.5 2.5h4L11.5 10h3V3.5a1 1 0 00-1-1h-11a1 1 0 00-1 1V10z"/></svg>`,
+  'bar-chart':  `<svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1.5" y="8.5" width="3" height="5.5"/><rect x="6.5" y="5" width="3" height="9"/><rect x="11.5" y="2" width="3" height="12"/></svg>`,
+  settings:     `<svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="2.5"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.05 3.05l1.41 1.41M11.54 11.54l1.41 1.41M3.05 12.95l1.41-1.41M11.54 4.46l1.41-1.41"/></svg>`,
+  flag:         `<svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 1v14M3 2h8.5L9 6l2.5 4H3"/></svg>`,
+  users:        `<svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="6" cy="5" r="2.5"/><path d="M1 14c0-3 2.24-4 5-4s5 1 5 4"/><path d="M11 7.5c1.5 0 2.5.8 2.5 2.5 0 .5-.1.9-.3 1.2M13 4a2 2 0 010 4"/></svg>`,
+  'trending-up':`<svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="1,12 5.5,7 9,9.5 15,3"/><polyline points="11,3 15,3 15,7"/></svg>`,
+  terminal:     `<svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="2.5" width="14" height="11" rx="1.5"/><polyline points="4,6.5 7,9 4,11.5"/><line x1="8.5" y1="11.5" x2="12" y2="11.5"/></svg>`,
 };
 
-const initials = userName.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2);
+const initials = displayName.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2);
 ---
 
 <!DOCTYPE html>
@@ -64,6 +102,7 @@ const initials = userName.split(' ').map((n: string) => n[0]).join('').toUpperCa
 </head>
 <body class={isAdmin ? 'admin-layout' : ''}>
   <div class="layout">
+
     <!-- Sidebar -->
     <aside class="sidebar">
       <div class="sidebar-logo">
@@ -75,39 +114,42 @@ const initials = userName.split(' ').map((n: string) => n[0]).join('').toUpperCa
 
       <nav class="sidebar-nav">
         <span class="nav-section">Navigation</span>
-        {nav.map(item => (
+        {nav.map((item: NavItem) => (
           <a
-            href={`/dashboard/${role}/${item.id === 'overview' ? '' : item.id}`}
-            class={`nav-item ${activePage === item.id ? 'active' : ''}`}
+            href={`/dashboard/${dashRole}/${item.id === 'overview' ? '' : item.id}`}
+            class={`nav-item${activePage === item.id ? ' active' : ''}`}
           >
             <span set:html={icons[item.icon]} />
             {item.label}
-            {item.badge && item.badge !== null && <span class="admin-badge">{item.badge}</span>}
+            {item.badge && <span class="admin-badge">{item.badge}</span>}
           </a>
         ))}
 
         {isAdmin && (
-          <>
+          <Fragment>
             <span class="nav-section" style="margin-top:12px">Accès rapide</span>
-            <a href="/dashboard/user" class="nav-item" style="font-size:0.78rem; color: var(--text-muted)">
-              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" style="width:15px;height:15px"><path d="M8 1a7 7 0 100 14A7 7 0 008 1zM8 6a2 2 0 110 4 2 2 0 010-4z"/></svg>
+            <a href="/dashboard/user" class="nav-item nav-item--muted">
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" style="width:15px;height:15px">
+                <path d="M8 1a7 7 0 100 14A7 7 0 008 1zM8 6a2 2 0 110 4 2 2 0 010-4z"/>
+              </svg>
               Vue utilisateur
             </a>
-          </>
+          </Fragment>
         )}
       </nav>
+
       <div class="sidebar-footer">
         <div class="user-chip">
           <div class="user-avatar">{initials}</div>
           <div class="user-info">
-            <div class="user-name">{userName}</div>
-            <div class="user-role">{isAdmin ? 'admin' : 'membre'}</div>
+            <div class="user-name">{displayName}</div>
+            <div class="user-role">{isAdmin ? 'admin' : isModerator ? 'modérateur' : 'membre'}</div>
           </div>
         </div>
-        <a href="/" class="btn btn-ghost" style="width:100%; margin-top:8px; justify-content:center; font-size:0.78rem;">
+        <a href="/" class="btn btn-ghost btn-full btn-xs-text">
           Retourner à l'accueil
         </a>
-        <a href="/auth/deconnexion" class="btn btn-ghost" style="width:100%; margin-top:8px; justify-content:center; font-size:0.78rem;">
+        <a href="/auth/deconnexion" class="btn btn-ghost btn-full btn-xs-text">
           Déconnexion
         </a>
       </div>
@@ -119,13 +161,14 @@ const initials = userName.split(' ').map((n: string) => n[0]).join('').toUpperCa
         <div class="topbar-title">
           Biscuits IA &nbsp;/&nbsp; <span>{title}</span>
         </div>
-        <div style="display:flex; align-items:center; gap:10px;">
+        <div class="topbar-right">
           {isAdmin && (
-            <span class="badge badge-warn" style="font-size:0.65rem;">
-              ⚡ Mode admin
-            </span>
+            <span class="badge badge-warn badge-admin">⚡ Mode admin</span>
           )}
-          <span style="font-size:0.78rem; color: var(--text-muted); font-family: var(--font-mono);">
+          {isModerator && !isAdmin && (
+            <span class="badge badge-info badge-admin">🛡 Modérateur</span>
+          )}
+          <span class="topbar-date">
             {new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })}
           </span>
         </div>
@@ -135,6 +178,16 @@ const initials = userName.split(' ').map((n: string) => n[0]).join('').toUpperCa
         <slot />
       </div>
     </main>
+
   </div>
 </body>
 </html>
+
+<style>
+  .nav-item--muted { font-size: 0.78rem; color: var(--text-muted); }
+  .btn-full        { width: 100%; margin-top: 8px; justify-content: center; }
+  .btn-xs-text     { font-size: 0.78rem; }
+  .topbar-right    { display: flex; align-items: center; gap: 10px; }
+  .topbar-date     { font-size: 0.78rem; color: var(--text-muted); font-family: var(--font-mono); }
+  .badge-admin     { font-size: 0.65rem; }
+</style>

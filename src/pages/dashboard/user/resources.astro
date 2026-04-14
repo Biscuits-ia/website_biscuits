@@ -1,158 +1,187 @@
 ---
+// src/pages/dashboard/user/resources.astro
 import DashboardLayout from '../../../layouts/DashboardLayout.astro';
-import { requireAuth } from '../../../lib/auth';
+import { requireAuth }  from '../../../lib/auth';
+import type { Resource } from '../../../types/resources';
+import {
+  formatFileSize,
+  fileIcon,
+  fileTypeLabel,
+  RESOURCE_CATEGORIES,
+} from '../../../types/resources';
 
 const result = await requireAuth(Astro);
 if (result instanceof Response) return result;
 
 const { user, supabase } = result;
-const userEmail = user.email ?? '';
-const userName  = user.user_metadata?.full_name ?? userEmail.split('@')[0];
+const userName = user.user_metadata?.full_name ?? user.email?.split('@')[0] ?? 'Utilisateur';
 
-const search   = Astro.url.searchParams.get('q')        ?? '';
-const category = Astro.url.searchParams.get('category') ?? '';
+// Filtre par catégorie
+const filterCat = Astro.url.searchParams.get('category') ?? '';
 
 let query = supabase
   .from('resources')
-  .select('id, title, description, category, file_url, created_at, is_free', { count: 'exact' })
-  .eq('published', true)
+  .select('id, title, description, category, file_name, file_size, file_type, downloads, created_at')
+  .eq('is_published', true)
   .order('created_at', { ascending: false });
 
-if (search)   query = query.ilike('title', `%${search}%`);
-if (category) query = query.eq('category', category);
+if (filterCat) query = query.eq('category', filterCat);
 
-const { data: resources, count } = await query;
+const { data: resourcesRaw } = await query;
+const resources = (resourcesRaw ?? []) as Resource[];
 
-// Catégories disponibles pour le filtre
-const { data: categories } = await supabase
-  .from('resources')
-  .select('category')
-  .eq('published', true);
+// ── Groupement par catégorie ──────────────────────────────────────────────────
 
-const uniqueCategories: string[] = [...new Set((categories ?? []).map((r: any) => r.category).filter(Boolean))];
+interface ResourceRow {
+  r:         Resource;
+  icon:      string;
+  typeLabel: string;
+  sizeLabel: string;
+  href:      string;         // lien de téléchargement via API
+}
 
-const categoryIcons: Record<string, string> = {
-  guide:      '📖',
-  template:   '📄',
-  video:      '🎬',
-  formation:  '🎓',
-  outil:      '🔧',
-  default:    '📦',
-};
+interface CategoryGroup {
+  category: string;
+  rows:     ResourceRow[];
+}
+
+// Construit les rows
+const allRows: ResourceRow[] = resources.map((r: Resource): ResourceRow => ({
+  r,
+  icon:      fileIcon(r.file_type),
+  typeLabel: fileTypeLabel(r.file_type),
+  sizeLabel: formatFileSize(r.file_size),
+  href:      `/api/resources/telecharger?id=${r.id}`,
+}));
+
+// Groupe par catégorie en respectant l'ordre de RESOURCE_CATEGORIES
+const grouped: CategoryGroup[] = filterCat
+  ? [{ category: filterCat, rows: allRows }]
+  : RESOURCE_CATEGORIES
+      .map((cat) => ({
+        category: cat,
+        rows: allRows.filter((row) => row.r.category === cat),
+      }))
+      .filter((g) => g.rows.length !== 0);
+
+const hasResources = allRows.length !== 0;
+const hasFilter    = filterCat !== '';
+const totalLabel   = `${resources.length} ressource${resources.length !== 1 ? 's' : ''} disponible${resources.length !== 1 ? 's' : ''}`;
 ---
 
-<DashboardLayout title="Ressources" role="user" activePage="resources" userName={userName} userEmail={userEmail}>
+<DashboardLayout title="Ressources" activePage="resources" userName={userName}>
 
-  <div class="mb-6">
-    <h1 class="text-xl font-bold tracking-tight text-primary">
-      Ressources
-    </h1>
-    <p class="text-muted text-sm mt-1">
-      {count ?? 0} ressource{(count ?? 0) > 1 ? 's' : ''} disponible{(count ?? 0) > 1 ? 's' : ''} pour les membres.
-    </p>
+  <div class="page-header">
+    <div>
+      <h1>Ressources</h1>
+      <p class="subtitle">Guides, fiches et outils pour mieux comprendre et utiliser l'IA.</p>
+    </div>
+    <p class="total-label">{totalLabel}</p>
   </div>
 
-  <!-- Filtres -->
-  <form method="get" class="filters-bar">
-    <input
-      type="search"
-      name="q"
-      placeholder="Rechercher une ressource…"
-      value={search}
-      class="filter-input min-w-[240px]"
-    />
-    <select name="category" class="filter-input" onchange="this.form.submit()">
-      <option value="">Toutes les catégories</option>
-      {uniqueCategories.map((cat) => (
-        <option value={cat} selected={category === cat}>
-          {cat.charAt(0).toUpperCase() + cat.slice(1)}
-        </option>
-      ))}
-    </select>
-    <button type="submit" class="btn btn-primary text-xs">Rechercher</button>
-    {(search || category) && (
-      <a href="/dashboard/user/resources" class="btn btn-ghost text-xs">× Réinitialiser</a>
-    )}
-  </form>
+  <!-- Filtre par catégorie -->
+  <div class="category-tabs">
+    <a
+      href="/dashboard/user/resources"
+      class={`tab${hasFilter ? '' : ' tab--active'}`}
+    >Tout</a>
+    {RESOURCE_CATEGORIES.map((cat) => (
+      <a
+        href={`/dashboard/user/resources?category=${encodeURIComponent(cat)}`}
+        class={`tab${filterCat === cat ? ' tab--active' : ''}`}
+      >{cat}</a>
+    ))}
+  </div>
 
-  <!-- Grille de ressources -->
-  {resources && resources.length > 0 ? (
-    <div class="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-4">
-      {resources.map((res: any) => {
-        const icon = categoryIcons[res.category?.toLowerCase()] ?? categoryIcons.default;
-        const date = new Date(res.created_at).toLocaleDateString('fr-FR', {
-          day: 'numeric', month: 'short', year: 'numeric'
-        });
-        return (
-          <div class="resource-card card">
-          <div class="flex items-start justify-between gap-3 mb-3">
-            <span class="text-xl" aria-hidden="true">{icon}</span>
-            <div class="flex gap-1.5 flex-wrap justify-end">
-              {res.category && (
-                <span class="badge badge-info text-[0.62rem]">{res.category}</span>
-              )}
-              {res.is_free && (
-                <span class="badge badge-ok text-[0.62rem]">Gratuit</span>
-              )}
-            </div>
-          </div>
-
-            <div class="text-sm font-bold text-primary mb-1.5 leading-tight">
-              {res.title}
-            </div>
-
-            {res.description && (
-              <p class="text-xs text-secondary leading-relaxed mb-3.5 line-clamp-3">
-                {res.description}
-              </p>
-            )}
-
-            <div class="flex items-center justify-between mt-auto pt-3 border-t border-border">
-              <span class="text-[0.68rem] font-mono text-muted">
-                {date}
-              </span>
-              {res.file_url ? (
+  {hasResources ? (
+    <div class="groups">
+      {grouped.map(({ category, rows }) => (
+        <div class="group">
+          {!hasFilter && <h2 class="group-title">{category}</h2>}
+          <div class="resource-grid">
+            {rows.map(({ r, icon, typeLabel, sizeLabel, href }) => (
+              <div class="resource-card card">
+                <div class="resource-top">
+                  <span class="resource-icon">{icon}</span>
+                  <span class="badge badge-info">{r.category}</span>
+                </div>
+                <div class="resource-title">{r.title}</div>
+                {r.description && (
+                  <p class="resource-desc">{r.description}</p>
+                )}
+                <div class="resource-meta">
+                  <span class="meta-chip">{typeLabel}</span>
+                  <span class="meta-chip">{sizeLabel}</span>
+                  <span class="meta-chip">⬇ {r.downloads}</span>
+                </div>
                 <a
-                  href={res.file_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  class="btn btn-primary text-[0.72rem] px-2.5 py-1.5"
+                  href={href}
+                  class="btn btn-primary resource-dl"
+                  download
                 >
-                  Télécharger ↓
+                  ⬇ Télécharger
                 </a>
-              ) : (
-                <span class="text-[0.72rem] text-muted font-mono">
-                  Bientôt disponible
-                </span>
-              )}
-            </div>
+              </div>
+            ))}
           </div>
-        );
-      })}
+        </div>
+      ))}
     </div>
   ) : (
-    <div class="card py-12 px-6 text-center">
-      <p class="text-xl mb-2">📭</p>
-      <p class="text-muted text-sm">
-        {(search || category) ? 'Aucune ressource ne correspond à votre recherche.' : 'Aucune ressource disponible pour le moment.'}
+    <div class="card empty-state">
+      <p class="empty-icon">📭</p>
+      <p>
+        {hasFilter
+          ? `Aucune ressource dans la catégorie « ${filterCat} » pour le moment.`
+          : 'Aucune ressource disponible pour le moment. Revenez bientôt !'}
       </p>
-      {(search || category) && (
-        <a href="/dashboard/user/resources" class="btn btn-ghost mt-4 inline-flex">
-          Voir toutes les ressources
-        </a>
-      )}
     </div>
   )}
 
 </DashboardLayout>
 
 <style>
-  .resource-card {
-    display: flex;
-    flex-direction: column;
+  /* ── En-tête ── */
+  .page-header  { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 20px; }
+  .subtitle     { margin-top: 6px; color: var(--text-secondary); }
+  .total-label  { font-size: 0.82rem; color: var(--text-muted); font-family: var(--font-mono); align-self: flex-end; }
+
+  /* ── Tabs catégories ── */
+  .category-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 24px; }
+  .tab           { padding: 6px 14px; font-size: 0.82rem; font-weight: 600; border: var(--brutal-border-thin); background: var(--surface); color: var(--text-secondary); cursor: pointer; text-decoration: none; transition: background 0.1s; }
+  .tab:hover     { background: var(--surface-hover, #f5f5f5); }
+  .tab--active   { background: var(--text-primary); color: var(--surface); border-color: var(--text-primary); }
+
+  /* ── Groupes ── */
+  .groups      { display: flex; flex-direction: column; gap: 32px; }
+  .group-title { font-size: 0.95rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-secondary); margin-bottom: 12px; font-family: var(--font-mono); }
+
+  /* ── Grille ressources ── */
+  .resource-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
+
+  /* ── Carte ressource ── */
+  .resource-card { display: flex; flex-direction: column; gap: 10px; }
+  .resource-top  { display: flex; align-items: center; justify-content: space-between; }
+  .resource-icon { font-size: 1.6rem; }
+  .resource-title { font-size: 0.95rem; font-weight: 700; color: var(--text-primary); line-height: 1.3; }
+  .resource-desc  {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   }
-  .resource-card:hover {
-    transform: translate(-3px, -3px);
-    box-shadow: var(--shadow-lg);
-  }
+
+  /* ── Meta chips ── */
+  .resource-meta { display: flex; gap: 6px; flex-wrap: wrap; }
+  .meta-chip     { font-size: 0.72rem; font-family: var(--font-mono); padding: 2px 8px; background: var(--surface-alt, #f0f0f0); color: var(--text-muted); border: var(--brutal-border-thin); }
+
+  /* ── Bouton téléchargement ── */
+  .resource-dl { margin-top: auto; text-align: center; justify-content: center; width: 100%; }
+
+  /* ── État vide ── */
+  .empty-state { text-align: center; padding: 48px 24px; }
+  .empty-icon  { font-size: 1.5rem; margin-bottom: 8px; }
 </style>

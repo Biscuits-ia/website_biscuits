@@ -225,6 +225,54 @@ CREATE POLICY "service can insert system logs"
   ON public.system_logs FOR INSERT
   WITH CHECK (true);  -- restreindre via service_role en production
 
+-- ── Table : resources ─────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS public.resources (
+  id            uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+  title         text NOT NULL,
+  description   text,
+  category      text,
+  file_url      text,
+  is_free       boolean NOT NULL DEFAULT false,
+  published     boolean NOT NULL DEFAULT false,
+  created_at    timestamptz NOT NULL DEFAULT now(),
+  updated_at    timestamptz NOT NULL DEFAULT now()
+);
+
+-- Index pour les requêtes fréquentes
+CREATE INDEX IF NOT EXISTS idx_resources_category ON public.resources(category);
+CREATE INDEX IF NOT EXISTS idx_resources_published ON public.resources(published);
+CREATE INDEX IF NOT EXISTS idx_resources_created   ON public.resources(created_at DESC);
+
+-- Trigger : met à jour updated_at
+CREATE OR REPLACE FUNCTION public.update_resources_timestamp()
+RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER AS $$
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS on_resource_updated ON public.resources;
+CREATE TRIGGER on_resource_updated
+  BEFORE UPDATE ON public.resources
+  FOR EACH ROW EXECUTE FUNCTION public.update_resources_timestamp();
+
+-- RLS Policies pour resources
+ALTER TABLE public.resources ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "admins can manage all resources"
+  ON public.resources FOR ALL
+  USING (
+    EXISTS (
+      SELECT 1 FROM public.profiles
+      WHERE id = auth.uid() AND role = 'admin'
+    )
+  );
+
+CREATE POLICY "users can view published resources"
+  ON public.resources FOR SELECT
+  USING (published = true);
+
 -- ============================================================
 -- FIN DE LA MIGRATION
 -- ============================================================

@@ -8,7 +8,7 @@ import tailwindcss from '@tailwindcss/vite';
 import svelte from '@astrojs/svelte';
 import icon from 'astro-icon';
 
-import cloudflare from '@astrojs/cloudflare';
+import vercel from '@astrojs/vercel';
 import mdx from '@astrojs/mdx';
 
 // https://astro.build/config
@@ -71,5 +71,5 @@ export default defineConfig({
   },
   
 
-  adapter: cloudflare(),
+  adapter: vercel(),
 });

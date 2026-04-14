@@ -6,9 +6,9 @@ import robotsTxt from 'astro-robots-txt';
 import sitemap from '@astrojs/sitemap';
 import tailwindcss from '@tailwindcss/vite';
 import svelte from '@astrojs/svelte';
-import vercel from '@astrojs/vercel';
 import icon from 'astro-icon';
 
+import cloudflare from '@astrojs/cloudflare';
 import mdx from '@astrojs/mdx';
 
 // https://astro.build/config
@@ -71,5 +71,5 @@ export default defineConfig({
   },
   
 
-  adapter: vercel()
+  adapter: cloudflare(),
 });

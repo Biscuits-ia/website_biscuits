@@ -72,7 +72,8 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     });
 
   if (uploadError) {
-    return redirect('/dashboard/admin/resources?error=' + encodeURIComponent(uploadError.message));
+    console.error('[upload] Supabase storage error:', uploadError.message);
+    return redirect('/dashboard/admin/resources?error=' + encodeURIComponent('Erreur lors de l\'upload du fichier.'));
   }
 
   // ── Insertion en BDD ─────────────────────────────────────────────────────
@@ -93,7 +94,8 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   if (insertError) {
     // Rollback : supprimer le fichier uploadé si l'insertion échoue
     await adminDb.storage.from('resources').remove([filePath]);
-    return redirect('/dashboard/admin/resources?error=' + encodeURIComponent(insertError.message));
+    console.error('[upload] Supabase insert error:', insertError.message);
+    return redirect('/dashboard/admin/resources?error=' + encodeURIComponent('Erreur lors de l\'enregistrement de la ressource.'));
   }
 
   return redirect('/dashboard/admin/resources?saved=1');

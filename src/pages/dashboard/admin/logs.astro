@@ -31,7 +31,7 @@ const totalPages = Math.ceil((count ?? 0) / perPage);
 const { data: levelStats } = await supabase.rpc('log_level_counts').match(() => ({ data: null }));
 ---
 
-<DashboardLayout title="Logs système" role="admin" activePage="logs" userName={userName}>
+<DashboardLayout title="Logs système" role="admin" activePage="logs" userName={userName} authResult={result}>
 
   <div style="margin-bottom: 24px; display:flex; align-items:center; justify-content:space-between;">
     <div>

@@ -1,5 +1,5 @@
 ---
-const API_URL = `${import.meta.env.PUBLIC_API_URL ?? 'http://localhost:8000'}/api/volunteer-applications`;
+const nonce = Astro.locals.nonce;
 ---
 
 <div class="recruitment-page">
@@ -132,7 +132,8 @@ const API_URL = `${import.meta.env.PUBLIC_API_URL ?? 'http://localhost:8000'}/ap
   </form>
 </div>
 
-<script define:vars={{ API_URL }}>
+<script nonce={nonce}>
+  const API_URL = '/api/recruitment';
   const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
   const form         = document.getElementById('recruitment-form');
@@ -222,7 +223,6 @@ const API_URL = `${import.meta.env.PUBLIC_API_URL ?? 'http://localhost:8000'}/ap
         headers: {
           'Content-Type':     'application/json',
           'Accept':           'application/json',
-          'X-Requested-With': 'XMLHttpRequest',
         },
         body: JSON.stringify(data),
       });

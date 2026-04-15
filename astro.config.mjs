@@ -59,9 +59,6 @@ export default defineConfig({
 
   vite: {
     plugins: [tailwindcss()],
-    define: {
-      'import.meta.env.PUBLIC_API_URL': JSON.stringify(process.env.PUBLIC_API_URL || 'http://localhost:8000'),
-    },
   },
 
   output: 'server',

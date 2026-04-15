@@ -28,7 +28,7 @@ const { data: logs, count } = await query;
 const totalPages = Math.ceil((count ?? 0) / perPage);
 ---
 
-<DashboardLayout title="Activité" role="user" activePage="activity" userName={userName} userEmail={userEmail}>
+<DashboardLayout title="Activité" role="user" activePage="activity" userName={userName} userEmail={userEmail} authResult={result}>
 
   <div class="mb-6">
     <h1 class="text-xl font-bold tracking-tight text-primary">

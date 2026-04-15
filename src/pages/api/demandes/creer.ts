@@ -29,8 +29,9 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     });
 
   if (error) {
+    console.error('[creer] Supabase error:', error.message);
     return redirect(
-      '/dashboard/user/demandes?error=' + encodeURIComponent(error.message),
+      '/dashboard/user/demandes?error=' + encodeURIComponent('Erreur lors de la création de la demande.'),
     );
   }
 

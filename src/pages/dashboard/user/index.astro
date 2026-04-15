@@ -29,7 +29,7 @@ const successRate = totalReports ? Math.round(((analyzedReports ?? 0) / (totalRe
 const thisMonth = monthlyStats?.length ?? 0;
 ---
 
-<DashboardLayout title="Vue d'ensemble" role="user" activePage="overview" userName={userName} userEmail={userEmail}>
+<DashboardLayout title="Vue d'ensemble" role="user" activePage="overview" userName={userName} userEmail={userEmail} authResult={result}>
   <!-- Bienvenue -->
   <div class="mb-7">
     <h1 class="text-lg font-normal tracking-tight text-primary">

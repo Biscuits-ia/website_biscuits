@@ -23,8 +23,9 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     .eq('user_id', user.id);
 
   if (error) {
+    console.error('[desinscrire] Supabase error:', error.message);
     return redirect(
-      '/dashboard/user/ateliers?error=' + encodeURIComponent(error.message),
+      '/dashboard/user/ateliers?error=' + encodeURIComponent('Erreur lors de la désinscription.'),
     );
   }
 

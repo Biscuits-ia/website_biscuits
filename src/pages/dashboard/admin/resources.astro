@@ -61,7 +61,7 @@ const hasFilter      = filterCat !== '';
 const totalLabel     = `${resources.length} ressource${resources.length !== 1 ? 's' : ''}`;
 ---
 
-<DashboardLayout title="Ressources" activePage="resources" userName={userName}>
+<DashboardLayout title="Ressources" activePage="resources" userName={userName} authResult={result}>
 
   <div class="header-row">
     <div>

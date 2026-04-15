@@ -1,9 +1,8 @@
 ---
 // src/components/ContactForm.astro
-const apiUrl = `${import.meta.env.PUBLIC_BACKEND_URL ?? 'http://localhost:8000'}/api/forms`;
 ---
 
-<div class="contact-form-wrapper" data-api-url={apiUrl}>
+<div class="contact-form-wrapper">
 
   <div id="cf-success" class="cf-alert cf-alert--success" role="status" aria-live="polite" hidden>
     <svg viewBox="0 0 24 24" aria-hidden="true" width="24" height="24">
@@ -61,7 +60,6 @@ const apiUrl = `${import.meta.env.PUBLIC_BACKEND_URL ?? 'http://localhost:8000'}
 
     <input type="text" name="honey" id="cf-honey"
       tabindex="-1" autocomplete="off" class="cf-honeypot" aria-hidden="true" />
-    <input type="hidden" name="csrfmiddlewaretoken" id="cf-csrf" value="" />
 
     <div class="cf-footer">
       <p class="cf-note"><span aria-hidden="true">*</span> Champs obligatoires</p>
@@ -105,24 +103,7 @@ const apiUrl = `${import.meta.env.PUBLIC_BACKEND_URL ?? 'http://localhost:8000'}
     const wrapper = document.querySelector<HTMLElement>('.contact-form-wrapper');
     if (!wrapper) return;
 
-    const API_URL = wrapper.dataset.apiUrl ?? 'http://localhost:8000/api/forms';
-
-    // Récupérer le token CSRF depuis un cookie ou une balise meta
-    function getCsrfToken(): string {
-      // Méthode 1 : depuis un cookie (typique Django)
-      const match = document.cookie.match(/csrftoken=([^;]+)/);
-      if (match) return match[1];
-
-      // Méthode 2 : depuis une balise meta
-      const meta = document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement;
-      if (meta) return meta.content;
-
-      // Méthode 3 : depuis une balise meta avec nom csrfmiddlewaretoken
-      const meta2 = document.querySelector('meta[name="csrfmiddlewaretoken"]') as HTMLMetaElement;
-      if (meta2) return meta2.content;
-
-      return '';
-    }
+    const API_URL = '/api/contact';
 
     // Éléments requis — on sort si l'un est absent
     const formEl      = document.getElementById('cf-form')    as HTMLFormElement    | null;
@@ -146,12 +127,6 @@ const apiUrl = `${import.meta.env.PUBLIC_BACKEND_URL ?? 'http://localhost:8000'}
     const elErrTxt  = document.getElementById('cf-error-text') as HTMLElement      | null;
     const elCount   = document.getElementById('cf-char-count') as HTMLElement      | null;
     const elHoney   = document.getElementById('cf-honey')      as HTMLInputElement | null;
-    const elCsrf    = document.getElementById('cf-csrf')       as HTMLInputElement | null;
-
-    // Remplir le champ CSRF au chargement
-    if (elCsrf) {
-      elCsrf.value = getCsrfToken();
-    }
 
     // ── Helpers UI ────────────────────────────────────────────────────────
 
@@ -244,14 +219,11 @@ const apiUrl = `${import.meta.env.PUBLIC_BACKEND_URL ?? 'http://localhost:8000'}
     // ── Appel API ──────────────────────────────────────────────────────────
 
     async function submitForm(payload: ContactPayload): Promise<void> {
-      const csrfToken = elCsrf?.value || '';
       const res = await fetch(API_URL, {
         method:  'POST',
         headers: {
           'Content-Type':     'application/json',
           'Accept':           'application/json',
-          'X-Requested-With': 'XMLHttpRequest',
-          'X-CSRFToken':      csrfToken,
         },
         body: JSON.stringify(payload),
       });

@@ -2,11 +2,9 @@
 // src/layouts/DashboardLayout.astro
 import '../styles/dashboard.css';
 import { requireAuth } from '../lib/auth';
-import type { UserRole } from '../lib/auth';
+import type { UserRole, AuthResult } from '../lib/auth';
 
 // ── Props ─────────────────────────────────────────────────────────────────────
-// `role` n'est plus une prop — il est lu depuis la BDD via requireAuth.
-// On garde la prop pour rétrocompatibilité mais elle est ignorée.
 
 export interface NavItem {
   id:     string;
@@ -16,21 +14,22 @@ export interface NavItem {
 }
 
 export interface Props {
-  title:      string;
+  title:       string;
   activePage?: string;
   userName?:   string;
   userEmail?:  string;
+  /** Pass the AuthResult from the page to avoid a second requireAuth call */
+  authResult?: AuthResult;
   /** @deprecated — le rôle est désormais lu depuis la BDD, pas depuis cette prop */
   role?:       string;
 }
 
-const { title, activePage = '', userName = 'Utilisateur', userEmail = '' } = Astro.props;
+const { title, activePage = '', userName = 'Utilisateur', userEmail = '', authResult: passedAuth } = Astro.props;
 
 // ── Rôle réel depuis la BDD ───────────────────────────────────────────────────
-// requireAuth lit le rôle via service_role (bypass RLS) à chaque requête.
-// Cela garantit que le menu reflète toujours le rôle actuel en base,
-// même après un changement sans reconnexion.
-const authResult = await requireAuth(Astro);
+// Réutilise le résultat auth de la page parente si disponible,
+// sinon fait un appel requireAuth (rétrocompatibilité).
+const authResult = passedAuth ?? await requireAuth(Astro);
 
 // Si non connecté, requireAuth redirige — on ne devrait jamais arriver ici
 if (authResult instanceof Response) return authResult;
@@ -62,11 +61,13 @@ const userNav: NavItem[] = [
 ];
 
 const adminNav: NavItem[] = [
-  { id: 'users',     label: 'Utilisateurs',   icon: 'users',        badge: null  },
-  { id: 'demandes',  label: 'Demandes',       icon: 'inbox',        badge: null  },
-  { id: 'ateliers',  label: 'Ateliers',        icon: 'calendar',     badge: null  },
-  { id: 'resources', label: 'Ressources',      icon: 'flag',         badge: null  },
-  { id: 'logs',      label: 'Logs système',    icon: 'terminal',     badge: 'LIVE'},
+  { id: 'users',        label: 'Utilisateurs',   icon: 'users',        badge: null  },
+  { id: 'demandes',     label: 'Demandes',        icon: 'inbox',        badge: null  },
+  { id: 'contacts',     label: 'Contacts',        icon: 'mail',         badge: null  },
+  { id: 'candidatures', label: 'Candidatures',    icon: 'user-plus',    badge: null  },
+  { id: 'ateliers',     label: 'Ateliers',        icon: 'calendar',     badge: null  },
+  { id: 'resources',    label: 'Ressources',      icon: 'flag',         badge: null  },
+  { id: 'logs',         label: 'Logs système',    icon: 'terminal',     badge: 'LIVE'},
 ];
 
 const nav = isAdmin ? adminNav : userNav;
@@ -82,6 +83,8 @@ const icons: Record<string, string> = {
   'bar-chart':  `<svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1.5" y="8.5" width="3" height="5.5"/><rect x="6.5" y="5" width="3" height="9"/><rect x="11.5" y="2" width="3" height="12"/></svg>`,
   settings:     `<svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="2.5"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.05 3.05l1.41 1.41M11.54 11.54l1.41 1.41M3.05 12.95l1.41-1.41M11.54 4.46l1.41-1.41"/></svg>`,
   flag:         `<svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 1v14M3 2h8.5L9 6l2.5 4H3"/></svg>`,
+  mail:         `<svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1.5" y="3" width="13" height="10" rx="1.5"/><polyline points="1.5,3 8,9 14.5,3"/></svg>`,
+  'user-plus':  `<svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="6" cy="5" r="2.5"/><path d="M1 14c0-3 2.24-4 5-4s5 1 5 4"/><line x1="13" y1="5" x2="13" y2="9"/><line x1="11" y1="7" x2="15" y2="7"/></svg>`,
   users:        `<svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="6" cy="5" r="2.5"/><path d="M1 14c0-3 2.24-4 5-4s5 1 5 4"/><path d="M11 7.5c1.5 0 2.5.8 2.5 2.5 0 .5-.1.9-.3 1.2M13 4a2 2 0 010 4"/></svg>`,
   'trending-up':`<svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="1,12 5.5,7 9,9.5 15,3"/><polyline points="11,3 15,3 15,7"/></svg>`,
   terminal:     `<svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="2.5" width="14" height="11" rx="1.5"/><polyline points="4,6.5 7,9 4,11.5"/><line x1="8.5" y1="11.5" x2="12" y2="11.5"/></svg>`,
@@ -149,9 +152,11 @@ const initials = displayName.split(' ').map((n: string) => n[0]).join('').toUppe
         <a href="/" class="btn btn-ghost btn-full btn-xs-text">
           Retourner à l'accueil
         </a>
-        <a href="/auth/deconnexion" class="btn btn-ghost btn-full btn-xs-text">
-          Déconnexion
-        </a>
+        <form method="POST" action="/auth/deconnexion" style="margin:0;">
+          <button type="submit" class="btn btn-ghost btn-full btn-xs-text" style="width:100%;border:none;background:none;cursor:pointer;">
+            Déconnexion
+          </button>
+        </form>
       </div>
     </aside>
 

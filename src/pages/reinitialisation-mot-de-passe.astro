@@ -8,6 +8,7 @@ import AuthLayout from '../layouts/AuthLayout.astro';
 
 const supabaseUrl = import.meta.env.SUPABASE_URL;
 const supabaseKey = import.meta.env.SUPABASE_ANON_KEY;
+const nonce = Astro.locals.nonce;
 ---
 
 <AuthLayout title="Nouveau mot de passe" description="Créez un nouveau mot de passe pour votre compte Biscuits IA.">
@@ -120,7 +121,7 @@ const supabaseKey = import.meta.env.SUPABASE_ANON_KEY;
   @keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
 </style>
 
-<script define:vars={{ supabaseUrl, supabaseKey }}>
+<script define:vars={{ supabaseUrl, supabaseKey }} nonce={nonce}>
   window.__SB_URL__ = supabaseUrl;
   window.__SB_KEY__ = supabaseKey;
 </script>

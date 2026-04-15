@@ -1,0 +1,201 @@
+---
+// src/pages/dashboard/admin/contacts.astro
+import DashboardLayout from '../../../layouts/DashboardLayout.astro';
+import { requireAdmin } from '../../../lib/auth';
+
+const result = await requireAdmin(Astro);
+if (result instanceof Response) return result;
+
+const { user, supabase } = result;
+const userName = user.user_metadata?.full_name ?? user.email?.split('@')[0] ?? 'Admin';
+
+const saved  = Astro.url.searchParams.get('saved')  === '1';
+const error  = Astro.url.searchParams.get('error')  ?? '';
+const filter = Astro.url.searchParams.get('status') ?? '';
+
+let query = supabase
+  .from('contact_submissions')
+  .select('*')
+  .order('created_at', { ascending: false });
+
+if (filter) query = query.eq('status', filter);
+
+const { data: contacts } = await query;
+
+const { count: newCount }      = await supabase.from('contact_submissions').select('*', { count: 'exact', head: true }).eq('status', 'new');
+const { count: readCount }     = await supabase.from('contact_submissions').select('*', { count: 'exact', head: true }).eq('status', 'read');
+const { count: repliedCount }  = await supabase.from('contact_submissions').select('*', { count: 'exact', head: true }).eq('status', 'replied');
+const { count: archivedCount } = await supabase.from('contact_submissions').select('*', { count: 'exact', head: true }).eq('status', 'archived');
+
+const statusLabel: Record<string, string> = {
+  new:      'Nouveau',
+  read:     'Lu',
+  replied:  'Répondu',
+  archived: 'Archivé',
+};
+
+const statusBadge: Record<string, string> = {
+  new:      'badge-warn',
+  read:     'badge-info',
+  replied:  'badge-ok',
+  archived: 'badge-neutral',
+};
+---
+
+<DashboardLayout title="Contacts" role="admin" activePage="contacts" userName={userName} authResult={result}>
+
+  <div style="margin-bottom: 28px;">
+    <h1>Messages de contact</h1>
+    <p style="margin-top: 6px;">Gérez les messages reçus via le formulaire de contact.</p>
+  </div>
+
+  {saved && <div class="flash flash-ok" role="alert">✓ Modifications sauvegardées.</div>}
+  {error  && <div class="flash flash-err" role="alert">✗ {decodeURIComponent(error)}</div>}
+
+  <!-- Stats rapides -->
+  <div class="stats-grid mb-6">
+    <div class="stat-card">
+      <div class="stat-label">Nouveaux</div>
+      <div class="stat-value" style="color: var(--warn);">{newCount ?? 0}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Lus</div>
+      <div class="stat-value" style="color: var(--info);">{readCount ?? 0}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Répondus</div>
+      <div class="stat-value" style="color: var(--ok);">{repliedCount ?? 0}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Archivés</div>
+      <div class="stat-value" style="color: var(--text-muted);">{archivedCount ?? 0}</div>
+    </div>
+  </div>
+
+  <!-- Filtres statut -->
+  <div class="filters-bar">
+    {['', 'new', 'read', 'replied', 'archived'].map((s) => (
+      <a
+        href={s ? `?status=${s}` : '?'}
+        class={`btn ${filter === s ? 'btn-primary' : 'btn-ghost'}`}
+        style="font-size: 0.82rem;"
+      >
+        {s === '' ? 'Tous' : statusLabel[s]}
+        {s === 'new'      && newCount      ? ` (${newCount})`      : ''}
+        {s === 'read'     && readCount     ? ` (${readCount})`     : ''}
+        {s === 'replied'  && repliedCount  ? ` (${repliedCount})`  : ''}
+        {s === 'archived' && archivedCount ? ` (${archivedCount})` : ''}
+      </a>
+    ))}
+  </div>
+
+  <!-- Liste des contacts -->
+  <div style="display: flex; flex-direction: column; gap: 16px;">
+    {contacts && contacts.length > 0 ? contacts.map((c: any) => {
+      const date       = new Date(c.created_at);
+      const badgeClass = statusBadge[c.status] ?? 'badge-neutral';
+      const label      = statusLabel[c.status] ?? c.status;
+
+      return (
+        <div class="card contact-card">
+
+          <div class="contact-header">
+            <div style="flex: 1; min-width: 0;">
+              <div style="font-size: 1.05rem; font-weight: 700; color: var(--text-primary);">{c.subject}</div>
+              <div style="font-size: var(--text-xs); font-family: var(--font-mono); color: var(--text-muted); margin-top: 3px;">
+                {c.name} · <a href={`mailto:${c.email}`} style="color: var(--accent);">{c.email}</a>
+                · {date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
+              </div>
+            </div>
+            <span class={`badge ${badgeClass}`}>{label}</span>
+          </div>
+
+          <div class="contact-body">{c.message}</div>
+
+          {c.admin_notes && (
+            <div class="admin-notes">
+              <div class="admin-notes-header">📝 Notes admin</div>
+              <div class="admin-notes-body">{c.admin_notes}</div>
+            </div>
+          )}
+
+          <!-- Formulaire de gestion -->
+          <form method="POST" action="/api/admin/contacts/update" style="display: flex; flex-direction: column; gap: 12px; padding-top: 14px; border-top: var(--brutal-border-thin);">
+            <input type="hidden" name="contact_id" value={c.id} />
+
+            <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+              <label style="font-size: var(--text-xs); font-weight: 700; color: var(--text-muted); font-family: var(--font-mono); text-transform: uppercase;">
+                Statut :
+              </label>
+              <select name="status" class="filter-input" style="min-height: unset; padding: 6px 10px;">
+                <option value="new"      selected={c.status === 'new'}>Nouveau</option>
+                <option value="read"     selected={c.status === 'read'}>Lu</option>
+                <option value="replied"  selected={c.status === 'replied'}>Répondu</option>
+                <option value="archived" selected={c.status === 'archived'}>Archivé</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label>Notes internes</label>
+              <textarea
+                name="admin_notes"
+                rows="2"
+                placeholder="Notes internes (non visibles par l'expéditeur)…"
+                style="resize: vertical; font-family: var(--font-sans);"
+              >{c.admin_notes ?? ''}</textarea>
+            </div>
+
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+              <button type="submit" class="btn btn-primary" style="font-size: 0.85rem;">
+                Sauvegarder
+              </button>
+              <a
+                href={`mailto:${c.email}?subject=Re: ${encodeURIComponent(c.subject)}`}
+                class="btn btn-ghost"
+                style="font-size: 0.85rem;"
+              >
+                ✉ Répondre par email
+              </a>
+              <form method="POST" action="/api/admin/contacts/delete" style="display: inline;">
+                <input type="hidden" name="contact_id" value={c.id} />
+                <button
+                  type="submit"
+                  class="btn btn-danger"
+                  style="font-size: 0.85rem;"
+                  onclick="return confirm('Supprimer définitivement ce message ?')"
+                >
+                  Supprimer
+                </button>
+              </form>
+            </div>
+          </form>
+
+        </div>
+      );
+    }) : (
+      <div class="card" style="text-align: center; padding: 48px 24px;">
+        <p style="font-size: 1.5rem; margin-bottom: 8px;">📭</p>
+        <p>{filter ? `Aucun message avec le statut "${statusLabel[filter] ?? filter}".` : 'Aucun message de contact pour le moment.'}</p>
+      </div>
+    )}
+  </div>
+
+</DashboardLayout>
+
+<style>
+  .contact-card { display: flex; flex-direction: column; gap: 14px; }
+  .contact-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  .contact-body { font-size: var(--text-base); color: var(--text-secondary); line-height: 1.6; white-space: pre-wrap; }
+
+  .admin-notes { background: var(--accent-light); border: var(--brutal-border-thin); border-left: 4px solid var(--accent); padding: 12px 16px; display: flex; flex-direction: column; gap: 6px; }
+  .admin-notes-header { font-size: var(--text-sm); font-weight: 700; color: var(--accent-dark); }
+  .admin-notes-body { font-size: var(--text-base); color: var(--text-primary); line-height: 1.6; }
+
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  .field label { font-size: var(--text-xs); font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.06em; font-family: var(--font-mono); }
+  .field textarea { padding: 10px 13px; font-size: var(--text-base); width: 100%; }
+
+  .flash { padding: 12px 18px; margin-bottom: 20px; font-size: var(--text-sm); font-weight: 600; border: var(--brutal-border-thin); box-shadow: var(--shadow-sm); }
+  .flash-ok  { background: var(--ok-bg);  color: var(--ok-fg);  border-color: var(--ok); }
+  .flash-err { background: var(--err-bg); color: var(--err-fg); border-color: var(--err); }
+</style>

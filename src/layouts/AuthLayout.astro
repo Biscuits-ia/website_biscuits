@@ -40,6 +40,7 @@ const fullCanonical = canonical
 const fullTitle = title.includes('|') ? title : `${title} | Biscuits IA`;
 
 const isProd = import.meta.env.PROD;
+const nonce = Astro.locals.nonce;
 ---
 
 <!DOCTYPE html>
@@ -88,7 +89,7 @@ const isProd = import.meta.env.PROD;
   )}
 
   {isProd && (
-    <script is:inline>
+    <script is:inline nonce={nonce}>
       if (window.location.hostname === 'biscuits-ia.com') {
         window.__PARTYTOWN_CONFIG = {
           skipDeprecatedAPIs: true,
@@ -108,7 +109,7 @@ const isProd = import.meta.env.PROD;
   <link href="https://fonts.googleapis.com/css2?family=Zalando+Sans+SemiExpanded:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet">
   
   {isProd && (
-    <script is:inline>
+    <script is:inline nonce={nonce}>
       // Définition du dataLayer pour GTM (chargé dynamiquement par CookieConsent)
       window.dataLayer = window.dataLayer || [];
       function gtag() { dataLayer.push(arguments); }

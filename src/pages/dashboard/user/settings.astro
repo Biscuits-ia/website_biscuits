@@ -18,7 +18,7 @@ const pwSaved = Astro.url.searchParams.get('pw')    === '1';
 const error  = Astro.url.searchParams.get('error')  ?? '';
 ---
 
-<DashboardLayout title="Paramètres" role="user" activePage="settings" userName={userName} userEmail={userEmail}>
+<DashboardLayout title="Paramètres" role="user" activePage="settings" userName={userName} userEmail={userEmail} authResult={result}>
 
   <div class="container w-full mb-6 text-center">
     <h1 class="text-xl font-bold tracking-tight text-primary">

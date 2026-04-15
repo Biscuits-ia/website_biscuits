@@ -41,7 +41,8 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     .eq('id', resourceId);
 
   if (deleteError) {
-    return redirect('/dashboard/admin/resources?error=' + encodeURIComponent(deleteError.message));
+    console.error('[supprimer] Supabase error:', deleteError.message);
+    return redirect('/dashboard/admin/resources?error=' + encodeURIComponent('Erreur lors de la suppression de la ressource.'));
   }
 
   // Supprime le fichier du Storage (best-effort — ne bloque pas si échoue)

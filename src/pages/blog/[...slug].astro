@@ -1,5 +1,5 @@
 ---
-import { getCollection, getEntry, type CollectionEntry } from 'astro:content';
+import { getCollection, getEntry, render, type CollectionEntry } from 'astro:content';
 import { Image } from 'astro:assets';
 import Layout from '@/layouts/BlogLayout.astro';
 import ReadingTime from '@/components/ReadingTime.astro';
@@ -17,7 +17,7 @@ export async function getStaticPaths() {
   }
 
   return publishedArticles.map((article: CollectionEntry<'blog'>) => ({
-    params: { slug: article.slug },
+    params: { slug: article.id },
   }));
 }
 
@@ -43,8 +43,8 @@ const sortedArticles = publishedArticles.sort(
 
 const isFeatured = sortedArticles.length > 0 && sortedArticles[0] && entry.id === sortedArticles[0].id;
 
-const { Content, headings } = await entry.render();
-const { body } = entry;
+const { Content, headings } = await render(entry);
+const body = entry.body ?? '';
 ---
 
 <Layout

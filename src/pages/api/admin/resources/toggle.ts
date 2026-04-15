@@ -31,7 +31,8 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     .eq('id', resourceId);
 
   if (error) {
-    return redirect('/dashboard/admin/resources?error=' + encodeURIComponent(error.message));
+    console.error('[toggle] Supabase error:', error.message);
+    return redirect('/dashboard/admin/resources?error=' + encodeURIComponent('Erreur lors de la mise à jour de la ressource.'));
   }
 
   return redirect('/dashboard/admin/resources?saved=1');

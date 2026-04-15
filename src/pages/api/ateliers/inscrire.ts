@@ -3,21 +3,6 @@ import type { APIRoute } from 'astro';
 import { createSupabaseClient } from '@/lib/supabase';
 import { getFormString }        from '@/types/ateliers';
 
-/** Shape attendu de la vue `workshop_sessions_with_seats` */
-interface SessionWithSeats {
-  seats_left: number;
-}
-
-/** Type guard : vérifie que la réponse Supabase est une SessionWithSeats valide */
-function isSessionWithSeats(value: unknown): value is SessionWithSeats {
-  return (
-    typeof value === 'object' &&
-    value !== null &&
-    'seats_left' in value &&
-    typeof (value as SessionWithSeats).seats_left === 'number'
-  );
-}
-
 export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   const supabase = createSupabaseClient({ request, cookies });
 
@@ -31,41 +16,36 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     return new Response('session_id requis', { status: 400 });
   }
 
-  // ── Vérifier les places disponibles ─────────────────────────────────────────
-  const { data: sessionRaw, error: fetchError } = await supabase
-    .from('workshop_sessions_with_seats')
-    .select('seats_left')
-    .eq('id', sessionId)
-    .single();
+  // ── Inscription atomique (empêche la race condition) ────────────────────────
+  const { data: result, error: rpcError } = await supabase
+    .rpc('atomic_workshop_register', {
+      p_session_id: sessionId,
+      p_user_id:    user.id,
+    });
 
-  if (fetchError) {
+  if (rpcError) {
+    console.error('[inscrire] Supabase RPC error:', rpcError.message);
     return redirect(
-      '/dashboard/user/ateliers?error=' + encodeURIComponent(fetchError.message),
+      '/dashboard/user/ateliers?error=' + encodeURIComponent('Erreur lors de l\'inscription.'),
     );
   }
 
-  if (!isSessionWithSeats(sessionRaw) || sessionRaw.seats_left <= 0) {
-    return redirect(
-      '/dashboard/user/ateliers?error=' + encodeURIComponent('Session complète.'),
-    );
+  switch (result) {
+    case 'SESSION_NOT_FOUND':
+      return redirect(
+        '/dashboard/user/ateliers?error=' + encodeURIComponent('Session introuvable.'),
+      );
+    case 'SESSION_FULL':
+      return redirect(
+        '/dashboard/user/ateliers?error=' + encodeURIComponent('Session complète.'),
+      );
+    case 'ALREADY_REGISTERED':
+      return redirect(
+        '/dashboard/user/ateliers?error=' + encodeURIComponent('Vous êtes déjà inscrit.'),
+      );
   }
 
-  // ── Inscription ──────────────────────────────────────────────────────────────
-  const { error: insertError } = await supabase
-    .from('workshop_registrations')
-    .insert({ session_id: sessionId, user_id: user.id });
-
-  if (insertError) {
-    const message =
-      insertError.code === '23505'
-        ? 'Vous êtes déjà inscrit.'
-        : insertError.message;
-    return redirect(
-      '/dashboard/user/ateliers?error=' + encodeURIComponent(message),
-    );
-  }
-
-  // ── TODO: envoyer email de confirmation (Supabase Edge Function) ──────────────
+  // TODO: envoyer email de confirmation (Supabase Edge Function)
 
   return redirect('/dashboard/user/ateliers?saved=1');
 };

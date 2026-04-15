@@ -94,7 +94,7 @@ const workshopRows: WorkshopRow[] = workshops.map((w: Workshop) => {
 });
 ---
 
-<DashboardLayout title="Gestion ateliers" role="admin" activePage="ateliers" userName={userName}>
+<DashboardLayout title="Gestion ateliers" role="admin" activePage="ateliers" userName={userName} authResult={result}>
 
   <div class="header-row">
     <div>

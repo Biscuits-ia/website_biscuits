@@ -28,7 +28,7 @@ function isUserRole(value: unknown): value is UserRole {
 // configurées, la vérification du rôle ne peut pas être contournée côté client.
 // Le client anon ne peut pas élever ses propres privilèges.
 
-async function fetchRoleSecure(userId: string): Promise<UserRole | null> {
+export async function fetchRoleSecure(userId: string): Promise<UserRole | null> {
   const adminClient = createSupabaseAdminClient();
   const { data, error } = await adminClient
     .from('profiles')

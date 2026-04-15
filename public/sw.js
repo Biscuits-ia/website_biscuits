@@ -31,19 +31,35 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   const { request } = event;
+  const url = new URL(request.url);
 
   // Ne pas intercepter les requêtes POST
   if (request.method !== 'GET') {
     return;
   }
 
-  // Stratégie network-first pour tout
+  // Ne pas cacher les routes authentifiées, API et auth
+  if (
+    url.pathname.startsWith('/dashboard/') ||
+    url.pathname.startsWith('/api/') ||
+    url.pathname.startsWith('/auth/')
+  ) {
+    return;
+  }
+
+  // Stratégie network-first pour le contenu public uniquement
   event.respondWith(
     fetch(request)
       .then(response => {
         // Cloner la réponse pour la mettre en cache
         const responseClone = response.clone();
         caches.open(CACHE_NAME).then(cache => {
+          // Limiter le cache à 50 entrées
+          cache.keys().then(keys => {
+            if (keys.length >= 50) {
+              cache.delete(keys[0]);
+            }
+          });
           cache.put(request, responseClone);
         });
         return response;

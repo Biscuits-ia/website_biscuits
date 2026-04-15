@@ -18,9 +18,7 @@ const MAX_MESSAGE = 2000;
 const MIN_MESSAGE = 20;
 const FIELDS: readonly ValidatedField[] = ['name', 'email', 'sujet', 'message'];
 
-const API_URL: string =
-  document.querySelector<HTMLElement>('.contact-form-wrapper')?.dataset.apiUrl
-  ?? 'http://localhost:8000/api/forms';
+const API_URL = '/api/contact';
 
 
 function getEl<T extends HTMLElement>(id: string): T {

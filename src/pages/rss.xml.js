@@ -4,10 +4,10 @@ import sanitizeHtml from 'sanitize-html';
 import MarkdownIt from 'markdown-it';
 
 const SITE = {
-  title: 'Biscuits du Dev',
-  description: 'Des biscuits numériques pour les curieux',
-  author: 'Sweetosky',
-  email: 'contact@biscuitsdu.dev',
+  title: 'Biscuits IA',
+  description: 'Agir pour une Intelligence Artificielle éthique et solidaire',
+  author: 'Biscuits IA',
+  email: 'contact@biscuits-ia.com',
 };
 
 const parser = new MarkdownIt();

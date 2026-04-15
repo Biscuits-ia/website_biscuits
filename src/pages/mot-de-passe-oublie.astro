@@ -8,6 +8,7 @@ if (session) return Astro.redirect('/dashboard/user');
 
 const supabaseUrl = import.meta.env.SUPABASE_URL;
 const supabaseKey = import.meta.env.SUPABASE_ANON_KEY;
+const nonce = Astro.locals.nonce;
 ---
 
 <AuthLayout title="Mot de passe oublié" description="Réinitialisez votre mot de passe Biscuits IA.">
@@ -114,7 +115,7 @@ const supabaseKey = import.meta.env.SUPABASE_ANON_KEY;
   @keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
 </style>
 
-<script define:vars={{ supabaseUrl, supabaseKey }}>
+<script define:vars={{ supabaseUrl, supabaseKey }} nonce={nonce}>
   window.__SB_URL__ = supabaseUrl;
   window.__SB_KEY__ = supabaseKey;
 </script>
@@ -159,7 +160,7 @@ const supabaseKey = import.meta.env.SUPABASE_ANON_KEY;
     } finally {
       setLoading(false);
     }
-  }
+  } 
 
   btn.addEventListener('click', handleReset);
 

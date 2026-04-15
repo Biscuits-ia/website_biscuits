@@ -3,12 +3,8 @@ import AuthLayout from '../layouts/AuthLayout.astro';
 import { createSupabaseClient } from '../lib/supabase';
 
 const supabase = createSupabaseClient(Astro);
-const { data: { session } } = await supabase.auth.getSession();
-if (session) return Astro.redirect('/dashboard/user');
-
-const supabaseUrl = import.meta.env.SUPABASE_URL;
-const supabaseKey = import.meta.env.SUPABASE_ANON_KEY;
-const nonce = Astro.locals.nonce;
+const { data: { user } } = await supabase.auth.getUser();
+if (user) return Astro.redirect('/dashboard/user');
 ---
 
 <AuthLayout title="Mot de passe oublié" description="Réinitialisez votre mot de passe Biscuits IA.">
@@ -115,34 +111,26 @@ const nonce = Astro.locals.nonce;
   @keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
 </style>
 
-<script define:vars={{ supabaseUrl, supabaseKey }} nonce={nonce}>
-  window.__SB_URL__ = supabaseUrl;
-  window.__SB_KEY__ = supabaseKey;
-</script>
+<script>
+  const msgEl     = document.getElementById('msg')!;
+  const btn       = document.getElementById('reset-btn') as HTMLButtonElement;
+  const btnText   = document.getElementById('btn-text')!;
+  const btnLoader = document.getElementById('btn-loader')!;
 
-<script type="module">
-  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-
-  const supabase  = createClient(window.__SB_URL__, window.__SB_KEY__);
-  const msgEl     = document.getElementById('msg');
-  const btn       = document.getElementById('reset-btn');
-  const btnText   = document.getElementById('btn-text');
-  const btnLoader = document.getElementById('btn-loader');
-
-  function showMsg(text, type = 'error') {
+  function showMsg(text: string, type = 'error') {
     msgEl.textContent   = text;
     msgEl.className     = `auth-msg ${type}`;
     msgEl.style.display = 'block';
   }
 
-  function setLoading(loading) {
+  function setLoading(loading: boolean) {
     btn.disabled            = loading;
     btnText.style.display   = loading ? 'none'  : 'block';
     btnLoader.style.display = loading ? 'block' : 'none';
   }
 
   async function handleReset() {
-    const email = document.getElementById('email').value.trim();
+    const email = (document.getElementById('email') as HTMLInputElement).value.trim();
 
     msgEl.style.display = 'none';
     if (!email) return showMsg('Veuillez entrer votre adresse email.');
@@ -150,21 +138,31 @@ const nonce = Astro.locals.nonce;
 
     setLoading(true);
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reinitialisation-mot-de-passe`,
+      const formData = new FormData();
+      formData.set('email', email);
+
+      const res = await fetch('/auth/mot-de-passe-oublie', {
+        method: 'POST',
+        body: formData,
       });
-      if (error) showMsg(error.message);
-      else showMsg('Lien envoyé ! Vérifiez votre boîte de réception.', 'success');
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        return showMsg(data.error || 'Une erreur est survenue.');
+      }
+
+      showMsg('Lien envoyé ! Vérifiez votre boîte de réception.', 'success');
     } catch {
       showMsg('Une erreur est survenue. Veuillez réessayer.');
     } finally {
       setLoading(false);
     }
-  } 
+  }
 
   btn.addEventListener('click', handleReset);
 
-  document.getElementById('email').addEventListener('keydown', (e) => {
+  document.getElementById('email')!.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') handleReset();
   });
 </script>

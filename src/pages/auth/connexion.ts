@@ -3,39 +3,37 @@
 import type { APIRoute } from "astro";
 import { createSupabaseClient } from "@/lib/supabase";
 
-export const POST: APIRoute = async ({ request, cookies, redirect }) => {
+export const POST: APIRoute = async ({ request, cookies }) => {
   const formData = await request.formData();
   const email    = formData.get("email") instanceof File ? null : (formData.get("email") as string | null);
   const password = formData.get("password") instanceof File ? null : (formData.get("password") as string | null);
 
   if (!email || !password) {
-    return new Response("Email and password are required", { status: 400 });
+    return new Response(JSON.stringify({ error: "Email et mot de passe requis." }), {
+      status: 400,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 
   const supabase = createSupabaseClient({ request, cookies });
-  const { data, error } = await supabase.auth.signInWithPassword({
+  const { error } = await supabase.auth.signInWithPassword({
     email,
     password,
   });
 
   if (error) {
-    return new Response(error.message, { status: 500 });
+    const msg = error.message === "Invalid login credentials"
+      ? "Email ou mot de passe incorrect."
+      : error.message;
+    return new Response(JSON.stringify({ error: msg }), {
+      status: 401,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 
-  const { access_token, refresh_token } = data.session;
-  cookies.set("sb-access-token", access_token, {
-    path: "/",
-    httpOnly: true,
-    secure: true,
-    sameSite: "lax",
-    maxAge: 60 * 60 * 24 * 7, // 7 jours
+  // Les cookies de session sont posés automatiquement par createSupabaseClient → setAll
+  return new Response(JSON.stringify({ success: true }), {
+    status: 200,
+    headers: { "Content-Type": "application/json" },
   });
-  cookies.set("sb-refresh-token", refresh_token, {
-    path: "/",
-    httpOnly: true,
-    secure: true,
-    sameSite: "lax",
-    maxAge: 60 * 60 * 24 * 30, // 30 jours
-  });
-  return redirect("/dashboard/user/");
 };

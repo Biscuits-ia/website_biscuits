@@ -5,10 +5,6 @@ import { createSupabaseClient } from '../lib/supabase';
 const supabase = createSupabaseClient(Astro);
 const { data: { user } } = await supabase.auth.getUser();
 if (user) return Astro.redirect('/dashboard/user');
-
-const supabaseUrl = import.meta.env.SUPABASE_URL;
-const supabaseKey = import.meta.env.SUPABASE_ANON_KEY;
-const nonce = Astro.locals.nonce;
 ---
 
 <AuthLayout title="Inscription" description="Créez votre compte Biscuits IA.">
@@ -131,38 +127,30 @@ const nonce = Astro.locals.nonce;
   @keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
 </style>
 
-<script define:vars={{ supabaseUrl, supabaseKey }} nonce={nonce}>
-  window.__SB_URL__ = supabaseUrl;
-  window.__SB_KEY__ = supabaseKey;
-</script>
-
-<script type="module">
-  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-
-  const supabase   = createClient(window.__SB_URL__, window.__SB_KEY__);
-  const passInput  = document.getElementById('password');
-  const msgEl      = document.getElementById('msg');
-  const btn        = document.getElementById('signup-btn');
-  const btnText    = document.getElementById('btn-text');
-  const btnLoader  = document.getElementById('btn-loader');
-  const segments   = ['s1','s2','s3','s4'].map((id) => document.getElementById(id));
+<script>
+  const passInput  = document.getElementById('password') as HTMLInputElement;
+  const msgEl      = document.getElementById('msg')!;
+  const btn        = document.getElementById('signup-btn') as HTMLButtonElement;
+  const btnText    = document.getElementById('btn-text')!;
+  const btnLoader  = document.getElementById('btn-loader')!;
+  const segments   = ['s1','s2','s3','s4'].map((id) => document.getElementById(id)!);
   const colors     = ['#E24B4A','#E89A3C','#C4623A','#3D5A47'];
   const labels     = ['Trop court','Faible','Moyen','Fort'];
 
-  function showMsg(text, type = 'error') {
+  function showMsg(text: string, type = 'error') {
     msgEl.textContent   = text;
     msgEl.className     = `auth-msg ${type}`;
     msgEl.style.display = 'block';
   }
   function hideMsg() { msgEl.style.display = 'none'; }
 
-  function setLoading(loading) {
+  function setLoading(loading: boolean) {
     btn.disabled            = loading;
     btnText.style.display   = loading ? 'none'  : 'block';
     btnLoader.style.display = loading ? 'block' : 'none';
   }
 
-  function getStrength(pw) {
+  function getStrength(pw: string) {
     let s = 0;
     if (pw.length >= 8)  s++;
     if (pw.length >= 12) s++;
@@ -173,20 +161,20 @@ const nonce = Astro.locals.nonce;
 
   passInput.addEventListener('input', () => {
     const pw = passInput.value;
-    const wrap = document.getElementById('strength-wrap');
+    const wrap = document.getElementById('strength-wrap')!;
     if (!pw) { wrap.style.display = 'none'; return; }
     wrap.style.display = 'block';
     const s = getStrength(pw);
     segments.forEach((seg, i) => { seg.style.background = i < s ? colors[s - 1] : '#DDD0B8'; });
-    const lbl = document.getElementById('strength-label');
+    const lbl = document.getElementById('strength-label')!;
     lbl.textContent = labels[s - 1];
     lbl.style.color = colors[s - 1];
   });
 
   async function handleSignup() {
-    const email    = document.getElementById('email').value.trim();
+    const email    = (document.getElementById('email') as HTMLInputElement).value.trim();
     const password = passInput.value;
-    const confirm  = document.getElementById('confirm').value;
+    const confirm  = (document.getElementById('confirm') as HTMLInputElement).value;
 
     hideMsg();
     if (!email || !password || !confirm) return showMsg('Veuillez remplir tous les champs.');
@@ -196,9 +184,22 @@ const nonce = Astro.locals.nonce;
 
     setLoading(true);
     try {
-      const { error } = await supabase.auth.signUp({ email, password });
-      if (error) showMsg(error.message);
-      else showMsg('Compte créé ! Vérifiez votre boîte mail pour confirmer votre adresse.', 'success');
+      const formData = new FormData();
+      formData.set('email', email);
+      formData.set('password', password);
+
+      const res = await fetch('/auth/inscription', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        return showMsg(data.error || 'Erreur lors de l\'inscription.');
+      }
+
+      showMsg('Compte créé ! Vérifiez votre boîte mail pour confirmer votre adresse.', 'success');
     } catch {
       showMsg('Une erreur est survenue. Veuillez réessayer.');
     } finally {

@@ -126,42 +126,40 @@ const nonce = Astro.locals.nonce;
   window.__SB_KEY__ = supabaseKey;
 </script>
 
-<script type="module">
-  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+<script>
+  import { createClient } from '@supabase/supabase-js';
 
   const supabase     = createClient(window.__SB_URL__, window.__SB_KEY__);
-  const passInput    = document.getElementById('password');
-  const confirmInput = document.getElementById('confirm');
-  const msgEl        = document.getElementById('msg');
-  const btn          = document.getElementById('update-btn');
-  const btnText      = document.getElementById('btn-text');
-  const btnLoader    = document.getElementById('btn-loader');
-  const segments     = ['s1','s2','s3','s4'].map((id) => document.getElementById(id));
+  const passInput    = document.getElementById('password') as HTMLInputElement;
+  const confirmInput = document.getElementById('confirm') as HTMLInputElement;
+  const msgEl        = document.getElementById('msg')!;
+  const btn          = document.getElementById('update-btn') as HTMLButtonElement;
+  const btnText      = document.getElementById('btn-text')!;
+  const btnLoader    = document.getElementById('btn-loader')!;
+  const segments     = ['s1','s2','s3','s4'].map((id) => document.getElementById(id)!);
   const colors       = ['#E24B4A','#E89A3C','#C4623A','#3D5A47'];
   const labels       = ['Trop court','Faible','Moyen','Fort'];
 
   // Supabase envoie le token dans le hash de l'URL (#access_token=…&type=recovery)
-  // Il faut le laisser gérer automatiquement via onAuthStateChange
   supabase.auth.onAuthStateChange((event) => {
     if (event === 'PASSWORD_RECOVERY') {
-      // L'utilisateur est bien arrivé depuis le lien de réinitialisation
       msgEl.style.display = 'none';
     }
   });
 
-  function showMsg(text, type = 'error') {
+  function showMsg(text: string, type = 'error') {
     msgEl.textContent   = text;
     msgEl.className     = `auth-msg ${type}`;
     msgEl.style.display = 'block';
   }
 
-  function setLoading(loading) {
+  function setLoading(loading: boolean) {
     btn.disabled            = loading;
     btnText.style.display   = loading ? 'none'  : 'block';
     btnLoader.style.display = loading ? 'block' : 'none';
   }
 
-  function getStrength(pw) {
+  function getStrength(pw: string) {
     let s = 0;
     if (pw.length >= 8)  s++;
     if (pw.length >= 12) s++;
@@ -171,7 +169,7 @@ const nonce = Astro.locals.nonce;
   }
 
   function checkMatch() {
-    const hint = document.getElementById('match-hint');
+    const hint = document.getElementById('match-hint')!;
     const pw   = passInput.value;
     const cf   = confirmInput.value;
     if (!cf) { hint.style.display = 'none'; return; }
@@ -187,12 +185,12 @@ const nonce = Astro.locals.nonce;
 
   passInput.addEventListener('input', () => {
     const pw   = passInput.value;
-    const wrap = document.getElementById('strength-wrap');
+    const wrap = document.getElementById('strength-wrap')!;
     if (!pw) { wrap.style.display = 'none'; return; }
     wrap.style.display = 'block';
     const s = getStrength(pw);
     segments.forEach((seg, i) => { seg.style.background = i < s ? colors[s - 1] : '#DDD0B8'; });
-    const lbl = document.getElementById('strength-label');
+    const lbl = document.getElementById('strength-label')!;
     lbl.textContent = labels[s - 1];
     lbl.style.color = colors[s - 1];
     checkMatch();
@@ -226,7 +224,7 @@ const nonce = Astro.locals.nonce;
 
   btn.addEventListener('click', handleUpdate);
 
-  document.querySelectorAll('input[type="password"]').forEach((el) =>
+  document.querySelectorAll<HTMLInputElement>('input[type="password"]').forEach((el) =>
     el.addEventListener('keydown', (e) => { if (e.key === 'Enter') handleUpdate(); }),
   );
 </script>

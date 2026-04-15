@@ -8,6 +8,8 @@ declare global {
       params?: Record<string, any>
     ) => void;
     loadGTMIfConsented?: () => void;
+    __SB_URL__: string;
+    __SB_KEY__: string;
   }
 }
 

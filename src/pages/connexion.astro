@@ -208,16 +208,13 @@ if (user) return Astro.redirect('/dashboard/user/');
         body: formData,
       });
 
+      const data = await res.json();
+
       if (!res.ok) {
-        const text = await res.text();
-        const msg = text === 'Invalid login credentials'
-          ? 'Email ou mot de passe incorrect.'
-          : (text || 'Erreur de connexion.');
-        return showMsg(msg);
+        return showMsg(data.error || 'Erreur de connexion.');
       }
 
-      // La route API a posé les cookies et renvoyé un redirect —
-      // on suit l'URL retournée
+      // La route API a posé les cookies via setAll
       if (remember) localStorage.setItem('rememberedEmail', email);
       else          localStorage.removeItem('rememberedEmail');
 

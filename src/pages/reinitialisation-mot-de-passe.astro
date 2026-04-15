@@ -8,7 +8,6 @@ import AuthLayout from '../layouts/AuthLayout.astro';
 
 const supabaseUrl = import.meta.env.SUPABASE_URL;
 const supabaseKey = import.meta.env.SUPABASE_ANON_KEY;
-const nonce = Astro.locals.nonce;
 ---
 
 <AuthLayout title="Nouveau mot de passe" description="Créez un nouveau mot de passe pour votre compte Biscuits IA.">
@@ -58,6 +57,7 @@ const nonce = Astro.locals.nonce;
       </div>
     </div>
   </div>
+  <div id="sb-cfg" data-url={supabaseUrl} data-key={supabaseKey} hidden></div>
 </AuthLayout>
 
 <style>
@@ -121,15 +121,11 @@ const nonce = Astro.locals.nonce;
   @keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
 </style>
 
-<script define:vars={{ supabaseUrl, supabaseKey }} nonce={nonce}>
-  window.__SB_URL__ = supabaseUrl;
-  window.__SB_KEY__ = supabaseKey;
-</script>
-
 <script>
   import { createClient } from '@supabase/supabase-js';
 
-  const supabase     = createClient(window.__SB_URL__, window.__SB_KEY__);
+  const cfg = document.getElementById('sb-cfg')!;
+  const supabase     = createClient(cfg.dataset.url!, cfg.dataset.key!);
   const passInput    = document.getElementById('password') as HTMLInputElement;
   const confirmInput = document.getElementById('confirm') as HTMLInputElement;
   const msgEl        = document.getElementById('msg')!;

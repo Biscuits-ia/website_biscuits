@@ -5,6 +5,7 @@ import { createSupabaseClient } from '../lib/supabase';
 const supabase = createSupabaseClient(Astro);
 const { data: { user } } = await supabase.auth.getUser();
 if (user) return Astro.redirect('/dashboard/user');
+const nonce = Astro.locals.nonce;
 ---
 
 <AuthLayout title="Inscription" description="Créez votre compte Biscuits IA.">
@@ -127,31 +128,32 @@ if (user) return Astro.redirect('/dashboard/user');
   @keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
 </style>
 
-<script>
-  const passInput  = document.getElementById('password') as HTMLInputElement;
-  const msgEl      = document.getElementById('msg')!;
-  const btn        = document.getElementById('signup-btn') as HTMLButtonElement;
-  const btnText    = document.getElementById('btn-text')!;
-  const btnLoader  = document.getElementById('btn-loader')!;
-  const segments   = ['s1','s2','s3','s4'].map((id) => document.getElementById(id)!);
-  const colors     = ['#E24B4A','#E89A3C','#C4623A','#3D5A47'];
-  const labels     = ['Trop court','Faible','Moyen','Fort'];
+<script is:inline nonce={nonce}>
+  var passInput  = document.getElementById('password');
+  var msgEl      = document.getElementById('msg');
+  var btn        = document.getElementById('signup-btn');
+  var btnText    = document.getElementById('btn-text');
+  var btnLoader  = document.getElementById('btn-loader');
+  var segments   = ['s1','s2','s3','s4'].map(function(id) { return document.getElementById(id); });
+  var colors     = ['#E24B4A','#E89A3C','#C4623A','#3D5A47'];
+  var labels     = ['Trop court','Faible','Moyen','Fort'];
 
-  function showMsg(text: string, type = 'error') {
+  function showMsg(text, type) {
+    if (type === undefined) type = 'error';
     msgEl.textContent   = text;
-    msgEl.className     = `auth-msg ${type}`;
+    msgEl.className     = 'auth-msg ' + type;
     msgEl.style.display = 'block';
   }
   function hideMsg() { msgEl.style.display = 'none'; }
 
-  function setLoading(loading: boolean) {
+  function setLoading(loading) {
     btn.disabled            = loading;
     btnText.style.display   = loading ? 'none'  : 'block';
     btnLoader.style.display = loading ? 'block' : 'none';
   }
 
-  function getStrength(pw: string) {
-    let s = 0;
+  function getStrength(pw) {
+    var s = 0;
     if (pw.length >= 8)  s++;
     if (pw.length >= 12) s++;
     if (/[A-Z]/.test(pw) && /[a-z]/.test(pw)) s++;
@@ -159,22 +161,22 @@ if (user) return Astro.redirect('/dashboard/user');
     return Math.max(1, s);
   }
 
-  passInput.addEventListener('input', () => {
-    const pw = passInput.value;
-    const wrap = document.getElementById('strength-wrap')!;
+  passInput.addEventListener('input', function() {
+    var pw = passInput.value;
+    var wrap = document.getElementById('strength-wrap');
     if (!pw) { wrap.style.display = 'none'; return; }
     wrap.style.display = 'block';
-    const s = getStrength(pw);
-    segments.forEach((seg, i) => { seg.style.background = i < s ? colors[s - 1] : '#DDD0B8'; });
-    const lbl = document.getElementById('strength-label')!;
+    var s = getStrength(pw);
+    segments.forEach(function(seg, i) { seg.style.background = i < s ? colors[s - 1] : '#DDD0B8'; });
+    var lbl = document.getElementById('strength-label');
     lbl.textContent = labels[s - 1];
     lbl.style.color = colors[s - 1];
   });
 
   async function handleSignup() {
-    const email    = (document.getElementById('email') as HTMLInputElement).value.trim();
-    const password = passInput.value;
-    const confirm  = (document.getElementById('confirm') as HTMLInputElement).value;
+    var email    = document.getElementById('email').value.trim();
+    var password = passInput.value;
+    var confirm  = document.getElementById('confirm').value;
 
     hideMsg();
     if (!email || !password || !confirm) return showMsg('Veuillez remplir tous les champs.');
@@ -184,23 +186,23 @@ if (user) return Astro.redirect('/dashboard/user');
 
     setLoading(true);
     try {
-      const formData = new FormData();
+      var formData = new FormData();
       formData.set('email', email);
       formData.set('password', password);
 
-      const res = await fetch('/auth/inscription', {
+      var res = await fetch('/auth/inscription', {
         method: 'POST',
         body: formData,
       });
 
-      const data = await res.json();
+      var data = await res.json();
 
       if (!res.ok) {
-        return showMsg(data.error || 'Erreur lors de l\'inscription.');
+        return showMsg(data.error || "Erreur lors de l'inscription.");
       }
 
       showMsg('Compte créé ! Vérifiez votre boîte mail pour confirmer votre adresse.', 'success');
-    } catch {
+    } catch (e) {
       showMsg('Une erreur est survenue. Veuillez réessayer.');
     } finally {
       setLoading(false);
@@ -209,7 +211,7 @@ if (user) return Astro.redirect('/dashboard/user');
 
   btn.addEventListener('click', handleSignup);
 
-  document.querySelectorAll('input').forEach((el) =>
-    el.addEventListener('keydown', (e) => { if (e.key === 'Enter') handleSignup(); }),
-  );
+  document.querySelectorAll('input').forEach(function(el) {
+    el.addEventListener('keydown', function(e) { if (e.key === 'Enter') handleSignup(); });
+  });
 </script>

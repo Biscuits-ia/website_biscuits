@@ -60,6 +60,20 @@ export const onRequest = defineMiddleware(async (context, next) => {
     "form-action 'self'",
   ].join('; ');
 
+  // Inject nonce into Astro-generated inline module scripts.
+  // Astro's SSR renderer outputs `<script type="module">content</script>` for
+  // inlined scripts (no imports that create separate chunks). These lack a nonce
+  // attribute, so they are blocked by the CSP. We patch the HTML response here.
+  const contentType = response.headers.get('content-type') ?? '';
+  if (contentType.includes('text/html')) {
+    const html = await response.text();
+    // Match <script type="module"> without any src= attribute (inline scripts only)
+    const patched = html.replace(/<script type="module">/g, `<script type="module" nonce="${nonce}">`);
+    const headers = new Headers(response.headers);
+    headers.set('Content-Security-Policy', csp);
+    return new Response(patched, { status: response.status, statusText: response.statusText, headers });
+  }
+
   response.headers.set('Content-Security-Policy', csp);
 
   return response;

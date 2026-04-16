@@ -5,6 +5,7 @@ import { createSupabaseClient } from '../lib/supabase';
 const supabase = createSupabaseClient(Astro);
 const { data: { user } } = await supabase.auth.getUser();
 if (user) return Astro.redirect('/dashboard/user/');
+const nonce = Astro.locals.nonce;
 ---
 
 <AuthLayout title="Connexion" description="Connectez-vous à votre compte Biscuits IA.">
@@ -152,43 +153,44 @@ if (user) return Astro.redirect('/dashboard/user/');
   .auth-spinner { animation:spin .7s linear infinite; }
   @keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
 </style>
-<script>
-  const emailInput = document.getElementById('email') as HTMLInputElement;
-  const passInput  = document.getElementById('password') as HTMLInputElement;
-  const msgEl      = document.getElementById('msg')!;
-  const btn        = document.getElementById('login-btn') as HTMLButtonElement;
-  const btnText    = document.getElementById('btn-text')!;
-  const btnLoader  = document.getElementById('btn-loader')!;
+<script is:inline nonce={nonce}>
+  const emailInput = document.getElementById('email');
+  const passInput  = document.getElementById('password');
+  const msgEl      = document.getElementById('msg');
+  const btn        = document.getElementById('login-btn');
+  const btnText    = document.getElementById('btn-text');
+  const btnLoader  = document.getElementById('btn-loader');
 
-  function showMsg(text: string, type = 'error') {
+  function showMsg(text, type) {
+    if (type === undefined) type = 'error';
     msgEl.textContent   = text;
-    msgEl.className     = `auth-msg ${type}`;
+    msgEl.className     = 'auth-msg ' + type;
     msgEl.style.display = 'block';
   }
   function hideMsg() { msgEl.style.display = 'none'; }
 
-  function setLoading(loading: boolean) {
+  function setLoading(loading) {
     btn.disabled            = loading;
     btnText.style.display   = loading ? 'none'  : 'block';
     btnLoader.style.display = loading ? 'block' : 'none';
   }
 
-  emailInput.addEventListener('input', () => {
-    const v = emailInput.value.trim();
+  emailInput.addEventListener('input', function() {
+    var v = emailInput.value.trim();
     if (v && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) showMsg('Adresse email invalide.', 'warn');
     else hideMsg();
   });
 
-  passInput.addEventListener('input', () => {
+  passInput.addEventListener('input', function() {
     if (passInput.value && passInput.value.length < 8)
       showMsg('Au moins 8 caractères requis.', 'warn');
     else hideMsg();
   });
 
   async function handleLogin() {
-    const email    = emailInput.value.trim();
-    const password = passInput.value;
-    const remember = (document.getElementById('remember-me') as HTMLInputElement).checked;
+    var email    = emailInput.value.trim();
+    var password = passInput.value;
+    var remember = document.getElementById('remember-me').checked;
 
     hideMsg();
     if (!email && !password) return showMsg('Veuillez remplir tous les champs.');
@@ -198,16 +200,16 @@ if (user) return Astro.redirect('/dashboard/user/');
 
     setLoading(true);
     try {
-      const formData = new FormData();
+      var formData = new FormData();
       formData.set('email', email);
       formData.set('password', password);
 
-      const res = await fetch('/auth/connexion', {
+      var res = await fetch('/auth/connexion', {
         method: 'POST',
         body: formData,
       });
 
-      const data = await res.json();
+      var data = await res.json();
 
       if (!res.ok) {
         return showMsg(data.error || 'Erreur de connexion.');
@@ -218,7 +220,7 @@ if (user) return Astro.redirect('/dashboard/user/');
 
       window.location.href = '/dashboard/user/';
 
-    } catch {
+    } catch (e) {
       showMsg('Une erreur est survenue. Veuillez réessayer.');
     } finally {
       setLoading(false);
@@ -227,13 +229,13 @@ if (user) return Astro.redirect('/dashboard/user/');
 
   btn.addEventListener('click', handleLogin);
 
-  const remembered = localStorage.getItem('rememberedEmail');
+  var remembered = localStorage.getItem('rememberedEmail');
   if (remembered) {
     emailInput.value = remembered;
-    (document.getElementById('remember-me') as HTMLInputElement).checked = true;
+    document.getElementById('remember-me').checked = true;
   }
 
-  [emailInput, passInput].forEach((el) =>
-    el.addEventListener('keydown', (e) => { if (e.key === 'Enter') handleLogin(); }),
-  );
+  [emailInput, passInput].forEach(function(el) {
+    el.addEventListener('keydown', function(e) { if (e.key === 'Enter') handleLogin(); });
+  });
 </script>

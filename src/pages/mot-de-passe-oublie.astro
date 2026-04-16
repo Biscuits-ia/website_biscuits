@@ -5,6 +5,7 @@ import { createSupabaseClient } from '../lib/supabase';
 const supabase = createSupabaseClient(Astro);
 const { data: { user } } = await supabase.auth.getUser();
 if (user) return Astro.redirect('/dashboard/user');
+const nonce = Astro.locals.nonce;
 ---
 
 <AuthLayout title="Mot de passe oublié" description="Réinitialisez votre mot de passe Biscuits IA.">
@@ -111,26 +112,27 @@ if (user) return Astro.redirect('/dashboard/user');
   @keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
 </style>
 
-<script>
-  const msgEl     = document.getElementById('msg')!;
-  const btn       = document.getElementById('reset-btn') as HTMLButtonElement;
-  const btnText   = document.getElementById('btn-text')!;
-  const btnLoader = document.getElementById('btn-loader')!;
+<script is:inline nonce={nonce}>
+  var msgEl     = document.getElementById('msg');
+  var btn       = document.getElementById('reset-btn');
+  var btnText   = document.getElementById('btn-text');
+  var btnLoader = document.getElementById('btn-loader');
 
-  function showMsg(text: string, type = 'error') {
+  function showMsg(text, type) {
+    if (type === undefined) type = 'error';
     msgEl.textContent   = text;
-    msgEl.className     = `auth-msg ${type}`;
+    msgEl.className     = 'auth-msg ' + type;
     msgEl.style.display = 'block';
   }
 
-  function setLoading(loading: boolean) {
+  function setLoading(loading) {
     btn.disabled            = loading;
     btnText.style.display   = loading ? 'none'  : 'block';
     btnLoader.style.display = loading ? 'block' : 'none';
   }
 
   async function handleReset() {
-    const email = (document.getElementById('email') as HTMLInputElement).value.trim();
+    var email = document.getElementById('email').value.trim();
 
     msgEl.style.display = 'none';
     if (!email) return showMsg('Veuillez entrer votre adresse email.');
@@ -138,22 +140,22 @@ if (user) return Astro.redirect('/dashboard/user');
 
     setLoading(true);
     try {
-      const formData = new FormData();
+      var formData = new FormData();
       formData.set('email', email);
 
-      const res = await fetch('/auth/mot-de-passe-oublie', {
+      var res = await fetch('/auth/mot-de-passe-oublie', {
         method: 'POST',
         body: formData,
       });
 
-      const data = await res.json();
+      var data = await res.json();
 
       if (!res.ok) {
         return showMsg(data.error || 'Une erreur est survenue.');
       }
 
       showMsg('Lien envoyé ! Vérifiez votre boîte de réception.', 'success');
-    } catch {
+    } catch (e) {
       showMsg('Une erreur est survenue. Veuillez réessayer.');
     } finally {
       setLoading(false);
@@ -162,7 +164,7 @@ if (user) return Astro.redirect('/dashboard/user');
 
   btn.addEventListener('click', handleReset);
 
-  document.getElementById('email')!.addEventListener('keydown', (e) => {
+  document.getElementById('email').addEventListener('keydown', function(e) {
     if (e.key === 'Enter') handleReset();
   });
 </script>

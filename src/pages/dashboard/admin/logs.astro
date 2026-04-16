@@ -7,6 +7,7 @@ const result = await requireAdmin(Astro);
 if (result instanceof Response) return result;
 
 const { user, supabase } = result;
+const nonce = Astro.locals.nonce;
 const userName = user.user_metadata?.full_name ?? user.email?.split('@')[0] ?? 'Admin';
 
 const page      = Number(Astro.url.searchParams.get('page') ?? 1);
@@ -125,10 +126,10 @@ const { data: levelStats } = await supabase.rpc('log_level_counts').match(() => 
   )}
 
   <!-- Auto-refresh JS (optionnel) -->
-  <script>
+  <script is:inline nonce={nonce}>
     // Refresh automatique toutes les 30s si on est sur la page 1 sans filtre actif
     if (!new URLSearchParams(location.search).get('page') && !new URLSearchParams(location.search).get('level')) {
-      setTimeout(() => location.reload(), 30_000);
+      setTimeout(function() { location.reload(); }, 30000);
     }
   </script>
 

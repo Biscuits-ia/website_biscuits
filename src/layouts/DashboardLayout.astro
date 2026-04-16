@@ -3,6 +3,10 @@
 import '../styles/dashboard.css';
 import { requireAuth } from '../lib/auth';
 import type { UserRole, AuthResult } from '../lib/auth';
+import BaseHead from '@/components/BaseHead.astro';
+
+const siteUrl = import.meta.env.SITE || 'https://biscuits-ia.com';
+const isProd = import.meta.env.PROD;
 
 // ── Props ─────────────────────────────────────────────────────────────────────
 
@@ -96,12 +100,15 @@ const initials = displayName.split(' ').map((n: string) => n[0]).join('').toUppe
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>{title} — Biscuits</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link rel="stylesheet" href="/styles/global.css" />
+  <BaseHead
+    fullTitle={`${title} — Biscuits`}
+    description={`Espace ${isAdmin ? 'administrateur' : 'membre'} Biscuits IA`}
+    fullCanonical={`${siteUrl}/dashboard/${dashRole}`}
+    siteUrl={siteUrl}
+    noindex={true}
+    isProd={isProd}
+    nonce={Astro.locals.nonce}
+  />
 </head>
 <body class={isAdmin ? 'admin-layout' : ''}>
   <div class="layout">

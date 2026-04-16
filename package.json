@@ -6,7 +6,10 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "lint": "eslint src --ext .ts,.tsx,.astro",
+    "format": "prettier --write \"src/**/*.{ts,tsx,astro,css,json}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,tsx,astro,css,json}\""
   },
   "dependencies": {
     "@astrojs/check": "^0.9.8",
@@ -33,7 +36,15 @@
     "typescript": "^5.9.3"
   },
   "devDependencies": {
-    "@iconify-json/mdi": "^1.2.3"
+    "@eslint/js": "^10.0.1",
+    "@iconify-json/mdi": "^1.2.3",
+    "@typescript-eslint/eslint-plugin": "^8.58.2",
+    "@typescript-eslint/parser": "^8.58.2",
+    "eslint": "^10.2.0",
+    "eslint-plugin-astro": "^1.7.0",
+    "prettier": "^3.8.3",
+    "prettier-plugin-astro": "^0.14.1",
+    "typescript-eslint": "^8.58.2"
   },
   "overrides": {
     "path-to-regexp": "^8.0.0",

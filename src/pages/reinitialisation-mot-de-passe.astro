@@ -1,13 +1,7 @@
 ---
 import AuthLayout from '../layouts/AuthLayout.astro';
 
-// NE PAS rediriger même si une session existe :
-// Supabase crée une session temporaire quand l'utilisateur arrive
-// depuis le lien de réinitialisation — c'est ce dont on a besoin
-// pour appeler supabase.auth.updateUser().
-
-const supabaseUrl = import.meta.env.SUPABASE_URL;
-const supabaseKey = import.meta.env.SUPABASE_ANON_KEY;
+const nonce = Astro.locals.nonce;
 ---
 
 <AuthLayout title="Nouveau mot de passe" description="Créez un nouveau mot de passe pour votre compte Biscuits IA.">
@@ -57,7 +51,6 @@ const supabaseKey = import.meta.env.SUPABASE_ANON_KEY;
       </div>
     </div>
   </div>
-  <div id="sb-cfg" data-url={supabaseUrl} data-key={supabaseKey} hidden></div>
 </AuthLayout>
 
 <style>
@@ -121,42 +114,92 @@ const supabaseKey = import.meta.env.SUPABASE_ANON_KEY;
   @keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
 </style>
 
-<script>
-  import { createClient } from '@supabase/supabase-js';
+<script is:inline nonce={nonce}>
+  var passInput    = document.getElementById('password');
+  var confirmInput = document.getElementById('confirm');
+  var msgEl        = document.getElementById('msg');
+  var btn          = document.getElementById('update-btn');
+  var btnText      = document.getElementById('btn-text');
+  var btnLoader    = document.getElementById('btn-loader');
+  var segments     = ['s1','s2','s3','s4'].map(function(id) { return document.getElementById(id); });
+  var colors       = ['#E24B4A','#E89A3C','#C4623A','#3D5A47'];
+  var labels       = ['Trop court','Faible','Moyen','Fort'];
+  var sessionReady = false;
 
-  const cfg = document.getElementById('sb-cfg')!;
-  const supabase     = createClient(cfg.dataset.url!, cfg.dataset.key!);
-  const passInput    = document.getElementById('password') as HTMLInputElement;
-  const confirmInput = document.getElementById('confirm') as HTMLInputElement;
-  const msgEl        = document.getElementById('msg')!;
-  const btn          = document.getElementById('update-btn') as HTMLButtonElement;
-  const btnText      = document.getElementById('btn-text')!;
-  const btnLoader    = document.getElementById('btn-loader')!;
-  const segments     = ['s1','s2','s3','s4'].map((id) => document.getElementById(id)!);
-  const colors       = ['#E24B4A','#E89A3C','#C4623A','#3D5A47'];
-  const labels       = ['Trop court','Faible','Moyen','Fort'];
+  // Parse le hash de l'URL pour extraire les tokens Supabase
+  // Format: #access_token=...&refresh_token=...&type=recovery
+  function parseHash() {
+    var hash = window.location.hash.substring(1);
+    var params = {};
+    hash.split('&').forEach(function(pair) {
+      var parts = pair.split('=');
+      if (parts.length === 2) {
+        params[decodeURIComponent(parts[0])] = decodeURIComponent(parts[1]);
+      }
+    });
+    return params;
+  }
 
-  // Supabase envoie le token dans le hash de l'URL (#access_token=…&type=recovery)
-  supabase.auth.onAuthStateChange((event) => {
-    if (event === 'PASSWORD_RECOVERY') {
-      msgEl.style.display = 'none';
+  // Vérifie le token et établit la session côté serveur
+  async function initSession() {
+    var params = parseHash();
+    if (!params.access_token || !params.refresh_token) {
+      showMsg('Lien invalide ou expiré. Veuillez demander un nouveau lien de réinitialisation.', 'error');
+      btn.disabled = true;
+      return;
     }
-  });
 
-  function showMsg(text: string, type = 'error') {
+    if (params.type && params.type !== 'recovery') {
+      showMsg('Ce lien n\'est pas valide pour la réinitialisation de mot de passe.', 'error');
+      btn.disabled = true;
+      return;
+    }
+
+    try {
+      var formData = new FormData();
+      formData.set('access_token', params.access_token);
+      formData.set('refresh_token', params.refresh_token);
+
+      var res = await fetch('/auth/verifier-token-reinitialisation', {
+        method: 'POST',
+        body: formData,
+      });
+
+      var data = await res.json();
+
+      if (!res.ok) {
+        showMsg(data.error || 'Impossible de vérifier le lien. Il a peut-être expiré.', 'error');
+        btn.disabled = true;
+        return;
+      }
+
+      sessionReady = true;
+      // Nettoyer l'URL pour enlever le hash
+      history.replaceState(null, '', window.location.pathname);
+    } catch (e) {
+      showMsg('Une erreur est survenue lors de la vérification du lien.', 'error');
+      btn.disabled = true;
+    }
+  }
+
+  // Initialiser la session au chargement de la page
+  initSession();
+
+  function showMsg(text, type) {
+    if (!type) type = 'error';
     msgEl.textContent   = text;
-    msgEl.className     = `auth-msg ${type}`;
+    msgEl.className     = 'auth-msg ' + type;
     msgEl.style.display = 'block';
   }
 
-  function setLoading(loading: boolean) {
+  function setLoading(loading) {
     btn.disabled            = loading;
     btnText.style.display   = loading ? 'none'  : 'block';
     btnLoader.style.display = loading ? 'block' : 'none';
   }
 
-  function getStrength(pw: string) {
-    let s = 0;
+  function getStrength(pw) {
+    var s = 0;
     if (pw.length >= 8)  s++;
     if (pw.length >= 12) s++;
     if (/[A-Z]/.test(pw) && /[a-z]/.test(pw)) s++;
@@ -165,9 +208,9 @@ const supabaseKey = import.meta.env.SUPABASE_ANON_KEY;
   }
 
   function checkMatch() {
-    const hint = document.getElementById('match-hint')!;
-    const pw   = passInput.value;
-    const cf   = confirmInput.value;
+    var hint = document.getElementById('match-hint');
+    var pw   = passInput.value;
+    var cf   = confirmInput.value;
     if (!cf) { hint.style.display = 'none'; return; }
     hint.style.display = 'block';
     if (pw === cf) {
@@ -179,14 +222,14 @@ const supabaseKey = import.meta.env.SUPABASE_ANON_KEY;
     }
   }
 
-  passInput.addEventListener('input', () => {
-    const pw   = passInput.value;
-    const wrap = document.getElementById('strength-wrap')!;
+  passInput.addEventListener('input', function() {
+    var pw   = passInput.value;
+    var wrap = document.getElementById('strength-wrap');
     if (!pw) { wrap.style.display = 'none'; return; }
     wrap.style.display = 'block';
-    const s = getStrength(pw);
-    segments.forEach((seg, i) => { seg.style.background = i < s ? colors[s - 1] : '#DDD0B8'; });
-    const lbl = document.getElementById('strength-label')!;
+    var s = getStrength(pw);
+    segments.forEach(function(seg, i) { seg.style.background = i < s ? colors[s - 1] : '#DDD0B8'; });
+    var lbl = document.getElementById('strength-label');
     lbl.textContent = labels[s - 1];
     lbl.style.color = colors[s - 1];
     checkMatch();
@@ -195,23 +238,49 @@ const supabaseKey = import.meta.env.SUPABASE_ANON_KEY;
   confirmInput.addEventListener('input', checkMatch);
 
   async function handleUpdate() {
-    const password = passInput.value;
-    const confirm  = confirmInput.value;
+    var password = passInput.value;
+    var confirm  = confirmInput.value;
 
     msgEl.style.display = 'none';
-    if (!password || !confirm) return showMsg('Veuillez remplir tous les champs.');
-    if (password.length < 8)   return showMsg('Au moins 8 caractères requis.');
-    if (password !== confirm)  return showMsg('Les mots de passe ne correspondent pas.');
+    
+    if (!sessionReady) {
+      showMsg('Veuillez d\'abord attendre la vérification du lien.');
+      return;
+    }
+    
+    if (!password || !confirm) {
+      showMsg('Veuillez remplir tous les champs.');
+      return;
+    }
+    if (password.length < 8) {
+      showMsg('Au moins 8 caractères requis.');
+      return;
+    }
+    if (password !== confirm) {
+      showMsg('Les mots de passe ne correspondent pas.');
+      return;
+    }
 
     setLoading(true);
     try {
-      const { error } = await supabase.auth.updateUser({ password });
-      if (error) showMsg(error.message);
-      else {
-        showMsg('Mot de passe mis à jour ! Redirection…', 'success');
-        setTimeout(() => { window.location.href = '/connexion'; }, 2000);
+      var formData = new FormData();
+      formData.set('password', password);
+
+      var res = await fetch('/auth/reinitialiser-mot-de-passe', {
+        method: 'POST',
+        body: formData,
+      });
+
+      var data = await res.json();
+
+      if (!res.ok) {
+        showMsg(data.error || 'Une erreur est survenue.');
+        return;
       }
-    } catch {
+
+      showMsg('Mot de passe mis à jour ! Redirection…', 'success');
+      setTimeout(function() { window.location.href = '/connexion'; }, 2000);
+    } catch (e) {
       showMsg('Une erreur est survenue. Veuillez réessayer.');
     } finally {
       setLoading(false);
@@ -220,7 +289,7 @@ const supabaseKey = import.meta.env.SUPABASE_ANON_KEY;
 
   btn.addEventListener('click', handleUpdate);
 
-  document.querySelectorAll<HTMLInputElement>('input[type="password"]').forEach((el) =>
-    el.addEventListener('keydown', (e) => { if (e.key === 'Enter') handleUpdate(); }),
-  );
+  document.querySelectorAll('input[type="password"]').forEach(function(el) {
+    el.addEventListener('keydown', function(e) { if (e.key === 'Enter') handleUpdate(); });
+  });
 </script>

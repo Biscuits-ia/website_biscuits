@@ -5,6 +5,7 @@ import crypto from 'node:crypto';
 
 export const onRequest = defineMiddleware(async (context, next) => {
   const { url, clientAddress } = context;
+  const isDev = import.meta.env.DEV;
 
   // Rate-limit API routes only
   if (url.pathname.startsWith('/api/')) {
@@ -20,13 +21,39 @@ export const onRequest = defineMiddleware(async (context, next) => {
   const response = await next();
 
   // Set CSP header with nonce (replaces static vercel.json CSP)
+  const scriptSrc = [
+    "'self'",
+    `'nonce-${nonce}'`,
+    'https://www.googletagmanager.com',
+    'https://www.google-analytics.com',
+    'https://cdn.vercel-insights.com',
+    'https://*.vercel.app',
+    'https://vercel.live',
+    'https://cdn.jsdelivr.net',
+  ];
+
+  const connectSrc = [
+    "'self'",
+    'https://*.google-analytics.com',
+    'https://analytics.google.com',
+    'https://*.vercel-insights.com',
+    'https://*.cloudflare.com',
+    'https://*.supabase.co',
+    'https://cdn.jsdelivr.net',
+  ];
+
+  if (isDev) {
+    connectSrc.push('http://localhost:4321', 'ws://localhost:4321', 'http://127.0.0.1:4321', 'ws://127.0.0.1:4321');
+  }
+
   const csp = [
     "default-src 'self'",
-    `script-src 'self' 'nonce-${nonce}' https://www.googletagmanager.com https://www.google-analytics.com https://cdn.vercel-insights.com https://*.vercel.app https://vercel.live https://cdn.jsdelivr.net`,
+    `script-src ${scriptSrc.join(' ')}`,
+    "worker-src 'self' blob:",
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     "img-src 'self' data: https:",
     "font-src 'self' https://fonts.gstatic.com",
-    "connect-src 'self' https://*.google-analytics.com https://analytics.google.com https://*.vercel-insights.com https://*.cloudflare.com https://*.supabase.co https://cdn.jsdelivr.net",
+    `connect-src ${connectSrc.join(' ')}`,
     "frame-src https://www.googletagmanager.com https://vercel.live",
     "object-src 'none'",
     "base-uri 'self'",

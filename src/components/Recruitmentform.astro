@@ -1,6 +1,5 @@
 ---
 const nonce = Astro.locals.nonce;
-const siteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
 ---
 
 <div class="recruitment-page">
@@ -150,13 +149,13 @@ const siteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
   let turnstileToken = null;
   const turnstileContainer = document.getElementById('rf-turnstile');
   const turnstileError = document.getElementById('rf-turnstile-error');
+  const TURNSTILE_SITE_KEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
 
   function renderTurnstile() {
-    if (!turnstileContainer) return;
-    const siteKey = window.__TURNSTILE_SITE_KEY;
-    if (!siteKey || !window.turnstile) return;
+    if (!turnstileContainer || !TURNSTILE_SITE_KEY) return;
+    if (!window.turnstile) return;
     window.turnstile.render(turnstileContainer, {
-      sitekey: siteKey,
+      sitekey: TURNSTILE_SITE_KEY,
       theme: 'auto',
       callback: (token) => {
         turnstileToken = token;
@@ -167,11 +166,16 @@ const siteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
     });
   }
 
-  if (window.turnstile) {
-    renderTurnstile();
-  } else {
-    window.addEventListener('turnstileReady', renderTurnstile, { once: true });
+  // Load Turnstile SDK dynamically (avoids CSP nonce issues with inline scripts)
+  function loadTurnstileSDK() {
+    if (window.turnstile) { renderTurnstile(); return; }
+    const script = document.createElement('script');
+    script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
+    script.async = true;
+    script.onload = () => renderTurnstile();
+    document.head.appendChild(script);
   }
+  loadTurnstileSDK();
 
   // ─── Helpers UI ────────────────────────────────────────────────────────────
   function showFieldError(fieldId, message) {
@@ -311,14 +315,6 @@ const siteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
     form.scrollIntoView({ behavior: 'smooth', block: 'start' });
   });
 </script>
-
-<script is:inline nonce={nonce} define:vars={{ siteKey }}>
-  window.__TURNSTILE_SITE_KEY = siteKey;
-  window.__onTurnstileLoad = function() {
-    window.dispatchEvent(new Event('turnstileReady'));
-  };
-</script>
-<script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js?onload=__onTurnstileLoad" async defer></script>
 
 <style>
   .recruitment-page {

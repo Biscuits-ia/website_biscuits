@@ -126,13 +126,14 @@ function initContactForm(): void {
   let turnstileToken: string | null = null;
   const turnstileContainer = document.getElementById('cf-turnstile');
   const turnstileError = document.getElementById('cf-turnstile-error');
+  const TURNSTILE_SITE_KEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
 
   function renderTurnstile(): void {
-    if (!turnstileContainer) return;
-    const siteKey = (window as any).__TURNSTILE_SITE_KEY;
-    if (!siteKey || !(window as any).turnstile) return;
-    (window as any).turnstile.render(turnstileContainer, {
-      sitekey: siteKey,
+    if (!turnstileContainer || !TURNSTILE_SITE_KEY) return;
+    const t = (window as any).turnstile;
+    if (!t) return;
+    t.render(turnstileContainer, {
+      sitekey: TURNSTILE_SITE_KEY,
       theme: 'auto',
       callback: (token: string) => {
         turnstileToken = token;
@@ -147,12 +148,16 @@ function initContactForm(): void {
     });
   }
 
-  // Render if script already loaded, otherwise wait
-  if ((window as any).turnstile) {
-    renderTurnstile();
-  } else {
-    window.addEventListener('turnstileReady', renderTurnstile, { once: true });
+  // Load Turnstile SDK dynamically (avoids CSP nonce issues with inline scripts)
+  function loadTurnstileSDK(): void {
+    if ((window as any).turnstile) { renderTurnstile(); return; }
+    const script = document.createElement('script');
+    script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
+    script.async = true;
+    script.onload = () => renderTurnstile();
+    document.head.appendChild(script);
   }
+  loadTurnstileSDK();
 
   function readPayload(): ContactPayload {
     return {

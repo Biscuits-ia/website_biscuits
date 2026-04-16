@@ -1,6 +1,6 @@
 ---
 // src/components/ContactForm.astro
-const siteKey = import.meta.env.TURNSTILE_SITE_KEY ?? '1x00000000000000000000AA';
+import CloudflareTurnstile from '@/components/CloudflareTurnstile.astro';
 ---
 
 <div class="contact-form-wrapper">
@@ -65,7 +65,7 @@ const siteKey = import.meta.env.TURNSTILE_SITE_KEY ?? '1x00000000000000000000AA'
     <div class="cf-footer">
       <p class="cf-note"><span aria-hidden="true">*</span> Champs obligatoires</p>
       <!-- Cloudflare Turnstile -->
-      <div class="cf-turnstile" data-sitekey={siteKey} style="margin-bottom:16px;"></div>
+      <CloudflareTurnstile style="margin-bottom:16px;" />
       <button id="cf-submit" type="submit" class="cf-btn" aria-busy="false">
         <span id="cf-btn-label">Envoyer ma demande</span>
         <span id="cf-btn-loader" class="cf-spinner" aria-hidden="true" hidden></span>
@@ -78,8 +78,6 @@ const siteKey = import.meta.env.TURNSTILE_SITE_KEY ?? '1x00000000000000000000AA'
 <script>
   import '../scripts/contactFormInit.ts';
 </script>
-
-<script is:inline src="https://challenges.cloudflare.com/turnstile/v1/api.js" async defer></script>
 
 <style>
   .contact-form-wrapper { width: 100%; }

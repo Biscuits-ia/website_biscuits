@@ -1,0 +1,62 @@
+---
+/**
+ * CloudflareTurnstile.astro
+ *
+ * Composant réutilisable pour Cloudflare Turnstile.
+ * Gère le chargement du script, la définition des callbacks globaux
+ * et le rendu du widget.
+ *
+ * Après résolution, le token est disponible via `window._cfToken`.
+ * Turnstile injecte aussi un `<input name="cf-turnstile-response">` dans
+ * le formulaire parent, accessible directement côté client.
+ *
+ * Variables d'environnement requises :
+ *   TURNSTILE_SITE_KEY  — clé publique Cloudflare
+ *   (fallback : clé de test 1x00000000000000000000AA)
+ */
+
+interface Props {
+  /** Thème du widget */
+  theme?: 'light' | 'dark' | 'auto';
+  /** Taille du widget */
+  size?: 'normal' | 'compact';
+  /** Classe CSS supplémentaire sur le div wrapper */
+  class?: string;
+  /** Style inline sur le div wrapper */
+  style?: string;
+}
+
+const {
+  theme = 'auto',
+  size  = 'normal',
+  class: className,
+  style,
+} = Astro.props;
+
+const nonce   = Astro.locals.nonce;
+const siteKey = import.meta.env.TURNSTILE_SITE_KEY ?? '1x00000000000000000000AA';
+---
+
+<!-- Callbacks définis AVANT le chargement du script Turnstile -->
+<script is:inline nonce={nonce}>
+  window._cfToken = window._cfToken || '';
+  window.onTurnstileOk      = function(token) { window._cfToken = token; };
+  window.onTurnstileExpired  = function()      { window._cfToken = ''; };
+  window.onTurnstileError    = function()      { window._cfToken = ''; };
+</script>
+
+<div
+  class:list={['cf-turnstile', className]}
+  data-sitekey={siteKey}
+  data-callback="onTurnstileOk"
+  data-expired-callback="onTurnstileExpired"
+  data-error-callback="onTurnstileError"
+  data-theme={theme}
+  data-size={size}
+  style={style}
+></div>
+
+<!-- defer garantit que le script s'exécute après le parsing du HTML
+     (les callbacks ci-dessus et le DOM sont donc toujours prêts avant).
+     Le nonce est requis pour que la CSP autorise ce script externe. -->
+<script is:inline src="https://challenges.cloudflare.com/turnstile/v1/api.js" nonce={nonce} defer></script>

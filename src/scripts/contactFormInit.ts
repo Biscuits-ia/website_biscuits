@@ -128,14 +128,23 @@ function initContactForm(): void {
   const turnstileError = document.getElementById('cf-turnstile-error');
   const TURNSTILE_SITE_KEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
 
+  // Debug: Log Turnstile configuration
+  console.log('[DEBUG Turnstile] Site key:', TURNSTILE_SITE_KEY ? 'présente' : 'MANQUANTE');
+  console.log('[DEBUG Turnstile] Container:', turnstileContainer ? 'trouvé' : 'INTROUVABLE');
+
   function renderTurnstile(): void {
-    if (!turnstileContainer || !TURNSTILE_SITE_KEY) return;
+    if (!turnstileContainer || !TURNSTILE_SITE_KEY) {
+      console.error('[DEBUG Turnstile] Rendu impossible - container ou site key manquant');
+      return;
+    }
     const t = (window as any).turnstile;
     if (!t) return;
+    console.log('[DEBUG Turnstile] Rendu du widget...');
     t.render(turnstileContainer, {
       sitekey: TURNSTILE_SITE_KEY,
       theme: 'auto',
       callback: (token: string) => {
+        console.log('[DEBUG Turnstile] Token reçu avec succès');
         turnstileToken = token;
         if (turnstileError) { turnstileError.textContent = ''; turnstileError.hidden = true; }
       },

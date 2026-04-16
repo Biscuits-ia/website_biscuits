@@ -151,9 +151,17 @@ const nonce = Astro.locals.nonce;
   const turnstileError = document.getElementById('rf-turnstile-error');
   const TURNSTILE_SITE_KEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
 
+  // Debug: Log Turnstile configuration
+  console.log('[DEBUG Turnstile Recrutement] Site key:', TURNSTILE_SITE_KEY ? 'présente' : 'MANQUANTE');
+  console.log('[DEBUG Turnstile Recrutement] Container:', turnstileContainer ? 'trouvé' : 'INTROUVABLE');
+
   function renderTurnstile() {
-    if (!turnstileContainer || !TURNSTILE_SITE_KEY) return;
+    if (!turnstileContainer || !TURNSTILE_SITE_KEY) {
+      console.error('[DEBUG Turnstile Recrutement] Rendu impossible - container ou site key manquant');
+      return;
+    }
     if (!window.turnstile) return;
+    console.log('[DEBUG Turnstile Recrutement] Rendu du widget...');
     window.turnstile.render(turnstileContainer, {
       sitekey: TURNSTILE_SITE_KEY,
       theme: 'auto',

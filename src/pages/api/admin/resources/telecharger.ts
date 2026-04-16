@@ -5,11 +5,12 @@
 import type { APIRoute } from 'astro';
 import { createSupabaseAdminClient } from '@/lib/supabase';
 import { createSupabaseClient }      from '@/lib/supabase';
+import { isValidUUID } from '@/lib/validation';
 
 export const GET: APIRoute = async ({ url, request, cookies }) => {
   const resourceId = url.searchParams.get('id');
-  if (!resourceId) {
-    return new Response('id requis', { status: 400 });
+  if (!isValidUUID(resourceId)) {
+    return new Response('id invalide', { status: 400 });
   }
 
   const adminDb = createSupabaseAdminClient();

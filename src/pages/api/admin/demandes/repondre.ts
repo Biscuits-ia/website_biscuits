@@ -2,6 +2,7 @@ import type { APIRoute } from 'astro';
 import { createSupabaseClient } from '@/lib/supabase';
 import { createSupabaseAdminClient } from '@/lib/supabase';
 import { fetchRoleSecure } from '@/lib/auth';
+import { isValidUUID } from '@/lib/validation';
 
 export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   const supabase = createSupabaseClient({ request, cookies });
@@ -16,7 +17,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   const status     = form.get('status')      as string | null;
   const adminReply = form.get('admin_reply') as string | null;
 
-  if (!requestId) return redirect('/dashboard/admin/demandes?error=' + encodeURIComponent('ID manquant'));
+  if (!isValidUUID(requestId)) return redirect('/dashboard/admin/demandes?error=' + encodeURIComponent('ID invalide'));
 
   const validStatuses = ['pending', 'in_progress', 'resolved'];
   if (status && !validStatuses.includes(status)) {

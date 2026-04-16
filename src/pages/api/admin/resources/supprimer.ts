@@ -2,6 +2,7 @@
 import type { APIRoute } from 'astro';
 import { createSupabaseClient, createSupabaseAdminClient } from '@/lib/supabase';
 import { getFormString } from '@/types/ateliers';
+import { isValidUUID } from '@/lib/validation';
 
 export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   const supabase = createSupabaseClient({ request, cookies });
@@ -21,7 +22,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
 
   const form       = await request.formData();
   const resourceId = getFormString(form, 'resource_id');
-  if (!resourceId) return new Response('resource_id requis', { status: 400 });
+  if (!isValidUUID(resourceId)) return new Response('resource_id invalide', { status: 400 });
 
   // Récupère le file_path avant suppression pour nettoyer le Storage
   const { data: resource, error: fetchError } = await adminDb

@@ -2,6 +2,7 @@
 import type { APIRoute } from 'astro';
 import { createSupabaseClient, createSupabaseAdminClient } from '@/lib/supabase';
 import { getFormString } from '@/types/ateliers';
+import { isValidUUID } from '@/lib/validation';
 
 export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   const supabase = createSupabaseClient({ request, cookies });
@@ -23,7 +24,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   const resourceId  = getFormString(form, 'resource_id');
   const isPublished = form.get('is_published') === 'true';
 
-  if (!resourceId) return new Response('resource_id requis', { status: 400 });
+  if (!isValidUUID(resourceId)) return new Response('resource_id invalide', { status: 400 });
 
   const { error } = await adminDb
     .from('resources')

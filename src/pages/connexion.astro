@@ -152,22 +152,22 @@ if (user) return Astro.redirect('/dashboard/user/');
   .auth-spinner { animation:spin .7s linear infinite; }
   @keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
 </style>
-<script type="module">
-  const emailInput = document.getElementById('email');
-  const passInput  = document.getElementById('password');
-  const msgEl      = document.getElementById('msg');
-  const btn        = document.getElementById('login-btn');
-  const btnText    = document.getElementById('btn-text');
-  const btnLoader  = document.getElementById('btn-loader');
+<script>
+  const emailInput = document.getElementById('email') as HTMLInputElement;
+  const passInput  = document.getElementById('password') as HTMLInputElement;
+  const msgEl      = document.getElementById('msg')!;
+  const btn        = document.getElementById('login-btn') as HTMLButtonElement;
+  const btnText    = document.getElementById('btn-text')!;
+  const btnLoader  = document.getElementById('btn-loader')!;
 
-  function showMsg(text, type = 'error') {
+  function showMsg(text: string, type = 'error') {
     msgEl.textContent   = text;
     msgEl.className     = `auth-msg ${type}`;
     msgEl.style.display = 'block';
   }
   function hideMsg() { msgEl.style.display = 'none'; }
 
-  function setLoading(loading) {
+  function setLoading(loading: boolean) {
     btn.disabled            = loading;
     btnText.style.display   = loading ? 'none'  : 'block';
     btnLoader.style.display = loading ? 'block' : 'none';
@@ -188,7 +188,7 @@ if (user) return Astro.redirect('/dashboard/user/');
   async function handleLogin() {
     const email    = emailInput.value.trim();
     const password = passInput.value;
-    const remember = document.getElementById('remember-me').checked;
+    const remember = (document.getElementById('remember-me') as HTMLInputElement).checked;
 
     hideMsg();
     if (!email && !password) return showMsg('Veuillez remplir tous les champs.');
@@ -198,7 +198,6 @@ if (user) return Astro.redirect('/dashboard/user/');
 
     setLoading(true);
     try {
-      // On passe par la route API serveur qui écrit les cookies HTTP
       const formData = new FormData();
       formData.set('email', email);
       formData.set('password', password);
@@ -214,7 +213,6 @@ if (user) return Astro.redirect('/dashboard/user/');
         return showMsg(data.error || 'Erreur de connexion.');
       }
 
-      // La route API a posé les cookies via setAll
       if (remember) localStorage.setItem('rememberedEmail', email);
       else          localStorage.removeItem('rememberedEmail');
 
@@ -232,7 +230,7 @@ if (user) return Astro.redirect('/dashboard/user/');
   const remembered = localStorage.getItem('rememberedEmail');
   if (remembered) {
     emailInput.value = remembered;
-    document.getElementById('remember-me').checked = true;
+    (document.getElementById('remember-me') as HTMLInputElement).checked = true;
   }
 
   [emailInput, passInput].forEach((el) =>

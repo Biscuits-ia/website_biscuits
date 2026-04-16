@@ -31,5 +31,9 @@
   },
   "devDependencies": {
     "@iconify-json/mdi": "^1.2.3"
+  },
+  "overrides": {
+    "path-to-regexp": "^8.0.0",
+    "yaml": "^2.8.3"
   }
 }

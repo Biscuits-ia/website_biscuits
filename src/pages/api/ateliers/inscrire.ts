@@ -2,6 +2,7 @@
 import type { APIRoute } from 'astro';
 import { createSupabaseClient } from '@/lib/supabase';
 import { getFormString }        from '@/types/ateliers';
+import { isValidUUID } from '@/lib/validation';
 
 export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   const supabase = createSupabaseClient({ request, cookies });
@@ -12,8 +13,8 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   const form      = await request.formData();
   const sessionId = getFormString(form, 'session_id');
 
-  if (!sessionId) {
-    return new Response('session_id requis', { status: 400 });
+  if (!isValidUUID(sessionId)) {
+    return new Response('session_id invalide', { status: 400 });
   }
 
   // ── Inscription atomique (empêche la race condition) ────────────────────────

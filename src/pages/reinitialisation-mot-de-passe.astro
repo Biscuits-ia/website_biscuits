@@ -130,6 +130,7 @@ const nonce = Astro.locals.nonce;
   // Format: #access_token=...&refresh_token=...&type=recovery
   function parseHash() {
     var hash = window.location.hash.substring(1);
+    console.log('[DEBUG] Hash brut:', hash);
     var params = {};
     hash.split('&').forEach(function(pair) {
       var parts = pair.split('=');
@@ -137,6 +138,7 @@ const nonce = Astro.locals.nonce;
         params[decodeURIComponent(parts[0])] = decodeURIComponent(parts[1]);
       }
     });
+    console.log('[DEBUG] Params parsés:', params);
     return params;
   }
 
@@ -144,6 +146,7 @@ const nonce = Astro.locals.nonce;
   async function initSession() {
     var params = parseHash();
     if (!params.access_token || !params.refresh_token) {
+      console.error('[DEBUG] Tokens manquants. URL complète:', window.location.href);
       showMsg('Lien invalide ou expiré. Veuillez demander un nouveau lien de réinitialisation.', 'error');
       btn.disabled = true;
       return;

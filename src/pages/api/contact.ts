@@ -1,19 +1,17 @@
 import type { APIRoute } from 'astro';
 import { createSupabaseAdminClient } from '@/lib/supabase';
 import { EMAIL_RE, MAX_NAME, MAX_SUBJECT, MIN_MESSAGE, MAX_MESSAGE } from '@/lib/validation';
+import { verifyTurnstileToken, isTurnstileEnabled } from '@/lib/turnstile';
 
-export const POST: APIRoute = async ({ request }) => {
-  const json = (key: string, msg: string) =>
-    new Response(JSON.stringify({ message: msg }), {
-      status: 400,
-      headers: { 'Content-Type': 'application/json' },
-    });
-
+export const POST: APIRoute = async ({ request, clientAddress }) => {
   let body: Record<string, unknown>;
   try {
     body = await request.json();
   } catch {
-    return json('parse', 'Corps de la requête invalide.');
+    return new Response(JSON.stringify({ message: 'Corps de la requête invalide.' }), {
+      status: 400,
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
 
   // Valider les champs
@@ -21,6 +19,7 @@ export const POST: APIRoute = async ({ request }) => {
   const email   = typeof body.email   === 'string' ? body.email.trim().toLowerCase() : '';
   const subject = typeof body.subject === 'string' ? body.subject.trim() : '';
   const message = typeof body.message === 'string' ? body.message.trim() : '';
+  const turnstile_token = typeof body.turnstile_token === 'string' ? body.turnstile_token : null;
 
   // Validation
   const errors: Record<string, string[]> = {};
@@ -33,6 +32,18 @@ export const POST: APIRoute = async ({ request }) => {
   if (!message)                errors.message = ['Le message est obligatoire.'];
   else if (message.length < MIN_MESSAGE) errors.message = [`Minimum ${MIN_MESSAGE} caractères.`];
   else if (message.length > MAX_MESSAGE) errors.message = [`Maximum ${MAX_MESSAGE} caractères.`];
+
+  // Vérifier Turnstile si configuré
+  if (isTurnstileEnabled()) {
+    if (!turnstile_token) {
+      errors.turnstile_token = ['Veuillez compléter la vérification de sécurité.'];
+    } else {
+      const turnstileResult = await verifyTurnstileToken(turnstile_token, clientAddress);
+      if (!turnstileResult.success) {
+        errors.turnstile_token = ['Vérification de sécurité échouée. Veuillez réessayer.'];
+      }
+    }
+  }
 
   if (Object.keys(errors).length > 0) {
     return new Response(JSON.stringify({ message: 'Erreur de validation.', errors }), {

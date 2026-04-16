@@ -122,6 +122,12 @@ const nonce = Astro.locals.nonce;
         ></textarea>
     </div>
 
+    <!-- Turnstile widget -->
+    <div class="field" id="turnstile-container">
+      <div id="turnstile-widget"></div>
+      <span id="turnstile-error" class="field__error" role="alert" style="display:none"></span>
+    </div>
+
     <!-- Footer -->
     <div class="form__footer">
       <p class="form__note"><span aria-hidden="true">*</span> Champs obligatoires</p>
@@ -132,15 +138,71 @@ const nonce = Astro.locals.nonce;
   </form>
 </div>
 
+<!-- Turnstile Script -->
+<script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+
 <script nonce={nonce}>
   const API_URL = '/api/recruitment';
   const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const TURNSTILE_SITE_KEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
 
   const form         = document.getElementById('recruitment-form');
   const confirmation = document.getElementById('confirmation');
   const btnSubmit    = document.getElementById('btn-submit');
   const btnReset     = document.getElementById('btn-reset');
   const serverError  = document.getElementById('server-error');
+
+  // Turnstile token
+  let turnstileToken = null;
+  let turnstileWidgetId = null;
+
+  // ─── Turnstile Helpers ──────────────────────────────────────────────────────
+  function initTurnstile() {
+    if (!TURNSTILE_SITE_KEY) {
+      console.warn('Turnstile site key non configurée');
+      const container = document.getElementById('turnstile-container');
+      if (container) container.style.display = 'none';
+      return;
+    }
+    
+    const widgetDiv = document.getElementById('turnstile-widget');
+    if (!widgetDiv) return;
+
+    // Attendre que le script Turnstile soit chargé
+    if (typeof turnstile === 'undefined') {
+      setTimeout(initTurnstile, 100);
+      return;
+    }
+
+    try {
+      turnstileWidgetId = turnstile.render('#turnstile-widget', {
+        sitekey: TURNSTILE_SITE_KEY,
+        theme: 'auto',
+        callback: (token) => { 
+          turnstileToken = token; 
+          clearTurnstileError();
+        },
+        'error-callback': () => { 
+          showTurnstileError('Erreur de vérification. Veuillez réessayer.'); 
+        },
+        'expired-callback': () => { 
+          turnstileToken = null; 
+        },
+      });
+    } catch (e) {
+      console.error('Erreur initialisation Turnstile:', e);
+    }
+  }
+
+  function showTurnstileError(msg) {
+    const span = document.getElementById('turnstile-error');
+    if (span) { span.textContent = msg; span.style.display = 'block'; }
+  }
+
+  function clearTurnstileError() {
+    const span = document.getElementById('turnstile-error');
+    if (span) { span.textContent = ''; span.style.display = 'none'; }
+  }
 
   // ─── Helpers UI ────────────────────────────────────────────────────────────
   function showFieldError(fieldId, message) {
@@ -159,6 +221,7 @@ const nonce = Astro.locals.nonce;
 
   function clearAllErrors() {
     ['prenom', 'nom', 'email'].forEach(clearFieldError);
+    clearTurnstileError();
     serverError.textContent   = '';
     serverError.style.display = 'none';
   }
@@ -205,6 +268,7 @@ const nonce = Astro.locals.nonce;
       motivation:   document.getElementById('motivation').value.trim()  || null,
       skills:       document.getElementById('competences').value.trim() || null,
       availability: document.getElementById('disponibilite').value      || null,
+      turnstile_token: turnstileToken,
     };
 
     if (!validate(data)) {
@@ -212,6 +276,12 @@ const nonce = Astro.locals.nonce;
         document.getElementById(`field-${id}`)?.classList.contains('field--error')
       );
       document.getElementById(firstInvalid)?.focus();
+      return;
+    }
+
+    // Vérifier Turnstile côté client
+    if (TURNSTILE_SITE_KEY && !turnstileToken) {
+      showTurnstileError('Veuillez compléter la vérification de sécurité.');
       return;
     }
 
@@ -242,6 +312,7 @@ const nonce = Astro.locals.nonce;
           if (errorData.errors.first_name) showFieldError('prenom', errorData.errors.first_name[0]);
           if (errorData.errors.last_name)  showFieldError('nom',    errorData.errors.last_name[0]);
           if (errorData.errors.email)      showFieldError('email',  errorData.errors.email[0]);
+          if (errorData.errors.turnstile_token) showTurnstileError(errorData.errors.turnstile_token[0]);
         } else {
           serverError.textContent   = errorData?.message ?? 'Erreur de validation.';
           serverError.style.display = 'block';
@@ -265,10 +336,19 @@ const nonce = Astro.locals.nonce;
   btnReset.addEventListener('click', () => {
     form.reset();
     clearAllErrors();
+    turnstileToken = null;
+    // Réinitialiser Turnstile
+    if (typeof turnstile !== 'undefined' && turnstileWidgetId !== null) {
+      turnstile.reset(turnstileWidgetId);
+    }
     confirmation.style.display = 'none';
     form.style.display         = 'block';
     form.scrollIntoView({ behavior: 'smooth', block: 'start' });
   });
+
+  // Initialiser Turnstile
+  document.addEventListener('astro:page-load', initTurnstile);
+  document.addEventListener('DOMContentLoaded', initTurnstile);
 </script>
 
 <style>
@@ -346,6 +426,11 @@ const nonce = Astro.locals.nonce;
   }
 
   .field { margin-bottom: 1.5rem; }
+
+  #turnstile-container {
+    margin-top: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
 
   .field__label {
     display: block;

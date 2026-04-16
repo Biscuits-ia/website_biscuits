@@ -35,13 +35,13 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
 
   // Vérifier Turnstile si configuré
   if (isTurnstileEnabled()) {
-    if (!turnstile_token) {
-      errors.turnstile_token = ['Veuillez compléter la vérification de sécurité.'];
-    } else {
+    if (turnstile_token) {
       const turnstileResult = await verifyTurnstileToken(turnstile_token, clientAddress);
       if (!turnstileResult.success) {
         errors.turnstile_token = ['Vérification de sécurité échouée. Veuillez réessayer.'];
       }
+    } else {
+      errors.turnstile_token = ['Veuillez compléter la vérification de sécurité.'];
     }
   }
 

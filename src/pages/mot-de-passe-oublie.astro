@@ -1,8 +1,6 @@
 ---
 import AuthLayout from '../layouts/AuthLayout.astro';
 import { createSupabaseClient } from '../lib/supabase';
-import CloudflareTurnstile from '@/components/CloudflareTurnstile.astro';
-
 const supabase = createSupabaseClient(Astro);
 const { data: { user } } = await supabase.auth.getUser();
 if (user) return Astro.redirect('/dashboard/user');
@@ -35,9 +33,6 @@ const nonce = Astro.locals.nonce;
           <label for="email" class="auth-label">Adresse email</label>
           <input type="email" id="email" placeholder="vous@exemple.com" autocomplete="email" class="auth-input" />
         </div>
-
-        <!-- Cloudflare Turnstile -->
-        <CloudflareTurnstile style="margin-bottom:20px;" />
 
         <button id="reset-btn" class="auth-btn-primary" type="button">
           <span id="btn-text">Envoyer le lien</span>
@@ -142,14 +137,10 @@ const nonce = Astro.locals.nonce;
     if (!email) return showMsg('Veuillez entrer votre adresse email.');
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return showMsg('Adresse email invalide.');
 
-    var turnstileToken = window._cfToken || '';
-    if (!turnstileToken) return showMsg('Veuillez compléter la vérification anti-robot.');
-
     setLoading(true);
     try {
       var formData = new FormData();
       formData.set('email', email);
-      formData.set('cf-turnstile-response', turnstileToken);
 
       var res = await fetch('/auth/mot-de-passe-oublie', {
         method: 'POST',
@@ -167,8 +158,7 @@ const nonce = Astro.locals.nonce;
       showMsg('Une erreur est survenue. Veuillez réessayer.');
     } finally {
       setLoading(false);
-      if (window.turnstile) window.turnstile.reset();
-      window._cfToken = '';
+
     }
   }
 

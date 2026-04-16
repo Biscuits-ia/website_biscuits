@@ -1,21 +1,9 @@
 import type { APIRoute } from 'astro';
 import { createSupabaseClient } from '@/lib/supabase';
-import { verifyTurnstile } from '@/lib/turnstile';
 
-export const POST: APIRoute = async ({ request, cookies, url, clientAddress }) => {
+export const POST: APIRoute = async ({ request, cookies, url }) => {
   const formData = await request.formData();
   const email = formData.get('email') instanceof File ? null : (formData.get('email') as string | null);
-  const turnstileToken = formData.get('cf-turnstile-response');
-  const token = typeof turnstileToken === 'string' ? turnstileToken : '';
-
-  const turnstileOk = await verifyTurnstile(token, clientAddress);
-  if (!turnstileOk) {
-    return new Response(
-      JSON.stringify({ error: 'Vérification anti-robot échouée. Veuillez réessayer.' }),
-      { status: 400, headers: { 'Content-Type': 'application/json' } },
-    );
-  }
-
   if (!email) {
     return new Response(
       JSON.stringify({ error: 'Veuillez entrer votre adresse email.' }),

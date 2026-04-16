@@ -30,7 +30,6 @@ export const onRequest = defineMiddleware(async (context, next) => {
     'https://*.vercel.app',
     'https://vercel.live',
     'https://cdn.jsdelivr.net',
-    'https://challenges.cloudflare.com',
   ];
 
   const connectSrc = [
@@ -55,7 +54,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
     "img-src 'self' data: https:",
     "font-src 'self' https://fonts.gstatic.com",
     `connect-src ${connectSrc.join(' ')}`,
-    "frame-src https://www.googletagmanager.com https://vercel.live https://challenges.cloudflare.com",
+    "frame-src https://www.googletagmanager.com https://vercel.live",
     "object-src 'none'",
     "base-uri 'self'",
     "form-action 'self'",

@@ -1,10 +1,9 @@
 import type { APIRoute } from 'astro';
 import { createSupabaseAdminClient } from '@/lib/supabase';
-import { verifyTurnstile } from '@/lib/turnstile';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-export const POST: APIRoute = async ({ request, clientAddress }) => {
+export const POST: APIRoute = async ({ request }) => {
   let body: Record<string, unknown>;
   try {
     body = await request.json();
@@ -21,15 +20,6 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
   const skills       = typeof body.skills       === 'string' ? body.skills.trim() || null       : null;
   const availability = typeof body.availability === 'string' ? body.availability.trim() || null : null;
   const motivation   = typeof body.motivation   === 'string' ? body.motivation.trim() || null   : null;
-  const turnstileToken = typeof body.turnstileToken === 'string' ? body.turnstileToken : '';
-
-  const turnstileOk = await verifyTurnstile(turnstileToken, clientAddress);
-  if (!turnstileOk) {
-    return new Response(JSON.stringify({ message: 'Vérification anti-robot échouée. Veuillez réessayer.' }), {
-      status: 400,
-      headers: { 'Content-Type': 'application/json' },
-    });
-  }
 
   // Validation
   const errors: Record<string, string[]> = {};

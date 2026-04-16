@@ -1,5 +1,4 @@
 ---
-import CloudflareTurnstile from '@/components/CloudflareTurnstile.astro';
 const nonce = Astro.locals.nonce;
 ---
 
@@ -126,8 +125,6 @@ const nonce = Astro.locals.nonce;
     <!-- Footer -->
     <div class="form__footer">
       <p class="form__note"><span aria-hidden="true">*</span> Champs obligatoires</p>
-      <!-- Cloudflare Turnstile -->
-      <CloudflareTurnstile style="margin-bottom:16px;" />
       <button id="btn-submit" class="btn btn--primary" type="submit">
         Envoyer ma candidature →
       </button>
@@ -208,7 +205,6 @@ const nonce = Astro.locals.nonce;
       motivation:   document.getElementById('motivation').value.trim()  || null,
       skills:       document.getElementById('competences').value.trim() || null,
       availability: document.getElementById('disponibilite').value      || null,
-      turnstileToken: (document.querySelector('[name="cf-turnstile-response"]') || {}).value || '',
     };
 
     if (!validate(data)) {
@@ -261,7 +257,6 @@ const nonce = Astro.locals.nonce;
       serverError.style.display = 'block';
     } finally {
       setLoading(false);
-      if (window.turnstile) window.turnstile.reset();
     }
   });
 

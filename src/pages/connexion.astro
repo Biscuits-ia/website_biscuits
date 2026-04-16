@@ -38,7 +38,7 @@ const siteKey = import.meta.env.TURNSTILE_SITE_KEY ?? '1x00000000000000000000AA'
         </div>
 
         <!-- Cloudflare Turnstile -->
-        <div class="cf-turnstile" data-sitekey={siteKey} style="margin-bottom:20px;"></div>
+        <div class="cf-turnstile" data-sitekey={siteKey} data-callback="onTurnstileOk" data-expired-callback="onTurnstileExpired" style="margin-bottom:20px;"></div>
 
         <!-- id="login-btn" — le script y attache l'événement directement -->
         <button id="login-btn" class="auth-btn-primary" type="button">
@@ -158,9 +158,13 @@ const siteKey = import.meta.env.TURNSTILE_SITE_KEY ?? '1x00000000000000000000AA'
   @keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
 </style>
 
-<script src="https://challenges.cloudflare.com/turnstile/v1/api.js" async defer></script>
+<script is:inline src="https://challenges.cloudflare.com/turnstile/v1/api.js" async defer></script>
 
 <script is:inline nonce={nonce}>
+  var _cfToken = '';
+  function onTurnstileOk(token) { _cfToken = token; }
+  function onTurnstileExpired() { _cfToken = ''; }
+
   const emailInput = document.getElementById('email');
   const passInput  = document.getElementById('password');
   const msgEl      = document.getElementById('msg');
@@ -205,7 +209,7 @@ const siteKey = import.meta.env.TURNSTILE_SITE_KEY ?? '1x00000000000000000000AA'
     if (!password)            return showMsg('Veuillez entrer votre mot de passe.');
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return showMsg('Adresse email invalide.');
 
-    var turnstileToken = (window.turnstile && window.turnstile.getResponse()) || '';
+    var turnstileToken = _cfToken;
     if (!turnstileToken) return showMsg('Veuillez compléter la vérification anti-robot.');
 
     setLoading(true);
@@ -236,6 +240,7 @@ const siteKey = import.meta.env.TURNSTILE_SITE_KEY ?? '1x00000000000000000000AA'
     } finally {
       setLoading(false);
       if (window.turnstile) window.turnstile.reset();
+      _cfToken = '';
     }
   }
 

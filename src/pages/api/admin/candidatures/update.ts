@@ -1,6 +1,5 @@
 import type { APIRoute } from 'astro';
-import { createSupabaseClient } from '@/lib/supabase';
-import { createSupabaseAdminClient } from '@/lib/supabase';
+import { createSupabaseClient, createSupabaseAdminClient } from '@/lib/supabase';
 import { fetchRoleSecure } from '@/lib/auth';
 import { isValidUUID } from '@/lib/validation';
 

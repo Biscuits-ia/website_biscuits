@@ -46,7 +46,5 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
       );
   }
 
-  // TODO: envoyer email de confirmation (Supabase Edge Function)
-
   return redirect('/dashboard/user/ateliers?saved=1');
 };

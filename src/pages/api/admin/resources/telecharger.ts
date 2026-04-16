@@ -3,8 +3,7 @@
 // Logue le téléchargement dans resource_downloads.
 // Accessible à tous (connectés + anonymes).
 import type { APIRoute } from 'astro';
-import { createSupabaseAdminClient } from '@/lib/supabase';
-import { createSupabaseClient }      from '@/lib/supabase';
+import { createSupabaseAdminClient, createSupabaseClient } from '@/lib/supabase';
 import { isValidUUID } from '@/lib/validation';
 
 export const GET: APIRoute = async ({ url, request, cookies }) => {

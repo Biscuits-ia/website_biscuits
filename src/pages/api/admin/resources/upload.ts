@@ -60,7 +60,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
 
   // ── Upload vers Supabase Storage ─────────────────────────────────────────
   // Chemin : {userId}/{timestamp}-{nom-nettoyé}
-  const safeName  = file.name.replace(/[^a-zA-Z0-9.\-_]/g, '_');
+  const safeName  = file.name.replaceAll(/[^a-zA-Z0-9.\-_]/g, '_');
   const filePath  = `${user.id}/${Date.now()}-${safeName}`;
   const fileBuffer = await file.arrayBuffer();
 

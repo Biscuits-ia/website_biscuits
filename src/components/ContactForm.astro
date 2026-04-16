@@ -66,7 +66,22 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
 
     {turnstileSiteKey && (
       <div class="cf-turnstile" id="cf-turnstile-container">
-        <TurnstileWidget client:load onSuccess={() => {}} />
+        <input type="hidden" id="cf-turnstile" name="turnstile_token" />
+        <TurnstileWidget 
+          client:load 
+          onSuccess={(token: string) => {
+            const input = document.getElementById('cf-turnstile') as HTMLInputElement;
+            if (input) input.value = token;
+          }} 
+          onError={() => {
+            const input = document.getElementById('cf-turnstile') as HTMLInputElement;
+            if (input) input.value = '';
+          }}
+          onExpire={() => {
+            const input = document.getElementById('cf-turnstile') as HTMLInputElement;
+            if (input) input.value = '';
+          }}
+        />
         <span id="cf-turnstile-error" class="cf-error" role="alert" hidden></span>
       </div>
     )}

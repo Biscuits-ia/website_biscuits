@@ -1,5 +1,5 @@
-import { useCallback, useRef, useState, type ChangeEvent, type SyntheticEvent } from 'react';
-import TurnstileWidget, { type TurnstileWidgetHandle } from './TurnstileWidget';
+import { useCallback, useState, type ChangeEvent, type SyntheticEvent } from 'react';
+import TurnstileWidget from './TurnstileWidget';
 import '@/styles/contact-form.css';
 import { EMAIL_RE, MAX_MESSAGE, MAX_NAME, MAX_SUBJECT, MIN_MESSAGE } from '@/lib/validation';
 
@@ -37,7 +37,6 @@ export default function ContactFormClient({ scriptNonce }: Readonly<ContactFormC
   const [showSuccess, setShowSuccess] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [turnstileToken, setTurnstileToken] = useState('');
-  const widgetRef = useRef<TurnstileWidgetHandle | null>(null);
 
   const clearAllErrors = useCallback(() => {
     setFieldErrors({});
@@ -115,22 +114,6 @@ export default function ContactFormClient({ scriptNonce }: Readonly<ContactFormC
     return Object.keys(errors).length === 0;
   }, []);
 
-  const resolveTurnstileToken = useCallback(async (): Promise<string> => {
-    if (turnstileToken) {
-      return turnstileToken;
-    }
-
-    widgetRef.current?.execute();
-    const nextToken = await widgetRef.current?.getResponsePromise(10000, 250);
-
-    if (!nextToken) {
-      throw new Error('TURNSTILE_TOKEN_MISSING');
-    }
-
-    setTurnstileToken(nextToken);
-    return nextToken;
-  }, [turnstileToken]);
-
   const handleSubmit = useCallback(
     async (event: SyntheticEvent<HTMLFormElement>) => {
       event.preventDefault();
@@ -145,10 +128,14 @@ export default function ContactFormClient({ scriptNonce }: Readonly<ContactFormC
         return;
       }
 
+      if (!turnstileToken) {
+        setGlobalError('Merci de valider la vérification anti-bot avant d\'envoyer le formulaire.');
+        return;
+      }
+
       setIsSubmitting(true);
 
       try {
-        const verifiedTurnstileToken = await resolveTurnstileToken();
         const response = await fetch('/api/contact', {
           method: 'POST',
           headers: {
@@ -160,7 +147,7 @@ export default function ContactFormClient({ scriptNonce }: Readonly<ContactFormC
             email: formData.email.trim().toLowerCase(),
             subject: formData.subject.trim(),
             message: formData.message.trim(),
-            turnstileToken: verifiedTurnstileToken,
+            turnstileToken,
           }),
         });
 
@@ -192,18 +179,16 @@ export default function ContactFormClient({ scriptNonce }: Readonly<ContactFormC
             : `Erreur serveur (${response.status}). Veuillez réessayer.`,
         );
         resetTurnstile();
-      } catch (error) {
+      } catch {
         setGlobalError(
-          error instanceof Error && error.message === 'TURNSTILE_TOKEN_MISSING'
-            ? 'La vérification anti-bot ne s\'est pas chargée correctement. Vérifiez le widget ou réessayez dans quelques secondes.'
-            : 'Un problème est survenu. Vérifiez votre connexion.',
+          'Un problème est survenu. Vérifiez votre connexion.',
         );
         resetTurnstile();
       } finally {
         setIsSubmitting(false);
       }
     },
-    [clearAllErrors, formData, resetTurnstile, resolveTurnstileToken, validate],
+    [clearAllErrors, formData, resetTurnstile, turnstileToken, validate],
   );
 
   const characterCount = formData.message.length;
@@ -271,36 +256,26 @@ export default function ContactFormClient({ scriptNonce }: Readonly<ContactFormC
 
         <input type="text" name="honey" tabIndex={-1} autoComplete="off" className="cf-honeypot" aria-hidden="true" value={formData.honey} onChange={handleInputChange} />
 
-        <div className="cf-turnstile-block">
-          <p className="cf-turnstile-label">Vérification anti-bot <span className="cf-required">*</span></p>
-          <div className="cf-turnstile-widget">
-            <TurnstileWidget
-              ref={widgetRef}
-              theme="auto"
-              size="normal"
-              appearance="always"
-              scriptNonce={scriptNonce}
-              onSuccess={(token) => {
-                setTurnstileToken(token);
-                setGlobalError('');
-              }}
-              onError={() => {
-                setTurnstileToken('');
-                setGlobalError('La vérification anti-bot a échoué. Réessayez.');
-              }}
-              onExpire={() => {
-                setTurnstileToken('');
-              }}
-            />
-          </div>
-          <p className="cf-note">
-            Si le captcha ne s&apos;affiche pas avec votre configuration Cloudflare actuelle, un clic sur envoyer tentera quand même de lancer la vérification.
-          </p>
-        </div>
+        <TurnstileWidget
+          theme="auto"
+          size="flexible"
+          scriptNonce={scriptNonce}
+          onSuccess={(token) => {
+            setTurnstileToken(token);
+            setGlobalError('');
+          }}
+          onError={() => {
+            setTurnstileToken('');
+            setGlobalError('La vérification anti-bot a échoué. Réessayez.');
+          }}
+          onExpire={() => {
+            setTurnstileToken('');
+          }}
+        />
 
         <div className="cf-footer">
           <p className="cf-note"><span aria-hidden="true">*</span> Champs obligatoires</p>
-          <button type="submit" className="cf-btn" aria-busy={isSubmitting ? 'true' : 'false'} disabled={isSubmitting}>
+          <button type="submit" className="cf-btn" aria-busy={isSubmitting ? 'true' : 'false'} disabled={isSubmitting || turnstileToken.length === 0}>
             <span>{isSubmitting ? 'Envoi en cours…' : 'Envoyer ma demande'}</span>
             <span className="cf-spinner" aria-hidden="true" hidden={!isSubmitting}></span>
           </button>

@@ -5,20 +5,18 @@ import { defineConfig } from 'astro/config';
 import robotsTxt from 'astro-robots-txt';
 import sitemap from '@astrojs/sitemap';
 import tailwindcss from '@tailwindcss/vite';
-import svelte from '@astrojs/svelte';
 import icon from 'astro-icon';
 
 import vercel from '@astrojs/vercel';
 import mdx from '@astrojs/mdx';
 
+import react from '@astrojs/react';
+
 // https://astro.build/config
 export default defineConfig({
   site: 'https://biscuits-ia.com',
 
-  integrations: [svelte({
-    preprocess: [],
-  }),
-  sitemap({
+  integrations: [sitemap({
     changefreq: 'weekly',
     priority: 0.7,
     filter: (page) => {
@@ -54,7 +52,7 @@ export default defineConfig({
          crawlDelay: 0.5,
        },
      ],
-   }), icon(), mdx()],
+   }), icon(), mdx(), react()],
 
 
   vite: {

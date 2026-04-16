@@ -1,5 +1,6 @@
 ---
 const nonce = Astro.locals.nonce;
+const siteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
 ---
 
 <div class="recruitment-page">
@@ -123,6 +124,9 @@ const nonce = Astro.locals.nonce;
     </div>
 
     <!-- Footer -->
+    <div id="rf-turnstile" class="rf-turnstile-wrapper"></div>
+    <span id="rf-turnstile-error" class="field__error" role="alert" style="display:none"></span>
+
     <div class="form__footer">
       <p class="form__note"><span aria-hidden="true">*</span> Champs obligatoires</p>
       <button id="btn-submit" class="btn btn--primary" type="submit">
@@ -141,6 +145,33 @@ const nonce = Astro.locals.nonce;
   const btnSubmit    = document.getElementById('btn-submit');
   const btnReset     = document.getElementById('btn-reset');
   const serverError  = document.getElementById('server-error');
+
+  // ─── Turnstile ─────────────────────────────────────────────────────────────
+  let turnstileToken = null;
+  const turnstileContainer = document.getElementById('rf-turnstile');
+  const turnstileError = document.getElementById('rf-turnstile-error');
+
+  function renderTurnstile() {
+    if (!turnstileContainer) return;
+    const siteKey = window.__TURNSTILE_SITE_KEY;
+    if (!siteKey || !window.turnstile) return;
+    window.turnstile.render(turnstileContainer, {
+      sitekey: siteKey,
+      theme: 'auto',
+      callback: (token) => {
+        turnstileToken = token;
+        if (turnstileError) { turnstileError.textContent = ''; turnstileError.style.display = 'none'; }
+      },
+      'expired-callback': () => { turnstileToken = null; },
+      'error-callback': () => { turnstileToken = null; },
+    });
+  }
+
+  if (window.turnstile) {
+    renderTurnstile();
+  } else {
+    window.addEventListener('turnstileReady', renderTurnstile, { once: true });
+  }
 
   // ─── Helpers UI ────────────────────────────────────────────────────────────
   function showFieldError(fieldId, message) {
@@ -205,7 +236,16 @@ const nonce = Astro.locals.nonce;
       motivation:   document.getElementById('motivation').value.trim()  || null,
       skills:       document.getElementById('competences').value.trim() || null,
       availability: document.getElementById('disponibilite').value      || null,
+      turnstileToken: turnstileToken,
     };
+
+    if (!turnstileToken) {
+      if (turnstileError) {
+        turnstileError.textContent = 'Merci de compléter la vérification CAPTCHA.';
+        turnstileError.style.display = 'block';
+      }
+      return;
+    }
 
     if (!validate(data)) {
       const firstInvalid = ['prenom', 'nom', 'email'].find(id =>
@@ -257,6 +297,8 @@ const nonce = Astro.locals.nonce;
       serverError.style.display = 'block';
     } finally {
       setLoading(false);
+      turnstileToken = null;
+      if (window.turnstile) window.turnstile.reset();
     }
   });
 
@@ -269,6 +311,14 @@ const nonce = Astro.locals.nonce;
     form.scrollIntoView({ behavior: 'smooth', block: 'start' });
   });
 </script>
+
+<script is:inline nonce={nonce} define:vars={{ siteKey }}>
+  window.__TURNSTILE_SITE_KEY = siteKey;
+  window.__onTurnstileLoad = function() {
+    window.dispatchEvent(new Event('turnstileReady'));
+  };
+</script>
+<script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js?onload=__onTurnstileLoad" async defer></script>
 
 <style>
   .recruitment-page {

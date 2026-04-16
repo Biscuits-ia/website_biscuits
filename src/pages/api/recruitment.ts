@@ -1,7 +1,7 @@
 import type { APIRoute } from 'astro';
 import { createSupabaseAdminClient } from '@/lib/supabase';
-
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+import { verifyTurnstileToken } from '@/lib/turnstile';
+import { EMAIL_RE, MAX_NAME } from '@/lib/validation';
 
 export const POST: APIRoute = async ({ request }) => {
   let body: Record<string, unknown>;
@@ -14,6 +14,26 @@ export const POST: APIRoute = async ({ request }) => {
     });
   }
 
+  // 1. Vérifier Turnstile EN PREMIER
+  const turnstileToken = typeof body.turnstileToken === 'string' ? body.turnstileToken : '';
+  if (!turnstileToken) {
+    return new Response(JSON.stringify({ message: 'Token CAPTCHA manquant.' }), {
+      status: 400,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
+  const ip = request.headers.get('CF-Connecting-IP') ?? undefined;
+  const captcha = await verifyTurnstileToken(turnstileToken, ip);
+  if (!captcha.success) {
+    return new Response(JSON.stringify({ message: 'CAPTCHA invalide.' }), {
+      status: 403,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
+  // 2. Valider les champs
+
   const first_name   = typeof body.first_name   === 'string' ? body.first_name.trim()   : '';
   const last_name    = typeof body.last_name    === 'string' ? body.last_name.trim()    : '';
   const email        = typeof body.email        === 'string' ? body.email.trim().toLowerCase() : '';
@@ -24,9 +44,9 @@ export const POST: APIRoute = async ({ request }) => {
   // Validation
   const errors: Record<string, string[]> = {};
   if (!first_name)                    errors.first_name = ['Le prénom est obligatoire.'];
-  else if (first_name.length > 100)   errors.first_name = ['Maximum 100 caractères.'];
+  else if (first_name.length > MAX_NAME)   errors.first_name = [`Maximum ${MAX_NAME} caractères.`];
   if (!last_name)                     errors.last_name  = ['Le nom est obligatoire.'];
-  else if (last_name.length > 100)    errors.last_name  = ['Maximum 100 caractères.'];
+  else if (last_name.length > MAX_NAME)    errors.last_name  = [`Maximum ${MAX_NAME} caractères.`];
   if (!email)                         errors.email      = ["L'email est obligatoire."];
   else if (!EMAIL_RE.test(email))     errors.email      = ['Email invalide.'];
 

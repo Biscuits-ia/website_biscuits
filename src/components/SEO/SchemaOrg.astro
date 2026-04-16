@@ -123,7 +123,8 @@ const breadcrumbSchema = {
       "name": "Accueil",
       "item": siteUrl
     },
-    ...pathParts.map((part, index) => ({
+    ...pathParts.map((part: string, index: number) => ({
+
       "@type": "ListItem",
       "position": index + 2,
       "name": part.charAt(0).toUpperCase() + part.slice(1).replace(/-/g, ' '),

@@ -20,6 +20,21 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     );
   }
 
+  // Validation de longueur pour éviter les payloads abusifs
+  if (subject.trim().length > 200) {
+    return redirect(
+      '/dashboard/user/demandes?error=' +
+      encodeURIComponent('Le sujet ne doit pas dépasser 200 caractères.'),
+    );
+  }
+
+  if (description.trim().length > 5000) {
+    return redirect(
+      '/dashboard/user/demandes?error=' +
+      encodeURIComponent('La description ne doit pas dépasser 5000 caractères.'),
+    );
+  }
+
   const { error } = await supabase
     .from('requests')
     .insert({

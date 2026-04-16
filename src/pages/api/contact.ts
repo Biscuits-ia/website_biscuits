@@ -1,7 +1,7 @@
 import type { APIRoute } from 'astro';
 import { createSupabaseAdminClient } from '@/lib/supabase';
-
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+import { verifyTurnstileToken } from '@/lib/turnstile';
+import { EMAIL_RE, MAX_NAME, MAX_SUBJECT, MIN_MESSAGE, MAX_MESSAGE } from '@/lib/validation';
 
 export const POST: APIRoute = async ({ request }) => {
   const json = (key: string, msg: string) =>
@@ -17,6 +17,26 @@ export const POST: APIRoute = async ({ request }) => {
     return json('parse', 'Corps de la requête invalide.');
   }
 
+  // 1. Vérifier Turnstile EN PREMIER
+  const turnstileToken = typeof body.turnstileToken === 'string' ? body.turnstileToken : '';
+  if (!turnstileToken) {
+    return new Response(JSON.stringify({ message: 'Token CAPTCHA manquant.' }), {
+      status: 400,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
+  const ip = request.headers.get('CF-Connecting-IP') ?? undefined;
+  const captcha = await verifyTurnstileToken(turnstileToken, ip);
+  if (!captcha.success) {
+    return new Response(JSON.stringify({ message: 'CAPTCHA invalide.' }), {
+      status: 403,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
+  // 2. Valider les champs
+
   const name    = typeof body.name    === 'string' ? body.name.trim()    : '';
   const email   = typeof body.email   === 'string' ? body.email.trim().toLowerCase() : '';
   const subject = typeof body.subject === 'string' ? body.subject.trim() : '';
@@ -25,14 +45,14 @@ export const POST: APIRoute = async ({ request }) => {
   // Validation
   const errors: Record<string, string[]> = {};
   if (!name)                   errors.name    = ['Le nom est obligatoire.'];
-  else if (name.length > 100)  errors.name    = ['Maximum 100 caractères.'];
+  else if (name.length > MAX_NAME)  errors.name    = [`Maximum ${MAX_NAME} caractères.`];
   if (!email)                  errors.email   = ["L'email est obligatoire."];
   else if (!EMAIL_RE.test(email)) errors.email = ['Email invalide.'];
   if (!subject)                errors.subject = ['Le sujet est obligatoire.'];
-  else if (subject.length > 150) errors.subject = ['Maximum 150 caractères.'];
+  else if (subject.length > MAX_SUBJECT) errors.subject = [`Maximum ${MAX_SUBJECT} caractères.`];
   if (!message)                errors.message = ['Le message est obligatoire.'];
-  else if (message.length < 20) errors.message = ['Minimum 20 caractères.'];
-  else if (message.length > 2000) errors.message = ['Maximum 2000 caractères.'];
+  else if (message.length < MIN_MESSAGE) errors.message = [`Minimum ${MIN_MESSAGE} caractères.`];
+  else if (message.length > MAX_MESSAGE) errors.message = [`Maximum ${MAX_MESSAGE} caractères.`];
 
   if (Object.keys(errors).length > 0) {
     return new Response(JSON.stringify({ message: 'Erreur de validation.', errors }), {

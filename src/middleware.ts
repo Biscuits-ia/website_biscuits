@@ -4,12 +4,12 @@ import { rateLimit } from './lib/rateLimit';
 import crypto from 'node:crypto';
 
 export const onRequest = defineMiddleware(async (context, next) => {
-  const { url, clientAddress } = context;
+  const { url } = context;
   const isDev = import.meta.env.DEV;
 
   // Rate-limit API routes only
   if (url.pathname.startsWith('/api/')) {
-    const ip = clientAddress ?? context.request.headers.get('x-forwarded-for') ?? 'unknown';
+    const ip = context.clientAddress ?? context.request.headers.get('x-forwarded-for') ?? 'unknown';
     const blocked = rateLimit(ip, 20, 60_000); // 20 requests / minute per IP
     if (blocked) return blocked;
   }
@@ -30,6 +30,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
     'https://*.vercel.app',
     'https://vercel.live',
     'https://cdn.jsdelivr.net',
+    'https://challenges.cloudflare.com',
   ];
 
   const connectSrc = [
@@ -54,7 +55,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
     "img-src 'self' data: https:",
     "font-src 'self' https://fonts.gstatic.com",
     `connect-src ${connectSrc.join(' ')}`,
-    "frame-src https://www.googletagmanager.com https://vercel.live",
+    "frame-src https://www.googletagmanager.com https://vercel.live https://challenges.cloudflare.com",
     "object-src 'none'",
     "base-uri 'self'",
     "form-action 'self'",

@@ -80,7 +80,7 @@ const seoTitle = title.length > 60
     {author && <meta property="article:author" content={author} />}
     {publishedTime && <meta property="article:published_time" content={publishedTime} />}
     {modifiedTime && <meta property="article:modified_time" content={modifiedTime} />}
-    {tags.map(tag => (
+    {tags.map((tag: string) => (
       <meta property="article:tag" content={tag} />
     ))}
     <meta property="article:section" content="Intelligence Artificielle" />
@@ -142,8 +142,8 @@ const seoTitle = title.length > 60
      ============================================ -->
 <meta name="format-detection" content="telephone=no" />
 <link rel="dns-prefetch" href="https://www.google-analytics.com" />
-<link rel="preconnect" href="https://www.google-analytics.com" crossorigin />
-
+<link rel="preconnect" href="https://www.google-analytics.com" crossOrigin="" />
+ 
 <!-- ============================================
      CONTENT RATING & AUDIENCE
      ============================================ -->

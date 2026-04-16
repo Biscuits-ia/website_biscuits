@@ -1,5 +1,7 @@
 ---
 // src/components/ContactForm.astro
+const siteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
+const nonce = Astro.locals.nonce;
 ---
 
 <div class="contact-form-wrapper">
@@ -61,6 +63,9 @@
     <input type="text" name="honey" id="cf-honey"
       tabindex="-1" autocomplete="off" class="cf-honeypot" aria-hidden="true" />
 
+    <div id="cf-turnstile" class="cf-turnstile-wrapper"></div>
+    <span id="cf-turnstile-error" class="cf-error" role="alert" hidden></span>
+
     <div class="cf-footer">
       <p class="cf-note"><span aria-hidden="true">*</span> Champs obligatoires</p>
       <button id="cf-submit" type="submit" class="cf-btn" aria-busy="false">
@@ -75,6 +80,14 @@
 <script>
   import '../scripts/contactFormInit.ts';
 </script>
+
+<script is:inline nonce={nonce} define:vars={{ siteKey }}>
+  window.__TURNSTILE_SITE_KEY = siteKey;
+  window.__onTurnstileLoad = function() {
+    window.dispatchEvent(new Event('turnstileReady'));
+  };
+</script>
+<script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js?onload=__onTurnstileLoad" async defer></script>
 
 <style>
   .contact-form-wrapper { width: 100%; }

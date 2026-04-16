@@ -15,6 +15,7 @@ interface ContactPayload {
   subject:        string;
   message:        string;
   type:           'contact';
+  turnstileToken?: string;
 }
 
 interface ApiErrorResponse {
@@ -22,9 +23,7 @@ interface ApiErrorResponse {
   errors?: Partial<Record<'name' | 'email' | 'subject' | 'message', string[]>>;
 }
 
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const MAX_MSG  = 2000;
-const MIN_MSG  = 20;
+import { EMAIL_RE, MIN_MESSAGE, MAX_MESSAGE } from '@/lib/validation';
 const FIELDS: readonly FieldId[] = ['name', 'email', 'sujet', 'message'];
 
 function initContactForm(): void {
@@ -95,7 +94,7 @@ function initContactForm(): void {
   function updateCharCount(): void {
     const len = elMessage.value.length;
     if (elCount) {
-      elCount.textContent = `${len} / ${MAX_MSG}`;
+      elCount.textContent = `${len} / ${MAX_MESSAGE}`;
       elCount.classList.toggle('cf-char-count--warn',   len > 1500);
       elCount.classList.toggle('cf-char-count--danger', len > 1900);
     }
@@ -114,13 +113,45 @@ function initContactForm(): void {
     else if (payload.subject.length > 150) errs.sujet  = 'Maximum 150 caractères.';
 
     if (!payload.message)                          errs.message = 'Le message est obligatoire.';
-    else if (payload.message.length < MIN_MSG)     errs.message = `Minimum ${MIN_MSG} caractères.`;
-    else if (payload.message.length > MAX_MSG)     errs.message = `Maximum ${MAX_MSG} caractères.`;
+    else if (payload.message.length < MIN_MESSAGE)     errs.message = `Minimum ${MIN_MESSAGE} caractères.`;
+    else if (payload.message.length > MAX_MESSAGE)     errs.message = `Maximum ${MAX_MESSAGE} caractères.`;
 
     (Object.entries(errs) as [FieldId, string][])
       .forEach(([field, msg]) => showFieldError(field, msg));
 
     return Object.keys(errs).length === 0;
+  }
+
+  // ─── Turnstile ───────────────────────────────────────────────────────────
+  let turnstileToken: string | null = null;
+  const turnstileContainer = document.getElementById('cf-turnstile');
+  const turnstileError = document.getElementById('cf-turnstile-error');
+
+  function renderTurnstile(): void {
+    if (!turnstileContainer) return;
+    const siteKey = (window as any).__TURNSTILE_SITE_KEY;
+    if (!siteKey || !(window as any).turnstile) return;
+    (window as any).turnstile.render(turnstileContainer, {
+      sitekey: siteKey,
+      theme: 'auto',
+      callback: (token: string) => {
+        turnstileToken = token;
+        if (turnstileError) { turnstileError.textContent = ''; turnstileError.hidden = true; }
+      },
+      'expired-callback': () => {
+        turnstileToken = null;
+      },
+      'error-callback': () => {
+        turnstileToken = null;
+      },
+    });
+  }
+
+  // Render if script already loaded, otherwise wait
+  if ((window as any).turnstile) {
+    renderTurnstile();
+  } else {
+    window.addEventListener('turnstileReady', renderTurnstile, { once: true });
   }
 
   function readPayload(): ContactPayload {
@@ -130,6 +161,7 @@ function initContactForm(): void {
       subject: (document.getElementById('cf-sujet') as HTMLInputElement).value.trim(),
       message: elMessage.value.trim(),
       type:    'contact',
+      turnstileToken: turnstileToken ?? undefined,
     };
   }
 
@@ -181,6 +213,14 @@ function initContactForm(): void {
 
     const payload = readPayload();
 
+    if (!turnstileToken) {
+      if (turnstileError) {
+        turnstileError.textContent = 'Merci de compléter la vérification CAPTCHA.';
+        turnstileError.hidden = false;
+      }
+      return;
+    }
+
     if (!validate(payload)) {
       document.querySelector<HTMLElement>('.cf-field--error .cf-input')?.focus();
       return;
@@ -193,6 +233,7 @@ function initContactForm(): void {
       showGlobalError('Un problème est survenu. Vérifiez votre connexion.');
     } finally {
       setLoading(false);
+      turnstileToken = null;
       const w = window as unknown as Record<string, unknown>;
       const t = w.turnstile as { reset?: () => void } | undefined;
       t?.reset?.();

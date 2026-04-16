@@ -1,18 +1,19 @@
+import { EMAIL_RE, MAX_NAME, MAX_EMAIL, MIN_MESSAGE, MAX_MESSAGE } from '@/lib/validation';
+
 export type ValidationRule = (value: string) => string | null;
 
 export const validationRules: Record<string, ValidationRule> = {
   name: (value: string) => {
     if (!value.trim()) return 'Le nom est obligatoire';
     if (value.length < 2) return 'Le nom doit contenir au moins 2 caractères';
-    if (value.length > 100) return 'Le nom ne peut pas dépasser 100 caractères';
+    if (value.length > MAX_NAME) return `Le nom ne peut pas dépasser ${MAX_NAME} caractères`;
     return null;
   },
 
   email: (value: string) => {
     if (!value.trim()) return 'L\'email est obligatoire';
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(value)) return 'Email invalide';
-    if (value.length > 255) return 'L\'email ne peut pas dépasser 255 caractères';
+    if (!EMAIL_RE.test(value)) return 'Email invalide';
+    if (value.length > MAX_EMAIL) return `L\'email ne peut pas dépasser ${MAX_EMAIL} caractères`;
     return null;
   },
 
@@ -25,11 +26,11 @@ export const validationRules: Record<string, ValidationRule> = {
 
   message: (value: string) => {
     if (!value.trim()) return 'Le message est obligatoire';
-    if (value.length < 20) {
-      return 'Le message doit contenir au moins 20 caractères';
+    if (value.length < MIN_MESSAGE) {
+      return `Le message doit contenir au moins ${MIN_MESSAGE} caractères`;
     }
-    if (value.length > 2000) {
-      return 'Le message ne peut pas dépasser 2000 caractères';
+    if (value.length > MAX_MESSAGE) {
+      return `Le message ne peut pas dépasser ${MAX_MESSAGE} caractères`;
     }
     return null;
   },

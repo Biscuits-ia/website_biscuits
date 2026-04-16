@@ -1,8 +1,7 @@
 ---
 import Header from '@/components/Header.astro';
 import Footer from '@/components/Footer.astro';
-import SEOHead from '@/components/SEO/SEOHead.astro';
-import SchemaOrg from '@/components/SEO/SchemaOrg.astro';
+import BaseHead from '@/components/BaseHead.astro';
 
 import '@/styles/theme.css';
 import '@/styles/global.css';
@@ -46,102 +45,18 @@ const nonce = Astro.locals.nonce;
 <!DOCTYPE html>
 <html lang="fr" dir="ltr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-
-  
-  <!-- Preconnect aux domaines critiques (améliore LCP) -->
-  {isProd && (
-    <>
-      <link rel="preconnect" href="https://www.googletagmanager.com" crossorigin />
-      <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
-    </>
-  )}
-
-  <SEOHead 
-    title={fullTitle}
+  <BaseHead
+    fullTitle={fullTitle}
     description={description}
-    canonical={fullCanonical}
+    fullCanonical={fullCanonical}
+    siteUrl={siteUrl}
     ogImage={ogImage}
     ogType={ogType}
     noindex={noindex}
+    schema={schema}
+    isProd={isProd}
+    nonce={nonce}
   />
-  
-  {schema && <SchemaOrg type={schema.type} data={schema.data} />}
-  
-  {!schema && (
-    <>
-      <SchemaOrg type="Organization" />
-      <script is:inline type="application/ld+json" set:html={JSON.stringify({
-        "@context": "https://schema.org",
-        "@type": "WebPage",
-        "url": fullCanonical,
-        "name": fullTitle,
-        "description": description,
-        "inLanguage": "fr-FR",
-        "isPartOf": {
-          "@type": "WebSite",
-          "url": siteUrl,
-          "name": "Biscuits IA"
-        }
-      })} />
-    </>
-  )}
-
-  {isProd && (
-    <script is:inline nonce={nonce}>
-      if (window.location.hostname === 'biscuits-ia.com') {
-        window.__PARTYTOWN_CONFIG = {
-          skipDeprecatedAPIs: true,
-        };
-      }
-    </script>
-  )}
-  
-  <!-- Favicons optimisés (format moderne) -->
-  <link rel="icon" type="image/svg+xml" href="/favicon.ico" />
-  <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
-  
-  <meta http-equiv="X-Content-Type-Options" content="nosniff" />
-  <meta name="referrer" content="strict-origin-when-cross-origin" />
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Zalando+Sans+SemiExpanded:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet">
-  
-  {isProd && (
-    <script is:inline nonce={nonce}>
-      // Définition du dataLayer pour GTM (chargé dynamiquement par CookieConsent)
-      window.dataLayer = window.dataLayer || [];
-      function gtag() { dataLayer.push(arguments); }
-
-      // Fonction pour charger GTM (appelée par CookieConsent quand analytics accepté)
-      window.loadGTMIfConsented = () => {
-        if (window.gtmLoaded) return;
-        const consentStr = localStorage.getItem('cookie-consent');
-        if (!consentStr) return;
-        try {
-          const prefs = JSON.parse(consentStr);
-          if (prefs.analytics) {
-            window.gtmLoaded = true;
-            const script = document.createElement('script');
-            script.async = true;
-            script.src = 'https://www.googletagmanager.com/gtm.js?id=GTM-W2273TRX';
-            document.head.appendChild(script);
-          }
-        } catch (e) {}
-      };
-
-      // Écouter les mises à jour de consentement
-      window.addEventListener('cookieConsentUpdated', (e) => {
-        if (e.detail.analytics) window.loadGTMIfConsented();
-      });
-
-      // Charger GTM si déjà accepté au chargement
-      if (typeof localStorage !== 'undefined') {
-        window.loadGTMIfConsented();
-      }
-    </script>
-  )}
 </head>
 
 <body>

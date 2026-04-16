@@ -2,9 +2,13 @@
 // src/pages/dashboard/user/demandes.astro
 import DashboardLayout from '../../../layouts/DashboardLayout.astro';
 import { requireAuth } from '../../../lib/auth';
+import type { AstroGlobal } from 'astro';
+import TurnstileFormGuard from '@/components/react/TurnstileFormGuard';
 
-const result = await requireAuth(Astro);
+const result = await requireAuth(Astro as unknown as AstroGlobal);
 if (result instanceof Response) return result;
+
+const nonce = Astro.locals.nonce;
 
 const { user, supabase } = result;
 const userId    = user.id;
@@ -127,6 +131,7 @@ const statusBadge: Record<string, string> = {
       </div>
 
       <div>
+        <TurnstileFormGuard client:only="react" scriptNonce={nonce} />
         <button type="submit" class="btn btn-primary">Envoyer la demande →</button>
       </div>
 

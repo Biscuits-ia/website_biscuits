@@ -2,12 +2,16 @@
 // src/pages/dashboard/user/ateliers.astro
 import DashboardLayout from '../../../layouts/DashboardLayout.astro';
 import { requireAuth }  from '../../../lib/auth';
+import type { AstroGlobal } from 'astro';
+import TurnstileFormGuard from '@/components/react/TurnstileFormGuard';
 // Fragment est disponible globalement dans les templates Astro v3+ — pas d'import nécessaire.
 import type { WorkshopSessionWithSeats } from '../../../types/ateliers';
 import { formatDateLong, formatTimeRange } from '../../../types/ateliers';
 
-const result = await requireAuth(Astro);
+const result = await requireAuth(Astro as unknown as AstroGlobal);
 if (result instanceof Response) return result;
+
+const nonce = Astro.locals.nonce;
 
 const { user, supabase } = result;
 const userId    = user.id;
@@ -167,6 +171,7 @@ const hasPast     = pastRows.length !== 0;
                 <span class="badge badge-ok">✓ Inscrit</span>
                 <form method="POST" action="/api/ateliers/desinscrire">
                   <input type="hidden" name="session_id" value={s.id} />
+                  <TurnstileFormGuard client:only="react" scriptNonce={nonce} />
                   <button type="submit" class="btn btn-ghost btn-sm">
                     Se désinscrire
                   </button>
@@ -179,6 +184,7 @@ const hasPast     = pastRows.length !== 0;
             ) : (
               <form method="POST" action="/api/ateliers/inscrire">
                 <input type="hidden" name="session_id" value={s.id} />
+                <TurnstileFormGuard client:only="react" scriptNonce={nonce} />
                 <button type="submit" class="btn btn-primary">
                   S'inscrire →
                 </button>

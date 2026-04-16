@@ -1,9 +1,59 @@
 import type { APIRoute } from 'astro';
 import { createSupabaseAdminClient } from '@/lib/supabase';
+import { getRequestIp, verifyTurnstileToken } from '@/lib/turnstile';
 import { EMAIL_RE, MAX_NAME, MAX_SUBJECT, MIN_MESSAGE, MAX_MESSAGE } from '@/lib/validation';
 
+type ContactBody = Record<string, unknown>;
+
+function parseContactBody(body: ContactBody) {
+  return {
+    turnstileToken: typeof body.turnstileToken === 'string' ? body.turnstileToken : '',
+    name: typeof body.name === 'string' ? body.name.trim() : '',
+    email: typeof body.email === 'string' ? body.email.trim().toLowerCase() : '',
+    subject: typeof body.subject === 'string' ? body.subject.trim() : '',
+    message: typeof body.message === 'string' ? body.message.trim() : '',
+  };
+}
+
+function validateContactFields(fields: {
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
+}): Record<string, string[]> {
+  const errors: Record<string, string[]> = {};
+
+  if (!fields.name) {
+    errors.name = ['Le nom est obligatoire.'];
+  } else if (fields.name.length > MAX_NAME) {
+    errors.name = [`Maximum ${MAX_NAME} caractères.`];
+  }
+
+  if (!fields.email) {
+    errors.email = ["L'email est obligatoire."];
+  } else if (!EMAIL_RE.test(fields.email)) {
+    errors.email = ['Email invalide.'];
+  }
+
+  if (!fields.subject) {
+    errors.subject = ['Le sujet est obligatoire.'];
+  } else if (fields.subject.length > MAX_SUBJECT) {
+    errors.subject = [`Maximum ${MAX_SUBJECT} caractères.`];
+  }
+
+  if (!fields.message) {
+    errors.message = ['Le message est obligatoire.'];
+  } else if (fields.message.length < MIN_MESSAGE) {
+    errors.message = [`Minimum ${MIN_MESSAGE} caractères.`];
+  } else if (fields.message.length > MAX_MESSAGE) {
+    errors.message = [`Maximum ${MAX_MESSAGE} caractères.`];
+  }
+
+  return errors;
+}
+
 export const POST: APIRoute = async ({ request, clientAddress }) => {
-  let body: Record<string, unknown>;
+  let body: ContactBody;
   try {
     body = await request.json();
   } catch {
@@ -13,23 +63,18 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
     });
   }
 
-  // Valider les champs
-  const name    = typeof body.name    === 'string' ? body.name.trim()    : '';
-  const email   = typeof body.email   === 'string' ? body.email.trim().toLowerCase() : '';
-  const subject = typeof body.subject === 'string' ? body.subject.trim() : '';
-  const message = typeof body.message === 'string' ? body.message.trim() : '';
+  const { turnstileToken, name, email, subject, message } = parseContactBody(body);
+  const ip = getRequestIp(request, clientAddress);
+  const isTokenValid = await verifyTurnstileToken(turnstileToken, ip);
 
-  // Validation
-  const errors: Record<string, string[]> = {};
-  if (!name)                   errors.name    = ['Le nom est obligatoire.'];
-  else if (name.length > MAX_NAME)  errors.name    = [`Maximum ${MAX_NAME} caractères.`];
-  if (!email)                  errors.email   = ["L'email est obligatoire."];
-  else if (!EMAIL_RE.test(email)) errors.email = ['Email invalide.'];
-  if (!subject)                errors.subject = ['Le sujet est obligatoire.'];
-  else if (subject.length > MAX_SUBJECT) errors.subject = [`Maximum ${MAX_SUBJECT} caractères.`];
-  if (!message)                errors.message = ['Le message est obligatoire.'];
-  else if (message.length < MIN_MESSAGE) errors.message = [`Minimum ${MIN_MESSAGE} caractères.`];
-  else if (message.length > MAX_MESSAGE) errors.message = [`Maximum ${MAX_MESSAGE} caractères.`];
+  if (!isTokenValid) {
+    return new Response(JSON.stringify({ message: 'Vérification Turnstile invalide ou expirée.' }), {
+      status: 403,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
+  const errors = validateContactFields({ name, email, subject, message });
 
   if (Object.keys(errors).length > 0) {
     return new Response(JSON.stringify({ message: 'Erreur de validation.', errors }), {
@@ -38,7 +83,6 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
     });
   }
 
-  // Insert via service role
   const supabase = createSupabaseAdminClient();
   const { error } = await supabase
     .from('contact_submissions')

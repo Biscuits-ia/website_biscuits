@@ -24,6 +24,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
   const scriptSrc = [
     "'self'",
     `'nonce-${nonce}'`,
+    'https://challenges.cloudflare.com',
     'https://www.googletagmanager.com',
     'https://www.google-analytics.com',
     'https://cdn.vercel-insights.com',
@@ -34,6 +35,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
 
   const connectSrc = [
     "'self'",
+    'https://challenges.cloudflare.com',
     'https://*.google-analytics.com',
     'https://analytics.google.com',
     'https://*.vercel-insights.com',
@@ -53,7 +55,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
     "img-src 'self' data: https:",
     "font-src 'self' https://fonts.gstatic.com",
     `connect-src ${connectSrc.join(' ')}`,
-    "frame-src https://www.googletagmanager.com https://vercel.live",
+    "frame-src https://challenges.cloudflare.com https://www.googletagmanager.com https://vercel.live",
     "object-src 'none'",
     "base-uri 'self'",
     "form-action 'self'",
@@ -67,7 +69,10 @@ export const onRequest = defineMiddleware(async (context, next) => {
   if (contentType.includes('text/html')) {
     const html = await response.text();
     // Match <script type="module"> without any src= attribute (inline scripts only)
-    const patched = html.replace(/<script type="module">/g, `<script type="module" nonce="${nonce}">`);
+    const patched = html.replaceAll(
+      '<script type="module">',
+      `<script type="module" nonce="${nonce}">`,
+    );
     const headers = new Headers(response.headers);
     headers.set('Content-Security-Policy', csp);
     return new Response(patched, { status: response.status, statusText: response.statusText, headers });

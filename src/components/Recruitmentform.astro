@@ -1,5 +1,6 @@
 ---
 const nonce = Astro.locals.nonce;
+const siteKey = import.meta.env.TURNSTILE_SITE_KEY ?? '1x00000000000000000000AA';
 ---
 
 <div class="recruitment-page">
@@ -125,6 +126,8 @@ const nonce = Astro.locals.nonce;
     <!-- Footer -->
     <div class="form__footer">
       <p class="form__note"><span aria-hidden="true">*</span> Champs obligatoires</p>
+      <!-- Cloudflare Turnstile -->
+      <div class="cf-turnstile" data-sitekey={siteKey} style="margin-bottom:16px;"></div>
       <button id="btn-submit" class="btn btn--primary" type="submit">
         Envoyer ma candidature →
       </button>
@@ -205,6 +208,7 @@ const nonce = Astro.locals.nonce;
       motivation:   document.getElementById('motivation').value.trim()  || null,
       skills:       document.getElementById('competences').value.trim() || null,
       availability: document.getElementById('disponibilite').value      || null,
+      turnstileToken: (window.turnstile && window.turnstile.getResponse()) || '',
     };
 
     if (!validate(data)) {
@@ -217,8 +221,7 @@ const nonce = Astro.locals.nonce;
 
     setLoading(true);
 
-    try {
-      const res = await fetch(API_URL, {
+    try {      const res = await fetch(API_URL, {
         method: 'POST',
         headers: {
           'Content-Type':     'application/json',
@@ -258,6 +261,7 @@ const nonce = Astro.locals.nonce;
       serverError.style.display = 'block';
     } finally {
       setLoading(false);
+      if (window.turnstile) window.turnstile.reset();
     }
   });
 
@@ -270,6 +274,8 @@ const nonce = Astro.locals.nonce;
     form.scrollIntoView({ behavior: 'smooth', block: 'start' });
   });
 </script>
+
+<script is:inline src="https://challenges.cloudflare.com/turnstile/v1/api.js" async defer></script>
 
 <style>
   .recruitment-page {

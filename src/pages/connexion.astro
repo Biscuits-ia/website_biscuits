@@ -6,6 +6,7 @@ const supabase = createSupabaseClient(Astro);
 const { data: { user } } = await supabase.auth.getUser();
 if (user) return Astro.redirect('/dashboard/user/');
 const nonce = Astro.locals.nonce;
+const siteKey = import.meta.env.TURNSTILE_SITE_KEY ?? '1x00000000000000000000AA';
 ---
 
 <AuthLayout title="Connexion" description="Connectez-vous à votre compte Biscuits IA.">
@@ -35,6 +36,9 @@ const nonce = Astro.locals.nonce;
           <input type="checkbox" id="remember-me" class="auth-checkbox" />
           <label for="remember-me">Se souvenir de moi</label>
         </div>
+
+        <!-- Cloudflare Turnstile -->
+        <div class="cf-turnstile" data-sitekey={siteKey} style="margin-bottom:20px;"></div>
 
         <!-- id="login-btn" — le script y attache l'événement directement -->
         <button id="login-btn" class="auth-btn-primary" type="button">
@@ -153,6 +157,9 @@ const nonce = Astro.locals.nonce;
   .auth-spinner { animation:spin .7s linear infinite; }
   @keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
 </style>
+
+<script src="https://challenges.cloudflare.com/turnstile/v1/api.js" async defer></script>
+
 <script is:inline nonce={nonce}>
   const emailInput = document.getElementById('email');
   const passInput  = document.getElementById('password');
@@ -198,11 +205,15 @@ const nonce = Astro.locals.nonce;
     if (!password)            return showMsg('Veuillez entrer votre mot de passe.');
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return showMsg('Adresse email invalide.');
 
+    var turnstileToken = (window.turnstile && window.turnstile.getResponse()) || '';
+    if (!turnstileToken) return showMsg('Veuillez compléter la vérification anti-robot.');
+
     setLoading(true);
     try {
       var formData = new FormData();
       formData.set('email', email);
       formData.set('password', password);
+      formData.set('cf-turnstile-response', turnstileToken);
 
       var res = await fetch('/auth/connexion', {
         method: 'POST',
@@ -224,6 +235,7 @@ const nonce = Astro.locals.nonce;
       showMsg('Une erreur est survenue. Veuillez réessayer.');
     } finally {
       setLoading(false);
+      if (window.turnstile) window.turnstile.reset();
     }
   }
 

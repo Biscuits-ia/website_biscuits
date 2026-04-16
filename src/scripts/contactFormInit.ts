@@ -10,11 +10,12 @@ export {};
 type FieldId = 'name' | 'email' | 'sujet' | 'message';
 
 interface ContactPayload {
-  name:    string;
-  email:   string;
-  subject: string;
-  message: string;
-  type:    'contact';
+  name:           string;
+  email:          string;
+  subject:        string;
+  message:        string;
+  type:           'contact';
+  turnstileToken: string;
 }
 
 interface ApiErrorResponse {
@@ -124,12 +125,17 @@ function initContactForm(): void {
   }
 
   function readPayload(): ContactPayload {
+    const turnstileInput = document.querySelector<HTMLInputElement>('[name="cf-turnstile-response"]');
+    const turnstileToken = turnstileInput?.value
+      ?? ((window as unknown as Record<string, unknown>).turnstile as { getResponse?: () => string } | undefined)?.getResponse?.()
+      ?? '';
     return {
       name:    (document.getElementById('cf-name')  as HTMLInputElement).value.trim(),
       email:   (document.getElementById('cf-email') as HTMLInputElement).value.trim().toLowerCase(),
       subject: (document.getElementById('cf-sujet') as HTMLInputElement).value.trim(),
       message: elMessage.value.trim(),
       type:    'contact',
+      turnstileToken,
     };
   }
 
@@ -193,6 +199,9 @@ function initContactForm(): void {
       showGlobalError('Un problème est survenu. Vérifiez votre connexion.');
     } finally {
       setLoading(false);
+      const w = window as unknown as Record<string, unknown>;
+      const t = w.turnstile as { reset?: () => void } | undefined;
+      t?.reset?.();
     }
   });
 }

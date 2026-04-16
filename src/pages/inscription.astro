@@ -6,6 +6,7 @@ const supabase = createSupabaseClient(Astro);
 const { data: { user } } = await supabase.auth.getUser();
 if (user) return Astro.redirect('/dashboard/user');
 const nonce = Astro.locals.nonce;
+const siteKey = import.meta.env.TURNSTILE_SITE_KEY ?? '1x00000000000000000000AA';
 ---
 
 <AuthLayout title="Inscription" description="Créez votre compte Biscuits IA.">
@@ -42,6 +43,9 @@ const nonce = Astro.locals.nonce;
           <label for="confirm" class="auth-label">Confirmer le mot de passe</label>
           <input type="password" id="confirm" placeholder="••••••••" autocomplete="new-password" class="auth-input" />
         </div>
+
+        <!-- Cloudflare Turnstile -->
+        <div class="cf-turnstile" data-sitekey={siteKey} style="margin-bottom:20px;"></div>
 
         <button id="signup-btn" class="auth-btn-primary" type="button">
           <span id="btn-text">S'inscrire</span>
@@ -128,6 +132,8 @@ const nonce = Astro.locals.nonce;
   @keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
 </style>
 
+<script src="https://challenges.cloudflare.com/turnstile/v1/api.js" async defer></script>
+
 <script is:inline nonce={nonce}>
   var passInput  = document.getElementById('password');
   var msgEl      = document.getElementById('msg');
@@ -184,11 +190,15 @@ const nonce = Astro.locals.nonce;
     if (password.length < 8) return showMsg('Le mot de passe doit contenir au moins 8 caractères.');
     if (password !== confirm) return showMsg('Les mots de passe ne correspondent pas.');
 
+    var turnstileToken = (window.turnstile && window.turnstile.getResponse()) || '';
+    if (!turnstileToken) return showMsg('Veuillez compléter la vérification anti-robot.');
+
     setLoading(true);
     try {
       var formData = new FormData();
       formData.set('email', email);
       formData.set('password', password);
+      formData.set('cf-turnstile-response', turnstileToken);
 
       var res = await fetch('/auth/inscription', {
         method: 'POST',
@@ -206,6 +216,7 @@ const nonce = Astro.locals.nonce;
       showMsg('Une erreur est survenue. Veuillez réessayer.');
     } finally {
       setLoading(false);
+      if (window.turnstile) window.turnstile.reset();
     }
   }
 

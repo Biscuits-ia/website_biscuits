@@ -1,5 +1,5 @@
 import { useEffect, useId, useRef, useState } from 'react';
-import TurnstileWidget, { type TurnstileWidgetHandle } from './TurnstileWidget';
+import TurnstileWidget from './TurnstileWidget';
 
 interface TurnstileFormGuardProps {
   scriptNonce?: string;
@@ -13,10 +13,8 @@ export default function TurnstileFormGuard({
   inputName = DEFAULT_INPUT_NAME,
 }: Readonly<TurnstileFormGuardProps>) {
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const widgetRef = useRef<TurnstileWidgetHandle | null>(null);
-  const hiddenInputRef = useRef<HTMLInputElement | null>(null);
-  const isSubmittingRef = useRef(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [token, setToken] = useState('');
   const widgetId = useId().replaceAll(':', '');
 
   useEffect(() => {
@@ -28,34 +26,9 @@ export default function TurnstileFormGuard({
     }
 
     const handleSubmit = async (event: SubmitEvent) => {
-      if (isSubmittingRef.current) {
-        return;
-      }
-
-      event.preventDefault();
-      setErrorMessage('');
-
-      try {
-        isSubmittingRef.current = true;
-        widgetRef.current?.execute();
-
-        const token = await widgetRef.current?.getResponsePromise(10000, 250);
-
-        if (!token) {
-          setErrorMessage('La vérification anti-bot a échoué. Réessayez.');
-          isSubmittingRef.current = false;
-          return;
-        }
-
-        if (hiddenInputRef.current) {
-          hiddenInputRef.current.value = token;
-        }
-
-        form.submit();
-      } catch {
-        setErrorMessage('La vérification anti-bot a échoué. Réessayez.');
-        widgetRef.current?.reset();
-        isSubmittingRef.current = false;
+      if (!token) {
+        event.preventDefault();
+        setErrorMessage('Merci de valider la vérification anti-bot avant de continuer.');
       }
     };
 
@@ -68,28 +41,23 @@ export default function TurnstileFormGuard({
 
   return (
     <div ref={containerRef} data-turnstile-form-guard={widgetId}>
-      <input ref={hiddenInputRef} type="hidden" name={inputName} defaultValue="" />
       <TurnstileWidget
-        ref={widgetRef}
         theme="auto"
-        size="invisible"
-        execution="execute"
-        appearance="execute"
+        size="flexible"
+        responseField
+        responseFieldName={inputName}
         scriptNonce={scriptNonce}
-        onSuccess={(token) => {
-          if (hiddenInputRef.current) {
-            hiddenInputRef.current.value = token;
-          }
+        onSuccess={(nextToken) => {
+          setToken(nextToken);
+          setErrorMessage('');
         }}
         onError={() => {
+          setToken('');
           setErrorMessage('La vérification anti-bot a échoué. Réessayez.');
-          isSubmittingRef.current = false;
         }}
         onExpire={() => {
-          if (hiddenInputRef.current) {
-            hiddenInputRef.current.value = '';
-          }
-          isSubmittingRef.current = false;
+          setToken('');
+          setErrorMessage('La vérification anti-bot a expiré. Merci de la relancer.');
         }}
       />
 

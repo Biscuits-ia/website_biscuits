@@ -22,6 +22,8 @@ export interface TurnstileWidgetProps {
   size?: WidgetSize;
   execution?: ExecutionMode;
   appearance?: AppearanceMode;
+  responseField?: boolean;
+  responseFieldName?: string;
   scriptNonce?: string;
 }
 
@@ -47,6 +49,8 @@ const TurnstileWidget = forwardRef<TurnstileWidgetHandle, TurnstileWidgetProps>(
       size = DEFAULT_SIZE,
       execution = DEFAULT_EXECUTION,
       appearance = DEFAULT_APPEARANCE,
+      responseField = false,
+      responseFieldName,
       scriptNonce,
     }: Readonly<TurnstileWidgetProps>,
     ref,
@@ -116,7 +120,8 @@ const TurnstileWidget = forwardRef<TurnstileWidgetHandle, TurnstileWidgetProps>(
           size,
           execution,
           appearance,
-          responseField: false,
+          responseField,
+          responseFieldName,
         }}
         scriptOptions={{
           nonce: scriptNonce,

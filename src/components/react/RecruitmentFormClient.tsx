@@ -1,5 +1,5 @@
-import { useCallback, useRef, useState, type ChangeEvent, type SyntheticEvent } from 'react';
-import TurnstileWidget, { type TurnstileWidgetHandle } from './TurnstileWidget';
+import { useCallback, useState, type ChangeEvent, type SyntheticEvent } from 'react';
+import TurnstileWidget from './TurnstileWidget';
 import '@/styles/recruitment-form.css';
 import { EMAIL_RE, MAX_NAME } from '@/lib/validation';
 
@@ -39,7 +39,6 @@ export default function RecruitmentFormClient({ scriptNonce }: Readonly<Recruitm
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [confirmation, setConfirmation] = useState<{ fullName: string; email: string } | null>(null);
   const [turnstileToken, setTurnstileToken] = useState('');
-  const widgetRef = useRef<TurnstileWidgetHandle | null>(null);
 
   const clearFieldError = useCallback((field: RecruitmentFieldId) => {
     setFieldErrors((current) => {
@@ -56,7 +55,6 @@ export default function RecruitmentFormClient({ scriptNonce }: Readonly<Recruitm
 
   const resetTurnstile = useCallback(() => {
     setTurnstileToken('');
-    widgetRef.current?.reset();
   }, []);
 
   const handleInputChange = useCallback(
@@ -104,22 +102,6 @@ export default function RecruitmentFormClient({ scriptNonce }: Readonly<Recruitm
     return Object.keys(errors).length === 0;
   }, []);
 
-  const resolveTurnstileToken = useCallback(async (): Promise<string> => {
-    if (turnstileToken) {
-      return turnstileToken;
-    }
-
-    widgetRef.current?.execute();
-    const token = await widgetRef.current?.getResponsePromise(10000, 250);
-
-    if (!token) {
-      throw new Error('TURNSTILE_TOKEN_MISSING');
-    }
-
-    setTurnstileToken(token);
-    return token;
-  }, [turnstileToken]);
-
   const handleSubmit = useCallback(
     async (event: SyntheticEvent<HTMLFormElement>) => {
       event.preventDefault();
@@ -129,10 +111,14 @@ export default function RecruitmentFormClient({ scriptNonce }: Readonly<Recruitm
         return;
       }
 
+      if (!turnstileToken) {
+        setServerError('Merci de valider la vérification anti-bot avant d\'envoyer le formulaire.');
+        return;
+      }
+
       setIsSubmitting(true);
 
       try {
-        const verifiedTurnstileToken = await resolveTurnstileToken();
         const response = await fetch('/api/recruitment', {
           method: 'POST',
           headers: {
@@ -146,7 +132,7 @@ export default function RecruitmentFormClient({ scriptNonce }: Readonly<Recruitm
             motivation: formData.motivation.trim() || null,
             skills: formData.skills.trim() || null,
             availability: formData.availability || null,
-            turnstileToken: verifiedTurnstileToken,
+            turnstileToken,
           }),
         });
 
@@ -183,16 +169,14 @@ export default function RecruitmentFormClient({ scriptNonce }: Readonly<Recruitm
         resetTurnstile();
       } catch (error) {
         setServerError(
-          error instanceof Error && error.message === 'TURNSTILE_TOKEN_MISSING'
-            ? 'La vérification anti-bot a échoué. Réessayez.'
-            : 'Un problème est survenu. Vérifiez votre connexion internet.',
+          'Un problème est survenu. Vérifiez votre connexion internet.',
         );
         resetTurnstile();
       } finally {
         setIsSubmitting(false);
       }
     },
-    [formData, resetTurnstile, resolveTurnstileToken, validate],
+    [formData, resetTurnstile, turnstileToken, validate],
   );
 
   if (confirmation) {
@@ -278,13 +262,13 @@ export default function RecruitmentFormClient({ scriptNonce }: Readonly<Recruitm
         </div>
 
         <TurnstileWidget
-          ref={widgetRef}
           theme="auto"
-          size="invisible"
-          execution="execute"
-          appearance="execute"
+          size="flexible"
           scriptNonce={scriptNonce}
-          onSuccess={setTurnstileToken}
+          onSuccess={(token) => {
+            setTurnstileToken(token);
+            setServerError('');
+          }}
           onError={() => {
             setTurnstileToken('');
             setServerError('La vérification anti-bot a échoué. Réessayez.');
@@ -296,7 +280,7 @@ export default function RecruitmentFormClient({ scriptNonce }: Readonly<Recruitm
 
         <div className="form__footer">
           <p className="form__note"><span aria-hidden="true">*</span> Champs obligatoires</p>
-          <button className="btn btn--primary" type="submit" disabled={isSubmitting}>
+          <button className="btn btn--primary" type="submit" disabled={isSubmitting || turnstileToken.length === 0}>
             {isSubmitting ? 'Envoi en cours…' : 'Envoyer ma candidature →'}
           </button>
         </div>

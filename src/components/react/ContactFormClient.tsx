@@ -1,4 +1,4 @@
-import { useCallback, useState, type ChangeEvent, type FormEvent } from 'react';
+import { useCallback, useState, type ChangeEvent, type SyntheticEvent } from 'react';
 import TurnstileWidget from './TurnstileWidget';
 import '@/styles/contact-form.css';
 import { EMAIL_RE, MAX_MESSAGE, MAX_NAME, MAX_SUBJECT, MIN_MESSAGE } from '@/lib/validation';
@@ -115,7 +115,7 @@ export default function ContactFormClient({ scriptNonce }: Readonly<ContactFormC
   }, []);
 
   const handleSubmit = useCallback(
-    async (event: FormEvent<HTMLFormElement>) => {
+    async (event: SyntheticEvent<HTMLFormElement>) => {
       event.preventDefault();
       clearAllErrors();
       setShowSuccess(false);
@@ -179,7 +179,7 @@ export default function ContactFormClient({ scriptNonce }: Readonly<ContactFormC
             : `Erreur serveur (${response.status}). Veuillez réessayer.`,
         );
         resetTurnstile();
-      } catch (error) {
+      } catch {
         setGlobalError(
           'Un problème est survenu. Vérifiez votre connexion.',
         );
@@ -192,6 +192,12 @@ export default function ContactFormClient({ scriptNonce }: Readonly<ContactFormC
   );
 
   const characterCount = formData.message.length;
+  let characterCountClass = '';
+  if (characterCount > 1900) {
+    characterCountClass = 'cf-char-count--danger';
+  } else if (characterCount > 1500) {
+    characterCountClass = 'cf-char-count--warn';
+  }
 
   return (
     <div className="contact-form-wrapper">
@@ -244,32 +250,38 @@ export default function ContactFormClient({ scriptNonce }: Readonly<ContactFormC
         <div className={`cf-field ${fieldErrors.message ? 'cf-field--error' : ''}`}>
           <label className="cf-label" htmlFor="cf-message">Votre message <span className="cf-required">*</span></label>
           <textarea id="cf-message" name="message" className="cf-input cf-textarea" rows={5} placeholder="Décrivez votre demande…" minLength={MIN_MESSAGE} maxLength={MAX_MESSAGE} aria-required="true" aria-invalid={fieldErrors.message ? 'true' : 'false'} aria-describedby="cf-char-count" value={formData.message} onChange={handleInputChange} />
-          <span id="cf-char-count" className={`cf-char-count ${characterCount > 1900 ? 'cf-char-count--danger' : characterCount > 1500 ? 'cf-char-count--warn' : ''}`} aria-live="polite">{characterCount} / {MAX_MESSAGE}</span>
+          <span id="cf-char-count" className={`cf-char-count ${characterCountClass}`} aria-live="polite">{characterCount} / {MAX_MESSAGE}</span>
           <span className="cf-error" role="alert" hidden={!fieldErrors.message}>{fieldErrors.message}</span>
         </div>
 
         <input type="text" name="honey" tabIndex={-1} autoComplete="off" className="cf-honeypot" aria-hidden="true" value={formData.honey} onChange={handleInputChange} />
 
-        <TurnstileWidget
-          theme="auto"
-          size="flexible"
-          scriptNonce={scriptNonce}
-          onSuccess={(token) => {
-            setTurnstileToken(token);
-            setGlobalError('');
-          }}
-          onError={() => {
-            setTurnstileToken('');
-            setGlobalError('La vérification anti-bot a échoué. Réessayez.');
-          }}
-          onExpire={() => {
-            setTurnstileToken('');
-          }}
-        />
+        <div className="cf-turnstile-block">
+          <p className="cf-turnstile-label">Vérification anti-bot <span className="cf-required">*</span></p>
+          <div className="cf-turnstile-widget">
+            <TurnstileWidget
+              theme="auto"
+              size="normal"
+              appearance="always"
+              scriptNonce={scriptNonce}
+              onSuccess={(token) => {
+                setTurnstileToken(token);
+                setGlobalError('');
+              }}
+              onError={() => {
+                setTurnstileToken('');
+                setGlobalError('La vérification anti-bot a échoué. Réessayez.');
+              }}
+              onExpire={() => {
+                setTurnstileToken('');
+              }}
+            />
+          </div>
+        </div>
 
         <div className="cf-footer">
           <p className="cf-note"><span aria-hidden="true">*</span> Champs obligatoires</p>
-          <button type="submit" className="cf-btn" aria-busy={isSubmitting ? 'true' : 'false'} disabled={isSubmitting || turnstileToken.length === 0}>
+          <button type="submit" className="cf-btn" aria-busy={isSubmitting ? 'true' : 'false'} disabled={isSubmitting}>
             <span>{isSubmitting ? 'Envoi en cours…' : 'Envoyer ma demande'}</span>
             <span className="cf-spinner" aria-hidden="true" hidden={!isSubmitting}></span>
           </button>

@@ -1,6 +1,5 @@
 import type { APIRoute } from 'astro';
 import { createSupabaseAdminClient } from '@/lib/supabase';
-import { verifyTurnstileToken } from '@/lib/turnstile';
 import { EMAIL_RE, MAX_NAME } from '@/lib/validation';
 
 export const POST: APIRoute = async ({ request }) => {
@@ -14,25 +13,7 @@ export const POST: APIRoute = async ({ request }) => {
     });
   }
 
-  // 1. Vérifier Turnstile EN PREMIER
-  const turnstileToken = typeof body.turnstileToken === 'string' ? body.turnstileToken : '';
-  if (!turnstileToken) {
-    return new Response(JSON.stringify({ message: 'Token CAPTCHA manquant.' }), {
-      status: 400,
-      headers: { 'Content-Type': 'application/json' },
-    });
-  }
-
-  const ip = request.headers.get('CF-Connecting-IP') ?? undefined;
-  const captcha = await verifyTurnstileToken(turnstileToken, ip);
-  if (!captcha.success) {
-    return new Response(JSON.stringify({ message: 'CAPTCHA invalide.' }), {
-      status: 403,
-      headers: { 'Content-Type': 'application/json' },
-    });
-  }
-
-  // 2. Valider les champs
+  // Valider les champs
 
   const first_name   = typeof body.first_name   === 'string' ? body.first_name.trim()   : '';
   const last_name    = typeof body.last_name    === 'string' ? body.last_name.trim()    : '';

@@ -1,7 +1,32 @@
 import type { APIRoute } from 'astro';
 import { createSupabaseAdminClient } from '@/lib/supabase';
-import { verifyTurnstileToken } from '@/lib/turnstile';
+import { isTurnstileEnabled, verifyTurnstileToken } from '@/lib/turnstile';
 import { EMAIL_RE, MAX_NAME, MAX_SUBJECT, MIN_MESSAGE, MAX_MESSAGE } from '@/lib/validation';
+
+async function validateCaptcha(request: Request, body: Record<string, unknown>): Promise<Response | null> {
+  if (!isTurnstileEnabled()) {
+    return null;
+  }
+
+  const turnstileToken = typeof body.turnstileToken === 'string' ? body.turnstileToken : '';
+  if (!turnstileToken) {
+    return new Response(JSON.stringify({ message: 'Token CAPTCHA manquant.' }), {
+      status: 400,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
+  const ip = request.headers.get('CF-Connecting-IP') ?? undefined;
+  const captcha = await verifyTurnstileToken(turnstileToken, ip);
+  if (captcha.success) {
+    return null;
+  }
+
+  return new Response(JSON.stringify({ message: 'CAPTCHA invalide.' }), {
+    status: 403,
+    headers: { 'Content-Type': 'application/json' },
+  });
+}
 
 export const POST: APIRoute = async ({ request }) => {
   const json = (key: string, msg: string) =>
@@ -17,22 +42,10 @@ export const POST: APIRoute = async ({ request }) => {
     return json('parse', 'Corps de la requête invalide.');
   }
 
-  // 1. Vérifier Turnstile EN PREMIER
-  const turnstileToken = typeof body.turnstileToken === 'string' ? body.turnstileToken : '';
-  if (!turnstileToken) {
-    return new Response(JSON.stringify({ message: 'Token CAPTCHA manquant.' }), {
-      status: 400,
-      headers: { 'Content-Type': 'application/json' },
-    });
-  }
-
-  const ip = request.headers.get('CF-Connecting-IP') ?? undefined;
-  const captcha = await verifyTurnstileToken(turnstileToken, ip);
-  if (!captcha.success) {
-    return new Response(JSON.stringify({ message: 'CAPTCHA invalide.' }), {
-      status: 403,
-      headers: { 'Content-Type': 'application/json' },
-    });
+  // 1. Vérifier Turnstile seulement s'il est configuré côté serveur
+  const captchaError = await validateCaptcha(request, body);
+  if (captchaError) {
+    return captchaError;
   }
 
   // 2. Valider les champs

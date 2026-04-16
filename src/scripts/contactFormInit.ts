@@ -3,10 +3,6 @@
 // (l'import force Astro à bundler ce fichier en externe plutôt que de l'inliner,
 //  ce qui est requis pour le Content-Security-Policy basé sur les nonces)
 
-// This file must export at least one symbol to be treated as an ES module
-// (prevents variable conflicts with other scripts in the global TypeScript scope)
-export {};
-
 type FieldId = 'name' | 'email' | 'sujet' | 'message';
 
 interface ContactPayload {
@@ -34,8 +30,8 @@ function initContactForm(): void {
 
   const formEl      = document.getElementById('cf-form')    as HTMLFormElement    | null;
   const btnSubmitEl = document.getElementById('cf-submit')  as HTMLButtonElement  | null;
-  const elSuccessEl = document.getElementById('cf-success') as HTMLElement        | null;
-  const elErrorEl   = document.getElementById('cf-error')   as HTMLElement        | null;
+  const elSuccessEl = document.getElementById('cf-success');
+  const elErrorEl   = document.getElementById('cf-error');
   const elMessageEl = document.getElementById('cf-message') as HTMLTextAreaElement | null;
 
   if (!formEl || !btnSubmitEl || !elSuccessEl || !elErrorEl || !elMessageEl) return;
@@ -46,10 +42,10 @@ function initContactForm(): void {
   const elError   : HTMLElement         = elErrorEl;
   const elMessage : HTMLTextAreaElement = elMessageEl;
 
-  const btnLabel  = document.getElementById('cf-btn-label')  as HTMLElement      | null;
-  const btnLoader = document.getElementById('cf-btn-loader') as HTMLElement      | null;
-  const elErrTxt  = document.getElementById('cf-error-text') as HTMLElement      | null;
-  const elCount   = document.getElementById('cf-char-count') as HTMLElement      | null;
+  const btnLabel  = document.getElementById('cf-btn-label');
+  const btnLoader = document.getElementById('cf-btn-loader');
+  const elErrTxt  = document.getElementById('cf-error-text');
+  const elCount   = document.getElementById('cf-char-count');
   const elHoney   = document.getElementById('cf-honey')      as HTMLInputElement | null;
 
   function showFieldError(id: FieldId, msg: string): void {
@@ -127,24 +123,18 @@ function initContactForm(): void {
   const turnstileContainer = document.getElementById('cf-turnstile');
   const turnstileError = document.getElementById('cf-turnstile-error');
   const TURNSTILE_SITE_KEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
-
-  // Debug: Log Turnstile configuration
-  console.log('[DEBUG Turnstile] Site key:', TURNSTILE_SITE_KEY ? 'présente' : 'MANQUANTE');
-  console.log('[DEBUG Turnstile] Container:', turnstileContainer ? 'trouvé' : 'INTROUVABLE');
+  const requiresTurnstile = Boolean(TURNSTILE_SITE_KEY);
 
   function renderTurnstile(): void {
     if (!turnstileContainer || !TURNSTILE_SITE_KEY) {
-      console.error('[DEBUG Turnstile] Rendu impossible - container ou site key manquant');
       return;
     }
-    const t = (window as any).turnstile;
+    const t = (globalThis as typeof globalThis & { turnstile?: { render: (container: Element, options: Record<string, unknown>) => void } }).turnstile;
     if (!t) return;
-    console.log('[DEBUG Turnstile] Rendu du widget...');
     t.render(turnstileContainer, {
       sitekey: TURNSTILE_SITE_KEY,
       theme: 'auto',
       callback: (token: string) => {
-        console.log('[DEBUG Turnstile] Token reçu avec succès');
         turnstileToken = token;
         if (turnstileError) { turnstileError.textContent = ''; turnstileError.hidden = true; }
       },
@@ -159,7 +149,16 @@ function initContactForm(): void {
 
   // Load Turnstile SDK dynamically (avoids CSP nonce issues with inline scripts)
   function loadTurnstileSDK(): void {
-    if ((window as any).turnstile) { renderTurnstile(); return; }
+    if (!requiresTurnstile) {
+      turnstileContainer?.setAttribute('hidden', 'true');
+      if (turnstileError) {
+        turnstileError.textContent = '';
+        turnstileError.hidden = true;
+      }
+      return;
+    }
+
+    if ((globalThis as typeof globalThis & { turnstile?: unknown }).turnstile) { renderTurnstile(); return; }
     const script = document.createElement('script');
     script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
     script.async = true;
@@ -227,7 +226,7 @@ function initContactForm(): void {
 
     const payload = readPayload();
 
-    if (!turnstileToken) {
+    if (requiresTurnstile && !turnstileToken) {
       if (turnstileError) {
         turnstileError.textContent = 'Merci de compléter la vérification CAPTCHA.';
         turnstileError.hidden = false;
@@ -248,9 +247,10 @@ function initContactForm(): void {
     } finally {
       setLoading(false);
       turnstileToken = null;
-      const w = window as unknown as Record<string, unknown>;
-      const t = w.turnstile as { reset?: () => void } | undefined;
-      t?.reset?.();
+      const t = (globalThis as typeof globalThis & { turnstile?: { reset?: () => void } }).turnstile;
+      if (requiresTurnstile) {
+        t?.reset?.();
+      }
     }
   });
 }

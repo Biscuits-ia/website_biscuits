@@ -150,18 +150,13 @@ const nonce = Astro.locals.nonce;
   const turnstileContainer = document.getElementById('rf-turnstile');
   const turnstileError = document.getElementById('rf-turnstile-error');
   const TURNSTILE_SITE_KEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
-
-  // Debug: Log Turnstile configuration
-  console.log('[DEBUG Turnstile Recrutement] Site key:', TURNSTILE_SITE_KEY ? 'présente' : 'MANQUANTE');
-  console.log('[DEBUG Turnstile Recrutement] Container:', turnstileContainer ? 'trouvé' : 'INTROUVABLE');
+  const requiresTurnstile = Boolean(TURNSTILE_SITE_KEY);
 
   function renderTurnstile() {
     if (!turnstileContainer || !TURNSTILE_SITE_KEY) {
-      console.error('[DEBUG Turnstile Recrutement] Rendu impossible - container ou site key manquant');
       return;
     }
     if (!window.turnstile) return;
-    console.log('[DEBUG Turnstile Recrutement] Rendu du widget...');
     window.turnstile.render(turnstileContainer, {
       sitekey: TURNSTILE_SITE_KEY,
       theme: 'auto',
@@ -176,6 +171,15 @@ const nonce = Astro.locals.nonce;
 
   // Load Turnstile SDK dynamically (avoids CSP nonce issues with inline scripts)
   function loadTurnstileSDK() {
+    if (!requiresTurnstile) {
+      turnstileContainer?.setAttribute('hidden', 'true');
+      if (turnstileError) {
+        turnstileError.textContent = '';
+        turnstileError.style.display = 'none';
+      }
+      return;
+    }
+
     if (window.turnstile) { renderTurnstile(); return; }
     const script = document.createElement('script');
     script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
@@ -251,7 +255,7 @@ const nonce = Astro.locals.nonce;
       turnstileToken: turnstileToken,
     };
 
-    if (!turnstileToken) {
+    if (requiresTurnstile && !turnstileToken) {
       if (turnstileError) {
         turnstileError.textContent = 'Merci de compléter la vérification CAPTCHA.';
         turnstileError.style.display = 'block';
@@ -310,7 +314,7 @@ const nonce = Astro.locals.nonce;
     } finally {
       setLoading(false);
       turnstileToken = null;
-      if (window.turnstile) window.turnstile.reset();
+      if (requiresTurnstile && window.turnstile) window.turnstile.reset();
     }
   });
 

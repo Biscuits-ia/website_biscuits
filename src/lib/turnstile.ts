@@ -5,6 +5,10 @@ export interface TurnstileVerifyResult {
   errorCodes?: string[];
 }
 
+export function isTurnstileEnabled(): boolean {
+  return Boolean(import.meta.env.TURNSTILE_SECRET_KEY);
+}
+
 export async function verifyTurnstileToken(
   token: string,
   remoteip?: string
@@ -12,8 +16,7 @@ export async function verifyTurnstileToken(
   const secretKey = import.meta.env.TURNSTILE_SECRET_KEY;
 
   if (!secretKey) {
-    console.error("TURNSTILE_SECRET_KEY manquante");
-    return { success: false, errorCodes: ["missing-secret-key"] };
+    return { success: true, errorCodes: ["turnstile-disabled"] };
   }
 
   const body = new URLSearchParams({

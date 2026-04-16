@@ -1,7 +1,14 @@
 import type { APIRoute } from "astro";
-import { verifyTurnstileToken } from "../../lib/turnstile";
+import { isTurnstileEnabled, verifyTurnstileToken } from "../../lib/turnstile";
 
 export const POST: APIRoute = async ({ request }) => {
+  if (!isTurnstileEnabled()) {
+    return new Response(JSON.stringify({ success: true, disabled: true }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
   const body = await request.json().catch(() => null);
   const token = body?.token;
 

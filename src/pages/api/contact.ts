@@ -1,32 +1,6 @@
 import type { APIRoute } from 'astro';
 import { createSupabaseAdminClient } from '@/lib/supabase';
-import { isTurnstileEnabled, verifyTurnstileToken } from '@/lib/turnstile';
 import { EMAIL_RE, MAX_NAME, MAX_SUBJECT, MIN_MESSAGE, MAX_MESSAGE } from '@/lib/validation';
-
-async function validateCaptcha(request: Request, body: Record<string, unknown>): Promise<Response | null> {
-  if (!isTurnstileEnabled()) {
-    return null;
-  }
-
-  const turnstileToken = typeof body.turnstileToken === 'string' ? body.turnstileToken : '';
-  if (!turnstileToken) {
-    return new Response(JSON.stringify({ message: 'Token CAPTCHA manquant.' }), {
-      status: 400,
-      headers: { 'Content-Type': 'application/json' },
-    });
-  }
-
-  const ip = request.headers.get('CF-Connecting-IP') ?? undefined;
-  const captcha = await verifyTurnstileToken(turnstileToken, ip);
-  if (captcha.success) {
-    return null;
-  }
-
-  return new Response(JSON.stringify({ message: 'CAPTCHA invalide.' }), {
-    status: 403,
-    headers: { 'Content-Type': 'application/json' },
-  });
-}
 
 export const POST: APIRoute = async ({ request }) => {
   const json = (key: string, msg: string) =>
@@ -42,14 +16,7 @@ export const POST: APIRoute = async ({ request }) => {
     return json('parse', 'Corps de la requête invalide.');
   }
 
-  // 1. Vérifier Turnstile seulement s'il est configuré côté serveur
-  const captchaError = await validateCaptcha(request, body);
-  if (captchaError) {
-    return captchaError;
-  }
-
-  // 2. Valider les champs
-
+  // Valider les champs
   const name    = typeof body.name    === 'string' ? body.name.trim()    : '';
   const email   = typeof body.email   === 'string' ? body.email.trim().toLowerCase() : '';
   const subject = typeof body.subject === 'string' ? body.subject.trim() : '';
@@ -74,7 +41,7 @@ export const POST: APIRoute = async ({ request }) => {
     });
   }
 
-  // Insert via service role (anon RLS also allows insert, but service_role is safer for server-side)
+  // Insert via service role
   const supabase = createSupabaseAdminClient();
   const { error } = await supabase
     .from('contact_submissions')

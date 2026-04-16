@@ -1,17 +1,14 @@
 // src/scripts/contactFormInit.ts
 // Script de gestion du formulaire de contact — importé depuis ContactForm.astro
-// (l'import force Astro à bundler ce fichier en externe plutôt que de l'inliner,
-//  ce qui est requis pour le Content-Security-Policy basé sur les nonces)
 
 type FieldId = 'name' | 'email' | 'sujet' | 'message';
 
 interface ContactPayload {
-  name:           string;
-  email:          string;
-  subject:        string;
-  message:        string;
-  type:           'contact';
-  turnstileToken?: string;
+  name:    string;
+  email:   string;
+  subject: string;
+  message: string;
+  type:    'contact';
 }
 
 interface ApiErrorResponse {
@@ -118,55 +115,6 @@ function initContactForm(): void {
     return Object.keys(errs).length === 0;
   }
 
-  // ─── Turnstile ───────────────────────────────────────────────────────────
-  let turnstileToken: string | null = null;
-  const turnstileContainer = document.getElementById('cf-turnstile');
-  const turnstileError = document.getElementById('cf-turnstile-error');
-  const TURNSTILE_SITE_KEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
-  const requiresTurnstile = Boolean(TURNSTILE_SITE_KEY);
-
-  function renderTurnstile(): void {
-    if (!turnstileContainer || !TURNSTILE_SITE_KEY) {
-      return;
-    }
-    const t = (globalThis as typeof globalThis & { turnstile?: { render: (container: Element, options: Record<string, unknown>) => void } }).turnstile;
-    if (!t) return;
-    t.render(turnstileContainer, {
-      sitekey: TURNSTILE_SITE_KEY,
-      theme: 'auto',
-      callback: (token: string) => {
-        turnstileToken = token;
-        if (turnstileError) { turnstileError.textContent = ''; turnstileError.hidden = true; }
-      },
-      'expired-callback': () => {
-        turnstileToken = null;
-      },
-      'error-callback': () => {
-        turnstileToken = null;
-      },
-    });
-  }
-
-  // Load Turnstile SDK dynamically (avoids CSP nonce issues with inline scripts)
-  function loadTurnstileSDK(): void {
-    if (!requiresTurnstile) {
-      turnstileContainer?.setAttribute('hidden', 'true');
-      if (turnstileError) {
-        turnstileError.textContent = '';
-        turnstileError.hidden = true;
-      }
-      return;
-    }
-
-    if ((globalThis as typeof globalThis & { turnstile?: unknown }).turnstile) { renderTurnstile(); return; }
-    const script = document.createElement('script');
-    script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
-    script.async = true;
-    script.onload = () => renderTurnstile();
-    document.head.appendChild(script);
-  }
-  loadTurnstileSDK();
-
   function readPayload(): ContactPayload {
     return {
       name:    (document.getElementById('cf-name')  as HTMLInputElement).value.trim(),
@@ -174,7 +122,6 @@ function initContactForm(): void {
       subject: (document.getElementById('cf-sujet') as HTMLInputElement).value.trim(),
       message: elMessage.value.trim(),
       type:    'contact',
-      turnstileToken: turnstileToken ?? undefined,
     };
   }
 
@@ -226,14 +173,6 @@ function initContactForm(): void {
 
     const payload = readPayload();
 
-    if (requiresTurnstile && !turnstileToken) {
-      if (turnstileError) {
-        turnstileError.textContent = 'Merci de compléter la vérification CAPTCHA.';
-        turnstileError.hidden = false;
-      }
-      return;
-    }
-
     if (!validate(payload)) {
       document.querySelector<HTMLElement>('.cf-field--error .cf-input')?.focus();
       return;
@@ -246,11 +185,6 @@ function initContactForm(): void {
       showGlobalError('Un problème est survenu. Vérifiez votre connexion.');
     } finally {
       setLoading(false);
-      turnstileToken = null;
-      const t = (globalThis as typeof globalThis & { turnstile?: { reset?: () => void } }).turnstile;
-      if (requiresTurnstile) {
-        t?.reset?.();
-      }
     }
   });
 }

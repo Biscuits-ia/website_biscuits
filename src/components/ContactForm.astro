@@ -1,8 +1,5 @@
 ---
 // src/components/ContactForm.astro
-import TurnstileWidget from './react/TurnstileWidget';
-
-const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
 ---
 
 <div class="contact-form-wrapper">
@@ -63,28 +60,6 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
 
     <input type="text" name="honey" id="cf-honey"
       tabindex="-1" autocomplete="off" class="cf-honeypot" aria-hidden="true" />
-
-    {turnstileSiteKey && (
-      <div class="cf-turnstile" id="cf-turnstile-container">
-        <input type="hidden" id="cf-turnstile" name="turnstile_token" />
-        <TurnstileWidget 
-          client:load 
-          onSuccess={(token: string) => {
-            const input = document.getElementById('cf-turnstile') as HTMLInputElement;
-            if (input) input.value = token;
-          }} 
-          onError={() => {
-            const input = document.getElementById('cf-turnstile') as HTMLInputElement;
-            if (input) input.value = '';
-          }}
-          onExpire={() => {
-            const input = document.getElementById('cf-turnstile') as HTMLInputElement;
-            if (input) input.value = '';
-          }}
-        />
-        <span id="cf-turnstile-error" class="cf-error" role="alert" hidden></span>
-      </div>
-    )}
 
     <div class="cf-footer">
       <p class="cf-note"><span aria-hidden="true">*</span> Champs obligatoires</p>

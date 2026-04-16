@@ -12,12 +12,8 @@ declare global {
     gtmLoaded?: boolean;
     __SB_URL__: string;
     __SB_KEY__: string;
-    __TURNSTILE_SITE_KEY?: string;
     __PARTYTOWN_CONFIG?: Record<string, unknown>;
     dataLayer?: unknown[];
-    turnstile?: {
-      render: (container: HTMLElement, options: Record<string, unknown>) => void;
-    };
   }
 
   interface WindowEventMap {
@@ -25,7 +21,6 @@ declare global {
       analytics: boolean;
     }>;
     'showCookieBanner': Event;
-    'turnstileReady': Event;
   }
 }
 export {};

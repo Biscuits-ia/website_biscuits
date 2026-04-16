@@ -9,12 +9,11 @@ interface ContactPayload {
   subject: string;
   message: string;
   type:    'contact';
-  turnstile_token?: string | null;
 }
 
 interface ApiErrorResponse {
   message?: string;
-  errors?: Partial<Record<'name' | 'email' | 'subject' | 'message' | 'turnstile_token', string[]>>;
+  errors?: Partial<Record<'name' | 'email' | 'subject' | 'message', string[]>>;
 }
 
 import { EMAIL_RE, MIN_MESSAGE, MAX_MESSAGE } from '@/lib/validation';
@@ -60,19 +59,8 @@ function initContactForm(): void {
     if (span) { span.textContent = ''; span.hidden = true; }
   }
 
-  function showTurnstileError(msg: string): void {
-    const span = document.getElementById('cf-turnstile-error');
-    if (span) { span.textContent = msg; span.hidden = false; }
-  }
-
-  function clearTurnstileError(): void {
-    const span = document.getElementById('cf-turnstile-error');
-    if (span) { span.textContent = ''; span.hidden = true; }
-  }
-
   function clearAllErrors(): void {
     FIELDS.forEach(clearFieldError);
-    clearTurnstileError();
   }
 
   function showGlobalError(msg: string): void {
@@ -128,14 +116,12 @@ function initContactForm(): void {
   }
 
   function readPayload(): ContactPayload {
-    const turnstileToken = (document.getElementById('cf-turnstile') as HTMLInputElement | null)?.value || null;
     return {
       name:    (document.getElementById('cf-name')  as HTMLInputElement).value.trim(),
       email:   (document.getElementById('cf-email') as HTMLInputElement).value.trim().toLowerCase(),
       subject: (document.getElementById('cf-sujet') as HTMLInputElement).value.trim(),
       message: elMessage.value.trim(),
       type:    'contact',
-      turnstile_token: turnstileToken,
     };
   }
 
@@ -159,12 +145,11 @@ function initContactForm(): void {
     }
 
     if (res.status === 422 && data.errors) {
-      const { name, email, subject, message, turnstile_token } = data.errors;
+      const { name, email, subject, message } = data.errors;
       if (name)    showFieldError('name',    name[0]);
       if (email)   showFieldError('email',   email[0]);
       if (subject) showFieldError('sujet',   subject[0]);
       if (message) showFieldError('message', message[0]);
-      if (turnstile_token) showTurnstileError(turnstile_token[0]);
       return;
     }
 

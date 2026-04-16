@@ -30,7 +30,6 @@ export const onRequest = defineMiddleware(async (context, next) => {
     'https://*.vercel.app',
     'https://vercel.live',
     'https://cdn.jsdelivr.net',
-    'https://challenges.cloudflare.com',
   ];
 
   const connectSrc = [
@@ -38,7 +37,6 @@ export const onRequest = defineMiddleware(async (context, next) => {
     'https://*.google-analytics.com',
     'https://analytics.google.com',
     'https://*.vercel-insights.com',
-    'https://*.cloudflare.com',
     'https://*.supabase.co',
     'https://cdn.jsdelivr.net',
   ];

@@ -138,9 +138,6 @@ const nonce = Astro.locals.nonce;
   </form>
 </div>
 
-<!-- Turnstile Script -->
-<script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
-
 <script nonce={nonce}>
   const API_URL = '/api/recruitment';
   const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -157,25 +154,18 @@ const nonce = Astro.locals.nonce;
   let turnstileWidgetId = null;
 
   // ─── Turnstile Helpers ──────────────────────────────────────────────────────
-  function initTurnstile() {
+  function renderTurnstile() {
     if (!TURNSTILE_SITE_KEY) {
-      console.warn('Turnstile site key non configurée');
       const container = document.getElementById('turnstile-container');
       if (container) container.style.display = 'none';
       return;
     }
     
     const widgetDiv = document.getElementById('turnstile-widget');
-    if (!widgetDiv) return;
-
-    // Attendre que le script Turnstile soit chargé
-    if (typeof turnstile === 'undefined') {
-      setTimeout(initTurnstile, 100);
-      return;
-    }
+    if (!widgetDiv || !globalThis.turnstile) return;
 
     try {
-      turnstileWidgetId = turnstile.render('#turnstile-widget', {
+      turnstileWidgetId = globalThis.turnstile.render('#turnstile-widget', {
         sitekey: TURNSTILE_SITE_KEY,
         theme: 'auto',
         callback: (token) => { 
@@ -192,6 +182,34 @@ const nonce = Astro.locals.nonce;
     } catch (e) {
       console.error('Erreur initialisation Turnstile:', e);
     }
+  }
+
+  function loadTurnstileSDK() {
+    if (!TURNSTILE_SITE_KEY) {
+      const container = document.getElementById('turnstile-container');
+      if (container) container.style.display = 'none';
+      return;
+    }
+
+    if (globalThis.turnstile) {
+      renderTurnstile();
+      return;
+    }
+
+    const script = document.createElement('script');
+    script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
+    script.async = true;
+    script.onload = () => renderTurnstile();
+    document.head.appendChild(script);
+  }
+
+  function initTurnstile() {
+    if (!TURNSTILE_SITE_KEY) {
+      const container = document.getElementById('turnstile-container');
+      if (container) container.style.display = 'none';
+      return;
+    }
+    loadTurnstileSDK();
   }
 
   function showTurnstileError(msg) {
@@ -338,15 +356,15 @@ const nonce = Astro.locals.nonce;
     clearAllErrors();
     turnstileToken = null;
     // Réinitialiser Turnstile
-    if (typeof turnstile !== 'undefined' && turnstileWidgetId !== null) {
-      turnstile.reset(turnstileWidgetId);
+    if (globalThis.turnstile && turnstileWidgetId !== null) {
+      globalThis.turnstile.reset(turnstileWidgetId);
     }
     confirmation.style.display = 'none';
     form.style.display         = 'block';
     form.scrollIntoView({ behavior: 'smooth', block: 'start' });
   });
 
-  // Initialiser Turnstile
+  // Initialiser Turnstile au chargement de la page
   document.addEventListener('astro:page-load', initTurnstile);
   document.addEventListener('DOMContentLoaded', initTurnstile);
 </script>

@@ -1,9 +1,12 @@
 import type { APIRoute } from 'astro';
 import { createSupabaseClient } from '@/lib/supabase';
 
+/**
+ * Normalise une URL en un origin (scheme + host)
+ * @see https://supabase.com/docs/guides/auth/redirect-urls
+ */
 function normalizeOrigin(value: string | URL | null | undefined): string | null {
   if (!value) return null;
-
   try {
     const parsed = value instanceof URL ? value : new URL(value);
     return parsed.origin.replace(/\/$/, '');
@@ -12,122 +15,115 @@ function normalizeOrigin(value: string | URL | null | undefined): string | null 
   }
 }
 
+/**
+ * Récupère l'origin depuis les headers X-Forwarded (Vercel, nginx, etc.)
+ * Utile pour les reverse proxies
+ */
 function getForwardedOrigin(request: Request): string | null {
-  const forwardedProto = request.headers.get('x-forwarded-proto');
-  const forwardedHost = request.headers.get('x-forwarded-host') ?? request.headers.get('host');
-
-  if (!forwardedProto || !forwardedHost) return null;
-
-  return normalizeOrigin(`${forwardedProto}://${forwardedHost}`);
+  const proto = request.headers.get('x-forwarded-proto');
+  const host = request.headers.get('x-forwarded-host') ?? request.headers.get('host');
+  if (!proto || !host) return null;
+  return normalizeOrigin(`${proto}://${host}`);
 }
 
+/**
+ * Détermine l'origin de redirection pour les emails Supabase Auth
+ * Suit la priorité recommandée par Supabase
+ * @see https://supabase.com/docs/guides/auth/redirect-urls#overview
+ */
 function getAuthRedirectOrigin(request: Request, url: URL, site: URL | undefined): string {
-  // En dev, force localhost:4321 (port standard Astro)
+  // Pour le développement local, utilise l'URL de la requête
   if (import.meta.env.DEV) {
-    return 'http://localhost:4321';
+    const origin = normalizeOrigin(url);
+    if (origin) return origin;
   }
 
-  const vercelProductionUrl = import.meta.env.VERCEL_PROJECT_PRODUCTION_URL
-    ? `https://${import.meta.env.VERCEL_PROJECT_PRODUCTION_URL}`
-    : null;
-  const vercelPreviewUrl = import.meta.env.VERCEL_URL
-    ? `https://${import.meta.env.VERCEL_URL}`
-    : null;
-
-  const forwarded = getForwardedOrigin(request);
-  const normalized_url = normalizeOrigin(url);
-  const normalized_site_env = normalizeOrigin(import.meta.env.SITE);
-  const normalized_site_ctx = normalizeOrigin(site);
-  const normalized_vercel_prod = normalizeOrigin(vercelProductionUrl);
-  const normalized_vercel_prev = normalizeOrigin(vercelPreviewUrl);
-
-  if (import.meta.env.DEV) {
-    console.log('[ORIGIN_DEBUG] getForwardedOrigin:', forwarded);
-    console.log('[ORIGIN_DEBUG] normalizeOrigin(url):', normalized_url);
-    console.log('[ORIGIN_DEBUG] import.meta.env.SITE:', normalized_site_env);
-    console.log('[ORIGIN_DEBUG] site context:', normalized_site_ctx);
-    console.log('[ORIGIN_DEBUG] VERCEL_PROJECT_PRODUCTION_URL:', normalized_vercel_prod);
-    console.log('[ORIGIN_DEBUG] VERCEL_URL:', normalized_vercel_prev);
-  }
-
+  // Production: priorité Vercel → Site config → Request URL
   const candidates = [
-    forwarded,
-    normalized_url,
-    normalized_site_env,
-    normalized_site_ctx,
-    normalized_vercel_prod,
-    normalized_vercel_prev,
+    // 1. Headers Vercel (X-Forwarded)
+    getForwardedOrigin(request),
+    // 2. Site URL configurée dans astro.config.mjs
+    normalizeOrigin(import.meta.env.SITE),
+    normalizeOrigin(site),
+    // 3. VERCEL_PROJECT_PRODUCTION_URL (production)
+    import.meta.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${import.meta.env.VERCEL_PROJECT_PRODUCTION_URL}` : null,
+    normalizeOrigin(import.meta.env.VERCEL_PROJECT_PRODUCTION_URL ?? undefined),
   ];
 
   const origin = candidates.find((candidate): candidate is string => Boolean(candidate));
-
   if (!origin) {
-    throw new Error('Impossible de déterminer l\'URL publique du site pour la réinitialisation de mot de passe.');
-  }
-
-  if (import.meta.env.DEV) {
-    console.log('[ORIGIN_DEBUG] ✓ Selected origin:', origin);
+    throw new Error(
+      'Impossible de déterminer l\'URL publique. ' +
+      'Assurez-vous que SITE est configuré dans astro.config.mjs ou VERCEL_PROJECT_PRODUCTION_URL en production.'
+    );
   }
 
   return origin;
 }
 
-function getResetPasswordErrorMessage(errorMessage: string, redirectUrl: string): string {
-  const normalizedMessage = errorMessage.toLowerCase();
+/**
+ * Classifie les erreurs Supabase Auth pour afficher un message approprié
+ */
+function getErrorMessage(errorMessage: string, redirectUrl: string): string {
+  const msg = errorMessage.toLowerCase();
 
-  if (
-    normalizedMessage.includes('redirect') ||
-    normalizedMessage.includes('site_url') ||
-    normalizedMessage.includes('site url') ||
-    normalizedMessage.includes('not allowed')
-  ) {
-    return `Configuration Supabase invalide : autorisez ${redirectUrl} dans Auth > URL Configuration.`;
+  // Erreur de configuration (redirectUrl non autorisée)
+  if (msg.includes('redirect') || msg.includes('site_url') || msg.includes('not allowed')) {
+    return (
+      `Configuration Auth invalide : autorisez cette URL dans Supabase → ` +
+      `Authentication → URL Configuration\n\nURL à ajouter : ${redirectUrl}`
+    );
   }
 
-  return 'Impossible d\'envoyer le lien. Veuillez réessayer.';
+  // Erreur d'email (pas de provider configuré)
+  if (msg.includes('email')) {
+    return (
+      `Service d'email non configuré. ` +
+      `Veuillez vérifier la configuration Supabase → Authentication → Email Provider.`
+    );
+  }
+
+  // Erreur générique
+  return 'Impossible d\'envoyer le lien. Veuillez réessayer plus tard.';
 }
 
 export const POST: APIRoute = async ({ request, cookies, url, site }) => {
-  const formData = await request.formData();
-  const email = formData.get('email') instanceof File ? null : (formData.get('email') as string | null);
-  if (!email) {
-    return new Response(
-      JSON.stringify({ error: 'Veuillez entrer votre adresse email.' }),
-      { status: 400, headers: { 'Content-Type': 'application/json' } },
-    );
-  }
+  try {
+    const formData = await request.formData();
+    const email = formData.get('email') instanceof File ? null : (formData.get('email') as string | null);
 
-  const supabase = createSupabaseClient({ request, cookies });
-
-  const origin = getAuthRedirectOrigin(request, url, site);
-  const redirectUrl = `${origin}/reinitialisation-mot-de-passe`;
-  console.log('[DEBUG] Demande reset password pour:', email);
-  console.log('[DEBUG] URL de redirection:', redirectUrl);
-
-  const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: redirectUrl,
-  });
-
-  if (error) {
-    console.error('[DEBUG] Erreur resetPasswordForEmail:', error.message);
-    
-    // Mode debug: retourne la réponse complète pour investigation
-    if (import.meta.env.DEV) {
-      console.log('[DEBUG] Réponse complète error:', error);
-      console.log('[DEBUG] Data:', data);
+    if (!email) {
+      return new Response(
+        JSON.stringify({ error: 'Veuillez entrer votre adresse email.' }),
+        { status: 400, headers: { 'Content-Type': 'application/json' } },
+      );
     }
-    
+
+    const supabase = createSupabaseClient({ request, cookies });
+    const origin = getAuthRedirectOrigin(request, url, site);
+    const redirectUrl = `${origin}/reinitialisation-mot-de-passe`;
+
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: redirectUrl,
+    });
+
+    if (error) {
+      console.error('[Auth] resetPasswordForEmail error:', error.message);
+      return new Response(
+        JSON.stringify({ error: getErrorMessage(error.message, redirectUrl) }),
+        { status: 400, headers: { 'Content-Type': 'application/json' } },
+      );
+    }
+
     return new Response(
-      JSON.stringify({ error: getResetPasswordErrorMessage(error.message, redirectUrl) }),
-      { status: 400, headers: { 'Content-Type': 'application/json' } },
+      JSON.stringify({ success: true, message: 'Email envoyé. Vérifiez votre boîte de réception.' }),
+      { status: 200, headers: { 'Content-Type': 'application/json' } },
+    );
+  } catch (err) {
+    console.error('[Auth] Password reset error:', err);
+    return new Response(
+      JSON.stringify({ error: 'Erreur serveur. Veuillez réessayer.' }),
+      { status: 500, headers: { 'Content-Type': 'application/json' } },
     );
   }
-
-  // Si on arrive ici, c'est que ça a marché
-  console.log('[DEBUG] ✅ Email sent successfully');
-
-  return new Response(
-    JSON.stringify({ success: true }),
-    { status: 200, headers: { 'Content-Type': 'application/json' } },
-  );
 };

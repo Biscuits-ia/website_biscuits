@@ -22,49 +22,20 @@ export async function sendEmail(params: EmailParams) {
 
   const templates: Record<EmailTemplate, { subject: string; html: string }> = {
     'password-reset': {
-      subject: 'Réinitialisation de votre mot de passe',
+      subject: 'Réinitialisation de mot de passe',
       html: `<!DOCTYPE html>
-<html lang="fr">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-</head>
-<body style="margin:0; padding:0; background:#f6f7fb; font-family:Arial, sans-serif;">
-<table width="100%" cellpadding="0" cellspacing="0" style="padding:40px 0;">
-  <tr>
-    <td align="center">
-      <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff; border-radius:12px; padding:40px;">
-        <tr>
-          <td align="center">
-            <h1 style="margin:0; color:#111; font-size:24px;">🍪 Biscuits IA</h1>
-            <h2 style="margin-top:20px; margin-bottom:0; color:#222; font-size:18px;">Réinitialisation de votre mot de passe</h2>
-            <p style="color:#555; line-height:1.6; margin-top:16px; font-size:14px;">
-              Vous avez demandé la réinitialisation de votre mot de passe sur <strong>Biscuits IA</strong>.
-            </p>
-            <p style="color:#555; margin-top:16px; font-size:14px;">
-              Cliquez sur le bouton ci-dessous pour choisir un nouveau mot de passe :
-            </p>
-            <table cellpadding="0" cellspacing="0" style="margin-top:28px;">
-              <tr>
-                <td>
-                  <a href="${confirmationUrl}" style="display:inline-block; background:#c4623a; color:#ffffff; padding:12px 32px; border-radius:6px; text-decoration:none; font-weight:600; font-size:14px;">
-                    Réinitialiser mon mot de passe
-                  </a>
-                </td>
-              </tr>
-            </table>
-            <p style="margin-top:32px; padding:16px; background:#fff3cd; border-left:4px solid #c4623a; border-radius:4px; font-size:13px; color:#664d00; line-height:1.6;">
-              <strong>⚠️ Attention :</strong><br>
-              Ce lien expire dans 24 heures. Si vous n'avez pas demandé cette réinitialisation, vous pouvez ignorer cet email.
-            </p>
-            <hr style="border:none; border-top:1px solid #e5e5e5; margin:32px 0;">
-            <p style="margin:0; font-size:11px; color:#999;">© 2026 Biscuits IA — IA accessible pour tous</p>
-          </td>
-        </tr>
-      </table>
-    </td>
-  </tr>
-</table>
+<html>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+<body style="font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; margin:0; padding:0; background:#f5f5f5;">
+<div style="max-width:600px; margin:20px auto; background:#fff; border-radius:8px; padding:40px; box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+<h1 style="margin:0 0 10px 0; font-size:20px; color:#333;">Réinitialiser votre mot de passe</h1>
+<p style="margin:0 0 20px 0; color:#666; line-height:1.6; font-size:14px;">Bonjour,</p>
+<p style="margin:0 0 20px 0; color:#666; line-height:1.6; font-size:14px;">Vous avez demandé une réinitialisation de mot de passe. Cliquez sur le lien ci-dessous pour choisir un nouveau mot de passe.</p>
+<table cellpadding="0" cellspacing="0"><tr><td style="padding:15px 0;"><a href="${confirmationUrl}" style="display:inline-block; background:#2563eb; color:#fff; padding:12px 28px; border-radius:6px; text-decoration:none; font-weight:600; font-size:14px;">Réinitialiser le mot de passe</a></td></tr></table>
+<p style="margin:20px 0 0 0; color:#888; font-size:12px;">Ce lien expire dans 24h. Si vous n'avez pas demandé ce changement, ignorez cet email.</p>
+<hr style="border:none; border-top:1px solid #ddd; margin:30px 0;">
+<p style="margin:0; color:#999; font-size:11px;">© 2026 Biscuits IA</p>
+</div>
 </body>
 </html>`,
     },

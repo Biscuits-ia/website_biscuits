@@ -1,9 +1,9 @@
 import type { APIRoute } from 'astro';
-import { createSupabaseClient } from '@/lib/supabase';
+import { Resend } from 'resend';
+import { sendEmail } from '@/lib/resend';
 
 /**
  * Normalise une URL en un origin (scheme + host)
- * @see https://supabase.com/docs/guides/auth/redirect-urls
  */
 function normalizeOrigin(value: string | URL | null | undefined): string | null {
   if (!value) return null;
@@ -17,7 +17,6 @@ function normalizeOrigin(value: string | URL | null | undefined): string | null 
 
 /**
  * Récupère l'origin depuis les headers X-Forwarded (Vercel, nginx, etc.)
- * Utile pour les reverse proxies
  */
 function getForwardedOrigin(request: Request): string | null {
   const proto = request.headers.get('x-forwarded-proto');
@@ -27,64 +26,76 @@ function getForwardedOrigin(request: Request): string | null {
 }
 
 /**
- * Détermine l'origin de redirection pour les emails Supabase Auth
- * Suit la priorité recommandée par Supabase
- * @see https://supabase.com/docs/guides/auth/redirect-urls#overview
+ * Détermine l'origin de redirection pour les emails
  */
 function getAuthRedirectOrigin(request: Request, url: URL, site: URL | undefined): string {
-  // Pour le développement local, utilise l'URL de la requête
   if (import.meta.env.DEV) {
     const origin = normalizeOrigin(url);
     if (origin) return origin;
   }
 
-  // Production: priorité Vercel → Site config → Request URL
   const candidates = [
-    // 1. Headers Vercel (X-Forwarded)
     getForwardedOrigin(request),
-    // 2. Site URL configurée dans astro.config.mjs
     normalizeOrigin(import.meta.env.SITE),
     normalizeOrigin(site),
-    // 3. VERCEL_PROJECT_PRODUCTION_URL (production)
     import.meta.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${import.meta.env.VERCEL_PROJECT_PRODUCTION_URL}` : null,
-    normalizeOrigin(import.meta.env.VERCEL_PROJECT_PRODUCTION_URL ?? undefined),
   ];
 
   const origin = candidates.find((candidate): candidate is string => Boolean(candidate));
   if (!origin) {
-    throw new Error(
-      'Impossible de déterminer l\'URL publique. ' +
-      'Assurez-vous que SITE est configuré dans astro.config.mjs ou VERCEL_PROJECT_PRODUCTION_URL en production.'
-    );
+    throw new Error('Impossible de déterminer l\'URL publique. Assurez-vous que SITE est configuré.');
   }
 
   return origin;
 }
 
 /**
- * Classifie les erreurs Supabase Auth pour afficher un message approprié
+ * Classifie les erreurs pour afficher un message approprié
  */
-function getErrorMessage(errorMessage: string, redirectUrl: string): string {
+function getErrorMessage(errorMessage: string): string {
   const msg = errorMessage.toLowerCase();
+  if (msg.includes('user')) return 'Cet email n\'existe pas dans notre système.';
+  if (msg.includes('email') || msg.includes('rate')) return 'Une erreur est survenue. Veuillez réessayer.';
+  return 'Impossible d\'envoyer le lien. Veuillez réessayer.';
+}
 
-  // Erreur de configuration (redirectUrl non autorisée)
-  if (msg.includes('redirect') || msg.includes('site_url') || msg.includes('not allowed')) {
-    return (
-      `Configuration Auth invalide : autorisez cette URL dans Supabase → ` +
-      `Authentication → URL Configuration\n\nURL à ajouter : ${redirectUrl}`
-    );
+/**
+ * Génère un token de récupération via l'API Supabase (sans envoyer d'email)
+ */
+async function generatePasswordRecoveryToken(email: string, redirectUrl: string): Promise<string | null> {
+  try {
+    // Appel direct à l'API Supabase pour obtenir un lien de récupération
+    const response = await fetch(`${import.meta.env.SUPABASE_URL}/auth/v1/recover`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        apikey: import.meta.env.SUPABASE_ANON_KEY,
+      },
+      body: JSON.stringify({
+        email,
+        redirect_to: redirectUrl,
+      }),
+    });
+
+    // Supabase retourne généralement le lien dans la réponse
+    const data = await response.json();
+    
+    // Si la réponse contient un lien direct, on l'utilise
+    if (data.recovery_link) {
+      return data.recovery_link;
+    }
+
+    // Sinon, on construit le lien manuellement avec les paramètres Supabase
+    // Le token est fourni par Supabase dans l'URL ou dans la réponse
+    if (data.token) {
+      return `${redirectUrl}?token=${data.token}&type=recovery`;
+    }
+
+    return null;
+  } catch (error) {
+    console.error('[Supabase] Recovery token generation error:', error);
+    return null;
   }
-
-  // Erreur d'email (pas de provider configuré)
-  if (msg.includes('email')) {
-    return (
-      `Service d'email non configuré. ` +
-      `Veuillez vérifier la configuration Supabase → Authentication → Email Provider.`
-    );
-  }
-
-  // Erreur générique
-  return 'Impossible d\'envoyer le lien. Veuillez réessayer plus tard.';
 }
 
 export const POST: APIRoute = async ({ request, cookies, url, site }) => {
@@ -99,26 +110,44 @@ export const POST: APIRoute = async ({ request, cookies, url, site }) => {
       );
     }
 
-    const supabase = createSupabaseClient({ request, cookies });
     const origin = getAuthRedirectOrigin(request, url, site);
     const redirectUrl = `${origin}/reinitialisation-mot-de-passe`;
 
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: redirectUrl,
-    });
+    // Génère le lien via Supabase
+    const recoveryLink = await generatePasswordRecoveryToken(email, redirectUrl);
 
-    if (error) {
-      console.error('[Auth] resetPasswordForEmail error:', error.message);
+    if (!recoveryLink) {
+      console.error('[Auth] Failed to generate recovery token');
       return new Response(
-        JSON.stringify({ error: getErrorMessage(error.message, redirectUrl) }),
-        { status: 400, headers: { 'Content-Type': 'application/json' } },
+        JSON.stringify({ error: 'Erreur lors de la génération du lien. Veuillez réessayer.' }),
+        { status: 500, headers: { 'Content-Type': 'application/json' } },
       );
     }
 
-    return new Response(
-      JSON.stringify({ success: true, message: 'Email envoyé. Vérifiez votre boîte de réception.' }),
-      { status: 200, headers: { 'Content-Type': 'application/json' } },
-    );
+    // Envoie l'email via Resend (meilleure délivrabilité avec SPF/DKIM/DMARC)
+    try {
+      await sendEmail({
+        template: 'password-reset',
+        email,
+        confirmationUrl: recoveryLink,
+      });
+
+      console.log(`[Email] Password reset email sent to ${email}`);
+
+      return new Response(
+        JSON.stringify({
+          success: true,
+          message: 'Email envoyé. Vérifiez votre boîte de réception (et les spams).',
+        }),
+        { status: 200, headers: { 'Content-Type': 'application/json' } },
+      );
+    } catch (emailError) {
+      console.error('[Resend] Email send error:', emailError);
+      return new Response(
+        JSON.stringify({ error: 'Erreur lors de l\'envoi de l\'email. Veuillez réessayer.' }),
+        { status: 500, headers: { 'Content-Type': 'application/json' } },
+      );
+    }
   } catch (err) {
     console.error('[Auth] Password reset error:', err);
     return new Response(

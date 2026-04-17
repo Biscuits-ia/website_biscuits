@@ -1,6 +1,5 @@
 import type { APIRoute } from 'astro';
 import { createSupabaseClient } from '@/lib/supabase';
-import { sendEmail } from '@/lib/resend';
 
 /**
  * Normalise une URL en un origin (scheme + host)
@@ -75,41 +74,22 @@ export const POST: APIRoute = async ({ request, cookies, url, site }) => {
     const origin = getAuthRedirectOrigin(request, url, site);
     const redirectUrl = `${origin}/reinitialisation-mot-de-passe`;
 
-    // Appel à Supabase pour générer le lien et envoyer l'email Supabase
-    // (Cela nous donne la certitude que le token est valide)
-    const { error: supabaseError } = await supabase.auth.resetPasswordForEmail(email, {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: redirectUrl,
     });
 
-    if (supabaseError) {
-      console.error('[Supabase] resetPasswordForEmail error:', supabaseError.message);
+    if (error) {
+      console.error('[Auth] resetPasswordForEmail error:', error.message);
       return new Response(
-        JSON.stringify({ error: getErrorMessage(supabaseError.message) }),
+        JSON.stringify({ error: getErrorMessage(error.message) }),
         { status: 400, headers: { 'Content-Type': 'application/json' } },
       );
-    }
-
-    // Maintenant envoie AUSSI un email via Resend avec un meilleur template
-    // Cela garantit que l'email arrive en boîte de réception (pas en spam)
-    try {
-      const recoveryLink = `${redirectUrl}?email=${encodeURIComponent(email)}`;
-      
-      await sendEmail({
-        template: 'password-reset',
-        email,
-        confirmationUrl: recoveryLink,
-      });
-
-      console.log(`[Email] Password reset email sent via Resend to ${email}`);
-    } catch (resendError) {
-      // L'email Supabase a déjà été envoyé, donc on log l'erreur Resend mais on ne fail pas
-      console.warn('[Resend] Email send warning (Supabase email was sent):', resendError);
     }
 
     return new Response(
       JSON.stringify({
         success: true,
-        message: 'Email envoyé. Vérifiez votre boîte de réception et les spams.',
+        message: 'Email envoyé. Vérifiez votre boîte de réception.',
       }),
       { status: 200, headers: { 'Content-Type': 'application/json' } },
     );

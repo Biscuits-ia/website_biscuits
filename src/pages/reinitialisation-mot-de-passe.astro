@@ -124,7 +124,7 @@ const nonce = Astro.locals.nonce;
   var segments     = ['s1','s2','s3','s4'].map(function(id) { return document.getElementById(id); });
   var colors       = ['#E24B4A','#E89A3C','#C4623A','#3D5A47'];
   var labels       = ['Trop court','Faible','Moyen','Fort'];
-  var sessionReady = false;
+  var recoveryTokens = null;
 
   // Parse le hash de l'URL pour extraire les tokens Supabase
   // Format: #access_token=...&refresh_token=...&type=recovery
@@ -142,8 +142,7 @@ const nonce = Astro.locals.nonce;
     return params;
   }
 
-  // Vérifie le token et établit la session côté serveur
-  async function initSession() {
+  function initRecoveryTokens() {
     var params = parseHash();
     if (!params.access_token || !params.refresh_token) {
       console.error('[DEBUG] Tokens manquants. URL complète:', window.location.href);
@@ -158,35 +157,15 @@ const nonce = Astro.locals.nonce;
       return;
     }
 
-    try {
-      var formData = new FormData();
-      formData.set('access_token', params.access_token);
-      formData.set('refresh_token', params.refresh_token);
+    recoveryTokens = {
+      accessToken: params.access_token,
+      refreshToken: params.refresh_token,
+    };
 
-      var res = await fetch('/auth/verifier-token-reinitialisation', {
-        method: 'POST',
-        body: formData,
-      });
-
-      var data = await res.json();
-
-      if (!res.ok) {
-        showMsg(data.error || 'Impossible de vérifier le lien. Il a peut-être expiré.', 'error');
-        btn.disabled = true;
-        return;
-      }
-
-      sessionReady = true;
-      // Nettoyer l'URL pour enlever le hash
-      history.replaceState(null, '', window.location.pathname);
-    } catch (e) {
-      showMsg('Une erreur est survenue lors de la vérification du lien.', 'error');
-      btn.disabled = true;
-    }
+    history.replaceState(null, '', window.location.pathname);
   }
 
-  // Initialiser la session au chargement de la page
-  initSession();
+  initRecoveryTokens();
 
   function showMsg(text, type) {
     if (!type) type = 'error';
@@ -246,8 +225,8 @@ const nonce = Astro.locals.nonce;
 
     msgEl.style.display = 'none';
     
-    if (!sessionReady) {
-      showMsg('Veuillez d\'abord attendre la vérification du lien.');
+    if (!recoveryTokens) {
+      showMsg('Lien invalide ou expiré. Veuillez demander un nouveau lien de réinitialisation.');
       return;
     }
     
@@ -268,6 +247,8 @@ const nonce = Astro.locals.nonce;
     try {
       var formData = new FormData();
       formData.set('password', password);
+      formData.set('access_token', recoveryTokens.accessToken);
+      formData.set('refresh_token', recoveryTokens.refreshToken);
 
       var res = await fetch('/auth/reinitialiser-mot-de-passe', {
         method: 'POST',

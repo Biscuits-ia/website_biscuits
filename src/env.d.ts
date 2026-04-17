@@ -10,6 +10,8 @@ interface ImportMetaEnv {
   readonly PROD: boolean;
   readonly DEV: boolean;
   readonly SITE: string;
+  readonly VERCEL_URL?: string;
+  readonly VERCEL_PROJECT_PRODUCTION_URL?: string;
 }
 
 interface ImportMeta {

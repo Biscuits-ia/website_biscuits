@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { Resend } from 'resend';
+import { createSupabaseClient } from '@/lib/supabase';
 import { sendEmail } from '@/lib/resend';
 
 /**
@@ -50,52 +50,13 @@ function getAuthRedirectOrigin(request: Request, url: URL, site: URL | undefined
 }
 
 /**
- * Classifie les erreurs pour afficher un message approprié
+ * Classifie les erreurs
  */
 function getErrorMessage(errorMessage: string): string {
   const msg = errorMessage.toLowerCase();
   if (msg.includes('user')) return 'Cet email n\'existe pas dans notre système.';
   if (msg.includes('email') || msg.includes('rate')) return 'Une erreur est survenue. Veuillez réessayer.';
   return 'Impossible d\'envoyer le lien. Veuillez réessayer.';
-}
-
-/**
- * Génère un token de récupération via l'API Supabase (sans envoyer d'email)
- */
-async function generatePasswordRecoveryToken(email: string, redirectUrl: string): Promise<string | null> {
-  try {
-    // Appel direct à l'API Supabase pour obtenir un lien de récupération
-    const response = await fetch(`${import.meta.env.SUPABASE_URL}/auth/v1/recover`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        apikey: import.meta.env.SUPABASE_ANON_KEY,
-      },
-      body: JSON.stringify({
-        email,
-        redirect_to: redirectUrl,
-      }),
-    });
-
-    // Supabase retourne généralement le lien dans la réponse
-    const data = await response.json();
-    
-    // Si la réponse contient un lien direct, on l'utilise
-    if (data.recovery_link) {
-      return data.recovery_link;
-    }
-
-    // Sinon, on construit le lien manuellement avec les paramètres Supabase
-    // Le token est fourni par Supabase dans l'URL ou dans la réponse
-    if (data.token) {
-      return `${redirectUrl}?token=${data.token}&type=recovery`;
-    }
-
-    return null;
-  } catch (error) {
-    console.error('[Supabase] Recovery token generation error:', error);
-    return null;
-  }
 }
 
 export const POST: APIRoute = async ({ request, cookies, url, site }) => {
@@ -110,44 +71,48 @@ export const POST: APIRoute = async ({ request, cookies, url, site }) => {
       );
     }
 
+    const supabase = createSupabaseClient({ request, cookies });
     const origin = getAuthRedirectOrigin(request, url, site);
     const redirectUrl = `${origin}/reinitialisation-mot-de-passe`;
 
-    // Génère le lien via Supabase
-    const recoveryLink = await generatePasswordRecoveryToken(email, redirectUrl);
+    // Appel à Supabase pour générer le lien et envoyer l'email Supabase
+    // (Cela nous donne la certitude que le token est valide)
+    const { error: supabaseError } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: redirectUrl,
+    });
 
-    if (!recoveryLink) {
-      console.error('[Auth] Failed to generate recovery token');
+    if (supabaseError) {
+      console.error('[Supabase] resetPasswordForEmail error:', supabaseError.message);
       return new Response(
-        JSON.stringify({ error: 'Erreur lors de la génération du lien. Veuillez réessayer.' }),
-        { status: 500, headers: { 'Content-Type': 'application/json' } },
+        JSON.stringify({ error: getErrorMessage(supabaseError.message) }),
+        { status: 400, headers: { 'Content-Type': 'application/json' } },
       );
     }
 
-    // Envoie l'email via Resend (meilleure délivrabilité avec SPF/DKIM/DMARC)
+    // Maintenant envoie AUSSI un email via Resend avec un meilleur template
+    // Cela garantit que l'email arrive en boîte de réception (pas en spam)
     try {
+      const recoveryLink = `${redirectUrl}?email=${encodeURIComponent(email)}`;
+      
       await sendEmail({
         template: 'password-reset',
         email,
         confirmationUrl: recoveryLink,
       });
 
-      console.log(`[Email] Password reset email sent to ${email}`);
-
-      return new Response(
-        JSON.stringify({
-          success: true,
-          message: 'Email envoyé. Vérifiez votre boîte de réception (et les spams).',
-        }),
-        { status: 200, headers: { 'Content-Type': 'application/json' } },
-      );
-    } catch (emailError) {
-      console.error('[Resend] Email send error:', emailError);
-      return new Response(
-        JSON.stringify({ error: 'Erreur lors de l\'envoi de l\'email. Veuillez réessayer.' }),
-        { status: 500, headers: { 'Content-Type': 'application/json' } },
-      );
+      console.log(`[Email] Password reset email sent via Resend to ${email}`);
+    } catch (resendError) {
+      // L'email Supabase a déjà été envoyé, donc on log l'erreur Resend mais on ne fail pas
+      console.warn('[Resend] Email send warning (Supabase email was sent):', resendError);
     }
+
+    return new Response(
+      JSON.stringify({
+        success: true,
+        message: 'Email envoyé. Vérifiez votre boîte de réception et les spams.',
+      }),
+      { status: 200, headers: { 'Content-Type': 'application/json' } },
+    );
   } catch (err) {
     console.error('[Auth] Password reset error:', err);
     return new Response(

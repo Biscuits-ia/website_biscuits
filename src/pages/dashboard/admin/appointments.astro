@@ -1,22 +1,15 @@
 ---
 import AdminAppointmentsDashboard from '@/components/AdminAppointmentsDashboard.astro';
 import DashboardLayout from '@/layouts/DashboardLayout.astro';
+import { requireAdmin } from '@/lib/auth';
 
-// Vérifier que l'utilisateur est authentifié et admin
-const { cookies } = Astro;
-const authToken = cookies.get('sb-access-token')?.value;
+const result = await requireAdmin(Astro);
+if (result instanceof Response) return result;
 
-if (!authToken) {
-  return Astro.redirect('/connexion');
-}
+const { user } = result;
+const userName = user.user_metadata?.full_name ?? user.email?.split('@')[0] ?? 'Admin';
 ---
 
-<DashboardLayout title="Gestion des rendez-vous">
+<DashboardLayout title="Gestion des rendez-vous" activePage="appointments" userName={userName} authResult={result}>
   <AdminAppointmentsDashboard />
 </DashboardLayout>
-
-<style>
-  :global(body) {
-    background: var(--color-bg-alt);
-  }
-</style>

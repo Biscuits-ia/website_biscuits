@@ -91,6 +91,7 @@ export async function requireAdmin(Astro: AstroGlobal): Promise<AuthResult | Res
   const { data: { user }, error } = await supabase.auth.getUser();
 
   if (error || !user) {
+    console.error('[requireAdmin] auth failed — error:', error?.message ?? 'no user');
     return Astro.redirect('/connexion');
   }
 

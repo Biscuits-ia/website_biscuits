@@ -4,7 +4,7 @@
 
 <div class="appointments-container">
   <div class="header">
-    <h1>Mes rendez-vous</h1>
+    <h1>Prendre un rendez-vous</h1>
     <p>Réservez un créneau disponible</p>
   </div>
 
@@ -23,12 +23,27 @@
   const myAppointmentsDiv = document.getElementById('my-appointments');
   const availableSlotsDiv = document.getElementById('available-slots');
 
-  function showError(msg, duration = 5000) {
+  interface Slot {
+    id: string;
+    start_time: string;
+    end_time: string;
+    is_available: boolean;
+  }
+
+  interface Appointment {
+    id: string;
+    slot_id: string;
+    status: string;
+    appointment_slots: Slot;
+  }
+
+  function showError(msg: string, duration = 5000) {
+    if (!errorContainer) return;
     errorContainer.innerHTML = `<div class="error-alert">❌ ${msg}</div>`;
     if (duration) setTimeout(() => (errorContainer.innerHTML = ''), duration);
   }
 
-  function formatSlot(slot) {
+  function formatSlot(slot: Slot) {
     const start = new Date(slot.start_time);
     const end = new Date(slot.end_time);
     return {
@@ -49,11 +64,12 @@
         credentials: 'include',
       });
       if (!slotsRes.ok) throw new Error('Erreur lors du chargement des créneaux');
-      const allSlots = await slotsRes.json();
+      const slotsRaw = await slotsRes.json();
+      const allSlots: Slot[] = Array.isArray(slotsRaw) ? slotsRaw : [];
 
       // Filtrer les créneaux futurs disponibles
       const now = new Date();
-      const availableSlots = allSlots.filter((slot) => {
+      const availableSlots = allSlots.filter((slot: Slot) => {
         const slotStart = new Date(slot.start_time);
         return slot.is_available && slotStart > now;
       });
@@ -63,10 +79,11 @@
         credentials: 'include',
       });
       if (!appRes.ok) throw new Error('Erreur lors du chargement des réservations');
-      const myAppointments = await appRes.json();
+      const myAppointmentsRaw = await appRes.json();
+      const myAppointments: Appointment[] = Array.isArray(myAppointmentsRaw) ? myAppointmentsRaw : [];
 
       // Marquer les créneaux réservés
-      const bookedSlotIds = new Set(myAppointments.map((a) => a.slot_id));
+      const bookedSlotIds = new Set<string>(myAppointments.map((a: Appointment) => a.slot_id));
 
       // Afficher mes réservations
       renderMyAppointments(myAppointments);
@@ -75,12 +92,15 @@
       renderAvailableSlots(availableSlots, bookedSlotIds);
     } catch (err) {
       showError(err instanceof Error ? err.message : 'Erreur inconnue', 0);
-      availableSlotsDiv.innerHTML =
-        '<div style="color: #dc2626; padding: 20px; text-align: center;">Erreur de chargement</div>';
+      if (availableSlotsDiv) {
+        availableSlotsDiv.innerHTML =
+          '<div style="color: #dc2626; padding: 20px; text-align: center;">Erreur de chargement</div>';
+      }
     }
   }
 
-  function renderMyAppointments(appointments) {
+  function renderMyAppointments(appointments: Appointment[]) {
+    if (!myAppointmentsDiv) return;
     if (appointments.length === 0) {
       myAppointmentsDiv.innerHTML = '';
       return;
@@ -91,21 +111,23 @@
       <div class="my-appointments">
         ${appointments
           .map(
-            (app) => `
+            (app: Appointment) => {
+              if (!app.appointment_slots) return '';
+              const slot = formatSlot(app.appointment_slots);
+              return `
           <div class="appointment-card status-${app.status}">
             <div class="appointment-info">
-              <div class="appointment-date">${formatSlot(app.appointment_slots).date}</div>
-              <div class="appointment-time">${formatSlot(app.appointment_slots).time}</div>
+              <div class="appointment-date">${slot.date}</div>
+              <div class="appointment-time">${slot.time}</div>
               <div class="appointment-status">
                 <span class="badge ${app.status === 'confirmed' ? 'badge-confirmed' : app.status === 'cancelled' ? 'badge-cancelled' : 'badge-pending'}">
                   ${app.status === 'confirmed' ? '✓ Confirmée' : app.status === 'cancelled' ? '✗ Annulée' : '⏳ En attente de confirmation'}
                 </span>
               </div>
             </div>
-            <button class="btn btn-danger btn-cancel" data-id="${app.id}">Annuler</button>
+            <button class="btn btn-danger btn-cancel" data-id="${app.id}" style="background-color:#fee2e2 !important;color:#7f1d1d !important;border:1px solid #fca5a5;">Annuler</button>
           </div>
-        `
-          )
+        `})
           .join('')}
       </div>
     `;
@@ -113,12 +135,13 @@
     myAppointmentsDiv.innerHTML = html;
 
     // Ajouter les event listeners
-    document.querySelectorAll('.btn-cancel').forEach((btn) => {
-      btn.addEventListener('click', () => cancelAppointment(btn.dataset.id));
+    document.querySelectorAll<HTMLButtonElement>('.btn-cancel').forEach((btn) => {
+      btn.addEventListener('click', () => cancelAppointment(btn.dataset.id || ''));
     });
   }
 
-  function renderAvailableSlots(slots, bookedSlotIds) {
+  function renderAvailableSlots(slots: Slot[], bookedSlotIds: Set<string>) {
+    if (!availableSlotsDiv) return;
     if (slots.length === 0) {
       availableSlotsDiv.innerHTML = `
         <h2>Créneaux disponibles</h2>
@@ -132,7 +155,7 @@
       <div class="slots-list">
         ${slots
           .map(
-            (slot) => `
+            (slot: Slot) => `
           <div class="slot-card ${bookedSlotIds.has(slot.id) ? 'booked' : ''}">
             <div class="slot-info">
               <div class="slot-date">${formatSlot(slot).date}</div>
@@ -141,6 +164,7 @@
             <button 
               class="btn btn-book" 
               data-id="${slot.id}"
+              style="${bookedSlotIds.has(slot.id) ? 'background-color:#16a34a !important;color:#ffffff !important;border-color:#16a34a;box-shadow:none;opacity:0.8;cursor:not-allowed;' : 'background-color:#000000 !important;color:#ffffff !important;border:2px solid #000;box-shadow:3px 3px 0 #000;font-weight:800;'}"
               ${bookedSlotIds.has(slot.id) ? 'disabled' : ''}
             >
               ${bookedSlotIds.has(slot.id) ? '✓ Réservé' : 'Réserver'}
@@ -155,12 +179,12 @@
     availableSlotsDiv.innerHTML = html;
 
     // Ajouter les event listeners
-    document.querySelectorAll('.btn-book:not(:disabled)').forEach((btn) => {
-      btn.addEventListener('click', () => bookSlot(btn.dataset.id));
+    document.querySelectorAll<HTMLButtonElement>('.btn-book:not(:disabled)').forEach((btn) => {
+      btn.addEventListener('click', () => bookSlot(btn.dataset.id || ''));
     });
   }
 
-  async function cancelAppointment(id) {
+  async function cancelAppointment(id: string) {
     if (!confirm('Annuler cette réservation ?')) return;
 
     try {
@@ -177,7 +201,7 @@
     }
   }
 
-  async function bookSlot(slotId) {
+  async function bookSlot(slotId: string) {
     try {
       const res = await fetch('/api/user-appointments', {
         method: 'POST',
@@ -342,8 +366,25 @@
   }
 
   .btn-book {
-    background-color: #10b981;
-    color: white;
+    background-color: #000;
+    color: #fff ;
+    border: 2px solid #000;
+    box-shadow: 3px 3px 0 #000;
+    font-weight: 800;
+  }
+
+  .btn-book:hover:not(:disabled) {
+    opacity: 1;
+    transform: translate(-1px, -1px);
+    box-shadow: 4px 4px 0 #000;
+  }
+
+  .btn-book:disabled {
+    background-color: #16a34a;
+    color: #fff !important;
+    border-color: #16a34a;
+    box-shadow: none;
+    opacity: 1;
   }
 
   .btn-danger {

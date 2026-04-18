@@ -98,6 +98,7 @@ export async function requireAdmin(Astro: AstroGlobal): Promise<AuthResult | Res
   const role = await fetchRoleSecure(user.id);
 
   if (role !== 'admin') {
+    console.error('[requireAdmin] role check failed — userId:', user.id, '— role:', role);
     // Ne pas révéler l'existence du dashboard admin — redirection neutre
     return Astro.redirect('/dashboard/user');
   }

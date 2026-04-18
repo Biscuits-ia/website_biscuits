@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { createSupabaseClient } from '@/lib/supabase';
+import { createClient } from '@supabase/supabase-js';
 
 export const POST: APIRoute = async ({ request, cookies }) => {
   const formData = await request.formData();
@@ -28,33 +28,56 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     );
   }
 
-  const supabase = createSupabaseClient({ request, cookies });
+  try {
+    // Créer un client Supabase avec les tokens de récupération
+    const supabaseUrl = import.meta.env.SUPABASE_URL;
+    const supabaseKey = import.meta.env.SUPABASE_ANON_KEY;
 
-  const { error: sessionError } = await supabase.auth.setSession({
-    access_token: accessToken,
-    refresh_token: refreshToken,
-  });
+    if (!supabaseUrl || !supabaseKey) {
+      throw new Error('Configuration Supabase manquante');
+    }
 
-  if (sessionError) {
-    console.error('Erreur setSession reset password:', sessionError.message);
+    const supabase = createClient(supabaseUrl, supabaseKey, {
+      auth: {
+        persistSession: false,
+      },
+    });
+
+    // Établir la session avec les tokens de récupération
+    const { error: sessionError } = await supabase.auth.setSession({
+      access_token: accessToken,
+      refresh_token: refreshToken,
+    });
+
+    if (sessionError) {
+      console.error('Erreur setSession reset password:', sessionError.message);
+      return new Response(
+        JSON.stringify({ error: 'Lien invalide ou expiré. Veuillez demander un nouveau lien de réinitialisation.' }),
+        { status: 400, headers: { 'Content-Type': 'application/json' } },
+      );
+    }
+
+    // Mettre à jour le mot de passe
+    // Avec un token de récupération, updateUser() ne devrait pas demander l'ancien mot de passe
+    const { error } = await supabase.auth.updateUser({ password });
+
+    if (error) {
+      console.error('Erreur mise à jour mot de passe:', error.message);
+      return new Response(
+        JSON.stringify({ error: error.message || 'Impossible de mettre à jour le mot de passe.' }),
+        { status: 400, headers: { 'Content-Type': 'application/json' } },
+      );
+    }
+
     return new Response(
-      JSON.stringify({ error: 'Lien invalide ou expiré. Veuillez demander un nouveau lien de réinitialisation.' }),
-      { status: 400, headers: { 'Content-Type': 'application/json' } },
+      JSON.stringify({ success: true }),
+      { status: 200, headers: { 'Content-Type': 'application/json' } },
+    );
+  } catch (err) {
+    console.error('Erreur serveur reset password:', err);
+    return new Response(
+      JSON.stringify({ error: 'Erreur serveur. Veuillez réessayer.' }),
+      { status: 500, headers: { 'Content-Type': 'application/json' } },
     );
   }
-
-  const { error } = await supabase.auth.updateUser({ password });
-
-  if (error) {
-    console.error('Erreur mise à jour mot de passe:', error.message);
-    return new Response(
-      JSON.stringify({ error: error.message || 'Impossible de mettre à jour le mot de passe.' }),
-      { status: 400, headers: { 'Content-Type': 'application/json' } },
-    );
-  }
-
-  return new Response(
-    JSON.stringify({ success: true }),
-    { status: 200, headers: { 'Content-Type': 'application/json' } },
-  );
 };

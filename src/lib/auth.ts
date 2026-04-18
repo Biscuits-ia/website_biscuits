@@ -56,7 +56,9 @@ export async function fetchRoleSecure(userId: string): Promise<UserRole | null> 
  * - Le rôle est lu via le client service_role, insensible aux RLS policies.
  */
 export async function requireAuth(Astro: AstroGlobal): Promise<AuthResult | Response> {
-  const supabase = createSupabaseClient(Astro);
+  // Réutiliser le client stocké par le middleware (même instance = même session
+  // en mémoire, avec le token rafraîchi si nécessaire), sinon en créer un.
+  const supabase = Astro.locals.supabase ?? createSupabaseClient(Astro);
 
   const { data: { user }, error } = await supabase.auth.getUser();
 
@@ -84,7 +86,7 @@ export async function requireAuth(Astro: AstroGlobal): Promise<AuthResult | Resp
  *   `role: admin` forgé ne passe pas, seule la BDD fait foi.
  */
 export async function requireAdmin(Astro: AstroGlobal): Promise<AuthResult | Response> {
-  const supabase = createSupabaseClient(Astro);
+  const supabase = Astro.locals.supabase ?? createSupabaseClient(Astro);
 
   const { data: { user }, error } = await supabase.auth.getUser();
 

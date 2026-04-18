@@ -21,5 +21,6 @@ interface ImportMeta {
 declare namespace App {
   interface Locals {
     nonce: string;
+    supabase: import('@supabase/supabase-js').SupabaseClient;
   }
 }

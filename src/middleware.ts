@@ -21,12 +21,13 @@ export const onRequest = defineMiddleware(async (context, next) => {
   const nonce = crypto.randomBytes(16).toString('base64');
   context.locals.nonce = nonce;
 
-  // Rafraîchit la session Supabase si le token d'accès est expiré.
-  // Sans ça, getUser() échoue après ~1h et renvoie l'utilisateur sur /connexion.
-  {
-    const supabase = createSupabaseClient(context);
-    await supabase.auth.getUser();
-  }
+  // Crée le client Supabase et le stocke dans locals pour que requireAuth()
+  // puisse le réutiliser dans la même requête. Cela garantit que si le token
+  // est rafraîchi ici, le même client (avec le nouveau token en mémoire) est
+  // utilisé dans les pages — et non un nouveau client avec l'ancien cookie.
+  const supabase = createSupabaseClient(context);
+  await supabase.auth.getUser(); // déclenche le refresh si nécessaire
+  context.locals.supabase = supabase;
 
   const response = await next();
 

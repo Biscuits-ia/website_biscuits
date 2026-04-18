@@ -1,6 +1,7 @@
 // src/middleware.ts
 import { defineMiddleware } from 'astro:middleware';
 import { rateLimit } from './lib/rateLimit';
+import { createSupabaseClient } from './lib/supabase';
 import crypto from 'node:crypto';
 
 export const onRequest = defineMiddleware(async (context, next) => {
@@ -19,6 +20,13 @@ export const onRequest = defineMiddleware(async (context, next) => {
   // Generate a per-request CSP nonce
   const nonce = crypto.randomBytes(16).toString('base64');
   context.locals.nonce = nonce;
+
+  // Rafraîchit la session Supabase si le token d'accès est expiré.
+  // Sans ça, getUser() échoue après ~1h et renvoie l'utilisateur sur /connexion.
+  {
+    const supabase = createSupabaseClient(context);
+    await supabase.auth.getUser();
+  }
 
   const response = await next();
 

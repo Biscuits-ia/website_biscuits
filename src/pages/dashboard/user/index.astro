@@ -12,21 +12,39 @@ const userName  = user.user_metadata?.full_name ?? userEmail.split('@')[0];
 
 // ── Statistiques personnelles ─────────────────────────────────────
 const [
-  { count: totalReports },
-  { count: analyzedReports },
-  { count: pendingReports },
-  { data: recentActivity },
-  { data: monthlyStats },
+  { count: totalDemandes },
+  { count: totalAteliers },
+  { count: totalAppointments },
+  { data: recentDemandesRaw },
 ] = await Promise.all([
-  supabase.from('reports').select('*', { count: 'exact', head: true }).eq('user_id', userId),
-  supabase.from('reports').select('*', { count: 'exact', head: true }).eq('user_id', userId).eq('status', 'analyzed'),
-  supabase.from('reports').select('*', { count: 'exact', head: true }).eq('user_id', userId).eq('status', 'pending'),
-  supabase.from('activity_logs').select('event, created_at, metadata').eq('user_id', userId).order('created_at', { ascending: false }).limit(10),
-  supabase.from('reports').select('created_at').eq('user_id', userId).gte('created_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()),
+  supabase.from('requests').select('*', { count: 'exact', head: true }).eq('user_id', userId),
+  supabase.from('workshop_registrations').select('*', { count: 'exact', head: true }).eq('user_id', userId),
+  supabase.from('volunteer_appointments').select('*', { count: 'exact', head: true }).eq('user_id', userId),
+  supabase.from('requests').select('subject, status, created_at').eq('user_id', userId).order('created_at', { ascending: false }).limit(5),
 ]);
 
-const successRate = totalReports ? Math.round(((analyzedReports ?? 0) / (totalReports ?? 1)) * 100) : 0;
-const thisMonth = monthlyStats?.length ?? 0;
+// Pré-calcul pour éviter les TypeScript generics dans le template
+const statusDotClass: Record<string, string> = {
+  pending:     'warn',
+  in_progress: 'info',
+  resolved:    'ok',
+};
+
+interface DemandeRow {
+  subject:    string;
+  status:     string;
+  created_at: string;
+  dateLabel:  string;
+  dotClass:   string;
+}
+
+const recentDemandes: DemandeRow[] = (recentDemandesRaw ?? []).map((d: any): DemandeRow => ({
+  subject:    d.subject,
+  status:     d.status,
+  created_at: d.created_at,
+  dateLabel:  new Date(d.created_at).toLocaleDateString('fr-FR'),
+  dotClass:   statusDotClass[d.status] ?? 'warn',
+}));
 ---
 
 <DashboardLayout title="Vue d'ensemble" role="user" activePage="overview" userName={userName} userEmail={userEmail} authResult={result}>
@@ -43,55 +61,43 @@ const thisMonth = monthlyStats?.length ?? 0;
   <!-- Stats cards -->
   <div class="stats-grid mb-6">
     <div class="stat-card">
-      <div class="stat-label">Vos demandes</div>
-      <div class="stat-value">{totalReports ?? 0}</div>
+      <div class="stat-label">Mes demandes</div>
+      <div class="stat-value">{totalDemandes ?? 0}</div>
     </div>
     <div class="stat-card">
-      <div class="stat-label">Ressource Disponible</div>
-      <div class="stat-value">{analyzedReports ?? 0}</div>
+      <div class="stat-label">Ateliers inscrits</div>
+      <div class="stat-value">{totalAteliers ?? 0}</div>
     </div>
     <div class="stat-card">
-      <div class="stat-label">Ateliers disponibles</div>
-      <div class="stat-value">{pendingReports ?? 0}</div>
-      </div>
+      <div class="stat-label">Rendez-vous</div>
+      <div class="stat-value">{totalAppointments ?? 0}</div>
     </div>
   </div>
 
   <!-- Activité récente -->
   <div class="card">
     <div class="card-header">
-      <span class="card-title">Activité récente</span>
-      <a href="/dashboard/user/activity" class="btn btn-ghost text-xs px-2.5 py-1.5">
+      <span class="card-title">Dernières demandes</span>
+      <a href="/dashboard/user/demandes" class="btn btn-ghost text-xs px-2.5 py-1.5">
         Tout voir →
       </a>
     </div>
 
-    {recentActivity && recentActivity.length > 0 ? (
+    {recentDemandes.length > 0 ? (
       <div class="timeline">
-        {recentActivity.map((item: any) => {
-          const date = new Date(item.created_at);
-          const evtType = item.event?.toLowerCase() ?? '';
-          const dotClass = evtType.includes('error') ? 'err'
-            : evtType.includes('analyz') ? 'ok'
-            : evtType.includes('submit') ? 'info'
-            : 'warn';
-          return (
-            <div class="timeline-item">
-              <div class={`timeline-dot ${dotClass}`} />
-              <div class="timeline-body">
-                <div class="timeline-event">{item.event}</div>
-                <div class="timeline-meta">
-                  {date.toLocaleDateString('fr-FR')} à {date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
-                  {item.metadata?.ip ? ` · ${item.metadata.ip}` : ''}
-                </div>
-              </div>
+        {recentDemandes.map((item) => (
+          <div class="timeline-item">
+            <div class={`timeline-dot ${item.dotClass}`} />
+            <div class="timeline-body">
+              <div class="timeline-event">{item.subject}</div>
+              <div class="timeline-meta">{item.dateLabel}</div>
             </div>
-          );
-        })}
+          </div>
+        ))}
       </div>
     ) : (
       <p class="text-muted text-xl py-4">
-        Aucune
+        Aucune demande pour le moment.
       </p>
     )}
   </div>

@@ -41,10 +41,7 @@ export const GET: APIRoute = async ({ url, request, cookies }) => {
   }
 
   // Incrémente le compteur de téléchargements
-  await adminDb
-    .from('resources')
-    .update({ downloads: adminDb.rpc('increment_downloads', { row_id: resourceId }) })
-    .eq('id', resourceId);
+  await adminDb.rpc('increment_downloads', { row_id: resourceId });
 
   // Récupère l'utilisateur connecté s'il y en a un (optionnel — anonyme autorisé)
   let userId: string | null = null;

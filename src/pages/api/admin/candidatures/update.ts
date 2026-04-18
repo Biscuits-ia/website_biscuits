@@ -14,7 +14,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   const form = await request.formData();
   const submissionId = form.get('submission_id') as string | null;
   const status       = form.get('status')        as string | null;
-  const adminNotes   = form.get('admin_notes')   as string | null;
+  const adminNotes   = (form.get('admin_notes') as string | null)?.slice(0, 2000) ?? null;
 
   if (!isValidUUID(submissionId)) return redirect('/dashboard/admin/candidatures?error=' + encodeURIComponent('ID invalide'));
 

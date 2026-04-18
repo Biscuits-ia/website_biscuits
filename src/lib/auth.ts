@@ -1,8 +1,7 @@
 // src/lib/auth.ts
 import { createSupabaseClient, createSupabaseAdminClient } from './supabase';
 import type { AstroGlobal } from 'astro';
-import type { SupabaseClient } from '@supabase/supabase-js';
-import type { User, Session } from '@supabase/supabase-js';
+import type { SupabaseClient, User, Session } from '@supabase/supabase-js';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 

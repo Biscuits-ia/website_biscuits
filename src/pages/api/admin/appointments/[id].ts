@@ -1,33 +1,31 @@
 import type { APIRoute } from 'astro';
 import { createSupabaseClient } from '@/lib/supabase';
+import { fetchRoleSecure } from '@/lib/auth';
+import { isValidUUID } from '@/lib/validation';
+
+const JSON_HEADERS = { 'Content-Type': 'application/json' } as const;
 
 export const PATCH: APIRoute = async ({ params, request, cookies }) => {
   try {
     const supabase = createSupabaseClient({ request, cookies });
-    
-    // Vérifier que l'utilisateur est admin
+
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) {
-      return new Response(JSON.stringify({ error: 'Non authentifié' }), { status: 401 });
+      return new Response(JSON.stringify({ error: 'Non authentifié' }), { status: 401, headers: JSON_HEADERS });
     }
 
-    const { data: profile, error: profileError } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
-
-    if (profileError || profile?.role !== 'admin') {
-      return new Response(JSON.stringify({ error: 'Non autorisé' }), { status: 403 });
+    const role = await fetchRoleSecure(user.id);
+    if (role !== 'admin') {
+      return new Response(JSON.stringify({ error: 'Non autorisé' }), { status: 403, headers: JSON_HEADERS });
     }
 
-    const body = await request.json() as { status: 'confirmed' | 'cancelled' };
-    
-    if (!body.status || !['confirmed', 'cancelled'].includes(body.status)) {
-      return new Response(
-        JSON.stringify({ error: 'Statut invalide' }),
-        { status: 400 }
-      );
+    if (!isValidUUID(params.id)) {
+      return new Response(JSON.stringify({ error: 'ID invalide' }), { status: 400, headers: JSON_HEADERS });
+    }
+
+    const body = await request.json() as { status?: unknown };
+    if (!body.status || !['confirmed', 'cancelled'].includes(body.status as string)) {
+      return new Response(JSON.stringify({ error: 'Statut invalide' }), { status: 400, headers: JSON_HEADERS });
     }
 
     const { data, error } = await supabase
@@ -39,12 +37,9 @@ export const PATCH: APIRoute = async ({ params, request, cookies }) => {
 
     if (error) throw error;
 
-    return new Response(JSON.stringify(data), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    return new Response(JSON.stringify(data), { status: 200, headers: JSON_HEADERS });
   } catch (err) {
-    console.error('Erreur:', err);
-    return new Response(JSON.stringify({ error: 'Erreur' }), { status: 500 });
+    console.error('[admin/appointments/[id]] PATCH error:', err);
+    return new Response(JSON.stringify({ error: 'Erreur serveur' }), { status: 500, headers: JSON_HEADERS });
   }
 };

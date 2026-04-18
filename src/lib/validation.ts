@@ -11,3 +11,15 @@ const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
 export function isValidUUID(value: unknown): value is string {
   return typeof value === 'string' && UUID_RE.test(value);
 }
+
+/** Valide une URL et s'assure qu'elle utilise http(s) uniquement. */
+export function validateHttpUrl(value: unknown): string | null {
+  if (typeof value !== 'string' || !value.trim()) return null;
+  try {
+    const parsed = new URL(value.trim());
+    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return null;
+    return parsed.href;
+  } catch {
+    return null;
+  }
+}

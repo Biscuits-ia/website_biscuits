@@ -57,6 +57,9 @@ export default defineConfig({
 
   vite: {
     plugins: [tailwindcss()],
+    resolve: {
+      extensions: ['.tsx', '.ts', '.jsx', '.js', '.json'],
+    },
   },
 
   output: 'server',

@@ -7,10 +7,12 @@ export const onRequest = defineMiddleware(async (context, next) => {
   const { url } = context;
   const isDev = import.meta.env.DEV;
 
-  // Rate-limit API routes only
-  if (url.pathname.startsWith('/api/')) {
+  // Rate-limit API routes and auth routes
+  if (url.pathname.startsWith('/api/') || url.pathname.startsWith('/auth/')) {
     const ip = context.clientAddress ?? context.request.headers.get('x-forwarded-for') ?? 'unknown';
-    const blocked = rateLimit(ip, 20, 60_000); // 20 requests / minute per IP
+    // Auth routes get a stricter limit to prevent brute-force attacks
+    const isAuth = url.pathname.startsWith('/auth/');
+    const blocked = rateLimit(ip, isAuth ? 10 : 20, 60_000);
     if (blocked) return blocked;
   }
 

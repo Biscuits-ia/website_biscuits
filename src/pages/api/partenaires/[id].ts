@@ -1,5 +1,33 @@
 import type { APIRoute } from 'astro';
 import { createSupabaseClient } from '@/lib/supabase';
+import { validateHttpUrl } from '@/lib/validation';
+
+/** Construit le payload de mise à jour des partenaires avec whitelist + validation. */
+function buildPartnerUpdatePayload(
+  body: Record<string, unknown>,
+): { payload: Record<string, unknown> | null; error: string | null } {
+  const logoUrl = body.logo_url === undefined ? undefined : validateHttpUrl(body.logo_url);
+  const websiteUrl = body.website_url === undefined ? undefined : validateHttpUrl(body.website_url);
+
+  if (body.logo_url !== undefined && logoUrl === null) {
+    return { payload: null, error: 'logo_url doit être une URL http(s) valide' };
+  }
+  if (body.website_url !== undefined && websiteUrl === null) {
+    return { payload: null, error: 'website_url doit être une URL http(s) valide' };
+  }
+
+  const payload: Record<string, unknown> = { updated_at: new Date().toISOString() };
+  if (typeof body.name === 'string') payload.name = body.name.slice(0, 200);
+  if (typeof body.description === 'string') payload.description = body.description.slice(0, 2000);
+  if (typeof body.collaboration === 'string') payload.collaboration = body.collaboration.slice(0, 2000);
+  if (logoUrl !== undefined) payload.logo_url = logoUrl;
+  if (websiteUrl !== undefined) payload.website_url = websiteUrl;
+  if (typeof body.expertise === 'string') payload.expertise = body.expertise.slice(0, 500);
+  if (typeof body.display_order === 'number') payload.display_order = body.display_order;
+  if (typeof body.is_published === 'boolean') payload.is_published = body.is_published;
+
+  return { payload, error: null };
+}
 
 export const GET: APIRoute = async ({ params, request, cookies }) => {
   try {
@@ -55,6 +83,7 @@ export const GET: APIRoute = async ({ params, request, cookies }) => {
       { status: 200, headers: { 'Content-Type': 'application/json' } }
     );
   } catch (err) {
+    console.error('[partenaires GET]', err);
     return new Response(
       JSON.stringify({ error: 'Internal server error' }),
       { status: 500, headers: { 'Content-Type': 'application/json' } }
@@ -97,21 +126,19 @@ export const PUT: APIRoute = async ({ params, request, cookies }) => {
       );
     }
 
-    const body = await request.json();
+    const body = await request.json() as Record<string, unknown>;
+
+    const { payload: updatePayload, error: validationError } = buildPartnerUpdatePayload(body);
+    if (validationError || !updatePayload) {
+      return new Response(
+        JSON.stringify({ error: validationError }),
+        { status: 400, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
 
     const { data, error } = await supabase
       .from('partners')
-      .update({
-        name: body.name,
-        description: body.description,
-        collaboration: body.collaboration,
-        logo_url: body.logo_url,
-        website_url: body.website_url,
-        expertise: body.expertise,
-        display_order: body.display_order,
-        is_published: body.is_published,
-        updated_at: new Date().toISOString(),
-      })
+      .update(updatePayload)
       .eq('id', id)
       .select();
 
@@ -127,6 +154,7 @@ export const PUT: APIRoute = async ({ params, request, cookies }) => {
       { status: 200, headers: { 'Content-Type': 'application/json' } }
     );
   } catch (err) {
+    console.error('[partenaires PUT]', err);
     return new Response(
       JSON.stringify({ error: 'Internal server error' }),
       { status: 500, headers: { 'Content-Type': 'application/json' } }
@@ -186,6 +214,7 @@ export const DELETE: APIRoute = async ({ params, request, cookies }) => {
       { status: 200, headers: { 'Content-Type': 'application/json' } }
     );
   } catch (err) {
+    console.error('[partenaires DELETE]', err);
     return new Response(
       JSON.stringify({ error: 'Internal server error' }),
       { status: 500, headers: { 'Content-Type': 'application/json' } }

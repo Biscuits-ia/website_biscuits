@@ -14,7 +14,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   const form = await request.formData();
   const requestId  = form.get('request_id')  as string | null;
   const status     = form.get('status')      as string | null;
-  const adminReply = form.get('admin_reply') as string | null;
+  const adminReply = (form.get('admin_reply') as string | null)?.slice(0, 5000) ?? null;
 
   if (!isValidUUID(requestId)) return redirect('/dashboard/admin/demandes?error=' + encodeURIComponent('ID invalide'));
 

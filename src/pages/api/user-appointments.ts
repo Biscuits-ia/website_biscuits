@@ -1,5 +1,8 @@
 import type { APIRoute } from 'astro';
 import { createSupabaseClient } from '@/lib/supabase';
+import { isValidUUID } from '@/lib/validation';
+
+const MAX_NOTES = 1000;
 
 export const GET: APIRoute = async ({ request, cookies }) => {
   try {
@@ -42,8 +45,12 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     const body = await request.json();
     const { slot_id } = body;
 
-    if (!slot_id) {
-      return new Response(JSON.stringify({ error: 'slot_id requis' }), { status: 400 });
+    if (!isValidUUID(slot_id)) {
+      return new Response(JSON.stringify({ error: 'slot_id invalide' }), { status: 400 });
+    }
+
+    if (body.notes && typeof body.notes === 'string' && body.notes.length > MAX_NOTES) {
+      return new Response(JSON.stringify({ error: `Notes trop longues (max ${MAX_NOTES} caractères)` }), { status: 400 });
     }
 
     // Vérifier que le créneau existe et est disponible

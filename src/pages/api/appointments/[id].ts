@@ -1,5 +1,7 @@
 import type { APIRoute } from 'astro';
 import { createSupabaseClient } from '@/lib/supabase';
+import { fetchRoleSecure } from '@/lib/auth';
+import { isValidUUID } from '@/lib/validation';
 
 /**
  * PUT /api/appointments/{id}
@@ -18,6 +20,7 @@ export const PUT: APIRoute = async ({ params, request, cookies }) => {
     }
 
     const body = await request.json() as {
+      token?: string;
       selected_date?: string;
       selected_timezone?: string;
       status?: string;
@@ -53,6 +56,15 @@ export const PUT: APIRoute = async ({ params, request, cookies }) => {
       return new Response(
         JSON.stringify({ error: 'Ce rendez-vous a déjà été confirmé' }),
         { status: 410, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Vérifier le token de sécurité (requis pour éviter l'IDOR)
+    const bodyToken = typeof body.token === 'string' ? body.token.trim() : null;
+    if (!bodyToken || bodyToken !== existingAppt.token) {
+      return new Response(
+        JSON.stringify({ error: 'Token de sécurité invalide ou manquant' }),
+        { status: 403, headers: { 'Content-Type': 'application/json' } }
       );
     }
 
@@ -105,32 +117,25 @@ export const DELETE: APIRoute = async ({ params, request, cookies }) => {
     const supabase = createSupabaseClient({ request, cookies });
     const { id } = params;
 
-    if (!id) {
+    if (!isValidUUID(id)) {
       return new Response(
-        JSON.stringify({ error: 'ID requis' }),
+        JSON.stringify({ error: 'ID invalide' }),
         { status: 400, headers: { 'Content-Type': 'application/json' } }
       );
     }
 
-    // Vérifier que l'utilisateur est authentifié et admin
     const { data: { user }, error: authError } = await supabase.auth.getUser();
-
     if (authError || !user) {
       return new Response(
-        JSON.stringify({ error: 'Unauthorized' }),
+        JSON.stringify({ error: 'Non authentifié' }),
         { status: 401, headers: { 'Content-Type': 'application/json' } }
       );
     }
 
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
-
-    if (profile?.role !== 'admin') {
+    const role = await fetchRoleSecure(user.id);
+    if (role !== 'admin') {
       return new Response(
-        JSON.stringify({ error: 'Forbidden' }),
+        JSON.stringify({ error: 'Non autorisé' }),
         { status: 403, headers: { 'Content-Type': 'application/json' } }
       );
     }
@@ -152,9 +157,9 @@ export const DELETE: APIRoute = async ({ params, request, cookies }) => {
       { status: 200, headers: { 'Content-Type': 'application/json' } }
     );
   } catch (err) {
-    console.error('Error deleting appointment:', err);
+    console.error('[appointments/[id]] DELETE error:', err);
     return new Response(
-      JSON.stringify({ error: 'Internal server error' }),
+      JSON.stringify({ error: 'Erreur serveur' }),
       { status: 500, headers: { 'Content-Type': 'application/json' } }
     );
   }

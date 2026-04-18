@@ -13,9 +13,14 @@ export default function TurnstileFormGuard({
   inputName = DEFAULT_INPUT_NAME,
 }: Readonly<TurnstileFormGuardProps>) {
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const tokenRef = useRef('');
   const [errorMessage, setErrorMessage] = useState('');
   const [token, setToken] = useState('');
   const widgetId = useId().replaceAll(':', '');
+
+  // Keep a ref in sync with the state so the submit handler always reads the
+  // latest value without needing to be re-registered on every token change.
+  tokenRef.current = token;
 
   useEffect(() => {
     const container = containerRef.current;
@@ -25,8 +30,8 @@ export default function TurnstileFormGuard({
       return;
     }
 
-    const handleSubmit = async (event: SubmitEvent) => {
-      if (!token) {
+    const handleSubmit = (event: SubmitEvent) => {
+      if (!tokenRef.current) {
         event.preventDefault();
         setErrorMessage('Merci de valider la vérification anti-bot avant de continuer.');
       }
@@ -37,7 +42,7 @@ export default function TurnstileFormGuard({
     return () => {
       form.removeEventListener('submit', handleSubmit);
     };
-  }, []);
+  }, []);  // tokenRef is stable — no stale closure
 
   return (
     <div ref={containerRef} data-turnstile-form-guard={widgetId}>

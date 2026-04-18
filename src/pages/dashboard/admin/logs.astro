@@ -29,7 +29,7 @@ const { data: logs, count } = await query;
 const totalPages = Math.ceil((count ?? 0) / perPage);
 
 // Comptage par niveau
-const { data: levelStats } = await supabase.rpc('log_level_counts').match(() => ({ data: null }));
+const { data: levelStats } = await supabase.rpc('log_level_counts');
 ---
 
 <DashboardLayout title="Logs système" role="admin" activePage="logs" userName={userName} authResult={result}>

@@ -1,10 +1,15 @@
 import type { APIRoute } from 'astro';
 import { createSupabaseClient } from '@/lib/supabase';
+import { isValidUUID } from '@/lib/validation';
 
 export const DELETE: APIRoute = async ({ params, request, cookies }) => {
   try {
     const supabase = createSupabaseClient({ request, cookies });
     const { id } = params;
+
+    if (!isValidUUID(id)) {
+      return new Response(JSON.stringify({ error: 'ID invalide' }), { status: 400 });
+    }
 
     // Récupérer l'utilisateur actuel
     const { data: { user }, error: authError } = await supabase.auth.getUser();

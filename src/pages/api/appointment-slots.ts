@@ -1,89 +1,58 @@
 import type { APIRoute } from 'astro';
 import { createSupabaseClient } from '@/lib/supabase';
+import { fetchRoleSecure } from '@/lib/auth';
 
+const JSON_HEADERS = { 'Content-Type': 'application/json' } as const;
+
+/** GET /api/appointment-slots — admin voit tout, user voit uniquement les créneaux disponibles */
 export const GET: APIRoute = async ({ request, cookies }) => {
   try {
-    console.log('📋 GET /api/appointment-slots: Début');
     const supabase = createSupabaseClient({ request, cookies });
 
-    // Vérifier l'authentification
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) {
-      console.error('❌ Non authentifié');
-      return new Response(JSON.stringify({ error: 'Non authentifié' }), { status: 401 });
+      return new Response(JSON.stringify({ error: 'Non authentifié' }), { status: 401, headers: JSON_HEADERS });
     }
-    console.log('✅ User:', user.id);
 
-    // Récupérer le rôle
-    const { data: profile, error: profileError } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
+    const role = await fetchRoleSecure(user.id);
 
-    if (profileError) {
-      console.error('❌ Erreur profil:', profileError);
-      return new Response(JSON.stringify({ error: 'Profil non trouvé' }), { status: 400 });
-    }
-    console.log('✅ Rôle:', profile?.role);
-
-    // Admin voit tous les créneaux, utilisateurs voient que les disponibles
     let query = supabase.from('appointment_slots').select('*');
-    
-    if (profile?.role !== 'admin') {
+    if (role !== 'admin') {
       query = query.eq('is_available', true);
     }
-    
+
     const { data, error } = await query.order('start_time', { ascending: true });
+    if (error) throw error;
 
-    if (error) {
-      console.error('❌ Erreur Supabase:', error);
-      throw error;
-    }
-
-    console.log('✅ Créneaux trouvés:', data?.length || 0);
-    return new Response(JSON.stringify(data || []), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    return new Response(JSON.stringify(data ?? []), { status: 200, headers: JSON_HEADERS });
   } catch (err) {
-    console.error('❌ Erreur GET:', err);
-    return new Response(JSON.stringify({ error: String(err) }), { status: 500 });
+    console.error('[appointment-slots] GET error:', err);
+    return new Response(JSON.stringify({ error: 'Erreur serveur' }), { status: 500, headers: JSON_HEADERS });
   }
 };
 
+/** POST /api/appointment-slots — création d'un créneau (admin seulement) */
 export const POST: APIRoute = async ({ request, cookies }) => {
   try {
-    console.log('📝 POST /api/appointment-slots: Début');
     const supabase = createSupabaseClient({ request, cookies });
-    const body = await request.json();
-    const { start_time, end_time } = body;
-    console.log('📝 Body:', { start_time, end_time });
 
-    // Vérifier l'authentification
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) {
-      console.error('❌ Non authentifié');
-      return new Response(JSON.stringify({ error: 'Non authentifié' }), { status: 401 });
-    }
-    console.log('✅ User:', user.id);
-
-    // Vérifier le rôle
-    const { data: profile, error: profileError } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
-
-    if (profileError || profile?.role !== 'admin') {
-      console.error('❌ Accès refusé: pas admin');
-      return new Response(JSON.stringify({ error: 'Accès refusé' }), { status: 403 });
+      return new Response(JSON.stringify({ error: 'Non authentifié' }), { status: 401, headers: JSON_HEADERS });
     }
 
-    if (!start_time || !end_time) {
+    const role = await fetchRoleSecure(user.id);
+    if (role !== 'admin') {
+      return new Response(JSON.stringify({ error: 'Accès refusé' }), { status: 403, headers: JSON_HEADERS });
+    }
+
+    const body = await request.json() as Record<string, unknown>;
+    const { start_time, end_time } = body;
+
+    if (typeof start_time !== 'string' || !start_time || typeof end_time !== 'string' || !end_time) {
       return new Response(
-        JSON.stringify({ error: 'start_time et end_time requis' }),
-        { status: 400, headers: { 'Content-Type': 'application/json' } }
+        JSON.stringify({ error: 'start_time et end_time sont requis (chaînes ISO)' }),
+        { status: 400, headers: JSON_HEADERS },
       );
     }
 
@@ -93,18 +62,11 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       .select()
       .single();
 
-    if (error) {
-      console.error('❌ Erreur insertion:', error);
-      throw error;
-    }
+    if (error) throw error;
 
-    console.log('✅ Créneau créé:', data.id);
-    return new Response(JSON.stringify(data), {
-      status: 201,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    return new Response(JSON.stringify(data), { status: 201, headers: JSON_HEADERS });
   } catch (err) {
-    console.error('❌ Erreur POST:', err);
-    return new Response(JSON.stringify({ error: String(err) }), { status: 500 });
+    console.error('[appointment-slots] POST error:', err);
+    return new Response(JSON.stringify({ error: 'Erreur serveur' }), { status: 500, headers: JSON_HEADERS });
   }
 };

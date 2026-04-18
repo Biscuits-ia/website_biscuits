@@ -1,0 +1,465 @@
+---
+// src/pages/ateliers/inscription.astro
+// Page publique d'inscription aux ateliers.
+// Si l'utilisateur n'est pas connecté → bouton redirige vers /connexion.
+// Si connecté → formulaire d'inscription direct avec protection Turnstile.
+
+import Layout from '@/layouts/Layout.astro';
+import { createSupabaseClient } from '@/lib/supabase';
+import type { WorkshopSessionWithSeats } from '@/types/ateliers';
+import { formatDateLong, formatTimeRange, formatPrice } from '@/types/ateliers';
+import TurnstileFormGuard from '@/components/react/TurnstileFormGuard';
+
+const supabase = createSupabaseClient({ request: Astro.request, cookies: Astro.cookies });
+
+const { data: { user } } = await supabase.auth.getUser();
+const isLoggedIn = !!user;
+
+// Sessions publiées à venir
+const { data: sessionsRaw } = await supabase
+  .from('workshop_sessions_with_seats')
+  .select('*')
+  .eq('is_published', true)
+  .gte('starts_at', new Date().toISOString())
+  .order('starts_at', { ascending: true });
+
+// IDs des sessions auxquelles l'utilisateur est déjà inscrit
+let mySessionIds = new Set<string>();
+if (isLoggedIn && user) {
+  const { data: myRegsRaw } = await supabase
+    .from('workshop_registrations')
+    .select('session_id')
+    .eq('user_id', user.id);
+  mySessionIds = new Set((myRegsRaw ?? []).map((r: { session_id: string }) => r.session_id));
+}
+
+interface SessionRow {
+  session: WorkshopSessionWithSeats;
+  isRegistered: boolean;
+  isFull: boolean;
+  dateLabel: string;
+  timeLabel: string;
+  seatsLabel: string;
+  priceLabel: string;
+}
+
+function pluralPlace(n: number): string {
+  return n === 1 ? '1 place restante' : `${n} places restantes`;
+}
+
+const rows: SessionRow[] = (sessionsRaw ?? []).map((s: WorkshopSessionWithSeats): SessionRow => {
+  const isRegistered = mySessionIds.has(s.id);
+  const isFull = s.seats_left <= 0 && !isRegistered;
+  const seatsLabel = isRegistered
+    ? `Déjà inscrit · ${pluralPlace(s.seats_left)}`
+    : isFull
+      ? 'Complet'
+      : pluralPlace(s.seats_left);
+  return {
+    session: s,
+    isRegistered,
+    isFull,
+    dateLabel: formatDateLong(s.starts_at),
+    timeLabel: formatTimeRange(s.starts_at, s.ends_at),
+    seatsLabel,
+    priceLabel: formatPrice(s.price_cents, s.price_label),
+  };
+});
+
+const nonce = Astro.locals.nonce;
+
+const saved = Astro.url.searchParams.get('saved') === '1';
+const errorMsg = Astro.url.searchParams.get('error') ?? '';
+
+const redirectAfterLogin = encodeURIComponent('/ateliers/inscription');
+---
+
+<Layout
+  title="Inscription aux Ateliers | Biscuits IA"
+  description="Inscrivez-vous à nos ateliers IA pour apprendre à utiliser l'intelligence artificielle dans vos projets associatifs ou TPE."
+>
+  <section class="atelier-hero">
+    <div class="container">
+      <h1>Inscription aux Ateliers</h1>
+      <p class="subtitle">Choisissez une session et réservez votre place en quelques secondes.</p>
+    </div>
+  </section>
+
+  <section class="sessions-section">
+    <div class="container">
+
+      {saved && (
+        <div class="alert alert-success" role="alert">
+          ✅ Votre inscription a bien été enregistrée. À bientôt !
+        </div>
+      )}
+
+      {errorMsg && (
+        <div class="alert alert-error" role="alert">
+          ⚠️ {decodeURIComponent(errorMsg)}
+        </div>
+      )}
+
+      {!isLoggedIn && (
+        <div class="alert alert-info" role="alert">
+          💡 <strong>Connectez-vous</strong> pour vous inscrire à un atelier.{' '}
+          <a href={`/connexion?redirect=${redirectAfterLogin}`}>Se connecter</a>
+          {' '}·{' '}
+          <a href={`/inscription?redirect=${redirectAfterLogin}`}>Créer un compte</a>
+        </div>
+      )}
+
+      {rows.length === 0 ? (
+        <div class="empty-state">
+          <p>Aucune session disponible pour le moment. Revenez bientôt !</p>
+        </div>
+      ) : (
+        <div class="sessions-grid">
+          {rows.map(({ session: s, isRegistered, isFull, dateLabel, timeLabel, seatsLabel, priceLabel }) => (
+            <article class={`session-card${isRegistered ? ' registered' : ''}${isFull ? ' full' : ''}`}>
+              <div class="card-top">
+                {s.workshop_category && (
+                  <span class="category-badge">{s.workshop_category}</span>
+                )}
+                {s.workshop_level && (
+                  <span class="level-badge">{s.workshop_level}</span>
+                )}
+                {isRegistered && <span class="status-badge registered-badge">Inscrit ✓</span>}
+                {isFull && !isRegistered && <span class="status-badge full-badge">Complet</span>}
+              </div>
+
+              <h2 class="session-title">{s.workshop_title}</h2>
+
+              {s.workshop_description && (
+                <p class="session-description">{s.workshop_description}</p>
+              )}
+
+              <ul class="session-meta">
+                <li>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                    <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
+                    <line x1="3" y1="10" x2="21" y2="10"/>
+                  </svg>
+                  <span>{dateLabel}</span>
+                </li>
+                <li>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <circle cx="12" cy="12" r="10"/>
+                    <polyline points="12 6 12 12 16 14"/>
+                  </svg>
+                  <span>{timeLabel}</span>
+                </li>
+                <li>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                    <circle cx="12" cy="10" r="3"/>
+                  </svg>
+                  <span>{s.online ? '🌐 En ligne' : (s.location ?? 'Lieu à confirmer')}</span>
+                </li>
+                <li>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                    <circle cx="9" cy="7" r="4"/>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                  </svg>
+                  <span>{seatsLabel}</span>
+                </li>
+              </ul>
+
+              <div class="price-tag">
+                {priceLabel}
+              </div>
+
+              <div class="card-action">
+                {!isLoggedIn ? (
+                  <a
+                    href={`/connexion?redirect=${redirectAfterLogin}`}
+                    class="btn btn-primary"
+                  >
+                    Se connecter pour s'inscrire
+                  </a>
+                ) : isRegistered ? (
+                  <form method="POST" action="/api/ateliers/desinscrire">
+                    <input type="hidden" name="session_id" value={s.id} />
+                    <TurnstileFormGuard client:load scriptNonce={nonce} inputName="turnstileToken" />
+                    <button type="submit" class="btn btn-outline btn-danger">
+                      Se désinscrire
+                    </button>
+                  </form>
+                ) : isFull ? (
+                  <button class="btn btn-disabled" disabled>Session complète</button>
+                ) : (
+                  <form method="POST" action="/api/ateliers/inscrire">
+                    <input type="hidden" name="session_id" value={s.id} />
+                    <TurnstileFormGuard client:load scriptNonce={nonce} inputName="turnstileToken" />
+                    <button type="submit" class="btn btn-primary">
+                      S'inscrire à cette session
+                    </button>
+                  </form>
+                )}
+              </div>
+            </article>
+          ))}
+        </div>
+      )}
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .atelier-hero {
+    background: linear-gradient(135deg, var(--color-primary, #faca6f) 0%, #f5b942 100%);
+    padding: 4rem 1.5rem 3rem;
+    text-align: center;
+  }
+
+  .atelier-hero h1 {
+    font-size: clamp(1.75rem, 4vw, 2.75rem);
+    font-weight: 800;
+    color: #2c2c2c;
+    margin-bottom: 0.75rem;
+  }
+
+  .atelier-hero .subtitle {
+    font-size: 1.1rem;
+    color: #4a4a4a;
+    max-width: 540px;
+    margin: 0 auto;
+  }
+
+  .sessions-section {
+    padding: 3rem 1.5rem 5rem;
+  }
+
+  .container {
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  /* ── Alerts ── */
+  .alert {
+    border-radius: 0.75rem;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.5rem;
+    font-size: 0.95rem;
+    line-height: 1.5;
+  }
+
+  .alert a {
+    color: inherit;
+    font-weight: 600;
+  }
+
+  .alert-success {
+    background: #d1fae5;
+    border: 1px solid #6ee7b7;
+    color: #065f46;
+  }
+
+  .alert-error {
+    background: #fee2e2;
+    border: 1px solid #fca5a5;
+    color: #991b1b;
+  }
+
+  .alert-info {
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    color: #1e40af;
+  }
+
+  /* ── Grid ── */
+  .sessions-grid {
+    display: grid;
+    gap: 1.5rem;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  }
+
+  /* ── Card ── */
+  .session-card {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 1rem;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    box-shadow: 0 1px 4px rgb(0 0 0 / 6%);
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+  }
+
+  .session-card:hover {
+    box-shadow: 0 6px 20px rgb(0 0 0 / 10%);
+    transform: translateY(-2px);
+  }
+
+  .session-card.registered {
+    border-color: #6ee7b7;
+    background: #f0fdf4;
+  }
+
+  .session-card.full {
+    opacity: 0.7;
+  }
+
+  .card-top {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .category-badge {
+    font-size: 0.75rem;
+    font-weight: 600;
+    background: #fef3c7;
+    color: #92400e;
+    border-radius: 999px;
+    padding: 0.2rem 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .level-badge {
+    font-size: 0.75rem;
+    font-weight: 600;
+    background: #ede9fe;
+    color: #5b21b6;
+    border-radius: 999px;
+    padding: 0.2rem 0.75rem;
+  }
+
+  .status-badge {
+    font-size: 0.75rem;
+    font-weight: 700;
+    border-radius: 999px;
+    padding: 0.2rem 0.75rem;
+  }
+
+  .registered-badge {
+    background: #d1fae5;
+    color: #065f46;
+  }
+
+  .full-badge {
+    background: #fee2e2;
+    color: #991b1b;
+  }
+
+  .session-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #111827;
+    line-height: 1.3;
+    margin: 0;
+  }
+
+  .session-description {
+    font-size: 0.9rem;
+    color: #4b5563;
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  /* ── Meta list ── */
+  .session-meta {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .session-meta li {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: #374151;
+  }
+
+  .session-meta svg {
+    flex-shrink: 0;
+    color: #6b7280;
+  }
+
+  /* ── Action ── */
+  .card-action {
+    margin-top: auto;
+    padding-top: 0.75rem;
+    border-top: 1px solid #f3f4f6;
+  }
+
+  /* ── Prix ── */
+  .price-tag {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: #111827;
+    margin-top: 0.25rem;
+  }
+
+  .btn {
+    display: inline-block;
+    padding: 0.625rem 1.25rem;
+    border-radius: 0.625rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+  }
+
+  .btn-primary {
+    background: #faca6f;
+    color: #2c2c2c;
+    border-color: #faca6f;
+    width: 100%;
+    text-align: center;
+  }
+
+  .btn-primary:hover {
+    background: #f5b942;
+    border-color: #f5b942;
+  }
+
+  .btn-outline {
+    background: transparent;
+    border-color: currentColor;
+    width: 100%;
+    text-align: center;
+  }
+
+  .btn-danger {
+    color: #dc2626;
+  }
+
+  .btn-danger:hover {
+    background: #fee2e2;
+  }
+
+  .btn-disabled {
+    background: #f3f4f6;
+    color: #9ca3af;
+    cursor: not-allowed;
+    width: 100%;
+    border-color: #e5e7eb;
+  }
+
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  /* ── Empty ── */
+  .empty-state {
+    text-align: center;
+    padding: 4rem 1rem;
+    color: #6b7280;
+    font-size: 1rem;
+  }
+</style>

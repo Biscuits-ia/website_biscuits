@@ -7,6 +7,7 @@ import {
   getRegistrationCount,
   formatDate,
   formatTimeRange,
+  formatPrice,
 } from '../../../types/ateliers';
 
 const result = await requireAdmin(Astro);
@@ -22,9 +23,10 @@ const error = Astro.url.searchParams.get('error') ?? '';
 const { data: workshopsRaw } = await supabase
   .from('workshops')
   .select(`
-    id, title, description, category, created_at,
+    id, title, description, category, level, price_cents, price_label, is_free, created_at,
     workshop_sessions (
-      id, starts_at, ends_at, location, max_seats, is_published,
+      id, starts_at, ends_at, location, online, max_seats, is_published,
+      price_cents, price_label,
       workshop_registrations (count)
     )
   `)
@@ -54,6 +56,7 @@ interface SessionRow {
   dateStr:    string;  // date formatée fr-FR
   timeRange:  string;  // "HH:MM → HH:MM"
   toggleVal:  string;  // String(!s.is_published) — évite l'opérateur ! dans le template
+  priceStr:   string;  // prix affiché
 }
 
 interface WorkshopRow {
@@ -79,6 +82,9 @@ const workshopRows: WorkshopRow[] = workshops.map((w: Workshop) => {
     (s: WorkshopSession): SessionRow => {
       const registered = getRegistrationCount(s);
       const left       = s.max_seats - registered;
+      // Prix de la session : override ou hérité de l'atelier
+      const sessionPrice = s.price_cents ?? w.price_cents;
+      const sessionPriceLabel = s.price_label ?? w.price_label;
       return {
         session:    s,
         registered,
@@ -87,6 +93,7 @@ const workshopRows: WorkshopRow[] = workshops.map((w: Workshop) => {
         dateStr:    formatDate(s.starts_at),
         timeRange:  formatTimeRange(s.starts_at, s.ends_at),
         toggleVal:  String(!s.is_published),
+        priceStr:   formatPrice(sessionPrice, sessionPriceLabel),
       };
     },
   );
@@ -101,7 +108,7 @@ const workshopRows: WorkshopRow[] = workshops.map((w: Workshop) => {
       <h1>Gestion des ateliers</h1>
       <p class="subtitle">{countLabel} au total.</p>
     </div>
-    <button class="btn btn-primary" onclick="document.getElementById('modal-atelier').showModal()">
+    <button class="btn btn-primary" data-modal-open="modal-atelier">
       + Nouvel atelier
     </button>
   </div>
@@ -118,23 +125,25 @@ const workshopRows: WorkshopRow[] = workshops.map((w: Workshop) => {
           <div>
             <div class="workshop-title">{w.title}</div>
             {w.category    && <span class="badge badge-info badge-mt">{w.category}</span>}
+            {w.level       && <span class="badge badge-neutral badge-mt">{w.level}</span>}
+            <span class="badge badge-price badge-mt">{formatPrice(w.price_cents, w.price_label)}</span>
             {w.description && <p class="workshop-desc">{w.description}</p>}
           </div>
           <div class="workshop-actions">
             <button
               class="btn btn-ghost btn-sm"
-              onclick={`document.getElementById('modal-session-${w.id}').showModal()`}
+              data-modal-open={`modal-session-${w.id}`}
             >+ Session</button>
             <button
               class="btn btn-ghost btn-sm"
-              onclick={`document.getElementById('modal-edit-${w.id}').showModal()`}
+              data-modal-open={`modal-edit-${w.id}`}
             >Modifier</button>
             <form method="POST" action="/api/admin/ateliers/supprimer" style="display:inline;">
               <input type="hidden" name="workshop_id" value={w.id} />
               <button
                 type="submit"
                 class="btn btn-danger btn-sm"
-                onclick="return confirm('Supprimer cet atelier et toutes ses sessions ?')"
+                data-confirm="Supprimer cet atelier et toutes ses sessions ?"
               >Supprimer</button>
             </form>
           </div>
@@ -148,6 +157,7 @@ const workshopRows: WorkshopRow[] = workshops.map((w: Workshop) => {
                 <tr>
                   <th>Date &amp; heure</th>
                   <th>Lieu</th>
+                  <th>Prix</th>
                   <th>Inscrits</th>
                   <th>Places</th>
                   <th>Statut</th>
@@ -155,13 +165,14 @@ const workshopRows: WorkshopRow[] = workshops.map((w: Workshop) => {
                 </tr>
               </thead>
               <tbody>
-                {sessions.map(({ session: s, registered, seatBadge, seatLabel, dateStr, timeRange, toggleVal }) => (
+                {sessions.map(({ session: s, registered, seatBadge, seatLabel, dateStr, timeRange, toggleVal, priceStr }) => (
                   <tr>
                     <td>
                       <strong>{dateStr}</strong><br />
                       <span class="time-range">{timeRange}</span>
                     </td>
-                    <td>{s.location ?? '—'}</td>
+                    <td>{s.online ? '🌐 En ligne' : (s.location ?? '—')}</td>
+                    <td class="mono">{priceStr}</td>
                     <td class="mono bold">{registered}</td>
                     <td><span class={`badge ${seatBadge}`}>{seatLabel}</span></td>
                     <td>
@@ -183,7 +194,7 @@ const workshopRows: WorkshopRow[] = workshops.map((w: Workshop) => {
                           <button
                             type="submit"
                             class="btn btn-danger btn-xs"
-                            onclick="return confirm('Supprimer cette session ?')"
+                            data-confirm="Supprimer cette session ?"
                           >✕</button>
                         </form>
                       </div>
@@ -204,7 +215,7 @@ const workshopRows: WorkshopRow[] = workshops.map((w: Workshop) => {
               <span class="card-title">Nouvelle session — {w.title}</span>
               <button
                 class="btn btn-ghost modal-close"
-                onclick={`document.getElementById('modal-session-${w.id}').close()`}
+                data-modal-close={`modal-session-${w.id}`}
               >✕</button>
             </div>
             <form method="POST" action="/api/admin/sessions/creer" class="modal-form">
@@ -219,7 +230,11 @@ const workshopRows: WorkshopRow[] = workshops.map((w: Workshop) => {
               </div>
               <div class="field">
                 <label>Lieu</label>
-                <input type="text" name="location" placeholder="En ligne / Adresse" />
+                <input type="text" name="location" placeholder="Ex : 12 rue de la Paix, Paris" />
+              </div>
+              <div class="checkbox-row">
+                <input type="checkbox" id={`online-${w.id}`} name="online" value="true" />
+                <label for={`online-${w.id}`} class="label-sm">Session en ligne</label>
               </div>
               <div class="field">
                 <label>Places max</label>
@@ -234,7 +249,7 @@ const workshopRows: WorkshopRow[] = workshops.map((w: Workshop) => {
                 <button
                   type="button"
                   class="btn btn-ghost"
-                  onclick={`document.getElementById('modal-session-${w.id}').close()`}
+                  data-modal-close={`modal-session-${w.id}`}
                 >Annuler</button>
               </div>
             </form>
@@ -248,7 +263,7 @@ const workshopRows: WorkshopRow[] = workshops.map((w: Workshop) => {
               <span class="card-title">Modifier l'atelier</span>
               <button
                 class="btn btn-ghost modal-close"
-                onclick={`document.getElementById('modal-edit-${w.id}').close()`}
+                data-modal-close={`modal-edit-${w.id}`}
               >✕</button>
             </div>
             <form method="POST" action="/api/admin/ateliers/modifier" class="modal-form">
@@ -261,16 +276,38 @@ const workshopRows: WorkshopRow[] = workshops.map((w: Workshop) => {
                 <label>Description</label>
                 <textarea name="description" rows={3}>{w.description ?? ''}</textarea>
               </div>
-              <div class="field">
-                <label>Catégorie</label>
-                <input type="text" name="category" value={w.category ?? ''} placeholder="Ex : IA générative" />
+              <div class="field-group">
+                <div class="field">
+                  <label>Catégorie</label>
+                  <input type="text" name="category" value={w.category ?? ''} placeholder="Ex : IA générative" />
+                </div>
+                <div class="field">
+                  <label>Niveau</label>
+                  <select name="level">
+                    <option value="" selected={!w.level}>— Non défini —</option>
+                    <option value="Débutant" selected={w.level === 'Débutant'}>Débutant</option>
+                    <option value="Intermédiaire" selected={w.level === 'Intermédiaire'}>Intermédiaire</option>
+                    <option value="Avancé" selected={w.level === 'Avancé'}>Avancé</option>
+                  </select>
+                </div>
+              </div>
+              <div class="field-group">
+                <div class="field">
+                  <label>Prix par défaut (centimes, 0 = gratuit)</label>
+                  <input type="number" name="price_cents" value={w.price_cents} min="0" step="1" />
+                  <span class="field-hint">Ex : 3500 = 35,00 €</span>
+                </div>
+                <div class="field">
+                  <label>Libellé affiché (optionnel)</label>
+                  <input type="text" name="price_label" value={w.price_label ?? ''} placeholder='Ex: "35 €", "Gratuit", "Sur devis"' />
+                </div>
               </div>
               <div class="form-actions">
                 <button type="submit" class="btn btn-primary">Sauvegarder</button>
                 <button
                   type="button"
                   class="btn btn-ghost"
-                  onclick={`document.getElementById('modal-edit-${w.id}').close()`}
+                  data-modal-close={`modal-edit-${w.id}`}
                 >Annuler</button>
               </div>
             </form>
@@ -286,7 +323,7 @@ const workshopRows: WorkshopRow[] = workshops.map((w: Workshop) => {
     <div class="modal-box">
       <div class="modal-header">
         <span class="card-title">Nouvel atelier</span>
-        <button class="btn btn-ghost" onclick="document.getElementById('modal-atelier').close()">✕</button>
+        <button class="btn btn-ghost" data-modal-close="modal-atelier">✕</button>
       </div>
       <form method="POST" action="/api/admin/ateliers/creer" class="modal-form">
         <div class="field">
@@ -297,13 +334,35 @@ const workshopRows: WorkshopRow[] = workshops.map((w: Workshop) => {
           <label>Description</label>
           <textarea name="description" rows={3} placeholder="Description courte…"></textarea>
         </div>
-        <div class="field">
-          <label>Catégorie</label>
-          <input type="text" name="category" placeholder="Ex : IA générative" />
+        <div class="field-group">
+          <div class="field">
+            <label>Catégorie</label>
+            <input type="text" name="category" placeholder="Ex : IA générative" />
+          </div>
+          <div class="field">
+            <label>Niveau</label>
+            <select name="level">
+              <option value="">— Non défini —</option>
+              <option value="Débutant">Débutant</option>
+              <option value="Intermédiaire">Intermédiaire</option>
+              <option value="Avancé">Avancé</option>
+            </select>
+          </div>
+        </div>
+        <div class="field-group">
+          <div class="field">
+            <label>Prix (centimes, 0 = gratuit)</label>
+            <input type="number" name="price_cents" value="0" min="0" step="1" />
+            <span class="field-hint">Ex : 3500 = 35,00 €</span>
+          </div>
+          <div class="field">
+            <label>Libellé affiché (optionnel)</label>
+            <input type="text" name="price_label" placeholder='Ex: "35 €", "Sur devis"' />
+          </div>
         </div>
         <div class="form-actions">
           <button type="submit" class="btn btn-primary">Créer l'atelier</button>
-          <button type="button" class="btn btn-ghost" onclick="document.getElementById('modal-atelier').close()">Annuler</button>
+          <button type="button" class="btn btn-ghost" data-modal-close="modal-atelier">Annuler</button>
         </div>
       </form>
     </div>
@@ -346,14 +405,51 @@ const workshopRows: WorkshopRow[] = workshops.map((w: Workshop) => {
   .field          { display: flex; flex-direction: column; gap: 6px; }
   .field label    { font-size: var(--text-xs); font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.06em; font-family: var(--font-mono); }
   .field input,
-  .field textarea { padding: 10px 13px; font-size: var(--text-base); width: 100%; font-family: var(--font-sans); }
+  .field textarea,
+  .field select   { padding: 10px 13px; font-size: var(--text-base); width: 100%; font-family: var(--font-sans); }
   .field textarea  { resize: vertical; }
+  .field-hint      { font-size: var(--text-xs); color: var(--text-muted); }
+  .field-group     { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
   .checkbox-row    { display: flex; align-items: center; gap: 10px; }
   .label-sm        { font-size: var(--text-sm); }
   .form-actions    { display: flex; gap: 10px; margin-top: 4px; }
+
+  /* ── Badge prix ── */
+  .badge-price { background: #fef3c7; color: #92400e; font-weight: 700; }
 
   /* ── Flash ── */
   .flash     { padding: 12px 18px; margin-bottom: 20px; font-size: var(--text-sm); font-weight: 600; border: var(--brutal-border-thin); box-shadow: var(--shadow-sm); }
   .flash-ok  { background: var(--ok-bg);  color: var(--ok-fg);  border-color: var(--ok); }
   .flash-err { background: var(--err-bg); color: var(--err-fg); border-color: var(--err); }
 </style>
+
+<script>
+  // Ouvre les modals via data-modal-open="id"
+  document.addEventListener('click', (e) => {
+    const btn = (e.target as HTMLElement).closest('[data-modal-open]');
+    if (btn) {
+      const id = btn.getAttribute('data-modal-open');
+      const dialog = id ? (document.getElementById(id) as HTMLDialogElement | null) : null;
+      dialog?.showModal();
+    }
+  });
+
+  // Ferme les modals via data-modal-close="id"
+  document.addEventListener('click', (e) => {
+    const btn = (e.target as HTMLElement).closest('[data-modal-close]');
+    if (btn) {
+      const id = btn.getAttribute('data-modal-close');
+      const dialog = id ? (document.getElementById(id) as HTMLDialogElement | null) : null;
+      dialog?.close();
+    }
+  });
+
+  // Confirmation avant submit via data-confirm="message"
+  document.addEventListener('click', (e) => {
+    const btn = (e.target as HTMLElement).closest('[data-confirm]');
+    if (btn) {
+      const msg = btn.getAttribute('data-confirm') ?? 'Confirmer ?';
+      if (!window.confirm(msg)) e.preventDefault();
+    }
+  });
+</script>

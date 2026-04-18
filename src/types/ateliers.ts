@@ -12,8 +12,11 @@ export interface WorkshopSession {
   starts_at: string;
   ends_at: string;
   location: string | null;
+  online: boolean;
   max_seats: number;
   is_published: boolean;
+  price_cents: number | null;   // null = hérite de workshop
+  price_label: string | null;
   workshop_registrations: WorkshopRegistrationCount[];
 }
 
@@ -22,6 +25,10 @@ export interface Workshop {
   title: string;
   description: string | null;
   category: string | null;
+  level: string | null;          // ex: "Débutant", "Intermédiaire", "Avancé"
+  price_cents: number;           // prix par défaut en centimes (0 = gratuit)
+  price_label: string | null;   // libellé affiché ex: "35 €", "Gratuit"
+  is_free: boolean;
   created_at: string;
   workshop_sessions: WorkshopSession[];
 }
@@ -36,6 +43,7 @@ export interface WorkshopSessionWithSeats {
   starts_at:            string;
   ends_at:              string;
   location:             string | null;
+  online:               boolean;
   max_seats:            number;
   is_published:         boolean;
   seats_left:           number;
@@ -43,6 +51,11 @@ export interface WorkshopSessionWithSeats {
   workshop_title:       string;
   workshop_description: string | null;
   workshop_category:    string | null;
+  workshop_level:       string | null;
+  // Prix résolu (session override OU valeur atelier)
+  price_cents:          number;
+  price_label:          string | null;
+  is_free:              boolean;
 }
 
 export interface WorkshopWithSessions {
@@ -112,6 +125,17 @@ export function formatDateLong(isoString: string): string {
   return new Date(isoString).toLocaleDateString('fr-FR', {
     weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
   });
+}
+
+/**
+ * Formate un prix en centimes vers un libellé lisible.
+ * Si price_label est fourni, il est prioritaire.
+ * Sinon : 0 = "Gratuit", sinon "X,XX €".
+ */
+export function formatPrice(priceCents: number, priceLabel: string | null | undefined): string {
+  if (priceLabel) return priceLabel;
+  if (priceCents === 0) return 'Gratuit';
+  return `${(priceCents / 100).toFixed(2).replace('.', ',')} €`;
 }
 
 /** Récupère le premier champ texte d'un FormData (null si File) */

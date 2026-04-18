@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { createSupabaseClient } from '@/lib/supabase';
+import { createSupabaseClient, createSupabaseAdminClient } from '@/lib/supabase';
 import { fetchRoleSecure } from '@/lib/auth';
 
 const JSON_HEADERS = { 'Content-Type': 'application/json' } as const;
@@ -18,7 +18,10 @@ export const GET: APIRoute = async ({ request, cookies }) => {
       return new Response(JSON.stringify({ error: 'Non autorisé' }), { status: 403, headers: JSON_HEADERS });
     }
 
-    const { data, error } = await supabase
+    // Utiliser le client admin (service_role) pour bypasser les RLS
+    // et voir TOUTES les réservations, pas seulement celles de l'admin connecté
+    const adminDb = createSupabaseAdminClient();
+    const { data, error } = await adminDb
       .from('volunteer_appointments')
       .select(`
         *,

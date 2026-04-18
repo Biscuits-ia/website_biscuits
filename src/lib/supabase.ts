@@ -1,5 +1,5 @@
 // src/lib/supabase.ts
-import { createServerClient, parseCookieHeader } from '@supabase/ssr';
+import { createServerClient } from '@supabase/ssr';
 import { createClient } from '@supabase/supabase-js';
 
 export function createSupabaseClient(context: { request: Request; cookies: any }) {
@@ -9,9 +9,9 @@ export function createSupabaseClient(context: { request: Request; cookies: any }
     {
       cookies: {
         getAll() {
-          return parseCookieHeader(context.request.headers.get('Cookie') ?? '')
-            .filter((cookie) => cookie.name)
-            .map((cookie) => ({ name: cookie.name, value: cookie.value ?? '' }));
+          // Utiliser context.cookies.getAll() plutôt que le header brut pour
+          // voir les cookies mis à jour par le middleware (ex: token rafraîchi).
+          return context.cookies.getAll();
         },
         setAll(cookiesToSet) {
           for (const { name, value, options } of cookiesToSet) {

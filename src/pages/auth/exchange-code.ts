@@ -1,7 +1,7 @@
 import type { APIRoute } from 'astro';
-import { createSupabaseClient } from '@/lib/supabase';
+import { createClient } from '@supabase/supabase-js';
 
-export const GET: APIRoute = async ({ request, cookies, url }) => {
+export const GET: APIRoute = async ({ url }) => {
   const code = url.searchParams.get('code');
   
   if (!code) {
@@ -12,9 +12,21 @@ export const GET: APIRoute = async ({ request, cookies, url }) => {
   }
 
   try {
-    const supabase = createSupabaseClient({ request, cookies });
+    const supabaseUrl = import.meta.env.SUPABASE_URL;
+    const supabaseKey = import.meta.env.SUPABASE_ANON_KEY;
 
-    // Échanger le code contre une session
+    if (!supabaseUrl || !supabaseKey) {
+      throw new Error('Configuration Supabase manquante');
+    }
+
+    // Créer un client SANS persister la session
+    const supabase = createClient(supabaseUrl, supabaseKey, {
+      auth: {
+        persistSession: false,
+      },
+    });
+
+    // Échanger le code contre une session (MAIS sans persister)
     const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
     if (error || !data.session) {
@@ -25,7 +37,7 @@ export const GET: APIRoute = async ({ request, cookies, url }) => {
       );
     }
 
-    // Retourner les tokens pour utilisation côté client
+    // Retourner les tokens SANS établir de session cookies
     return new Response(
       JSON.stringify({
         access_token: data.session.access_token,

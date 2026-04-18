@@ -293,8 +293,14 @@ const nonce = Astro.locals.nonce;
         return;
       }
 
+      // Détruire la session et rediriger vers connexion
       showMsg('Mot de passe mis à jour ! Redirection…', 'success');
-      setTimeout(function() { window.location.href = '/connexion'; }, 2000);
+      setTimeout(async function() {
+        try {
+          await fetch('/auth/deconnexion', { method: 'POST' });
+        } catch (e) {}
+        window.location.href = '/connexion';
+      }, 1500);
     } catch (e) {
       showMsg('Une erreur est survenue. Veuillez réessayer.');
     } finally {

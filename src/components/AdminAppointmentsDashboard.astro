@@ -73,17 +73,18 @@
           ${appointments
             .map(
               (appt, idx) => {
-                const slotStart = new Date(appt.appointment_slots.start_time);
-                const slotEnd = new Date(appt.appointment_slots.end_time);
+                const slot = appt.appointment_slots;
+                const slotStart = slot ? new Date(slot.start_time) : null;
+                const slotEnd = slot ? new Date(slot.end_time) : null;
+                const slotLabel = slotStart && slotEnd
+                  ? `${slotStart.toLocaleDateString('fr-FR')} ${slotStart.getHours().toString().padStart(2, '0')}:${slotStart.getMinutes().toString().padStart(2, '0')} - ${slotEnd.getHours().toString().padStart(2, '0')}:${slotEnd.getMinutes().toString().padStart(2, '0')}`
+                  : '<em>Créneau supprimé</em>';
                 const isPending = appt.status === 'pending';
                 return `
             <tr class="${idx % 2 === 0 ? 'even' : 'odd'} status-${appt.status}">
               <td>${appt.user_profile?.full_name || '-'}</td>
-              <td>${appt.user_profile?.email || '-'}</td>
-              <td class="monospace">
-                ${slotStart.toLocaleDateString('fr-FR')}
-                ${slotStart.getHours().toString().padStart(2, '0')}:${slotStart.getMinutes().toString().padStart(2, '0')} - ${slotEnd.getHours().toString().padStart(2, '0')}:${slotEnd.getMinutes().toString().padStart(2, '0')}
-              </td>
+              <td>${appt.user_profile?.email || appt.candidate_email || '-'}</td>
+              <td class="monospace">${slotLabel}</td>
               <td>
                 <span class="badge ${appt.status === 'confirmed' ? 'badge-success' : appt.status === 'cancelled' ? 'badge-danger' : 'badge-pending'}">
                   ${appt.status === 'confirmed' ? '✓ Confirmé' : appt.status === 'cancelled' ? '✗ Annulé' : '⏳ En attente'}

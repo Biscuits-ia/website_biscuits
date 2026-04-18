@@ -21,18 +21,35 @@ export const GET: APIRoute = async ({ request, cookies }) => {
     // Utiliser le client admin (service_role) pour bypasser les RLS
     // et voir TOUTES les réservations, pas seulement celles de l'admin connecté
     const adminDb = createSupabaseAdminClient();
-    const { data, error } = await adminDb
+    const { data: appointments, error } = await adminDb
       .from('volunteer_appointments')
-      .select(`
-        *,
-        appointment_slots(*),
-        user_profile:profiles(full_name, email)
-      `)
+      .select('*, appointment_slots(*)')
       .order('created_at', { ascending: false });
 
     if (error) throw error;
 
-    return new Response(JSON.stringify(data ?? []), { status: 200, headers: JSON_HEADERS });
+    // Récupérer les profils pour les user_id présents
+    // (pas de FK directe vers profiles dans le schéma, donc requête séparée)
+    const userIds = [...new Set((appointments ?? []).map((a) => a.user_id).filter(Boolean))];
+    let profilesMap: Record<string, { full_name: string | null; email: string | null }> = {};
+
+    if (userIds.length > 0) {
+      const { data: profiles } = await adminDb
+        .from('profiles')
+        .select('id, full_name, email')
+        .in('id', userIds);
+
+      for (const p of profiles ?? []) {
+        profilesMap[p.id] = { full_name: p.full_name, email: p.email };
+      }
+    }
+
+    const enriched = (appointments ?? []).map((a) => ({
+      ...a,
+      user_profile: a.user_id ? (profilesMap[a.user_id] ?? null) : null,
+    }));
+
+    return new Response(JSON.stringify(enriched), { status: 200, headers: JSON_HEADERS });
   } catch (err) {
     console.error('[admin/appointments] GET error:', err);
     return new Response(JSON.stringify({ error: 'Erreur serveur' }), { status: 500, headers: JSON_HEADERS });

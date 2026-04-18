@@ -79,13 +79,16 @@ export const onRequest = defineMiddleware(async (context, next) => {
   const contentType = response.headers.get('content-type') ?? '';
   if (contentType.includes('text/html')) {
     let html = await response.text();
-    // Match <script type="module"> without any src= attribute (inline scripts only)
-    html = html.replaceAll(
-      '<script type="module">',
-      `<script type="module" nonce="${nonce}">`,
+    // Add nonce to ALL inline <script> tags (those without a src= attribute).
+    // Handles variations like <script>, <script type="module">, <script type="module" crossorigin>, etc.
+    html = html.replace(
+      /<script(\b[^>]*?)(?<!\bsrc\s*=\s*["'][^"']*["'])>/g,
+      (match, attrs: string) => {
+        // Skip tags that already have a nonce or have a src attribute
+        if (/\bsrc\s*=/.test(attrs) || /\bnonce\s*=/.test(attrs)) return match;
+        return `<script${attrs} nonce="${nonce}">`;
+      },
     );
-    // Also match regular <script> tags (inline)
-    html = html.replace(/<script>(?![\s\S]*src=)/g, `<script nonce="${nonce}">`);
     const headers = new Headers(response.headers);
     headers.set('Content-Security-Policy', csp);
     return new Response(html, { status: response.status, statusText: response.statusText, headers });

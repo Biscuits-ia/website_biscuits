@@ -1,0 +1,309 @@
+---
+export const prerender = false;
+
+import BaseLayout from '@/layouts/Layout.astro';
+
+// Récupérer les partenaires depuis l'API
+interface Partner {
+  id: string;
+  name: string;
+  description: string;
+  collaboration: string;
+  logo_url: string;
+  website_url: string;
+  expertise: string[];
+  display_order: number;
+  is_published: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+let partners: Partner[] = [];
+let error = '';
+
+try {
+  const response = await fetch(`${import.meta.env.SITE}/api/partenaires/`);
+  if (!response.ok) {
+    throw new Error('Erreur lors de la récupération des partenaires');
+  }
+  partners = await response.json();
+} catch (err) {
+  error = 'Impossible de charger les partenaires';
+  console.error(error, err);
+}
+---
+
+<BaseLayout
+  title="Nos partenaires de confiance | Biscuits IA"
+  description="Les entreprises et organisations avec lesquelles nous travaillons pour promouvoir une IA utile, accessible et responsable."
+>
+  <main class="partenaires-page">
+    <!-- Hero Section -->
+    <section class="hero">
+      <h1>Nos partenaires de confiance</h1>
+      <p class="hero-subtitle">
+        Les entreprises et organisations qui partagent nos valeurs et nous aident à promouvoir une IA utile, accessible et responsable.
+      </p>
+    </section>
+
+    <!-- Section: Partenaires -->
+    <section class="partners-section">
+      <h2>Avec qui nous travaillons</h2>
+
+      {error && (
+        <div class="error-message" role="alert">
+          <p>{error}</p>
+        </div>
+      )}
+
+      {partners.length === 0 && !error && (
+        <div class="no-partners" role="status">
+          <p>Aucun partenaire pour le moment. À bientôt !</p>
+        </div>
+      )}
+
+      <div class="partners-grid">
+        {partners.map((partner) => (
+          <article class="partner-card">
+            <div class="partner-header">
+              <h3>{partner.name}</h3>
+              <span class="partner-type">{partner.collaboration}</span>
+            </div>
+            <p class="partner-description">
+              {partner.description}
+            </p>
+            <ul class="partner-expertise">
+              {partner.expertise && partner.expertise.map((exp) => (
+                <li>{exp}</li>
+              ))}
+            </ul>
+            {partner.website_url && (
+              <a href={partner.website_url} target="_blank" rel="noopener noreferrer" class="partner-link" aria-label={`Visiter le site de ${partner.name}`}>
+                Visiter le site →
+              </a>
+            )}
+          </article>
+        ))}
+      </div>
+    </section>
+
+    <!-- Section: Devenir partenaire -->
+    <section class="partnership-cta-section">
+      <h2>Intéressé pour devenir partenaire ?</h2>
+      <p>
+        Si votre organisation partage nos valeurs et souhaite collaborer, nous aimerions en discuter. Contactez-nous directement.
+      </p>
+      <a href="/contact" class="cta-button">Nous contacter</a>
+    </section>
+  </main>
+</BaseLayout>
+
+<style>
+  .partenaires-page {
+    padding-top: calc(var(--header-height-desktop) + var(--spacing-2xl));
+    min-height: 60vh;
+  }
+
+  /* Hero Section */
+  .hero {
+    text-align: center;
+    padding: var(--spacing-3xl) var(--spacing-lg);
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .hero h1 {
+    font-size: clamp(var(--font-size-3xl), 5vw, var(--font-size-5xl));
+    font-weight: var(--font-weight-extrabold);
+    color: var(--color-text);
+    margin-bottom: var(--spacing-lg);
+  }
+
+  .hero-subtitle {
+    font-size: var(--font-size-lg);
+    color: var(--color-text-light);
+    line-height: 1.6;
+  }
+
+  /* Partners Section */
+  .partners-section {
+    padding: var(--spacing-3xl) var(--spacing-lg);
+    background: var(--color-bg-alt);
+  }
+
+  .partners-section h2 {
+    text-align: center;
+    font-size: var(--font-size-2xl);
+    font-weight: var(--font-weight-bold);
+    margin-bottom: var(--spacing-2xl);
+    color: var(--color-text);
+  }
+
+  .partners-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr));
+    gap: var(--spacing-xl);
+    max-width: var(--container-xl);
+    margin: 0 auto;
+  }
+
+  .partner-card {
+    background: var(--color-bg-elevated);
+    border: var(--brutal-border);
+    box-shadow: var(--shadow-md);
+    padding: var(--spacing-xl);
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast);
+    display: flex;
+    flex-direction: column;
+  }
+
+  .partner-card:hover {
+    transform: translate(-3px, -3px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--color-primary);
+  }
+
+  .partner-header {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-lg);
+  }
+
+  .partner-header h3 {
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text);
+    margin: 0;
+  }
+
+  .partner-type {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-light);
+    font-weight: var(--font-weight-medium);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .partner-description {
+    font-size: var(--font-size-base);
+    color: var(--color-text-light);
+    line-height: 1.6;
+    margin-bottom: var(--spacing-lg);
+    flex-grow: 1;
+  }
+
+  .partner-expertise {
+    list-style: none;
+    margin: 0 0 var(--spacing-lg) 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-sm);
+  }
+
+  .partner-expertise li {
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    padding: var(--spacing-xs) var(--spacing-sm);
+    font-size: var(--font-size-sm);
+    color: var(--color-text-light);
+    border-radius: 4px;
+  }
+
+  .partner-link {
+    color: var(--color-primary);
+    font-weight: var(--font-weight-semibold);
+    text-decoration: none;
+    transition: color var(--transition-fast);
+    align-self: flex-start;
+  }
+
+  .partner-link:hover {
+    color: var(--color-primary-dark);
+    text-decoration: underline;
+  }
+
+  /* CTA Section */
+  .partnership-cta-section {
+    padding: var(--spacing-3xl) var(--spacing-lg);
+    text-align: center;
+    background: var(--color-bg-elevated);
+    border-top: 3px solid var(--color-border);
+    border-bottom: 3px solid var(--color-border);
+  }
+
+  .partnership-cta-section h2 {
+    font-size: var(--font-size-2xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text);
+    margin-bottom: var(--spacing-lg);
+  }
+
+  .partnership-cta-section p {
+    font-size: var(--font-size-lg);
+    color: var(--color-text-light);
+    line-height: 1.6;
+    max-width: 600px;
+    margin: 0 auto var(--spacing-xl) auto;
+  }
+
+  .cta-button {
+    display: inline-block;
+    padding: var(--spacing-md) var(--spacing-xl);
+    background: var(--color-primary);
+    color: white;
+    border: 3px solid var(--color-primary);
+    text-decoration: none;
+    font-weight: var(--font-weight-bold);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    box-shadow: var(--shadow-md);
+  }
+
+  .cta-button:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .cta-button:active {
+    transform: translate(0, 0);
+  }
+
+  .error-message {
+    background: #ff4444;
+    color: white;
+    padding: var(--spacing-lg);
+    border-radius: 4px;
+    margin-bottom: var(--spacing-lg);
+    text-align: center;
+    max-width: var(--container-xl);
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .no-partners {
+    text-align: center;
+    padding: var(--spacing-3xl) var(--spacing-lg);
+    color: var(--color-text-light);
+    font-size: var(--font-size-lg);
+  }
+
+  @media (max-width: 768px) {
+    .partenaires-page {
+      padding-top: calc(var(--header-height-mobile) + var(--spacing-lg));
+    }
+
+    .hero {
+      padding: var(--spacing-2xl) var(--spacing-base);
+    }
+
+    .partners-section {
+      padding: var(--spacing-2xl) var(--spacing-base);
+    }
+
+    .partnership-cta-section {
+      padding: var(--spacing-2xl) var(--spacing-base);
+    }
+  }
+</style>

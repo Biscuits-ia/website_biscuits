@@ -1,0 +1,398 @@
+---
+// src/components/AdminScheduleManager.astro
+interface Props {
+  // Props if needed
+}
+---
+
+<div class="schedule-manager">
+  <div class="header">
+    <h1>Configuration des créneaux</h1>
+    <p>Gérez les disponibilités pour les rendez-vous</p>
+  </div>
+
+  <div id="error-container"></div>
+
+  <button id="add-slot-btn" class="btn btn-primary">
+    + Ajouter un créneau
+  </button>
+
+  <form id="slot-form" class="slot-form" style="display: none;">
+    <div class="form-group">
+      <label for="slot-date">Date</label>
+      <input type="date" id="slot-date" required />
+    </div>
+
+    <div class="form-group-row">
+      <div class="form-group">
+        <label for="slot-start">Début</label>
+        <input type="time" id="slot-start" value="09:00" required />
+      </div>
+      <div class="form-group">
+        <label for="slot-end">Fin</label>
+        <input type="time" id="slot-end" value="17:00" required />
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" class="btn btn-success">✓ Ajouter</button>
+      <button type="button" id="cancel-btn" class="btn btn-secondary">Annuler</button>
+    </div>
+  </form>
+
+  <div id="slots-container" class="slots-container">
+    <div class="loading">Chargement...</div>
+  </div>
+</div>
+
+<script>
+  const addBtn = document.getElementById('add-slot-btn');
+  const form = document.getElementById('slot-form');
+  const cancelBtn = document.getElementById('cancel-btn');
+  const slotsContainer = document.getElementById('slots-container');
+  const errorContainer = document.getElementById('error-container');
+
+  // Afficher/masquer le formulaire
+  addBtn.addEventListener('click', () => {
+    form.style.display = form.style.display === 'none' ? 'block' : 'none';
+    addBtn.style.display = form.style.display === 'none' ? 'block' : 'none';
+  });
+
+  cancelBtn.addEventListener('click', () => {
+    form.style.display = 'none';
+    addBtn.style.display = 'block';
+    form.reset();
+  });
+
+  // Charger les créneaux
+  async function loadSlots() {
+    try {
+      const res = await fetch('/api/appointment-slots', {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+      });
+
+      if (!res.ok) {
+        const err = await res.text();
+        throw new Error(`Erreur ${res.status}: ${err}`);
+      }
+
+      const slots = await res.json();
+      renderSlots(slots);
+    } catch (err) {
+      showError(err instanceof Error ? err.message : 'Erreur');
+      slotsContainer.innerHTML = '<div class="error">Erreur de chargement</div>';
+    }
+  }
+
+  function renderSlots(slots) {
+    if (slots.length === 0) {
+      slotsContainer.innerHTML = '<div class="empty">Aucun créneau configuré</div>';
+      return;
+    }
+
+    const html = `
+      <table class="slots-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Heure</th>
+            <th>Status</th>
+            <th style="text-align: right;">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${slots
+            .map(
+              (slot) => `
+            <tr>
+              <td>${new Date(slot.start_time).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}</td>
+              <td>${new Date(slot.start_time).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })} - ${new Date(slot.end_time).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</td>
+              <td>
+                <span class="badge ${slot.is_available ? 'badge-success' : 'badge-danger'}">
+                  ${slot.is_available ? '✓ Disponible' : '✕ Indisponible'}
+                </span>
+              </td>
+              <td style="text-align: right;">
+                <button class="btn btn-small btn-toggle" data-id="${slot.id}" data-available="${slot.is_available}">
+                  ${slot.is_available ? 'Bloquer' : 'Débloquer'}
+                </button>
+                <button class="btn btn-small btn-delete" data-id="${slot.id}">🗑️ Supprimer</button>
+              </td>
+            </tr>
+          `
+            )
+            .join('')}
+        </tbody>
+      </table>
+    `;
+    slotsContainer.innerHTML = html;
+
+    // Ajouter les event listeners
+    document.querySelectorAll('.btn-delete').forEach((btn) => {
+      btn.addEventListener('click', () => deleteSlot(btn.dataset.id));
+    });
+
+    document.querySelectorAll('.btn-toggle').forEach((btn) => {
+      btn.addEventListener('click', () => toggleSlot(btn.dataset.id, btn.dataset.available === 'true'));
+    });
+  }
+
+  async function deleteSlot(id) {
+    if (!confirm('Supprimer ce créneau ?')) return;
+
+    try {
+      const res = await fetch(`/api/appointment-slots/${id}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+
+      if (!res.ok) throw new Error('Erreur de suppression');
+
+      await loadSlots();
+    } catch (err) {
+      showError(err instanceof Error ? err.message : 'Erreur');
+    }
+  }
+
+  async function toggleSlot(id, isAvailable) {
+    try {
+      const res = await fetch(`/api/appointment-slots/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ is_available: !isAvailable }),
+      });
+
+      if (!res.ok) throw new Error('Erreur de mise à jour');
+
+      await loadSlots();
+    } catch (err) {
+      showError(err instanceof Error ? err.message : 'Erreur');
+    }
+  }
+
+  // Soumettre le formulaire
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const date = new Date(document.getElementById('slot-date').value);
+    const [startH, startM] = document.getElementById('slot-start').value.split(':');
+    const [endH, endM] = document.getElementById('slot-end').value.split(':');
+
+    date.setHours(parseInt(startH), parseInt(startM), 0, 0);
+    const startTime = date.toISOString();
+
+    date.setHours(parseInt(endH), parseInt(endM), 0, 0);
+    const endTime = date.toISOString();
+
+    try {
+      const res = await fetch('/api/appointment-slots', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ start_time: startTime, end_time: endTime }),
+      });
+
+      if (!res.ok) {
+        const err = await res.text();
+        throw new Error(err);
+      }
+
+      form.style.display = 'none';
+      addBtn.style.display = 'block';
+      form.reset();
+      await loadSlots();
+    } catch (err) {
+      showError(err instanceof Error ? err.message : 'Erreur');
+    }
+  });
+
+  function showError(msg) {
+    errorContainer.innerHTML = `<div class="error-alert">❌ ${msg}</div>`;
+    setTimeout(() => (errorContainer.innerHTML = ''), 5000);
+  }
+
+  // Charger les créneaux au démarrage
+  loadSlots();
+</script>
+
+<style>
+  .schedule-manager {
+    padding: 20px;
+  }
+
+  .header {
+    margin-bottom: 20px;
+  }
+
+  .header h1 {
+    font-size: 24px;
+    font-weight: 700;
+    margin: 0;
+  }
+
+  .header p {
+    color: #6b7280;
+    margin: 8px 0 0 0;
+  }
+
+  #error-container {
+    min-height: 20px;
+  }
+
+  .error-alert {
+    background-color: #fee2e2;
+    color: #991b1b;
+    padding: 12px 16px;
+    border-radius: 6px;
+    margin-bottom: 20px;
+    font-size: 14px;
+  }
+
+  .btn {
+    padding: 10px 16px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: opacity 0.2s;
+  }
+
+  .btn:hover {
+    opacity: 0.9;
+  }
+
+  .btn-primary {
+    background-color: #10b981;
+    color: white;
+    margin-bottom: 20px;
+  }
+
+  .btn-success {
+    background-color: #10b981;
+    color: white;
+  }
+
+  .btn-secondary {
+    background-color: #e5e7eb;
+    color: #1f2937;
+  }
+
+  .btn-small {
+    padding: 6px 12px;
+    font-size: 12px;
+    margin-right: 8px;
+  }
+
+  .btn-toggle {
+    background-color: transparent;
+    border: 1px solid #d1d5db;
+    color: #1f2937;
+  }
+
+  .btn-delete {
+    background-color: #fecaca;
+    color: #7f1d1d;
+  }
+
+  .slot-form {
+    background-color: #f9fafb;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    border: 1px solid #e5e7eb;
+  }
+
+  .form-group {
+    margin-bottom: 15px;
+  }
+
+  .form-group label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 600;
+    font-size: 14px;
+  }
+
+  .form-group input {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 14px;
+    box-sizing: border-box;
+  }
+
+  .form-group-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-bottom: 15px;
+  }
+
+  .form-actions {
+    display: flex;
+    gap: 10px;
+  }
+
+  .slots-container {
+    background-color: white;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+  }
+
+  .loading,
+  .empty {
+    padding: 20px;
+    text-align: center;
+    color: #6b7280;
+  }
+
+  .error {
+    padding: 20px;
+    text-align: center;
+    color: #dc2626;
+  }
+
+  .slots-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .slots-table thead tr {
+    border-bottom: 2px solid #e5e7eb;
+  }
+
+  .slots-table th {
+    padding: 12px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 14px;
+  }
+
+  .slots-table td {
+    padding: 12px;
+    border-bottom: 1px solid #e5e7eb;
+    font-size: 14px;
+  }
+
+  .badge {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .badge-success {
+    background-color: #d1fae5;
+    color: #065f46;
+  }
+
+  .badge-danger {
+    background-color: #fecaca;
+    color: #7f1d1d;
+  }
+</style>

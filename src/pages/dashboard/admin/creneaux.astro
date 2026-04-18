@@ -1,0 +1,16 @@
+---
+// src/pages/dashboard/admin/creneaux.astro
+import DashboardLayout from '../../../layouts/DashboardLayout.astro';
+import AdminScheduleManager from '../../../components/AdminScheduleManager.astro';
+import { requireAdmin } from '../../../lib/auth';
+
+const result = await requireAdmin(Astro);
+if (result instanceof Response) return result;
+
+const { user, supabase } = result;
+const userName = user.user_metadata?.full_name ?? user.email?.split('@')[0] ?? 'Admin';
+---
+
+<DashboardLayout title="Configuration des créneaux" activePage="creneaux" userName={userName}>
+  <AdminScheduleManager />
+</DashboardLayout>

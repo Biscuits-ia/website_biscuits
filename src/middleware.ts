@@ -67,15 +67,17 @@ export const onRequest = defineMiddleware(async (context, next) => {
   // attribute, so they are blocked by the CSP. We patch the HTML response here.
   const contentType = response.headers.get('content-type') ?? '';
   if (contentType.includes('text/html')) {
-    const html = await response.text();
+    let html = await response.text();
     // Match <script type="module"> without any src= attribute (inline scripts only)
-    const patched = html.replaceAll(
+    html = html.replaceAll(
       '<script type="module">',
       `<script type="module" nonce="${nonce}">`,
     );
+    // Also match regular <script> tags (inline)
+    html = html.replace(/<script>(?![\s\S]*src=)/g, `<script nonce="${nonce}">`);
     const headers = new Headers(response.headers);
     headers.set('Content-Security-Policy', csp);
-    return new Response(patched, { status: response.status, statusText: response.statusText, headers });
+    return new Response(html, { status: response.status, statusText: response.statusText, headers });
   }
 
   response.headers.set('Content-Security-Policy', csp);

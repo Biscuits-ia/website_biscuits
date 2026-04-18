@@ -56,12 +56,13 @@ const displayEmail = userEmail || authResult.user.email || '';
 // ── Navigation ────────────────────────────────────────────────────────────────
 
 const userNav: NavItem[] = [
-  { id: 'overview',  label: "Vue d'ensemble", icon: 'grid'      },
-  { id: 'ateliers',  label: 'Ateliers',        icon: 'calendar'  },
-  { id: 'resources', label: 'Ressources',      icon: 'flag'      },
-  { id: 'demandes',  label: 'Mes demandes',    icon: 'inbox'     },
-  { id: 'activity',  label: 'Activité',        icon: 'clock'     },
-  { id: 'settings',  label: 'Paramètres',      icon: 'settings'  },
+  { id: 'overview',      label: "Vue d'ensemble", icon: 'grid'      },
+  { id: 'appointments',  label: 'Rendez-vous',    icon: 'calendar'  },
+  { id: 'ateliers',      label: 'Ateliers',       icon: 'calendar'  },
+  { id: 'resources',     label: 'Ressources',     icon: 'flag'      },
+  { id: 'demandes',      label: 'Mes demandes',   icon: 'inbox'     },
+  { id: 'activity',      label: 'Activité',       icon: 'clock'     },
+  { id: 'settings',      label: 'Paramètres',     icon: 'settings'  },
 ];
 
 const adminNav: NavItem[] = [
@@ -69,6 +70,8 @@ const adminNav: NavItem[] = [
   { id: 'demandes',     label: 'Demandes',        icon: 'inbox',        badge: null  },
   { id: 'contacts',     label: 'Contacts',        icon: 'mail',         badge: null  },
   { id: 'candidatures', label: 'Candidatures',    icon: 'user-plus',    badge: null  },
+  { id: 'appointments', label: 'Rendez-vous',     icon: 'calendar',     badge: null  },
+  { id: 'creneaux',     label: 'Configuration',   icon: 'settings',     badge: null  },
   { id: 'ateliers',     label: 'Ateliers',        icon: 'calendar',     badge: null  },
   { id: 'resources',    label: 'Ressources',      icon: 'flag',         badge: null  },
   { id: 'logs',         label: 'Logs système',    icon: 'terminal',     badge: 'LIVE'},

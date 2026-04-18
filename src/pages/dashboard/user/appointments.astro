@@ -1,0 +1,16 @@
+---
+// src/pages/dashboard/user/appointments.astro
+import DashboardLayout from '../../../layouts/DashboardLayout.astro';
+import UserAppointmentBooking from '../../../components/UserAppointmentBooking.astro';
+import { requireAuth } from '../../../lib/auth';
+
+const result = await requireAuth(Astro);
+if (result instanceof Response) return result;
+
+const { user } = result;
+const userName = user.user_metadata?.full_name ?? user.email?.split('@')[0] ?? 'Utilisateur';
+---
+
+<DashboardLayout title="Mes rendez-vous" activePage="appointments" userName={userName} authResult={result}>
+  <UserAppointmentBooking />
+</DashboardLayout>

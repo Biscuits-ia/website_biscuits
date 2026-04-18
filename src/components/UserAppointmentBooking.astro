@@ -1,0 +1,404 @@
+---
+// src/components/UserAppointmentBooking.astro
+---
+
+<div class="appointments-container">
+  <div class="header">
+    <h1>Mes rendez-vous</h1>
+    <p>Réservez un créneau disponible</p>
+  </div>
+
+  <div id="error-container"></div>
+
+  <div id="my-appointments" style="margin-bottom: 30px;"></div>
+
+  <div id="available-slots">
+    <h2>Créneaux disponibles</h2>
+    <div class="loading">⏳ Chargement...</div>
+  </div>
+</div>
+
+<script>
+  const errorContainer = document.getElementById('error-container');
+  const myAppointmentsDiv = document.getElementById('my-appointments');
+  const availableSlotsDiv = document.getElementById('available-slots');
+
+  function showError(msg, duration = 5000) {
+    errorContainer.innerHTML = `<div class="error-alert">❌ ${msg}</div>`;
+    if (duration) setTimeout(() => (errorContainer.innerHTML = ''), duration);
+  }
+
+  function formatSlot(slot) {
+    const start = new Date(slot.start_time);
+    const end = new Date(slot.end_time);
+    return {
+      date: start.toLocaleDateString('fr-FR', {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+      }),
+      time: `${start.getHours().toString().padStart(2, '0')}:${start.getMinutes().toString().padStart(2, '0')} - ${end.getHours().toString().padStart(2, '0')}:${end.getMinutes().toString().padStart(2, '0')}`,
+    };
+  }
+
+  async function loadData() {
+    try {
+      // Charger tous les créneaux disponibles
+      const slotsRes = await fetch('/api/appointment-slots', {
+        credentials: 'include',
+      });
+      if (!slotsRes.ok) throw new Error('Erreur lors du chargement des créneaux');
+      const allSlots = await slotsRes.json();
+
+      // Filtrer les créneaux futurs disponibles
+      const now = new Date();
+      const availableSlots = allSlots.filter((slot) => {
+        const slotStart = new Date(slot.start_time);
+        return slot.is_available && slotStart > now;
+      });
+
+      // Charger mes réservations
+      const appRes = await fetch('/api/user-appointments', {
+        credentials: 'include',
+      });
+      if (!appRes.ok) throw new Error('Erreur lors du chargement des réservations');
+      const myAppointments = await appRes.json();
+
+      // Marquer les créneaux réservés
+      const bookedSlotIds = new Set(myAppointments.map((a) => a.slot_id));
+
+      // Afficher mes réservations
+      renderMyAppointments(myAppointments);
+
+      // Afficher les créneaux disponibles
+      renderAvailableSlots(availableSlots, bookedSlotIds);
+    } catch (err) {
+      showError(err instanceof Error ? err.message : 'Erreur inconnue', 0);
+      availableSlotsDiv.innerHTML =
+        '<div style="color: #dc2626; padding: 20px; text-align: center;">Erreur de chargement</div>';
+    }
+  }
+
+  function renderMyAppointments(appointments) {
+    if (appointments.length === 0) {
+      myAppointmentsDiv.innerHTML = '';
+      return;
+    }
+
+    const html = `
+      <h2>📅 Mes réservations</h2>
+      <div class="my-appointments">
+        ${appointments
+          .map(
+            (app) => `
+          <div class="appointment-card status-${app.status}">
+            <div class="appointment-info">
+              <div class="appointment-date">${formatSlot(app.appointment_slots).date}</div>
+              <div class="appointment-time">${formatSlot(app.appointment_slots).time}</div>
+              <div class="appointment-status">
+                <span class="badge ${app.status === 'confirmed' ? 'badge-confirmed' : app.status === 'cancelled' ? 'badge-cancelled' : 'badge-pending'}">
+                  ${app.status === 'confirmed' ? '✓ Confirmée' : app.status === 'cancelled' ? '✗ Annulée' : '⏳ En attente de confirmation'}
+                </span>
+              </div>
+            </div>
+            <button class="btn btn-danger btn-cancel" data-id="${app.id}">Annuler</button>
+          </div>
+        `
+          )
+          .join('')}
+      </div>
+    `;
+
+    myAppointmentsDiv.innerHTML = html;
+
+    // Ajouter les event listeners
+    document.querySelectorAll('.btn-cancel').forEach((btn) => {
+      btn.addEventListener('click', () => cancelAppointment(btn.dataset.id));
+    });
+  }
+
+  function renderAvailableSlots(slots, bookedSlotIds) {
+    if (slots.length === 0) {
+      availableSlotsDiv.innerHTML = `
+        <h2>Créneaux disponibles</h2>
+        <div class="no-slots">Aucun créneau disponible pour le moment</div>
+      `;
+      return;
+    }
+
+    const html = `
+      <h2>Créneaux disponibles</h2>
+      <div class="slots-list">
+        ${slots
+          .map(
+            (slot) => `
+          <div class="slot-card ${bookedSlotIds.has(slot.id) ? 'booked' : ''}">
+            <div class="slot-info">
+              <div class="slot-date">${formatSlot(slot).date}</div>
+              <div class="slot-time">${formatSlot(slot).time}</div>
+            </div>
+            <button 
+              class="btn btn-book" 
+              data-id="${slot.id}"
+              ${bookedSlotIds.has(slot.id) ? 'disabled' : ''}
+            >
+              ${bookedSlotIds.has(slot.id) ? '✓ Réservé' : 'Réserver'}
+            </button>
+          </div>
+        `
+          )
+          .join('')}
+      </div>
+    `;
+
+    availableSlotsDiv.innerHTML = html;
+
+    // Ajouter les event listeners
+    document.querySelectorAll('.btn-book:not(:disabled)').forEach((btn) => {
+      btn.addEventListener('click', () => bookSlot(btn.dataset.id));
+    });
+  }
+
+  async function cancelAppointment(id) {
+    if (!confirm('Annuler cette réservation ?')) return;
+
+    try {
+      const res = await fetch(`/api/user-appointments/${id}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+
+      if (!res.ok) throw new Error('Erreur lors de l\'annulation');
+      showError('', 0);
+      await loadData();
+    } catch (err) {
+      showError(err instanceof Error ? err.message : 'Erreur inconnue', 0);
+    }
+  }
+
+  async function bookSlot(slotId) {
+    try {
+      const res = await fetch('/api/user-appointments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ slot_id: slotId }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || 'Erreur lors de la réservation');
+      }
+
+      showError('', 0);
+      await loadData();
+    } catch (err) {
+      showError(err instanceof Error ? err.message : 'Erreur inconnue', 0);
+    }
+  }
+
+  // Charger les données au démarrage
+  loadData();
+</script>
+
+<style>
+  .appointments-container {
+    padding: 20px;
+  }
+
+  .header {
+    margin-bottom: 30px;
+  }
+
+  .header h1 {
+    font-size: 24px;
+    font-weight: 700;
+    margin: 0 0 8px 0;
+  }
+
+  .header p {
+    color: #6b7280;
+    margin: 0;
+  }
+
+  #error-container {
+    min-height: 20px;
+  }
+
+  .error-alert {
+    background-color: #fee2e2;
+    color: #991b1b;
+    padding: 12px 16px;
+    border-radius: 6px;
+    margin-bottom: 20px;
+    font-size: 14px;
+  }
+
+  h2 {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0 0 15px 0;
+  }
+
+  .loading {
+    text-align: center;
+    color: #6b7280;
+    padding: 40px;
+  }
+
+  .no-slots {
+    background-color: #fef3c7;
+    border: 1px solid #fcd34d;
+    border-radius: 8px;
+    padding: 20px;
+    text-align: center;
+    color: #92400e;
+  }
+
+  .my-appointments {
+    background-color: #d1fae5;
+    border: 1px solid #6ee7b7;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 30px;
+  }
+
+  .appointment-card {
+    padding: 12px;
+    background-color: white;
+    border-radius: 6px;
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .appointment-date {
+    font-weight: 600;
+    color: #065f46;
+  }
+
+  .appointment-time {
+    color: #047857;
+    font-size: 14px;
+    margin-top: 4px;
+  }
+
+  .slots-list {
+    display: grid;
+    gap: 12px;
+  }
+
+  .slot-card {
+    background-color: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.2s;
+  }
+
+  .slot-card:hover:not(.booked) {
+    border-color: #10b981;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.1);
+  }
+
+  .slot-card.booked {
+    background-color: #f3f4f6;
+    opacity: 0.6;
+  }
+
+  .slot-date {
+    font-weight: 600;
+    color: #1f2937;
+  }
+
+  .slot-time {
+    color: #6b7280;
+    font-size: 14px;
+    margin-top: 4px;
+  }
+
+  .btn {
+    padding: 10px 16px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: opacity 0.2s;
+  }
+
+  .btn:hover:not(:disabled) {
+    opacity: 0.9;
+  }
+
+  .btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .btn-book {
+    background-color: #10b981;
+    color: white;
+  }
+
+  .btn-danger {
+    background-color: #fecaca;
+    color: #7f1d1d;
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+
+  .btn-cancel {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+
+  .appointment-info {
+    flex: 1;
+  }
+
+  .appointment-status {
+    margin-top: 8px;
+  }
+
+  .badge {
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    display: inline-block;
+  }
+
+  .badge-confirmed {
+    background-color: #d1fae5;
+    color: #065f46;
+  }
+
+  .badge-pending {
+    background-color: #fef3c7;
+    color: #92400e;
+  }
+
+  .badge-cancelled {
+    background-color: #fee2e2;
+    color: #991b1b;
+  }
+
+  .appointment-card.status-pending {
+    border-left: 4px solid #f59e0b;
+  }
+
+  .appointment-card.status-confirmed {
+    border-left: 4px solid #10b981;
+  }
+
+  .appointment-card.status-cancelled {
+    border-left: 4px solid #ef4444;
+    opacity: 0.7;
+  }
+</style>

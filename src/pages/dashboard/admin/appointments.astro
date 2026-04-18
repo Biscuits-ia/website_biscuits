@@ -1,0 +1,22 @@
+---
+import AdminAppointmentsDashboard from '@/components/AdminAppointmentsDashboard.astro';
+import DashboardLayout from '@/layouts/DashboardLayout.astro';
+
+// Vérifier que l'utilisateur est authentifié et admin
+const { cookies } = Astro;
+const authToken = cookies.get('sb-access-token')?.value;
+
+if (!authToken) {
+  return Astro.redirect('/connexion');
+}
+---
+
+<DashboardLayout title="Gestion des rendez-vous">
+  <AdminAppointmentsDashboard />
+</DashboardLayout>
+
+<style>
+  :global(body) {
+    background: var(--color-bg-alt);
+  }
+</style>

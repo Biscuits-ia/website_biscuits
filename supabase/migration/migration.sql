@@ -11,11 +11,17 @@
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";   -- gen_random_uuid()
 
 -- ─────────────────────────────────────────────────────────────────────────────
+-- 0.5 Schema Migration (handle existing tables)
+-- ─────────────────────────────────────────────────────────────────────────────
+-- Drop old volunteer_appointments if it exists (to rebuild with new schema)
+DROP TABLE IF EXISTS public.volunteer_appointments CASCADE;
+
+-- ─────────────────────────────────────────────────────────────────────────────
 -- 1. Tables
 -- ─────────────────────────────────────────────────────────────────────────────
 
 -- ── 2.1 profiles ─────────────────────────────────────────────────────────────
-CREATE TABLE public.profiles (
+CREATE TABLE IF NOT EXISTS public.profiles (
   id              uuid PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
   email           text NOT NULL,
   full_name       text,
@@ -28,7 +34,7 @@ CREATE TABLE public.profiles (
 COMMENT ON TABLE public.profiles IS 'Profil utilisateur — créé automatiquement via trigger on_auth_user_created';
 
 -- ── 2.2 contact_submissions ─────────────────────────────────────────────────
-CREATE TABLE public.contact_submissions (
+CREATE TABLE IF NOT EXISTS public.contact_submissions (
   id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   name        text NOT NULL,
   email       text NOT NULL,
@@ -42,7 +48,7 @@ CREATE TABLE public.contact_submissions (
 COMMENT ON TABLE public.contact_submissions IS 'Soumissions du formulaire de contact (public)';
 
 -- ── 2.3 recruitment_submissions ─────────────────────────────────────────────
-CREATE TABLE public.recruitment_submissions (
+CREATE TABLE IF NOT EXISTS public.recruitment_submissions (
   id           uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   first_name   text NOT NULL,
   last_name    text NOT NULL,
@@ -58,7 +64,7 @@ CREATE TABLE public.recruitment_submissions (
 COMMENT ON TABLE public.recruitment_submissions IS 'Candidatures (formulaire rejoignez-nous)';
 
 -- ── 2.4 requests ────────────────────────────────────────────────────────────
-CREATE TABLE public.requests (
+CREATE TABLE IF NOT EXISTS public.requests (
   id           uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id      uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   subject      text NOT NULL,
@@ -72,7 +78,7 @@ CREATE TABLE public.requests (
 COMMENT ON TABLE public.requests IS 'Demandes utilisateur (support / questions)';
 
 -- ── 2.5 workshops ───────────────────────────────────────────────────────────
-CREATE TABLE public.workshops (
+CREATE TABLE IF NOT EXISTS public.workshops (
   id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   title       text NOT NULL,
   description text,
@@ -81,7 +87,7 @@ CREATE TABLE public.workshops (
 );
 
 -- ── 2.6 workshop_sessions ───────────────────────────────────────────────────
-CREATE TABLE public.workshop_sessions (
+CREATE TABLE IF NOT EXISTS public.workshop_sessions (
   id           uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   workshop_id  uuid NOT NULL REFERENCES public.workshops(id) ON DELETE CASCADE,
   starts_at    timestamptz NOT NULL,
@@ -92,7 +98,7 @@ CREATE TABLE public.workshop_sessions (
 );
 
 -- ── 2.7 workshop_registrations ──────────────────────────────────────────────
-CREATE TABLE public.workshop_registrations (
+CREATE TABLE IF NOT EXISTS public.workshop_registrations (
   id         uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   session_id uuid NOT NULL REFERENCES public.workshop_sessions(id) ON DELETE CASCADE,
   user_id    uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
@@ -101,7 +107,7 @@ CREATE TABLE public.workshop_registrations (
 );
 
 -- ── 2.8 software ────────────────────────────────────────────────────────────
-CREATE TABLE public.software (
+CREATE TABLE IF NOT EXISTS public.software (
   id           uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   name         text NOT NULL,
   description  text,
@@ -116,7 +122,7 @@ CREATE TABLE public.software (
 );
 
 -- ── 2.9 resources ───────────────────────────────────────────────────────────
-CREATE TABLE public.resources (
+CREATE TABLE IF NOT EXISTS public.resources (
   id           uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   title        text NOT NULL,
   description  text,
@@ -133,7 +139,7 @@ CREATE TABLE public.resources (
 );
 
 -- ── 2.10 resource_downloads ─────────────────────────────────────────────────
-CREATE TABLE public.resource_downloads (
+CREATE TABLE IF NOT EXISTS public.resource_downloads (
   id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   resource_id uuid NOT NULL REFERENCES public.resources(id) ON DELETE CASCADE,
   user_id     uuid REFERENCES auth.users(id) ON DELETE SET NULL,
@@ -141,7 +147,7 @@ CREATE TABLE public.resource_downloads (
 );
 
 -- ── 2.11 reports ────────────────────────────────────────────────────────────
-CREATE TABLE public.reports (
+CREATE TABLE IF NOT EXISTS public.reports (
   id         uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id    uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   status     text NOT NULL DEFAULT 'pending'
@@ -150,7 +156,7 @@ CREATE TABLE public.reports (
 );
 
 -- ── 2.12 activity_logs ──────────────────────────────────────────────────────
-CREATE TABLE public.activity_logs (
+CREATE TABLE IF NOT EXISTS public.activity_logs (
   id         uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id    uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   event      text NOT NULL,
@@ -159,7 +165,7 @@ CREATE TABLE public.activity_logs (
 );
 
 -- ── 2.13 system_logs ────────────────────────────────────────────────────────
-CREATE TABLE public.system_logs (
+CREATE TABLE IF NOT EXISTS public.system_logs (
   id         uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   level      text NOT NULL DEFAULT 'INFO'
                CHECK (level IN ('INFO', 'WARN', 'ERROR', 'DEBUG')),
@@ -169,24 +175,73 @@ CREATE TABLE public.system_logs (
   created_at timestamptz NOT NULL DEFAULT now()
 );
 
+-- ── 2.14 partners ───────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS public.partners (
+  id              uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  name            text NOT NULL,
+  description     text,
+  collaboration   text,
+  logo_url        text,
+  website_url     text,
+  expertise       text[] DEFAULT ARRAY[]::text[],
+  display_order   integer DEFAULT 0,
+  is_published    boolean NOT NULL DEFAULT true,
+  created_at      timestamptz NOT NULL DEFAULT now(),
+  updated_at      timestamptz NOT NULL DEFAULT now()
+);
+COMMENT ON TABLE public.partners IS 'Partenaires de confiance — entreprises avec lesquelles nous travaillons';
+
+-- ── 2.15 appointment_slots ──────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS public.appointment_slots (
+  id              uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  start_time      timestamptz NOT NULL,
+  end_time        timestamptz NOT NULL,
+  is_available    boolean NOT NULL DEFAULT true,
+  created_at      timestamptz NOT NULL DEFAULT now(),
+  updated_at      timestamptz NOT NULL DEFAULT now()
+);
+COMMENT ON TABLE public.appointment_slots IS 'Créneaux de rendez-vous disponibles configurés par l''admin';
+
+-- ── 2.16 volunteer_appointments ─────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS public.volunteer_appointments (
+  id              uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  slot_id         uuid REFERENCES public.appointment_slots(id) ON DELETE SET NULL,
+  user_id         uuid REFERENCES auth.users(id) ON DELETE CASCADE,
+  candidate_email text,
+  status          text NOT NULL DEFAULT 'pending'
+                    CHECK (status IN ('pending', 'confirmed', 'cancelled')),
+  notes           text,
+  created_at      timestamptz NOT NULL DEFAULT now(),
+  updated_at      timestamptz NOT NULL DEFAULT now()
+);
+COMMENT ON TABLE public.volunteer_appointments IS 'Réservations de rendez-vous — utilisateurs et candidats';
+
 -- ── Index ───────────────────────────────────────────────────────────────────
-CREATE INDEX idx_profiles_role            ON public.profiles (role);
-CREATE INDEX idx_requests_user_id         ON public.requests (user_id);
-CREATE INDEX idx_requests_status          ON public.requests (status);
-CREATE INDEX idx_workshop_sessions_wid    ON public.workshop_sessions (workshop_id);
-CREATE INDEX idx_workshop_regs_session    ON public.workshop_registrations (session_id);
-CREATE INDEX idx_workshop_regs_user       ON public.workshop_registrations (user_id);
-CREATE INDEX idx_resources_category       ON public.resources (category);
-CREATE INDEX idx_resources_published      ON public.resources (is_published);
-CREATE INDEX idx_resource_dl_resource     ON public.resource_downloads (resource_id);
-CREATE INDEX idx_reports_user_id          ON public.reports (user_id);
-CREATE INDEX idx_reports_status           ON public.reports (status);
-CREATE INDEX idx_activity_logs_user       ON public.activity_logs (user_id);
-CREATE INDEX idx_activity_logs_created    ON public.activity_logs (created_at DESC);
-CREATE INDEX idx_system_logs_level        ON public.system_logs (level);
-CREATE INDEX idx_system_logs_created      ON public.system_logs (created_at DESC);
-CREATE INDEX idx_contact_submissions_st   ON public.contact_submissions (status);
-CREATE INDEX idx_recruitment_submissions  ON public.recruitment_submissions (status);
+CREATE INDEX IF NOT EXISTS idx_profiles_role            ON public.profiles (role);
+CREATE INDEX IF NOT EXISTS idx_requests_user_id         ON public.requests (user_id);
+CREATE INDEX IF NOT EXISTS idx_requests_status          ON public.requests (status);
+CREATE INDEX IF NOT EXISTS idx_workshop_sessions_wid    ON public.workshop_sessions (workshop_id);
+CREATE INDEX IF NOT EXISTS idx_workshop_regs_session    ON public.workshop_registrations (session_id);
+CREATE INDEX IF NOT EXISTS idx_workshop_regs_user       ON public.workshop_registrations (user_id);
+CREATE INDEX IF NOT EXISTS idx_resources_category       ON public.resources (category);
+CREATE INDEX IF NOT EXISTS idx_resources_published      ON public.resources (is_published);
+CREATE INDEX IF NOT EXISTS idx_resource_dl_resource     ON public.resource_downloads (resource_id);
+CREATE INDEX IF NOT EXISTS idx_reports_user_id          ON public.reports (user_id);
+CREATE INDEX IF NOT EXISTS idx_reports_status           ON public.reports (status);
+CREATE INDEX IF NOT EXISTS idx_activity_logs_user       ON public.activity_logs (user_id);
+CREATE INDEX IF NOT EXISTS idx_activity_logs_created    ON public.activity_logs (created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_system_logs_level        ON public.system_logs (level);
+CREATE INDEX IF NOT EXISTS idx_system_logs_created      ON public.system_logs (created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_contact_submissions_st   ON public.contact_submissions (status);
+CREATE INDEX IF NOT EXISTS idx_recruitment_submissions  ON public.recruitment_submissions (status);
+CREATE INDEX IF NOT EXISTS idx_partners_published       ON public.partners (is_published);
+CREATE INDEX IF NOT EXISTS idx_partners_display_order   ON public.partners (display_order);
+CREATE INDEX IF NOT EXISTS idx_appointment_slots_available    ON public.appointment_slots (is_available);
+CREATE INDEX IF NOT EXISTS idx_appointment_slots_start_time   ON public.appointment_slots (start_time);
+CREATE INDEX IF NOT EXISTS idx_volunteer_appt_slot_id   ON public.volunteer_appointments (slot_id);
+CREATE INDEX IF NOT EXISTS idx_volunteer_appt_user_id   ON public.volunteer_appointments (user_id);
+CREATE INDEX IF NOT EXISTS idx_volunteer_appt_status    ON public.volunteer_appointments (status);
+CREATE INDEX IF NOT EXISTS idx_volunteer_appt_email     ON public.volunteer_appointments (candidate_email);
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- 2. Fonction helper : get_my_role()
@@ -375,17 +430,34 @@ CREATE TRIGGER on_auth_user_created
   EXECUTE FUNCTION public.handle_new_user();
 
 -- Met à jour updated_at sur resources
+DROP TRIGGER IF EXISTS set_resources_updated_at ON public.resources;
 CREATE TRIGGER set_resources_updated_at
   BEFORE UPDATE ON public.resources
   FOR EACH ROW
   EXECUTE FUNCTION public.update_updated_at_column();
 
+-- Met à jour updated_at sur appointment_slots
+DROP TRIGGER IF EXISTS set_appointment_slots_updated_at ON public.appointment_slots;
+CREATE TRIGGER set_appointment_slots_updated_at
+  BEFORE UPDATE ON public.appointment_slots
+  FOR EACH ROW
+  EXECUTE FUNCTION public.update_updated_at_column();
+
+-- Met à jour updated_at sur volunteer_appointments
+DROP TRIGGER IF EXISTS set_volunteer_appointments_updated_at ON public.volunteer_appointments;
+CREATE TRIGGER set_volunteer_appointments_updated_at
+  BEFORE UPDATE ON public.volunteer_appointments
+  FOR EACH ROW
+  EXECUTE FUNCTION public.update_updated_at_column();
+
 -- Met à jour reports_count sur profiles quand un report est ajouté/supprimé
+DROP TRIGGER IF EXISTS on_report_inserted ON public.reports;
 CREATE TRIGGER on_report_inserted
   AFTER INSERT ON public.reports
   FOR EACH ROW
   EXECUTE FUNCTION public.update_reports_count();
 
+DROP TRIGGER IF EXISTS on_report_deleted ON public.reports;
 CREATE TRIGGER on_report_deleted
   AFTER DELETE ON public.reports
   FOR EACH ROW
@@ -398,19 +470,23 @@ CREATE TRIGGER on_report_deleted
 -- ── 6.1 profiles ────────────────────────────────────────────────────────────
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "profiles_select_own" ON public.profiles;
 CREATE POLICY "profiles_select_own"
   ON public.profiles FOR SELECT
   USING (id = auth.uid());
 
+DROP POLICY IF EXISTS "profiles_update_own" ON public.profiles;
 CREATE POLICY "profiles_update_own"
   ON public.profiles FOR UPDATE
   USING (id = auth.uid())
   WITH CHECK (id = auth.uid());
 
+DROP POLICY IF EXISTS "profiles_admin_select_all" ON public.profiles;
 CREATE POLICY "profiles_admin_select_all"
   ON public.profiles FOR SELECT
   USING (public.get_my_role() = 'admin');
 
+DROP POLICY IF EXISTS "profiles_admin_update_all" ON public.profiles;
 CREATE POLICY "profiles_admin_update_all"
   ON public.profiles FOR UPDATE
   USING (public.get_my_role() = 'admin');
@@ -418,18 +494,22 @@ CREATE POLICY "profiles_admin_update_all"
 -- ── 6.2 contact_submissions ────────────────────────────────────────────────
 ALTER TABLE public.contact_submissions ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "contact_anon_insert" ON public.contact_submissions;
 CREATE POLICY "contact_anon_insert"
   ON public.contact_submissions FOR INSERT
   WITH CHECK (true);
 
+DROP POLICY IF EXISTS "contact_admin_select" ON public.contact_submissions;
 CREATE POLICY "contact_admin_select"
   ON public.contact_submissions FOR SELECT
   USING (public.get_my_role() = 'admin');
 
+DROP POLICY IF EXISTS "contact_admin_update" ON public.contact_submissions;
 CREATE POLICY "contact_admin_update"
   ON public.contact_submissions FOR UPDATE
   USING (public.get_my_role() = 'admin');
 
+DROP POLICY IF EXISTS "contact_admin_delete" ON public.contact_submissions;
 CREATE POLICY "contact_admin_delete"
   ON public.contact_submissions FOR DELETE
   USING (public.get_my_role() = 'admin');
@@ -437,18 +517,22 @@ CREATE POLICY "contact_admin_delete"
 -- ── 6.3 recruitment_submissions ────────────────────────────────────────────
 ALTER TABLE public.recruitment_submissions ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "recruitment_anon_insert" ON public.recruitment_submissions;
 CREATE POLICY "recruitment_anon_insert"
   ON public.recruitment_submissions FOR INSERT
   WITH CHECK (true);
 
+DROP POLICY IF EXISTS "recruitment_admin_select" ON public.recruitment_submissions;
 CREATE POLICY "recruitment_admin_select"
   ON public.recruitment_submissions FOR SELECT
   USING (public.get_my_role() = 'admin');
 
+DROP POLICY IF EXISTS "recruitment_admin_update" ON public.recruitment_submissions;
 CREATE POLICY "recruitment_admin_update"
   ON public.recruitment_submissions FOR UPDATE
   USING (public.get_my_role() = 'admin');
 
+DROP POLICY IF EXISTS "recruitment_admin_delete" ON public.recruitment_submissions;
 CREATE POLICY "recruitment_admin_delete"
   ON public.recruitment_submissions FOR DELETE
   USING (public.get_my_role() = 'admin');
@@ -456,22 +540,27 @@ CREATE POLICY "recruitment_admin_delete"
 -- ── 6.4 requests ───────────────────────────────────────────────────────────
 ALTER TABLE public.requests ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "requests_insert_own" ON public.requests;
 CREATE POLICY "requests_insert_own"
   ON public.requests FOR INSERT
   WITH CHECK (user_id = auth.uid());
 
+DROP POLICY IF EXISTS "requests_select_own" ON public.requests;
 CREATE POLICY "requests_select_own"
   ON public.requests FOR SELECT
   USING (user_id = auth.uid());
 
+DROP POLICY IF EXISTS "requests_admin_select_all" ON public.requests;
 CREATE POLICY "requests_admin_select_all"
   ON public.requests FOR SELECT
   USING (public.get_my_role() = 'admin');
 
+DROP POLICY IF EXISTS "requests_admin_update_all" ON public.requests;
 CREATE POLICY "requests_admin_update_all"
   ON public.requests FOR UPDATE
   USING (public.get_my_role() = 'admin');
 
+DROP POLICY IF EXISTS "requests_admin_delete_all" ON public.requests;
 CREATE POLICY "requests_admin_delete_all"
   ON public.requests FOR DELETE
   USING (public.get_my_role() = 'admin');
@@ -479,18 +568,22 @@ CREATE POLICY "requests_admin_delete_all"
 -- ── 6.5 workshops ──────────────────────────────────────────────────────────
 ALTER TABLE public.workshops ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "workshops_select_all" ON public.workshops;
 CREATE POLICY "workshops_select_all"
   ON public.workshops FOR SELECT
   USING (true);
 
+DROP POLICY IF EXISTS "workshops_admin_insert" ON public.workshops;
 CREATE POLICY "workshops_admin_insert"
   ON public.workshops FOR INSERT
   WITH CHECK (public.get_my_role() = 'admin');
 
+DROP POLICY IF EXISTS "workshops_admin_update" ON public.workshops;
 CREATE POLICY "workshops_admin_update"
   ON public.workshops FOR UPDATE
   USING (public.get_my_role() = 'admin');
 
+DROP POLICY IF EXISTS "workshops_admin_delete" ON public.workshops;
 CREATE POLICY "workshops_admin_delete"
   ON public.workshops FOR DELETE
   USING (public.get_my_role() = 'admin');
@@ -498,18 +591,22 @@ CREATE POLICY "workshops_admin_delete"
 -- ── 6.6 workshop_sessions ──────────────────────────────────────────────────
 ALTER TABLE public.workshop_sessions ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "sessions_select_published" ON public.workshop_sessions;
 CREATE POLICY "sessions_select_published"
   ON public.workshop_sessions FOR SELECT
   USING (is_published = true OR public.get_my_role() = 'admin');
 
+DROP POLICY IF EXISTS "sessions_admin_insert" ON public.workshop_sessions;
 CREATE POLICY "sessions_admin_insert"
   ON public.workshop_sessions FOR INSERT
   WITH CHECK (public.get_my_role() = 'admin');
 
+DROP POLICY IF EXISTS "sessions_admin_update" ON public.workshop_sessions;
 CREATE POLICY "sessions_admin_update"
   ON public.workshop_sessions FOR UPDATE
   USING (public.get_my_role() = 'admin');
 
+DROP POLICY IF EXISTS "sessions_admin_delete" ON public.workshop_sessions;
 CREATE POLICY "sessions_admin_delete"
   ON public.workshop_sessions FOR DELETE
   USING (public.get_my_role() = 'admin');
@@ -517,22 +614,27 @@ CREATE POLICY "sessions_admin_delete"
 -- ── 6.7 workshop_registrations ─────────────────────────────────────────────
 ALTER TABLE public.workshop_registrations ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "regs_select_own" ON public.workshop_registrations;
 CREATE POLICY "regs_select_own"
   ON public.workshop_registrations FOR SELECT
   USING (user_id = auth.uid());
 
+DROP POLICY IF EXISTS "regs_insert_own" ON public.workshop_registrations;
 CREATE POLICY "regs_insert_own"
   ON public.workshop_registrations FOR INSERT
   WITH CHECK (user_id = auth.uid());
 
+DROP POLICY IF EXISTS "regs_delete_own" ON public.workshop_registrations;
 CREATE POLICY "regs_delete_own"
   ON public.workshop_registrations FOR DELETE
   USING (user_id = auth.uid());
 
+DROP POLICY IF EXISTS "regs_admin_select_all" ON public.workshop_registrations;
 CREATE POLICY "regs_admin_select_all"
   ON public.workshop_registrations FOR SELECT
   USING (public.get_my_role() = 'admin');
 
+DROP POLICY IF EXISTS "regs_admin_delete_all" ON public.workshop_registrations;
 CREATE POLICY "regs_admin_delete_all"
   ON public.workshop_registrations FOR DELETE
   USING (public.get_my_role() = 'admin');
@@ -540,18 +642,22 @@ CREATE POLICY "regs_admin_delete_all"
 -- ── 6.8 software ───────────────────────────────────────────────────────────
 ALTER TABLE public.software ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "software_select_visible" ON public.software;
 CREATE POLICY "software_select_visible"
   ON public.software FOR SELECT
   USING (is_visible = true OR public.get_my_role() = 'admin');
 
+DROP POLICY IF EXISTS "software_admin_insert" ON public.software;
 CREATE POLICY "software_admin_insert"
   ON public.software FOR INSERT
   WITH CHECK (public.get_my_role() = 'admin');
 
+DROP POLICY IF EXISTS "software_admin_update" ON public.software;
 CREATE POLICY "software_admin_update"
   ON public.software FOR UPDATE
   USING (public.get_my_role() = 'admin');
 
+DROP POLICY IF EXISTS "software_admin_delete" ON public.software;
 CREATE POLICY "software_admin_delete"
   ON public.software FOR DELETE
   USING (public.get_my_role() = 'admin');
@@ -559,18 +665,22 @@ CREATE POLICY "software_admin_delete"
 -- ── 6.9 resources ──────────────────────────────────────────────────────────
 ALTER TABLE public.resources ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "resources_select_published" ON public.resources;
 CREATE POLICY "resources_select_published"
   ON public.resources FOR SELECT
   USING (is_published = true OR public.get_my_role() = 'admin');
 
+DROP POLICY IF EXISTS "resources_admin_insert" ON public.resources;
 CREATE POLICY "resources_admin_insert"
   ON public.resources FOR INSERT
   WITH CHECK (public.get_my_role() = 'admin');
 
+DROP POLICY IF EXISTS "resources_admin_update" ON public.resources;
 CREATE POLICY "resources_admin_update"
   ON public.resources FOR UPDATE
   USING (public.get_my_role() = 'admin');
 
+DROP POLICY IF EXISTS "resources_admin_delete" ON public.resources;
 CREATE POLICY "resources_admin_delete"
   ON public.resources FOR DELETE
   USING (public.get_my_role() = 'admin');
@@ -578,10 +688,12 @@ CREATE POLICY "resources_admin_delete"
 -- ── 6.10 resource_downloads ────────────────────────────────────────────────
 ALTER TABLE public.resource_downloads ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "downloads_insert_any" ON public.resource_downloads;
 CREATE POLICY "downloads_insert_any"
   ON public.resource_downloads FOR INSERT
   WITH CHECK (true);
 
+DROP POLICY IF EXISTS "downloads_admin_select" ON public.resource_downloads;
 CREATE POLICY "downloads_admin_select"
   ON public.resource_downloads FOR SELECT
   USING (public.get_my_role() = 'admin');
@@ -589,18 +701,22 @@ CREATE POLICY "downloads_admin_select"
 -- ── 6.11 reports ───────────────────────────────────────────────────────────
 ALTER TABLE public.reports ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "reports_select_own" ON public.reports;
 CREATE POLICY "reports_select_own"
   ON public.reports FOR SELECT
   USING (user_id = auth.uid());
 
+DROP POLICY IF EXISTS "reports_insert_own" ON public.reports;
 CREATE POLICY "reports_insert_own"
   ON public.reports FOR INSERT
   WITH CHECK (user_id = auth.uid());
 
+DROP POLICY IF EXISTS "reports_admin_select_all" ON public.reports;
 CREATE POLICY "reports_admin_select_all"
   ON public.reports FOR SELECT
   USING (public.get_my_role() = 'admin');
 
+DROP POLICY IF EXISTS "reports_admin_update_all" ON public.reports;
 CREATE POLICY "reports_admin_update_all"
   ON public.reports FOR UPDATE
   USING (public.get_my_role() = 'admin');
@@ -608,14 +724,17 @@ CREATE POLICY "reports_admin_update_all"
 -- ── 6.12 activity_logs ─────────────────────────────────────────────────────
 ALTER TABLE public.activity_logs ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "activity_logs_select_own" ON public.activity_logs;
 CREATE POLICY "activity_logs_select_own"
   ON public.activity_logs FOR SELECT
   USING (user_id = auth.uid());
 
+DROP POLICY IF EXISTS "activity_logs_insert_own" ON public.activity_logs;
 CREATE POLICY "activity_logs_insert_own"
   ON public.activity_logs FOR INSERT
   WITH CHECK (user_id = auth.uid());
 
+DROP POLICY IF EXISTS "activity_logs_admin_select" ON public.activity_logs;
 CREATE POLICY "activity_logs_admin_select"
   ON public.activity_logs FOR SELECT
   USING (public.get_my_role() = 'admin');
@@ -623,13 +742,115 @@ CREATE POLICY "activity_logs_admin_select"
 -- ── 6.13 system_logs ───────────────────────────────────────────────────────
 ALTER TABLE public.system_logs ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "system_logs_admin_select" ON public.system_logs;
 CREATE POLICY "system_logs_admin_select"
   ON public.system_logs FOR SELECT
   USING (public.get_my_role() = 'admin');
 
+DROP POLICY IF EXISTS "system_logs_admin_insert" ON public.system_logs;
 CREATE POLICY "system_logs_admin_insert"
   ON public.system_logs FOR INSERT
   WITH CHECK (public.get_my_role() = 'admin');
+
+-- ── 6.14 partners ──────────────────────────────────────────────────────────
+ALTER TABLE public.partners ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "partners_select_published" ON public.partners;
+CREATE POLICY "partners_select_published"
+  ON public.partners FOR SELECT
+  USING (is_published = true);
+
+DROP POLICY IF EXISTS "partners_admin_select_all" ON public.partners;
+CREATE POLICY "partners_admin_select_all"
+  ON public.partners FOR SELECT
+  USING (public.get_my_role() = 'admin');
+
+DROP POLICY IF EXISTS "partners_admin_insert" ON public.partners;
+CREATE POLICY "partners_admin_insert"
+  ON public.partners FOR INSERT
+  WITH CHECK (public.get_my_role() = 'admin');
+
+DROP POLICY IF EXISTS "partners_admin_update" ON public.partners;
+CREATE POLICY "partners_admin_update"
+  ON public.partners FOR UPDATE
+  USING (public.get_my_role() = 'admin');
+
+DROP POLICY IF EXISTS "partners_admin_delete" ON public.partners;
+CREATE POLICY "partners_admin_delete"
+  ON public.partners FOR DELETE
+  USING (public.get_my_role() = 'admin');
+
+-- ── 6.15 appointment_slots ────────────────────────────────────────────────
+ALTER TABLE public.appointment_slots ENABLE ROW LEVEL SECURITY;
+
+-- Tous peuvent voir les créneaux disponibles
+DROP POLICY IF EXISTS "slots_select_available" ON public.appointment_slots;
+CREATE POLICY "slots_select_available"
+  ON public.appointment_slots FOR SELECT
+  USING (is_available = true OR public.get_my_role() = 'admin');
+
+-- Admin: accès complet
+DROP POLICY IF EXISTS "slots_admin_select_all" ON public.appointment_slots;
+CREATE POLICY "slots_admin_select_all"
+  ON public.appointment_slots FOR SELECT
+  USING (public.get_my_role() = 'admin');
+
+DROP POLICY IF EXISTS "slots_admin_insert" ON public.appointment_slots;
+CREATE POLICY "slots_admin_insert"
+  ON public.appointment_slots FOR INSERT
+  WITH CHECK (public.get_my_role() = 'admin');
+
+DROP POLICY IF EXISTS "slots_admin_update" ON public.appointment_slots;
+CREATE POLICY "slots_admin_update"
+  ON public.appointment_slots FOR UPDATE
+  USING (public.get_my_role() = 'admin');
+
+DROP POLICY IF EXISTS "slots_admin_delete" ON public.appointment_slots;
+CREATE POLICY "slots_admin_delete"
+  ON public.appointment_slots FOR DELETE
+  USING (public.get_my_role() = 'admin');
+
+-- ── 6.16 volunteer_appointments ────────────────────────────────────────────
+ALTER TABLE public.volunteer_appointments ENABLE ROW LEVEL SECURITY;
+
+-- Utilisateurs peuvent voir leurs propres réservations
+DROP POLICY IF EXISTS "volunteer_appt_select_own" ON public.volunteer_appointments;
+CREATE POLICY "volunteer_appt_select_own"
+  ON public.volunteer_appointments FOR SELECT
+  USING (user_id = auth.uid());
+
+-- Utilisateurs peuvent créer leurs propres réservations
+DROP POLICY IF EXISTS "volunteer_appt_insert_own" ON public.volunteer_appointments;
+CREATE POLICY "volunteer_appt_insert_own"
+  ON public.volunteer_appointments FOR INSERT
+  WITH CHECK (user_id = auth.uid());
+
+-- Utilisateurs peuvent supprimer leurs propres réservations
+DROP POLICY IF EXISTS "volunteer_appt_delete_own" ON public.volunteer_appointments;
+CREATE POLICY "volunteer_appt_delete_own"
+  ON public.volunteer_appointments FOR DELETE
+  USING (user_id = auth.uid());
+
+-- Admin: accès complet
+DROP POLICY IF EXISTS "volunteer_appt_admin_select_all" ON public.volunteer_appointments;
+CREATE POLICY "volunteer_appt_admin_select_all"
+  ON public.volunteer_appointments FOR SELECT
+  USING (public.get_my_role() = 'admin');
+
+DROP POLICY IF EXISTS "volunteer_appt_admin_insert" ON public.volunteer_appointments;
+CREATE POLICY "volunteer_appt_admin_insert"
+  ON public.volunteer_appointments FOR INSERT
+  WITH CHECK (public.get_my_role() = 'admin');
+
+DROP POLICY IF EXISTS "volunteer_appt_admin_update" ON public.volunteer_appointments;
+CREATE POLICY "volunteer_appt_admin_update"
+  ON public.volunteer_appointments FOR UPDATE
+  USING (public.get_my_role() = 'admin');
+
+DROP POLICY IF EXISTS "volunteer_appt_admin_delete" ON public.volunteer_appointments;
+CREATE POLICY "volunteer_appt_admin_delete"
+  ON public.volunteer_appointments FOR DELETE
+  USING (public.get_my_role() = 'admin');
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- 7. Storage — bucket "resources"
@@ -654,6 +875,7 @@ VALUES (
 ON CONFLICT (id) DO NOTHING;
 
 -- Policies Storage : admins uniquement pour upload/delete, signed URLs via service_role
+DROP POLICY IF EXISTS "storage_resources_admin_insert" ON storage.objects;
 CREATE POLICY "storage_resources_admin_insert"
   ON storage.objects FOR INSERT
   WITH CHECK (
@@ -661,6 +883,7 @@ CREATE POLICY "storage_resources_admin_insert"
     AND public.get_my_role() = 'admin'
   );
 
+DROP POLICY IF EXISTS "storage_resources_admin_delete" ON storage.objects;
 CREATE POLICY "storage_resources_admin_delete"
   ON storage.objects FOR DELETE
   USING (
@@ -668,6 +891,7 @@ CREATE POLICY "storage_resources_admin_delete"
     AND public.get_my_role() = 'admin'
   );
 
+DROP POLICY IF EXISTS "storage_resources_admin_select" ON storage.objects;
 CREATE POLICY "storage_resources_admin_select"
   ON storage.objects FOR SELECT
   USING (
@@ -702,6 +926,11 @@ GRANT SELECT, INSERT         ON public.reports                TO authenticated;
 GRANT UPDATE                 ON public.reports                TO authenticated;
 GRANT SELECT, INSERT         ON public.activity_logs          TO authenticated;
 GRANT SELECT, INSERT         ON public.system_logs            TO authenticated;
+GRANT SELECT                 ON public.partners               TO anon, authenticated;
+GRANT INSERT, UPDATE, DELETE ON public.partners               TO authenticated;
+GRANT SELECT                 ON public.appointment_slots      TO anon, authenticated;
+GRANT INSERT, UPDATE, DELETE ON public.appointment_slots      TO authenticated;
+GRANT SELECT, INSERT, DELETE ON public.volunteer_appointments TO authenticated;
 
 -- Vue accessible en lecture
 GRANT SELECT ON public.workshop_sessions_with_seats TO anon, authenticated;

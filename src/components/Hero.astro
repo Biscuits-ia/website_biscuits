@@ -11,35 +11,31 @@ import Logo from '../assets/logo.png';
     <!-- Texte Hero -->
     <div class="hero-text flex flex-col gap-6 text-center lg:text-left items-center lg:items-start">
       <h1 class="hero-title text-4xl md:text-6xl lg:text-7xl font-extrabold leading-tight text-[var(--color-text)] animate-fadeInUp opacity-0">
-        Ensemble, luttons contre les dérives du web et rendons l'IA accessible à tous
+        L'IA pour tout le monde — apprenons, construisons et protégeons ensemble
       </h1>
       <p class="hero-badge animate-fadeInUp opacity-0" style="animation-delay: 0.3s;">
-        Association Loi 1901 — accès libre et gratuit
+        Association Loi 1901 · Gratuit · Ouvert à toutes et tous
       </p>
 
       <!-- CTA Buttons -->
       <div class="hero-cta-grid">
         <div class="hero-cta animate-fadeInUp opacity-0" style="animation-delay: 1s;">
-          <a href="/contact"
-             class="btn-primary inline-flex items-center justify-center gap-3 px-6 py-4 md:px-10 md:py-5 bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] font-semibold text-base md:text-lg rounded-xl shadow-[var(--shadow-glow)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-glow-hover)] relative overflow-hidden group">
-            <span class="btn-text relative z-10">Contactez-nous</span>
-            <span class="btn-shine absolute inset-0 -left-full w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-all duration-500 group-hover:left-full"></span>
+          <a href="/rejoignez-nous" class="btn-hero-primary">
+            Rejoindre la communauté
           </a>
         </div>
 
-        <div class="hero-cta animate-fadeInUp opacity-0" style="animation-delay: 1s;">
-          <a href="/rejoignez-nous"
-             class="btn-primary inline-flex items-center justify-center gap-3 px-6 py-4 md:px-10 md:py-5 bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] font-semibold text-base md:text-lg rounded-xl shadow-[var(--shadow-glow)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-glow-hover)] relative overflow-hidden group">
-            <span class="btn-text relative z-10">Nous rejoindre</span>
-            <span class="btn-shine absolute inset-0 -left-full w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-all duration-500 group-hover:left-full"></span>
+        <div class="hero-cta animate-fadeInUp opacity-0" style="animation-delay: 1.2s;">
+          <a href="/contact" class="btn-hero-secondary">
+            Contactez-nous
           </a>
         </div>
       </div>
     </div>
 
     <!-- Visual Hero -->
-    <div class="hero-visual relative hidden lg:block animate-fadeInRight opacity-0" style="animation-delay: 0.6s;">
-      <div class="visual-card relative rounded-[20px]">
+    <div class="hero-visual relative hidden lg:flex lg:items-center lg:justify-end animate-fadeInRight opacity-0" style="animation-delay: 0.6s;">
+      <div class="visual-card relative rounded-[20px]" style="max-width: 520px; width: 100%;">
         <Image 
           src={Logo}
           alt="L’IA au service de l’intérêt général : accompagner les associations et TPE vers un numérique humain"
@@ -50,9 +46,9 @@ import Logo from '../assets/logo.png';
           quality={80}
           class="w-full h-auto block"
         />
-<h2 class="text-4xl md:text-6xl lg:text-7xl font-extrabold leading-tight text-[var(--color-text)] animate-fadeInUp opacity-0">
-        Protéger les citoyens contre les arnaques numériques et promouvoir une IA éthique et responsable
-      </h2>
+        <p class="visual-caption">
+          Une communauté solidaire qui met l'IA au service des gens et pas l'inverse
+        </p>
       </div>
     </div>
   </div>
@@ -61,6 +57,18 @@ import Logo from '../assets/logo.png';
 <style>
   h1 {
     text-align: left;
+  }
+  .visual-caption {
+    border: 4px solid var(--color-border);
+    box-shadow: var(--shadow-md);
+    padding: 1rem;
+    text-align: center;
+    font-size: 1.1rem;
+    color: var(--color-text-light);
+    font-weight: 500;
+    line-height: 1.5;
+    margin-top: 1rem;
+    background: var(--color-bg-alt);
   }
   .hero-badge {
     display: inline-block;
@@ -72,18 +80,6 @@ import Logo from '../assets/logo.png';
     border-radius: 9999px;
     padding: 0.25rem 0.875rem;
     letter-spacing: 0.02em;
-  }
-  h2 {
-    border: 5px solid #000;
-    box-shadow: 5px 5px 0px 0px #000;
-    padding: 10px;
-    text-align: center;
-    font-size: 1.5rem;
-    color: var(--color-text-light);
-    font-weight: 500;
-    line-height: 1.4;
-    color: var(--color-gray-300);
-    margin: 0 auto;
   }
   @keyframes fadeInUp {
     from {
@@ -122,7 +118,7 @@ import Logo from '../assets/logo.png';
 
   .hero-content {
     margin-top: clamp(4rem, 10vh, 8rem);
-    padding: 0 1rem;
+    padding: 0 2rem;
   }
 
   .hero-cta-grid {
@@ -137,13 +133,72 @@ import Logo from '../assets/logo.png';
   @media (min-width: 640px) {
     .hero-cta-grid {
       grid-template-columns: repeat(2, 1fr);
-      gap: 0rem;
+      gap: 1rem;
       max-width: none;
     }
   }
 
   .hero-cta {
     width: 100%;
+  }
+
+  /* === HERO BUTTONS === */
+  .btn-hero-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 1rem 2rem;
+    background: var(--color-primary);
+    color: var(--color-bg);
+    font-weight: 800;
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border: 4px solid var(--color-border);
+    box-shadow: var(--shadow-lg);
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+    white-space: nowrap;
+  }
+
+  .btn-hero-primary:hover {
+    transform: translate(-3px, -3px);
+    box-shadow: var(--shadow-xl);
+    color: var(--color-bg);
+  }
+
+  .btn-hero-primary:active {
+    transform: translate(3px, 3px);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .btn-hero-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 1rem 2rem;
+    background: transparent;
+    color: var(--color-text);
+    font-weight: 800;
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border: 4px solid var(--color-border);
+    box-shadow: var(--shadow-lg);
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast);
+    white-space: nowrap;
+  }
+
+  .btn-hero-secondary:hover {
+    transform: translate(-3px, -3px);
+    box-shadow: var(--shadow-xl);
+    background: var(--color-bg-alt);
+  }
+
+  .btn-hero-secondary:active {
+    transform: translate(3px, 3px);
+    box-shadow: var(--shadow-sm);
   }
 
   .btn-secondary {

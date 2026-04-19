@@ -1,4 +1,7 @@
 ---
+const { pathname } = Astro.url;
+const isActive = (href: string) =>
+  href === '/' ? pathname === '/' : pathname.startsWith(href);
 ---
 
 <header class="site-header" data-header>
@@ -21,10 +24,10 @@
     <nav id="main-navigation" class="main-nav" aria-label="Navigation principale">
       <ul class="nav-list">
         <li class="nav-item">
-          <a href="/" class="nav-link">Accueil</a>
+          <a href="/" class={`nav-link ${isActive('/') ? 'nav-link--active' : ''}`}>Accueil</a>
         </li>
         <li class="nav-item">
-          <a href="/pourquoi-biscuits-ia" class="nav-link">A propos</a>
+          <a href="/pourquoi-biscuits-ia" class={`nav-link ${isActive('/pourquoi-biscuits-ia') ? 'nav-link--active' : ''}`}>A propos</a>
         </li>
         
         <li class="nav-item has-dropdown">
@@ -57,16 +60,13 @@
           </ul>
         </li>
         <li class="nav-item">
-          <a href="/utilisateurs" class="nav-link">Adhérents</a>
+          <a href="/utilisateurs" class={`nav-link ${isActive('/utilisateurs') ? 'nav-link--active' : ''}`}>Adhérents</a>
         </li>
         <li class="nav-item">
-          <a href="/partenaires" class="nav-link">Partenaires</a>
+          <a href="/blog" class={`nav-link ${isActive('/blog') ? 'nav-link--active' : ''}`}>Blog</a>
         </li>
         <li class="nav-item">
-          <a href="/blog" class="nav-link">Blog</a>
-        </li>
-        <li class="nav-item">
-          <a href="/contact" class="nav-link">Contact</a>
+          <a href="/contact" class={`nav-link ${isActive('/contact') ? 'nav-link--active' : ''}`}>Contact</a>
         </li>
 
         <!-- Auth Buttons -->
@@ -290,6 +290,16 @@
   .nav-link:focus {
     color: var(--color-gray-100);
     transform: translateX(3px);
+  }
+
+  .nav-link--active {
+    color: var(--color-primary);
+    border-bottom: 3px solid var(--color-primary);
+  }
+
+  .nav-link--active:hover,
+  .nav-link--active:focus {
+    color: var(--color-primary);
   }
 
   /* Boutons dropdown - style accessible */

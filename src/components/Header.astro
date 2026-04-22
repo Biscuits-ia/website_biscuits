@@ -44,7 +44,7 @@ const isActive = (href: string) =>
                 </button>
               </aside>
 
-              <div class="mega-content">
+              <div class="mega-content" role="region" aria-label="Détails">
                 <section class="mega-section active" data-panel="collab">
                   <header class="mega-head">
                     <h3>Suite collaborative</h3>
@@ -386,7 +386,6 @@ const isActive = (href: string) =>
 
   .mega-cat {
     border: 0;
-    color: rgba(255, 255, 255, 0.85);
     text-align: left;
     font-size: 1rem;
     font-weight: 600;
@@ -420,13 +419,12 @@ const isActive = (href: string) =>
   }
 
   .mega-head {
-    background: transparent;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 1rem;
     margin-bottom: 1rem;
-    padding-bottom: 0.85rem;
+    padding: 0.8rem;
   }
 
   .mega-head h3 {
@@ -439,9 +437,9 @@ const isActive = (href: string) =>
   .mega-head a {
     color: var(--color-primary);
     font-size: 1.2rem;
+    margin-top: 1rem;
     font-weight: 600;
     text-decoration: none;
-    white-space: nowrap;
   }
 
   .mega-head a:hover {

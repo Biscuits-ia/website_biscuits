@@ -155,7 +155,20 @@
 :root .cta-btn {
   border: var(--brutal-border);
   border-radius: var(--radius-button);
-  color: var(--color-accent);
+  color: var(--color-gray-900);
+  padding: 10px;
+  box-shadow: var(--shadow-lg);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.cta-btn-dark {
+
+  border: var(--brutal-border);
+  border-radius: var(--radius-button);
+  color: var(--color-gray-100);
   padding: 10px;
   box-shadow: var(--shadow-lg);
   transition: transform var(--transition-fast), box-shadow var(--transition-fast);

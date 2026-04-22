@@ -1,10 +1,11 @@
-@import url('global.css');
-
 :root {  
   /* Couleurs sémantiques */
   --color-success: oklch(69.588% 0.14907 162.508);
   --color-warning: oklch(76.858% 0.1646 70.075);
   --color-danger: oklab(63.681% 0.18788 0.08887);
+  --color-success-light: color-mix(in srgb, var(--color-success) 16%, var(--color-bg-elevated));
+  --color-warning-light: color-mix(in srgb, var(--color-warning) 18%, var(--color-bg-elevated));
+  --color-danger-light: color-mix(in srgb, var(--color-danger) 16%, var(--color-bg-elevated));
   --color-info: var(--color-primary);
 
   /* Espacements */
@@ -65,44 +66,46 @@
   --transition-base: 0.3s ease;
   --transition-slow: 0.5s ease;
 
-  /* 🍪 PALETTE GOURMANDE BISCUITS */
-  --color-primary: oklch(53.958% 0.10717 58.243);
-  --color-secondary: oklch(56.007% 0.1046 59.407);
-  --color-first: oklch(56.007% 0.1046 59.407);
-  --color-second: oklch(60.201% 0.11053 58.986);
-  --color-third: oklch(60.997% 0.18931 143.803);
+  /* ☕ PALETTE CAFE / CHOCOLAT */
+  --color-primary: oklch(52% 0.08 45);      /* Moka */
+  --color-primary-light: oklch(62% 0.10 50); /* Caramel */
+  --color-primary-dark: oklch(38% 0.06 38);  /* Espresso */
+  --color-secondary: oklch(58% 0.09 62);    /* Noisette */
+  --color-first: oklch(66% 0.11 58);        /* Cappuccino */
+  --color-second: oklch(74% 0.09 72);       /* Latte */
+  --color-third: oklch(82% 0.08 85);        /* Mousse creme */
   
-  /* Palette gourmande étendue */
-  --color-accent-cream: oklch(60.201% 0.11053 58.986);
-  --color-accent-caramel: oklch(60.201% 0.11053 58.986);
-  --color-accent-honey: oklch(86.335% 0.11215 81.912 / 0.808);
-  --color-accent-vanilla: oklch(86.335% 0.11215 81.912 / 0.808);
-  --color-accent-cinnamon: oklch(55% 0.12 35);
+  /* Accents cafe */
+  --color-accent-cream: oklch(94% 0.03 90);          /* Creme */
+  --color-accent-caramel: oklch(72% 0.12 67);        /* Caramel grille */
+  --color-accent-honey: oklch(80% 0.11 80 / 0.9);    /* Miel */
+  --color-accent-vanilla: oklch(97% 0.02 95 / 0.95); /* Vanille */
+  --color-accent-cinnamon: oklch(48% 0.11 42);       /* Cannelle */
   
-  /* Gris chauds terreux */
-  --color-gray-50: oklch(8% 0.01 40);          /* Cacao noir */
-  --color-gray-100: oklch(18% 0.01 40);
-  --color-gray-200: oklch(28% 0.02 40);
-  --color-gray-300: oklch(40% 0.02 40);
-  --color-gray-400: oklch(52% 0.02 40);
-  --color-gray-500: oklch(65% 0.02 40);
-  --color-gray-600: oklch(75% 0.02 40);
-  --color-gray-700: oklch(85% 0.02 40);
-  --color-gray-800: oklch(92% 0.02 40);
-  --color-gray-900: oklch(96% 0.02 40);
+  /* Neutres cacao */
+  --color-gray-50: oklch(14% 0.02 40);
+  --color-gray-100: oklch(22% 0.02 42);
+  --color-gray-200: oklch(30% 0.02 45);
+  --color-gray-300: oklch(40% 0.02 48);
+  --color-gray-400: oklch(50% 0.02 52);
+  --color-gray-500: oklch(62% 0.02 58);
+  --color-gray-600: oklch(72% 0.02 65);
+  --color-gray-700: oklch(82% 0.02 72);
+  --color-gray-800: oklch(90% 0.02 80);
+  --color-gray-900: oklch(95% 0.02 88);
 
-  /* Fonds chaleureux gourmands */
-  --color-bg: oklch(95.509% 0.05337 88.363);             /* Farine de blé chaude */
-  --color-bg-alt: oklch(95.509% 0.05337 88.363);         /* Sucre vanillé pâle */
-  --color-bg-elevated: oklch(95.509% 0.05337 88.363);    /* Blanc cassé crémeux */
+  /* Fonds cafe creme */
+  --color-bg: oklch(95% 0.03 88);             /* Creme cafe */
+  --color-bg-alt: oklch(92% 0.03 84);         /* Latte chaud */
+  --color-bg-elevated: oklch(97% 0.02 92);    /* Creme fouettee */
   
-  /* Bordure chocolat noir profond */
-  --color-border: oklch(15% 0.03 40);   
-  --color-border-second: oklch(30.35% 0.06015 52.097);
+  /* Bordures chocolat */
+  --color-border: oklch(26% 0.04 40);   
+  --color-border-second: oklch(52% 0.06 56);
   
-  /* Texte chocolat foncé */
-  --color-text: oklch(20% 0.03 40);            /* Chocolat noir riche */
-  --color-text-light: oklch(42% 0.02 40);      /* Cacao moyen */
+  /* Texte chocolat */
+  --color-text: oklch(24% 0.03 40);            /* Espresso profond */
+  --color-text-light: oklch(40% 0.03 45);      /* Cacao moyen */
 
   /* ⚡ OMBRES NÉO-BRUTALISME BISCUITS ⚡ */
   --shadow-sm: 3px 3px 0px var(--color-border);
@@ -127,6 +130,11 @@
   --radius-2xl: 0px;
   --radius-full: 0px;
 
+  /* Arrondis UI modernes (override ciblé pour CTA/champs) */
+  --radius-control: 0.75rem;
+  --radius-button: 0.875rem;
+  --radius-surface: 1rem;
+
   /* Variables néo-brutalisme light */
   --brutal-border-thin: 3px solid var(--color-border);
   --brutal-border: 4px solid var(--color-border);
@@ -144,9 +152,10 @@
 
 :root .cta-button,
 :root .btn-primary,
-:root button {
+:root .cta-btn {
   border: var(--brutal-border);
-  color: var(--color-bg);
+  border-radius: var(--radius-button);
+  color: var(--color-accent);
   padding: 10px;
   box-shadow: var(--shadow-lg);
   transition: transform var(--transition-fast), box-shadow var(--transition-fast);
@@ -157,14 +166,14 @@
 
 :root .cta-button:hover,
 :root .btn-primary:hover,
-:root button:hover {
+:root .cta-btn:hover {
   transform: translate(-3px, -3px);
   box-shadow: var(--shadow-xl);
 }
 
 :root .cta-button:active,
 :root .btn-primary:active,
-:root button:active {
+:root .cta-btn:active {
   transform: translate(3px, 3px);
   box-shadow: var(--shadow-sm);
 }
@@ -197,6 +206,7 @@
 :root select,
 :root textarea {
   border: var(--brutal-border);
+  border-radius: var(--radius-control);
   box-shadow: var(--shadow-md);
   background: var(--color-bg-elevated);
   font-weight: 600;

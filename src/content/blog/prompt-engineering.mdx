@@ -1,0 +1,182 @@
+---
+title: "Prompt Engineering : écrire des instructions IA qui fonctionnent vraiment"
+description: "Savoir formuler un bon prompt, c'est la compétence clé pour exploiter l'IA au quotidien. Voici les techniques concrètes pour obtenir des résultats fiables et précis."
+pubDate: 2026-02-10T09:00:00Z
+author: "Biscuits IA"
+featured: true
+tags: ["ia", "prompt-engineering", "productivite", "chatgpt", "pratique"]
+---
+
+import Callout from '@/components/Callout.astro';
+import ComparisonGrid from '@/components/ComparisonGrid.astro';
+
+# Prompt Engineering : écrire des instructions IA qui fonctionnent vraiment
+
+Tu as essayé ChatGPT ou un autre assistant IA… et le résultat était décevant. Trop vague, à côté de la plaque, ou complètement inutilisable.
+
+Ce n'est pas l'IA le problème. C'est la **façon dont on lui parle**.
+
+Bienvenue dans le monde du **Prompt Engineering** 🥠
+
+<Callout type="info">
+Le prompt engineering, c'est l'art de formuler des instructions claires et précises pour obtenir de l'IA exactement ce dont vous avez besoin — sans avoir à tout recommencer dix fois.
+</Callout>
+
+---
+
+## 🤔 Pourquoi la formulation change tout
+
+L'IA ne "comprend" pas votre intention. Elle interprète votre texte et génère ce qui semble statistiquement le plus cohérent.
+
+Un prompt vague → une réponse vague.
+Un prompt précis → une réponse utile.
+
+### La différence en un exemple concret
+
+**Prompt faible :**
+> "Rédige un email pour un client."
+
+**Prompt efficace :**
+> "Rédige un email professionnel en français pour informer un client associatif que son atelier numérique du mardi 18 mars est annulé et proposer deux créneaux de remplacement : le jeudi 20 mars à 14h ou le vendredi 21 mars à 10h. Ton ton doit être chaleureux et concis, maximum 150 mots."
+
+<Callout type="warning" title="Le piège le plus courant">
+On croit que l'IA "devrait comprendre" ce qu'on veut. En réalité, **plus vous êtes précis, meilleur est le résultat**. L'IA n'est pas télépathe.
+</Callout>
+
+---
+
+## 🏗️ Les 4 piliers d'un bon prompt
+
+### 1. Le Rôle
+Dites à l'IA **qui elle est** dans ce contexte.
+
+> "Tu es un expert en communication associative..."
+> "Agis comme un chargé de formation pédagogique..."
+> "Tu es un juriste spécialisé en droit des associations..."
+
+Donner un rôle **cadre les connaissances** que l'IA va mobiliser.
+
+### 2. Le Contexte
+Expliquez **la situation** pour éviter les réponses génériques.
+
+> "...pour une association loi 1901 de 5 bénévoles qui accompagne des seniors vers le numérique..."
+
+### 3. La Tâche
+Soyez **précis sur ce que vous demandez**.
+
+> "...rédige une fiche de présentation de nos ateliers à distribuer en mairie."
+
+### 4. Le Format
+Précisez **comment vous voulez le résultat**.
+
+> "...Format : 3 paragraphes courts, langage simple, pas de jargon technique, maximum 200 mots."
+
+<Callout type="tip" title="La formule magique">
+**Rôle + Contexte + Tâche + Format = Prompt efficace.**
+
+Essayez de cocher ces 4 cases avant d'envoyer votre prochaine instruction.
+</Callout>
+
+---
+
+## 🎯 Techniques avancées
+
+### Le Few-Shot Prompting (Donner des exemples)
+
+Montrez à l'IA ce que vous attendez avec des exemples :
+
+> "Voici un exemple de titre que j'aime : 'Numérique pour tous : atelier pratique à la médiathèque'.
+> Sur ce modèle, génère 5 titres pour notre prochain atelier sur la sécurité des mots de passe."
+
+### La Chaîne de pensée (Chain of Thought)
+
+Demandez à l'IA de **raisonner étape par étape** pour les tâches complexes :
+
+> "Analyse cette situation étape par étape avant de me donner une recommandation : notre association reçoit 50 emails par semaine, dont 30% sont des demandes d'inscription aux ateliers..."
+
+### Le Prompt d'itération
+
+L'IA est conçue pour la conversation. Utilisez-la :
+
+> "C'est bien, mais peut-tu reformuler le deuxième paragraphe en langage plus simple ?"
+> "Ajoute une phrase d'accroche plus dynamique au début."
+> "Réduis l'ensemble à 100 mots."
+
+<Callout type="info" title="La puissance de l'itération">
+Un bon résultat s'obtient rarement du premier coup. **2 à 3 échanges d'affinement** sont souvent nécessaires — et c'est normal.
+</Callout>
+
+---
+
+## 📊 Prompts faibles vs Prompts efficaces
+
+<ComparisonGrid
+  type="comparison"
+  items={[
+    { icon: '❌', title: '"Résume ce document"', description: 'Trop vague. L\'IA ne sait pas la longueur, l\'audience, ni le but du résumé.' },
+    { icon: '✅', title: '"Résume ce document en 5 points clés pour un public non-technique, en moins de 100 mots"', description: 'Précis sur le format, l\'audience et la longueur.' },
+    { icon: '❌', title: '"Crée un planning"', description: 'Aucun contexte : planning de quoi ? Sur quelle durée ? Pour qui ?' },
+    { icon: '✅', title: '"Crée un planning mensuel de 4 ateliers numériques pour des seniors débutants, le mardi de 14h à 16h, avec des thèmes variés et progressifs"', description: 'Contexte complet, contraintes claires, résultat exploitable directement.' }
+  ]}
+/>
+
+---
+
+## 🚫 Les erreurs à éviter absolument
+
+1. **Être trop court :** "Aide-moi avec mon projet" → l'IA ne peut rien faire de concret.
+2. **Demander plusieurs choses à la fois :** Découpez en plusieurs prompts distincts.
+3. **Ne pas préciser la langue :** Ajoutez "en français" si nécessaire.
+4. **Copier-coller des données sensibles :** Ne mettez jamais de données personnelles (noms, emails, IBAN) dans un prompt envoyé à un service IA externe.
+
+<Callout type="error" title="Règle de sécurité absolue">
+Ne partagez jamais de données personnelles, médicales, financières ou confidentielles avec une IA en ligne. Ce qui est tapé dans le prompt peut être utilisé pour améliorer les modèles.
+</Callout>
+
+---
+
+## 💡 10 prompts prêts à l'emploi pour les associations
+
+Voici des prompts directement utilisables pour votre association :
+
+1. **Compte-rendu de réunion :** "Tu es secrétaire d'association. Rédige un compte-rendu formel de la réunion suivante à partir de ces notes brutes : [coller les notes]"
+
+2. **Email de relance bénévoles :** "Rédige un email chaleureux pour relancer 20 bénévoles inactifs depuis 3 mois et les inviter à reprendre contact avec l'association."
+
+3. **Description d'atelier :** "Rédige une description de 80 mots pour un atelier 'sécurité des mots de passe' destiné à des retraités, pour notre site web. Ton : accueillant, rassurant."
+
+4. **FAQ :** "Génère une FAQ de 8 questions-réponses pour notre atelier d'initiation au smartphone."
+
+5. **Post réseaux sociaux :** "Rédige 3 posts LinkedIn différents pour annoncer notre prochain atelier numérique. Longueur : 3 lignes max. Inclure un emoji pertinent."
+
+6. **Synthèse de document :** "Résume ce règlement en 5 points essentiels compréhensibles par un bénévole sans formation juridique : [coller le texte]"
+
+7. **Planning de formation :** "Crée un programme de 6 séances progressives pour apprendre à une personne de 70 ans à utiliser WhatsApp et envoyer des photos."
+
+8. **Modèle de convention :** "Rédige une convention de partenariat simple entre une association et une mairie pour l'organisation d'ateliers numériques mensuels gratuits."
+
+9. **Réponse à une critique :** "Un adhérent a laissé un commentaire négatif : 'L'atelier était trop rapide, je n'ai rien compris.' Rédige une réponse professionnelle, empathique et constructive."
+
+10. **Rapport d'activité :** "Sur la base de ces chiffres [coller les données], rédige le chapitre 'bilan de l'année' pour notre rapport d'activité annuel. Ton : positif et factuel."
+
+---
+
+## 🥠 Conclusion : Le prompt, c'est votre outil
+
+Le prompt engineering n'est pas réservé aux ingénieurs. C'est une compétence accessible à tous, et elle se développe en pratiquant.
+
+### Les 3 réflexes à acquérir
+
+1. 🎭 **Donnez un rôle** à l'IA avant toute chose.
+2. 📋 **Précisez le format** attendu (longueur, style, structure).
+3. 🔄 **Itérez** — affiner un prompt en 2-3 échanges est normal.
+
+---
+
+<Callout type="tip" title="Prêt à pratiquer ?">
+Choisissez l'un des 10 prompts ci-dessus et testez-le aujourd'hui. Le meilleur moyen d'apprendre, c'est de faire !
+</Callout>
+
+---
+
+*Cet article vous a été utile ? Partagez-le avec vos collègues bénévoles 🍪*

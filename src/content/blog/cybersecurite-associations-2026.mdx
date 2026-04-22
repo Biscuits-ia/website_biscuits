@@ -1,0 +1,188 @@
+---
+title: "Cybersécurité 2026 : le guide pratique pour les associations"
+description: "Les cyberattaques ne ciblent plus seulement les grandes entreprises. Voici comment protéger votre association avec des mesures concrètes et accessibles."
+pubDate: 2026-03-20T08:00:00Z
+author: "Biscuits IA"
+featured: true
+tags: ["cybersecurite", "securite", "associations", "mots-de-passe", "pratique"]
+---
+
+import Callout from '@/components/Callout.astro';
+import ComparisonGrid from '@/components/ComparisonGrid.astro';
+
+# Cybersécurité 2026 : le guide pratique pour les associations
+
+En 2026, les cyberattaques contre les associations et les TPE ont augmenté de **67% en deux ans**. Phishing, ransomware, vol de données d'adhérents… personne n'est à l'abri.
+
+Pourtant, la majorité de ces attaques aurait pu être évitée avec quelques mesures simples.
+
+Ce guide est là pour ça. Pas de jargon inutile, que du concret 🥠
+
+<Callout type="error" title="Chiffre alarmant">
+80% des incidents de sécurité dans les petites structures sont dus à une erreur humaine : un mauvais mot de passe, un clic sur un lien frauduleux, ou un logiciel non mis à jour.
+</Callout>
+
+---
+
+## 🎯 Pourquoi les associations sont des cibles ?
+
+Beaucoup de responsables associatifs pensent : *"On est trop petits, personne ne s'intéressera à nous."*
+
+C'est faux. Les attaquants ne ciblent pas les associations pour leur taille — ils les ciblent justement parce qu'elles sont **moins bien protégées** que les grandes structures.
+
+Ce qui intéresse les cybercriminels dans une association :
+
+- 📋 **Les données des adhérents** (noms, emails, IBAN pour les cotisations)
+- 💰 **L'accès aux comptes bancaires** (virements frauduleux)
+- 🔑 **Les accès aux outils** (email, cloud) pour rebondir vers d'autres victimes
+- 🖥️ **La puissance de calcul** des ordinateurs pour des attaques à grande échelle
+
+---
+
+## 🔐 Les 5 piliers de la sécurité associative
+
+### 1. Les mots de passe — le fondement de tout
+
+C'est ennuyeux, tout le monde le sait. Et pourtant, c'est encore là que tout se joue.
+
+**Les règles non négociables :**
+- Minimum **16 caractères** avec majuscules, chiffres et symboles
+- **Un mot de passe unique par service** — jamais le même partout
+- Jamais votre prénom, date de naissance ou nom de l'association
+
+<Callout type="tip" title="La méthode des phrases de passe">
+Au lieu de `Asso!2024`, essayez `LesAteliers-Numeriques-Sont-Super!7`. C'est long, mémorisable, et extrêmement difficile à craquer. Une phrase de passe est à la fois sûre et humaine.
+</Callout>
+
+**Utilisez un gestionnaire de mots de passe.** Il génère et retient des mots de passe complexes pour chaque site. Vous n'avez qu'un seul mot de passe maître à mémoriser.
+
+### 2. La double authentification (2FA)
+
+La double authentification, c'est la deuxième serrure sur votre porte numérique. Même si quelqu'un vole votre mot de passe, il ne peut pas se connecter sans le second facteur.
+
+**Activez le 2FA sur :**
+- Votre messagerie (Gmail, Outlook, ProtonMail...)
+- Vos outils cloud (Google Drive, OneDrive...)
+- Vos réseaux sociaux
+- Votre espace bancaire en ligne
+- Tout outil contenant des données d'adhérents
+
+<ComparisonGrid
+  type="comparison"
+  items={[
+    { icon: '📱', title: 'Application d\'authentification', description: 'Google Authenticator, Microsoft Authenticator. Génère un code temporaire toutes les 30 secondes. C\'est la méthode la plus sûre.' },
+    { icon: '💬', title: 'SMS', description: 'Un code est envoyé par texto. Plus simple, mais moins sécurisé (les SMS peuvent être interceptés). Mieux que rien.' },
+    { icon: '🔑', title: 'Clé physique (YubiKey)', description: 'Clé USB de sécurité. Le niveau maximal de protection, recommandé pour les accès les plus critiques.' }
+  ]}
+/>
+
+### 3. Les mises à jour — ne jamais les ignorer
+
+Chaque mise à jour corrige des failles de sécurité découvertes. Reporter une mise à jour, c'est laisser une porte ouverte que les attaquants connaissent.
+
+**Activez les mises à jour automatiques pour :**
+- Le système d'exploitation (Windows, macOS)
+- Le navigateur web
+- Les applications de messagerie
+- Les plugins de votre site web
+
+<Callout type="warning" title="Le cas particulier du site web">
+Si votre association a un site sur WordPress ou un CMS similaire, vérifiez les mises à jour **au minimum une fois par semaine**. Les sites non mis à jour sont parmi les cibles les plus faciles pour les attaquants automatisés.
+</Callout>
+
+### 4. Les sauvegardes — votre assurance-vie numérique
+
+Un ransomware (logiciel qui chiffre vos fichiers et réclame une rançon) peut paralyser une association en quelques minutes. La seule protection efficace : **des sauvegardes récentes et déconnectées**.
+
+**La règle 3-2-1 :**
+- **3** copies de vos données
+- Sur **2** supports différents
+- Dont **1** copie hors site (cloud ou disque dur stocké ailleurs)
+
+**Ce qu'il faut sauvegarder impérativement :**
+- La base de données des adhérents
+- Les documents administratifs (statuts, PV d'AG, conventions)
+- Les données comptables
+- Les emails importants
+
+### 5. La sensibilisation des bénévoles
+
+La technologie seule ne suffit pas. Le maillon faible est presque toujours humain.
+
+Organisez **une fois par an** une session de sensibilisation avec vos bénévoles sur :
+- Reconnaître un email de phishing
+- Ne jamais cliquer sur un lien suspect
+- Signaler immédiatement tout incident
+
+---
+
+## 🎣 Reconnaître le phishing en 2026
+
+Les emails frauduleux sont devenus très convaincants grâce à l'IA. Les fautes d'orthographe d'antan ont disparu. Voici les nouveaux signaux d'alerte :
+
+<ComparisonGrid
+  type="warning"
+  items={[
+    { icon: '🚨', title: 'Urgence artificielle', description: '"Votre compte sera bloqué dans 24h si vous n\'agissez pas immédiatement." Les organisations légitimes n\'utilisent pas ce ton.' },
+    { icon: '🔗', title: 'URL suspecte', description: 'Survolez le lien AVANT de cliquer. banque.fr.validation-compte.xyz n\'est pas la vraie banque. Le vrai domaine doit être la dernière partie avant .fr ou .com.' },
+    { icon: '📎', title: 'Pièce jointe inattendue', description: 'Vous n\'attendiez pas ce document ? Ne l\'ouvrez pas. Contactez l\'expéditeur par un autre canal pour confirmer.' },
+    { icon: '💰', title: 'Demande de virement', description: 'Un "prestataire" ou un "directeur" vous demande un virement urgent par email ? Appelez-le directement avant d\'exécuter quoi que ce soit.' }
+  ]}
+/>
+
+<Callout type="error" title="L'arnaque au président — fléau des associations">
+Un email semble venir du président de votre association et demande un virement urgent et confidentiel. **C'est la technique la plus répandue.** En cas de doute : raccrochez et rappelez en cherchant le numéro vous-même.
+</Callout>
+
+---
+
+## 📋 Le plan d'action en cas d'incident
+
+Si vous êtes victime d'une attaque, voici les étapes dans l'ordre :
+
+1. **Déconnectez** immédiatement l'ordinateur concerné du réseau (débranchez le câble ou coupez le Wi-Fi).
+2. **N'éteignez pas** l'ordinateur — les équipes forensiques peuvent récupérer des traces.
+3. **Changez** tous les mots de passe depuis un autre appareil sain.
+4. **Contactez** votre banque si des données financières sont compromises.
+5. **Déclarez** l'incident à la CNIL (obligatoire en cas de fuite de données personnelles, sous 72h).
+6. **Signalez** sur [cybermalveillance.gouv.fr](https://www.cybermalveillance.gouv.fr) pour obtenir de l'aide.
+
+<Callout type="info" title="Ressource officielle">
+Le site **cybermalveillance.gouv.fr** est le service gouvernemental d'assistance aux victimes de cyberattaques. Il propose des experts locaux pour accompagner les associations. C'est **gratuit**.
+</Callout>
+
+---
+
+## ✅ La checklist de sécurité associative
+
+Faites le tour de ces points dès aujourd'hui :
+
+- [ ] Mots de passe uniques et robustes pour tous les services critiques
+- [ ] Double authentification activée sur les emails et outils cloud
+- [ ] Mises à jour automatiques activées sur tous les postes
+- [ ] Sauvegarde récente testée (vous avez bien vérifié qu'elle fonctionne ?)
+- [ ] Liste des accès à jour (les ex-bénévoles ont-ils encore accès ?)
+- [ ] Bénévoles sensibilisés au phishing au cours des 12 derniers mois
+- [ ] Plan d'action en cas d'incident affiché ou partagé avec l'équipe
+
+---
+
+## 🥠 Conclusion : la sécurité, c'est une habitude
+
+La cybersécurité n'est pas un projet à réaliser une fois. C'est un ensemble de **bonnes habitudes quotidiennes** qui, cumulées, rendent votre association très difficile à attaquer.
+
+### Les 3 actions à faire cette semaine
+
+1. 🔑 **Activez le 2FA** sur votre messagerie principale.
+2. 💾 **Vérifiez votre dernière sauvegarde** — et si vous n'en avez pas, créez-en une.
+3. 🗣️ **Parlez de phishing** à vos bénévoles lors de votre prochaine réunion.
+
+---
+
+<Callout type="tip" title="Besoin d'aide ?">
+Notre association Biscuits IA propose des **ateliers de sensibilisation à la cybersécurité** adaptés aux associations et TPE. Contactez-nous pour en savoir plus !
+</Callout>
+
+---
+
+*Partagez cet article avec les responsables associatifs de votre réseau. La sécurité collective commence par la sensibilisation individuelle 🍪*

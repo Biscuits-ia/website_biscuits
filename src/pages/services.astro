@@ -1,0 +1,88 @@
+---
+import BaseLayout from '@/layouts/Layout.astro';
+---
+
+<BaseLayout
+  title="Services | Biscuits IA"
+  description="Decouvrez les services et accompagnements proposes par Biscuits IA."
+>
+  <section class="simple-page">
+    <div class="container">
+      <h1>Services</h1>
+      <p class="lead">Nous accompagnons les structures sur des besoins concrets et utiles.</p>
+
+      <div class="cards">
+        <a class="card" href="/ateliers">
+          <h2>Ateliers</h2>
+          <p>Sessions pratiques pour monter en competence rapidement.</p>
+        </a>
+        <a class="card" href="/ressources">
+          <h2>Ressources</h2>
+          <p>Guides, modeles et outils open-source a reutiliser librement.</p>
+        </a>
+        <a class="card" href="/rdv">
+          <h2>Accompagnement</h2>
+          <p>Echange individuel pour cadrer vos besoins et priorites.</p>
+        </a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .simple-page {
+    padding: 6rem 0 4rem;
+  }
+
+  .container {
+    width: min(1080px, 92vw);
+    margin: 0 auto;
+  }
+
+  h1 {
+    margin: 0 0 0.6rem;
+    font-size: clamp(2rem, 4vw, 3rem);
+  }
+
+  .lead {
+    margin: 0;
+    color: var(--color-text-light);
+  }
+
+  .cards {
+    margin-top: 1.25rem;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.8rem;
+  }
+
+  .card {
+    text-decoration: none;
+    color: inherit;
+    background: var(--color-bg-elevated);
+    border: 1px solid var(--color-border-second);
+    border-radius: var(--radius-card);
+    padding: 1rem;
+  }
+
+  .card:hover {
+    border-color: var(--color-primary);
+    background: var(--color-bg-alt);
+  }
+
+  .card h2 {
+    margin: 0 0 0.35rem;
+    font-size: 1.25rem;
+  }
+
+  .card p {
+    margin: 0;
+    color: var(--color-text-light);
+  }
+
+  @media (max-width: 840px) {
+    .cards {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

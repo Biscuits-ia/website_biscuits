@@ -45,9 +45,9 @@ const nonce = Astro.locals.nonce;
 const criticalCSS = `
   *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
   html{-webkit-text-size-adjust:100%;tab-size:4;scroll-behavior:smooth}
-  body{font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubuntu,Cantarell,'Helvetica Neue',Arial,sans-serif;line-height:1.5;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;color:#2C2C2C;background:#fff}
-  .skip-link{position:absolute;top:-100px;left:0;background:#faca6f;color:#2C2C2C;padding:0.75rem 1.5rem;z-index:9999;font-weight:600;text-decoration:none;border-radius:0 0 0.5rem 0;transition:top 0.2s ease-in-out;font-size:1rem}
-  .skip-link:focus{top:0;outline:3px solid #2C2C2C;outline-offset:2px}
+  body{font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubuntu,Cantarell,'Helvetica Neue',Arial,sans-serif;line-height:1.5;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;color:var(--color-text);background:var(--color-bg-elevated)}
+  .skip-link{position:absolute;top:-100px;left:0;background:var(--color-primary);color:var(--color-bg-elevated);padding:0.75rem 1.5rem;z-index:9999;font-weight:600;text-decoration:none;border-radius:0 0 0.5rem 0;transition:top 0.2s ease-in-out;font-size:1rem}
+  .skip-link:focus{top:0;outline:3px solid var(--color-text);outline-offset:2px}
   main{min-height:60vh;display:block}
   img{max-width:100%;height:auto;display:block}
   a{color:inherit;text-decoration:underline}
@@ -76,6 +76,7 @@ const criticalCSS = `
 </head>
 
 <body>
+  <a href="#main-content" class="skip-link">Aller au contenu principal</a>
   <Header />
 
   <main id="main-content" role="main">
@@ -94,8 +95,8 @@ const criticalCSS = `
     position: absolute;
     top: -100px;
     left: 0;
-    background: var(--color-primary, #faca6f);
-    color: var(--color-text, #2C2C2C);
+    background: var(--color-primary);
+    color: var(--color-bg-elevated);
     padding: var(--spacing-sm, 0.75rem) var(--spacing-md, 1.5rem);
     z-index: var(--z-tooltip, 9999);
     font-weight: var(--font-weight-semibold, 600);
@@ -107,12 +108,12 @@ const criticalCSS = `
 
   .skip-link:focus {
     top: 0;
-    outline: 3px solid var(--color-text, #2C2C2C);
+    outline: 3px solid var(--color-text);
     outline-offset: 2px;
   }
 
   .skip-link:focus-visible {
-    outline: 3px solid var(--color-text, #2C2C2C);
+    outline: 3px solid var(--color-text);
     outline-offset: 2px;
   }
 
@@ -127,13 +128,13 @@ const criticalCSS = `
   
   /* Amélioration du contraste pour l'accessibilité */
   ::selection {
-    background-color: #faca6f;
-    color: #2C2C2C;
+    background-color: var(--color-primary);
+    color: var(--color-bg-elevated);
   }
   
   /* Focus visible amélioré (Accessibility) */
   :focus-visible {
-    outline: 3px solid #faca6f;
+    outline: 3px solid var(--color-primary);
     outline-offset: 2px;
   }
   

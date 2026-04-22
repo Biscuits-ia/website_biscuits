@@ -1,0 +1,47 @@
+---
+import BaseLayout from '@/layouts/Layout.astro';
+---
+
+<BaseLayout
+  title="Politique de confidentialite | Biscuits IA"
+  description="Acces rapide a la politique de confidentialite de Biscuits IA."
+>
+  <section class="simple-page">
+    <div class="container">
+      <h1>Politique de confidentialite</h1>
+      <p>La version detaillee est disponible sur la page dediee.</p>
+      <p><a class="cta" href="/legal/confidentialite">Voir la politique de confidentialite complete</a></p>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .simple-page {
+    padding: 6rem 0 4rem;
+  }
+
+  .container {
+    width: min(980px, 92vw);
+    margin: 0 auto;
+  }
+
+  h1 {
+    margin: 0 0 0.75rem;
+    font-size: clamp(2rem, 4vw, 3rem);
+  }
+
+  p {
+    margin: 0.5rem 0 0;
+    color: var(--color-text-light);
+  }
+
+  .cta {
+    display: inline-flex;
+    margin-top: 0.25rem;
+    text-decoration: none;
+    color: var(--color-bg-elevated);
+    background: var(--color-primary);
+    border-radius: var(--radius-button);
+    padding: 0.65rem 0.95rem;
+  }
+</style>

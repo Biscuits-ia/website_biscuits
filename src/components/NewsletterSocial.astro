@@ -1,0 +1,172 @@
+---
+// Composant Newsletter : inscription + boutons de partage social
+interface Props {
+  articleTitle?: string;
+  articleUrl?: string;
+}
+const { articleTitle, articleUrl } = Astro.props;
+const pageUrl = articleUrl ? `https://biscuits-ia.com${articleUrl}` : 'https://biscuits-ia.com';
+const shareTitle = articleTitle ?? 'Biscuits IA – Pour une IA éthique et solidaire';
+const encodedUrl = encodeURIComponent(pageUrl);
+const encodedTitle = encodeURIComponent(shareTitle);
+---
+
+<!-- Bloc Newsletter -->
+<section class="newsletter-section" aria-labelledby="newsletter-title">
+  <div class="newsletter-inner">
+    <div class="newsletter-content">
+      <span class="newsletter-badge">📬 Newsletter mensuelle</span>
+      <h2 id="newsletter-title">Restez informé(e)</h2>
+      <p>Tips IA, alertes arnaques, nouveautés de l'association — directement dans votre boîte mail, une fois par mois.</p>
+      <form class="newsletter-form" id="form-newsletter" action="/api/newsletter" method="POST" novalidate>
+        <div class="newsletter-input-group">
+          <label for="newsletter-email" class="sr-only">Votre adresse email</label>
+          <input
+            type="email"
+            id="newsletter-email"
+            name="email"
+            placeholder="votre@email.fr"
+            required
+            aria-required="true"
+            autocomplete="email"
+          />
+          <button type="submit" class="cta-btn">S'inscrire</button>
+        </div>
+        <p class="newsletter-rgpd">
+          🔒 Vos données ne sont jamais revendues. <a href="/legal/politique-de-confidentialite">Politique de confidentialité</a>
+        </p>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- Boutons de partage social -->
+{articleUrl && (
+  <div class="social-share" aria-label="Partager cet article">
+    <span class="share-label">Partager :</span>
+    <a
+      href={`https://x.com/intent/tweet?url=${encodedUrl}&text=${encodedTitle}`}
+      target="_blank"
+      rel="noopener noreferrer"
+      class="share-btn share-btn--x"
+      aria-label="Partager sur X (Twitter)"
+    >
+      𝕏 Twitter
+    </a>
+    <a
+      href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`}
+      target="_blank"
+      rel="noopener noreferrer"
+      class="share-btn share-btn--linkedin"
+      aria-label="Partager sur LinkedIn"
+    >
+      in LinkedIn
+    </a>
+    <a
+      href={`mailto:?subject=${encodedTitle}&body=${encodedUrl}`}
+      class="share-btn share-btn--email"
+      aria-label="Partager par email"
+    >
+      ✉ Email
+    </a>
+  </div>
+)}
+
+<style>
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0,0,0,0);
+  white-space: nowrap;
+  border-width: 0;
+}
+.newsletter-section {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+  color: var(--color-bg-elevated);
+  padding: 3.5rem 1rem;
+}
+.newsletter-inner {
+  max-width: 600px;
+  margin: 0 auto;
+  text-align: center;
+}
+.newsletter-badge {
+  display: inline-block;
+  background: color-mix(in srgb, var(--color-bg-elevated) 18%, transparent);
+  border-radius: 999px;
+  padding: 0.25rem 1rem;
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+.newsletter-content h2 {
+  font-size: 2rem;
+  margin-bottom: 0.75rem;
+}
+.newsletter-content p {
+  opacity: 0.9;
+  margin-bottom: 1.5rem;
+}
+.newsletter-input-group {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.newsletter-input-group input {
+  flex: 1;
+  min-width: 220px;
+  border: none;
+  border-radius: 2rem;
+  padding: 0.75rem 1.25rem;
+  font-size: 1rem;
+  font-family: inherit;
+  min-height: 44px;
+}
+.newsletter-input-group input:focus {
+  outline: 3px solid var(--color-third);
+  outline-offset: 2px;
+}
+.newsletter-rgpd {
+  font-size: 0.8rem;
+  opacity: 0.75;
+  margin-top: 0.75rem;
+}
+.newsletter-rgpd a {
+  color: var(--color-bg-elevated);
+  text-decoration: underline;
+}
+/* Partage social */
+.social-share {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  padding: 1.25rem 0;
+  border-top: 1px solid var(--color-border-second);
+  margin-top: 2rem;
+}
+.share-label {
+  font-weight: 600;
+  color: var(--color-text-light);
+}
+.share-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.4rem 1rem;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-decoration: none;
+  transition: opacity 0.2s, transform 0.15s;
+  min-height: 36px;
+}
+.share-btn:hover { opacity: 0.85; transform: translateY(-1px); }
+.share-btn--x { background: var(--color-border); color: var(--color-bg-elevated); }
+.share-btn--linkedin { background: var(--color-primary-dark); color: var(--color-bg-elevated); }
+.share-btn--email { background: var(--color-accent-caramel); color: var(--color-bg-elevated); }
+</style>

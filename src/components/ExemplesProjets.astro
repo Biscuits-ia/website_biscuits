@@ -1,0 +1,29 @@
+---
+// Section d'exemples de projets avec témoignages
+const exemples = [
+  {
+    titre: "Automatisation administrative pour l'association X",
+    description: "L'association X a réduit de 60% le temps passé sur la gestion des adhésions grâce à notre outil IA.",
+    temoignage: "Notre équipe peut enfin se concentrer sur l'essentiel !",
+    auteur: "Marie, Présidente de l'association X"
+  },
+  {
+    titre: "Détection d'arnaques pour la structure Y",
+    description: "La solution Biscuits IA a permis à Y de repérer 95% des tentatives de phishing reçues par email.",
+    temoignage: "Un vrai filet de sécurité pour nos bénévoles.",
+    auteur: "Paul, Responsable numérique Y"
+  }
+];
+---
+<section class="exemples-projets">
+  <h2>Exemples de projets</h2>
+  <div class="exemples-grid">
+    {exemples.map((exemple) => (
+      <div class="exemple-card">
+        <h3>{exemple.titre}</h3>
+        <p>{exemple.description}</p>
+        <blockquote>“{exemple.temoignage}”<br /><span class="auteur">{exemple.auteur}</span></blockquote>
+      </div>
+    ))}
+  </div>
+</section>

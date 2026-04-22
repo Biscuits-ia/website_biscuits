@@ -1,6 +1,10 @@
 ---
 // Composant formulaire "Besoin d'aide ?" ultra simplifié + CTA bénévole
+const siteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
 ---
+<!-- Script Cloudflare Turnstile (widget HTML natif) -->
+<script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+
 <section class="aide-section" aria-labelledby="aide-title">
   <div class="aide-inner">
 
@@ -8,7 +12,7 @@
     <div class="aide-form-block">
       <h2 id="aide-title">Besoin d'aide ?</h2>
       <p>3 questions pour vous orienter vers la bonne solution.</p>
-      <form class="aide-form" id="form-aide" method="POST" action="/api/contact" novalidate>
+      <form class="aide-form" id="form-aide" novalidate>
         <div class="form-group">
           <label for="aide-qui">Qui êtes-vous ?</label>
           <select id="aide-qui" name="profil" required aria-required="true">
@@ -33,7 +37,16 @@
           <label for="aide-email">Votre email (pour vous répondre)</label>
           <input type="email" id="aide-email" name="email" placeholder="vous@exemple.fr" required aria-required="true" />
         </div>
-        <button type="submit" class="cta-btn">Envoyer ma demande</button>
+
+        <!-- Turnstile widget -->
+        <div class="cf-turnstile" data-sitekey={siteKey} data-theme="auto"></div>
+
+        <div id="aide-error" class="aide-msg aide-msg--error" hidden></div>
+        <div id="aide-success" class="aide-msg aide-msg--success" hidden>
+          ✅ Votre demande a bien été envoyée ! Nous vous répondons sous 48h.
+        </div>
+
+        <button type="submit" class="cta-btn" id="aide-submit">Envoyer ma demande</button>
       </form>
     </div>
 
@@ -52,7 +65,7 @@
         </div>
         <div class="benevole-etape">
           <span class="etape-num">3</span>
-          <span>Intégration dans la communauté Discord</span>
+          <span>Intégration dans la communauté</span>
         </div>
       </div>
       <a href="/rejoignez-nous" class="cta-btn cta-btn--green">Devenir bénévole →</a>
@@ -150,4 +163,113 @@
 .cta-btn--green:hover {
   background: linear-gradient(90deg, var(--color-first), var(--color-secondary));
 }
+.aide-msg {
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-control, 0.75rem);
+  font-size: 0.9375rem;
+  font-weight: 500;
+}
+.aide-msg--error {
+  background: #fee2e2;
+  color: #b91c1c;
+  border: 1px solid #fca5a5;
+}
+.aide-msg--success {
+  background: #dcfce7;
+  color: #166534;
+  border: 1px solid #86efac;
+}
+.cta-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
 </style>
+
+<script>
+  const PROFIL_LABELS: Record<string, string> = {
+    association: 'Une association',
+    tpe: 'Une TPE / micro-entrepreneur',
+    particulier: 'Un particulier',
+    autre: 'Autre',
+  };
+  const BESOIN_LABELS: Record<string, string> = {
+    securite: 'Sécurité / arnaques',
+    rgpd: 'RGPD / confidentialité',
+    ia: 'Outils IA',
+    autre: 'Autre',
+  };
+
+  const form = document.getElementById('form-aide') as HTMLFormElement | null;
+  const submitBtn = document.getElementById('aide-submit') as HTMLButtonElement | null;
+  const errorBox = document.getElementById('aide-error') as HTMLElement | null;
+  const successBox = document.getElementById('aide-success') as HTMLElement | null;
+
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!form || !submitBtn || !errorBox || !successBox) return;
+
+    errorBox.hidden = true;
+    successBox.hidden = true;
+
+    const profil = (form.querySelector('#aide-qui') as HTMLSelectElement).value;
+    const besoin = (form.querySelector('#aide-besoin') as HTMLSelectElement).value;
+    const email = (form.querySelector('#aide-email') as HTMLInputElement).value.trim();
+
+    // Validation basique
+    if (!profil || !besoin || !email) {
+      errorBox.textContent = 'Merci de remplir tous les champs.';
+      errorBox.hidden = false;
+      return;
+    }
+
+    // Récupérer le token Turnstile
+    const turnstileInput = form.querySelector('[name="cf-turnstile-response"]') as HTMLInputElement | null;
+    const turnstileToken = turnstileInput?.value ?? '';
+    if (!turnstileToken) {
+      errorBox.textContent = 'Veuillez valider le captcha avant d\'envoyer.';
+      errorBox.hidden = false;
+      return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Envoi en cours…';
+
+    const profilLabel = PROFIL_LABELS[profil] ?? profil;
+    const besoinLabel = BESOIN_LABELS[besoin] ?? besoin;
+
+    try {
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          turnstileToken,
+          name: profilLabel,
+          email,
+          subject: `Demande d'aide – ${besoinLabel}`,
+          message: `Profil : ${profilLabel}\nBesoin : ${besoinLabel}\nEmail : ${email}`,
+        }),
+      });
+
+      if (res.ok) {
+        form.reset();
+        // Reset Turnstile widget
+        const widget = form.querySelector('.cf-turnstile') as HTMLElement | null;
+        if (widget && (window as any).turnstile) {
+          (window as any).turnstile.reset(widget);
+        }
+        successBox.hidden = false;
+        successBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      } else {
+        const data = await res.json().catch(() => ({}));
+        errorBox.textContent = data?.message ?? 'Une erreur est survenue. Veuillez réessayer.';
+        errorBox.hidden = false;
+      }
+    } catch {
+      errorBox.textContent = 'Erreur réseau. Vérifiez votre connexion et réessayez.';
+      errorBox.hidden = false;
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Envoyer ma demande';
+    }
+  });
+</script>

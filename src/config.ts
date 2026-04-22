@@ -17,7 +17,6 @@ export const SITE = {
     { name: 'Contact', link: '/contact/' },
   ],
   social: {
-    discord: 'https://discord.gg/5CkRSWEehy',
     github: 'https://github.com/Biscuits-Dev',
   },
   footer: {

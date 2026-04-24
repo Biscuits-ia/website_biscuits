@@ -1,5 +1,14 @@
 ---
 import AuthLayout from '../layouts/AuthLayout.astro';
+import { createSupabaseClient } from '../lib/supabase';
+
+const supabase = createSupabaseClient(Astro);
+const { data: { user }, error } = await supabase.auth.getUser();
+
+// Si l'utilisateur n'a pas de session valide, rediriger vers la demande de reset
+if (error || !user) {
+  return Astro.redirect('/mot-de-passe-oublie?error=session_required');
+}
 
 const nonce = Astro.locals.nonce;
 ---

@@ -4,22 +4,40 @@ import { createSupabaseClient } from "@/lib/supabase";
 export const GET: APIRoute = async ({ request, url, cookies, redirect }) => {
   const authCode = url.searchParams.get("code");
   const next = url.searchParams.get("next") ?? "/dashboard/user";
+  const errorParam = url.searchParams.get("error");
 
-  // Valider `next` : uniquement des chemins relatifs pour éviter les redirections ouvertes
+  // Handle OAuth/error callbacks from Supabase
+  if (errorParam) {
+    console.error('[callback] OAuth error:', errorParam);
+    return redirect('/connexion?error=oauth');
+  }
+
+  // Validate `next`: only relative paths to prevent open redirects
   const safeNext = next.startsWith("/") && !next.startsWith("//") ? next : "/dashboard/user";
 
   if (!authCode) {
-    return new Response("No code provided", { status: 400 });
+    console.warn('[callback] No code provided');
+    return new Response("No code provided", {
+      status: 400,
+      headers: { 'Content-Type': 'text/plain' }
+    });
   }
 
+  console.log('[callback] Exchanging auth code for session');
   const supabase = createSupabaseClient({ request, cookies });
   const { error } = await supabase.auth.exchangeCodeForSession(authCode);
 
   if (error) {
-    console.error("[Auth] exchangeCodeForSession error:", error.message);
+    console.error("[callback] exchangeCodeForSession error:", error.message, '| code:', error.code);
     return redirect("/connexion?error=session");
   }
 
-  // Les cookies de session sont posés automatiquement par createSupabaseClient → setAll
-  return redirect(safeNext);
+  console.log('[callback] Session exchanged successfully, redirecting to', safeNext);
+  // Return a proper Response with redirect status to ensure cookies are sent
+  return new Response(null, {
+    status: 302,
+    headers: {
+      Location: safeNext,
+    },
+  });
 };

@@ -26,6 +26,19 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
     // en mémoire après le getUser() du middleware.
     const supabase = locals.supabase ?? createSupabaseClient({ request, cookies });
 
+    // Vérifier que l'utilisateur est bien authentifié avant de mettre à jour
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+
+    if (userError || !user) {
+      console.error('[reset-password] User not authenticated:', userError?.message);
+      return new Response(
+        JSON.stringify({ error: 'Session invalide. Veuillez demander un nouveau lien de réinitialisation.' }),
+        { status: 401, headers: { 'Content-Type': 'application/json' } },
+      );
+    }
+
+    console.log('[reset-password] Updating password for user:', user.id);
+
     const { error } = await supabase.auth.updateUser({ password });
 
     if (error) {
@@ -34,7 +47,7 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
       // Déconnecter immédiatement — ne jamais laisser un utilisateur connecté
       // avec une session recovery si la mise à jour a échoué (risque de session
       // orpheline permettant l'accès au compte sans avoir changé le mot de passe).
-      await supabase.auth.signOut();
+      await supabase.auth.signOut({ scope: 'global' });
 
       // Distinguer les erreurs de session (lien expiré) des erreurs de mise à jour
       const isSessionError = error.status === 401
@@ -59,6 +72,8 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
         { status: 400, headers: { 'Content-Type': 'application/json' } },
       );
     }
+
+    console.log('[reset-password] Password updated successfully for user:', user.id);
 
     return new Response(
       JSON.stringify({ success: true }),

@@ -30,7 +30,9 @@ export const onRequest = defineMiddleware(async (context, next) => {
   const isDev = import.meta.env.DEV;
 
   // Rate-limit API/auth routes with a per-route key to avoid cross-endpoint throttling.
-  if (url.pathname.startsWith('/api/') || url.pathname.startsWith('/auth/')) {
+  // Skip entirely in dev — the in-memory store persists across requests in the same Node process
+  // and would permanently block during normal development testing.
+  if (!isDev && (url.pathname.startsWith('/api/') || url.pathname.startsWith('/auth/'))) {
     const ip = getClientIp(context);
 
     let limit = 20;
@@ -59,12 +61,23 @@ export const onRequest = defineMiddleware(async (context, next) => {
   const nonce = crypto.randomBytes(16).toString('base64');
   context.locals.nonce = nonce;
 
-  // Crée le client Supabase et le stocke dans locals pour que requireAuth()
-  // puisse le réutiliser dans la même requête. Cela garantit que si le token
-  // est rafraîchi ici, le même client (avec le nouveau token en mémoire) est
-  // utilisé dans les pages — et non un nouveau client avec l'ancien cookie.
+  // Create Supabase client and store in locals for reuse by requireAuth() and pages.
+  // This ensures that if the token is refreshed here, the same client (with the new
+  // token in memory) is used in pages — not a new client with the old cookie.
   const supabase = createSupabaseClient(context);
-  await supabase.auth.getUser(); // déclenche le refresh si nécessaire
+
+  // Attempt to get user and refresh token if needed.
+  // CRITICAL: Handle refresh errors gracefully — don't break the request,
+  // just let the user appear unauthenticated (they'll need to log in again).
+  try {
+    await supabase.auth.getUser();
+  } catch (err) {
+    // Token refresh failed (expired refresh token, invalid session, etc.)
+    // Silently ignore — the user will appear unauthenticated and need to re-login.
+    // Log for debugging but don't expose to user.
+    console.log('[middleware] getUser failed (expected for expired session):', err instanceof Error ? err.message : err);
+  }
+
   context.locals.supabase = supabase;
 
   const response = await next();

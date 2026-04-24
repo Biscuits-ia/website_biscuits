@@ -56,7 +56,6 @@ function getErrorMessage(errorMessage: string): string {
   if (msg.includes('rate') || msg.includes('limit')) return 'Trop d\'emails envoyés. Attendez quelques minutes avant de réessayer.';
   if (msg.includes('not allowed') || msg.includes('redirect')) return 'Configuration incorrecte. Contactez le support.';
   if (msg.includes('user not found') || msg.includes('no user')) return 'Aucun compte trouvé pour cet email.';
-  // Renvoyer l'erreur réelle loggée pour faciliter le débogage
   return 'Impossible d\'envoyer le lien de réinitialisation. Veuillez réessayer.';
 }
 
@@ -74,8 +73,13 @@ export const POST: APIRoute = async ({ request, cookies, url, site }) => {
 
     const supabase = createSupabaseClient({ request, cookies });
     const origin = getAuthRedirectOrigin(request, url, site);
-    // Passer par /auth/callback avec next= pour le flux PKCE (échange de code)
-    const redirectUrl = `${origin}/auth/callback?next=/reinitialisation-mot-de-passe`;
+
+    // IMPORTANT: Pour le reset de mot de passe, Supabase envoie un lien avec token_hash et type=recovery
+    // Le lien doit pointer vers /auth/confirm qui gère la vérification OTP
+    // On ajoute next= pour rediriger vers la page de nouveau mot de passe APRÈS vérification
+    const redirectUrl = `${origin}/auth/confirm?type=recovery&next=/reinitialisation-mot-de-passe`;
+
+    console.log('[reset-password] Sending reset email to:', email, '| redirectUrl:', redirectUrl);
 
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: redirectUrl,

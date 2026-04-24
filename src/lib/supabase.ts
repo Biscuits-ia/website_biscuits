@@ -1,5 +1,5 @@
 // src/lib/supabase.ts
-import { createServerClient, parseCookieHeader } from '@supabase/ssr';
+import { createServerClient, parseCookieHeader, serializeCookieHeader } from '@supabase/ssr';
 import { createClient } from '@supabase/supabase-js';
 
 export function createSupabaseClient(context: { request: Request; cookies: any }) {
@@ -14,6 +14,8 @@ export function createSupabaseClient(context: { request: Request; cookies: any }
             .map((cookie) => ({ name: cookie.name, value: cookie.value ?? '' }));
         },
         setAll(cookiesToSet) {
+          // IMPORTANT: Set cookies in BOTH the Astro.cookies API AND return them
+          // for the response. This ensures cookies work in SSR mode with Vercel.
           for (const { name, value, options } of cookiesToSet) {
             context.cookies.set(name, value, {
               ...options,
@@ -21,9 +23,16 @@ export function createSupabaseClient(context: { request: Request; cookies: any }
               secure: import.meta.env.PROD,
               sameSite: 'lax',
               path: '/',
+              // Ensure cookies persist across subdomains if needed
+              domain: import.meta.env.PROD ? '.biscuits-ia.com' : undefined,
             });
           }
         },
+      },
+      // Critical for SSR: disable auto-refresh in the client, handle it in middleware
+      auth: {
+        autoRefreshToken: false,
+        detectSessionInUrl: false,
       },
     },
   );

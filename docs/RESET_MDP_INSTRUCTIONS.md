@@ -140,6 +140,27 @@ supabase auth reset ton.email@test.com
 
 ## Récap configuration recommandée
 
+### Inscription OTP (nouveau)
+
+Le flux d'inscription suit le meme principe OTP manuel :
+
+1. POST /auth/inscription
+2. Email de confirmation contenant {{ .Token }}
+3. Saisie du code sur /verifier-code-inscription
+4. Verification via /auth/verifier-token-inscription
+
+Template conseille pour Email Templates -> Confirmation :
+
+```html
+<h2>Confirmez votre adresse email</h2>
+<p>Merci de vous etre inscrit a Biscuits IA.</p>
+<p>Votre code de verification :</p>
+<p style="font-size: 32px; font-weight: 700; letter-spacing: 6px; margin: 20px 0;">
+  {{ .Token }}
+</p>
+<p>Ce code expire dans 1 heure.</p>
+```
+
 ### Authentication → URL Configuration
 
 ```

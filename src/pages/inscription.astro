@@ -14,7 +14,7 @@ const nonce = Astro.locals.nonce;
       <div style="background:#FDFAF4; border:1.5px solid #DDD0B8; border-radius:16px; padding:36px;">
         <h1 style="font-size:22px; font-weight:500; color:#2C2014; margin-bottom:6px;">Créer un compte</h1>
         <p style="font-size:14px; color:#7A6040; line-height:1.6; margin-bottom:28px;">
-          Rejoignez Biscuits IA pour accéder aux ateliers et ressources.
+          Rejoignez Biscuits IA. Nous vous enverrons un code de vérification par email.
         </p>
 
         <div style="margin-bottom:18px;">
@@ -206,7 +206,10 @@ const nonce = Astro.locals.nonce;
         return showMsg(data.error || "Erreur lors de l'inscription.");
       }
 
-      showMsg('Compte créé ! Vérifiez votre boîte mail pour confirmer votre adresse.', 'success');
+      showMsg('Compte créé. Vérifiez votre email pour récupérer le code de confirmation.', 'success');
+      setTimeout(function() {
+        window.location.href = '/verifier-code-inscription?email=' + encodeURIComponent(email);
+      }, 900);
     } catch (e) {
       showMsg('Une erreur est survenue. Veuillez réessayer.');
     } finally {

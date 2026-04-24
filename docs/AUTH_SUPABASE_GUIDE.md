@@ -8,12 +8,11 @@
 ├─────────────────────────────────────────────────────────────────────────────┤
 │ 1. POST /auth/inscription                                                   │
 │    - Crée l'utilisateur avec supabase.auth.signUp()                         │
-│    - Supabase envoie email de confirmation                                  │
+│    - Supabase envoie email avec code OTP de confirmation                     │
 │    - Retourne { success: true } au client                                   │
 │                                                                             │
-│ 2. Utilisateur clique lien email → /auth/confirm                            │
-│    - token_hash + type=signup OU code= (PKCE)                               │
-│    - verifyOtp() ou exchangeCodeForSession()                                │
+│ 2. POST /auth/verifier-token-inscription                                    │
+│    - Vérifie email + token via verifyOtp()                                  │
 │    - Définit cookies de session                                             │
 │    - Redirige vers /dashboard/user                                          │
 └─────────────────────────────────────────────────────────────────────────────┘
@@ -94,18 +93,18 @@ curl -X POST http://localhost:4321/auth/inscription \
 
 # Attendre : {"success":true}
 
-# 2. Vérifier dans Supabase Dashboard → Authentication → Users
-#    - L'utilisateur existe avec email_confirmed_at = NULL
-
-# 3. Récupérer le lien de confirmation depuis les emails Supabase
+# 2. Récupérer le code OTP de confirmation depuis l'email
 #    Dashboard → Authentication → Email Templates → Confirmation
 
-# 4. Simuler le clic sur le lien
-#    Extraire token_hash et type de l'URL
-curl "http://localhost:4321/auth/confirm?token_hash=XXX&type=signup"
+# 3. Vérifier le code (crée la session)
+curl -X POST http://localhost:4321/auth/verifier-token-inscription \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  -d "email=test@example.com" \
+  -d "token=123456" \
+  -c cookies.txt
 
-# Attendre : Redirection 302 vers /dashboard/user
-# Vérifier : Cookie set-cookie dans la réponse
+# Attendre : {"success":true}
+# Vérifier : cookies.txt contient la session
 ```
 
 ### Test du flux de connexion
@@ -196,13 +195,10 @@ Supabase Dashboard → Authentication → Email Templates
 **Confirmation d'inscription :**
 ```html
 <h2>Confirmez votre email</h2>
-<p>Merci de vous être inscrit à Biscuits IA !</p>
-<p>
-  <a href="{{ .ConfirmationURL }}">
-    Confirmer mon email
-  </a>
-</p>
-<p>Ou copiez ce lien : {{ .ConfirmationURL }}</p>
+<p>Merci de vous être inscrit à Biscuits IA.</p>
+<p>Utilisez ce code de confirmation :</p>
+<p><strong>{{ .Token }}</strong></p>
+<p>Ce code expire dans 1 heure.</p>
 ```
 
 **Réinitialisation de mot de passe :**

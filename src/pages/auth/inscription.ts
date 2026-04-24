@@ -1,22 +1,6 @@
 import type { APIRoute } from 'astro';
 import { createSupabaseClient } from '@/lib/supabase';
 
-function normalizeOrigin(value: string | URL | null | undefined): string | null {
-  if (!value) return null;
-  try {
-    const parsed = value instanceof URL ? value : new URL(value);
-    return parsed.origin.replace(/\/$/, '');
-  } catch {
-    return null;
-  }
-}
-
-function resolvePublicOrigin(url: URL): string {
-  const devOrigin = normalizeOrigin(url);
-  const configuredSite = normalizeOrigin(import.meta.env.SITE);
-  return configuredSite ?? devOrigin ?? url.origin;
-}
-
 function mapSignupError(message: string): string {
   const msg = message.toLowerCase();
 
@@ -39,7 +23,7 @@ function mapSignupError(message: string): string {
   return 'Impossible de creer le compte. Veuillez reessayer.';
 }
 
-export const POST: APIRoute = async ({ request, cookies, url }) => {
+export const POST: APIRoute = async ({ request, cookies }) => {
   try {
     if (!import.meta.env.SUPABASE_URL || !import.meta.env.SUPABASE_ANON_KEY) {
       return new Response(
@@ -60,14 +44,10 @@ export const POST: APIRoute = async ({ request, cookies, url }) => {
     }
 
     const supabase = createSupabaseClient({ request, cookies });
-    const emailRedirectTo = `${resolvePublicOrigin(url)}/auth/callback`;
 
     const signupResult = await supabase.auth.signUp({
       email,
       password,
-      options: {
-        emailRedirectTo,
-      },
     });
 
     if (signupResult.error) {
@@ -88,7 +68,7 @@ export const POST: APIRoute = async ({ request, cookies, url }) => {
     }
 
     return new Response(
-      JSON.stringify({ success: true }),
+      JSON.stringify({ success: true, message: 'Compte cree. Verifiez votre email pour recuperer le code de confirmation.' }),
       { status: 200, headers: { 'Content-Type': 'application/json' } },
     );
   } catch (err) {

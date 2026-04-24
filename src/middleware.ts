@@ -39,7 +39,12 @@ export const onRequest = defineMiddleware(async (context, next) => {
     let windowMs = 60_000;
     if (url.pathname.startsWith('/auth/')) {
       // Keep login/reset stricter, but allow signup/confirmation more retries.
-      if (url.pathname === '/auth/inscription' || url.pathname === '/auth/confirm' || url.pathname === '/auth/callback') {
+      if (
+        url.pathname === '/auth/inscription'
+        || url.pathname === '/auth/confirm'
+        || url.pathname === '/auth/callback'
+        || url.pathname === '/auth/verifier-token-inscription'
+      ) {
         limit = 30;
       } else if (url.pathname === '/auth/mot-de-passe-oublie') {
         // User-facing reset request often retries due mail delays.

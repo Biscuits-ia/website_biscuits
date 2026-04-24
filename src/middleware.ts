@@ -4,27 +4,55 @@ import { rateLimit } from './lib/rateLimit';
 import { createSupabaseClient } from './lib/supabase';
 import crypto from 'node:crypto';
 
+function parseForwardedFor(value: string | null): string | null {
+  if (!value) return null;
+  const first = value.split(',')[0]?.trim();
+  if (!first) return null;
+  return first;
+}
+
+function getClientIp(context: Parameters<typeof defineMiddleware>[0] extends never ? never : any): string | null {
+  const fromCf = context.request.headers.get('cf-connecting-ip');
+  const fromRealIp = context.request.headers.get('x-real-ip');
+  const fromForwarded = parseForwardedFor(context.request.headers.get('x-forwarded-for'));
+  const fromAstro = typeof context.clientAddress === 'string' ? context.clientAddress : null;
+
+  const ip = fromCf ?? fromRealIp ?? fromForwarded ?? fromAstro;
+  if (!ip) return null;
+
+  const normalized = ip.trim();
+  if (!normalized || normalized === 'unknown') return null;
+  return normalized;
+}
+
 export const onRequest = defineMiddleware(async (context, next) => {
   const { url } = context;
   const isDev = import.meta.env.DEV;
 
   // Rate-limit API/auth routes with a per-route key to avoid cross-endpoint throttling.
   if (url.pathname.startsWith('/api/') || url.pathname.startsWith('/auth/')) {
-    const ip = context.clientAddress ?? context.request.headers.get('x-forwarded-for') ?? 'unknown';
-    const key = `${ip}:${url.pathname}`;
+    const ip = getClientIp(context);
 
     let limit = 20;
+    let windowMs = 60_000;
     if (url.pathname.startsWith('/auth/')) {
       // Keep login/reset stricter, but allow signup/confirmation more retries.
       if (url.pathname === '/auth/inscription' || url.pathname === '/auth/confirm' || url.pathname === '/auth/callback') {
         limit = 30;
+      } else if (url.pathname === '/auth/mot-de-passe-oublie') {
+        // User-facing reset request often retries due mail delays.
+        windowMs = 5 * 60_000;
       } else {
         limit = 12;
       }
     }
 
-    const blocked = rateLimit(key, limit, 60_000);
-    if (blocked) return blocked;
+    // If we cannot reliably identify a client IP, do not collapse all users under one key.
+    if (ip) {
+      const key = `${ip}:${url.pathname}`;
+      const blocked = rateLimit(key, limit, windowMs);
+      if (blocked) return blocked;
+    }
   }
 
   // Generate a per-request CSP nonce

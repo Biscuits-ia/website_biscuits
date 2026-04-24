@@ -194,7 +194,13 @@ const nonce = Astro.locals.nonce;
         body: formData,
       });
 
-      var data = await res.json();
+      var raw = await res.text();
+      var data = {};
+      try {
+        data = raw ? JSON.parse(raw) : {};
+      } catch (_) {
+        data = { error: raw || null };
+      }
 
       if (!res.ok) {
         return showMsg(data.error || "Erreur lors de l'inscription.");

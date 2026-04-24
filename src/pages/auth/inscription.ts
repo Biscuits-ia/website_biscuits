@@ -1,4 +1,5 @@
 import type { APIRoute } from 'astro';
+import type { AuthResponse } from '@supabase/supabase-js';
 import { createSupabaseClient } from '@/lib/supabase';
 
 function normalizeOrigin(value: string | URL | null | undefined): string | null {
@@ -72,8 +73,35 @@ function mapSignupError(message: string): string {
   return 'Impossible de creer le compte. Veuillez reessayer.';
 }
 
+function buildSignupOutcome(signupResult: AuthResponse): Response | null {
+  if (signupResult.error) {
+    console.error('[Auth] signUp error:', signupResult.error.message);
+    return new Response(
+      JSON.stringify({ error: mapSignupError(signupResult.error.message) }),
+      { status: 400, headers: { 'Content-Type': 'application/json' } },
+    );
+  }
+
+  const identities = signupResult.data.user?.identities;
+  if (Array.isArray(identities) && identities.length === 0) {
+    return new Response(
+      JSON.stringify({ error: 'Cet email est deja inscrit. Essayez de vous connecter.' }),
+      { status: 409, headers: { 'Content-Type': 'application/json' } },
+    );
+  }
+
+  return null;
+}
+
 export const POST: APIRoute = async ({ request, cookies, url, site }) => {
   try {
+    if (!import.meta.env.SUPABASE_URL || !import.meta.env.SUPABASE_ANON_KEY) {
+      return new Response(
+        JSON.stringify({ error: 'Configuration Supabase manquante (SUPABASE_URL/SUPABASE_ANON_KEY).' }),
+        { status: 500, headers: { 'Content-Type': 'application/json' } },
+      );
+    }
+
     const formData = await request.formData();
     const email    = formData.get('email') instanceof File ? null : (formData.get('email') as string | null);
     const password = formData.get('password') instanceof File ? null : (formData.get('password') as string | null);
@@ -112,13 +140,8 @@ export const POST: APIRoute = async ({ request, cookies, url, site }) => {
       signupResult = await supabase.auth.signUp({ email, password });
     }
 
-    if (signupResult.error) {
-      console.error('[Auth] signUp error:', signupResult.error.message);
-      return new Response(
-        JSON.stringify({ error: mapSignupError(signupResult.error.message) }),
-        { status: 400, headers: { 'Content-Type': 'application/json' } },
-      );
-    }
+    const outcome = buildSignupOutcome(signupResult);
+    if (outcome) return outcome;
 
     return new Response(
       JSON.stringify({ success: true }),
@@ -126,8 +149,13 @@ export const POST: APIRoute = async ({ request, cookies, url, site }) => {
     );
   } catch (err) {
     console.error('[Auth] inscription route error:', err);
+    const message = err instanceof Error ? err.message : '';
     return new Response(
-      JSON.stringify({ error: 'Erreur serveur. Veuillez reessayer.' }),
+      JSON.stringify({
+        error: message
+          ? `Erreur serveur: ${message}`
+          : 'Erreur serveur. Veuillez reessayer.',
+      }),
       { status: 500, headers: { 'Content-Type': 'application/json' } },
     );
   }

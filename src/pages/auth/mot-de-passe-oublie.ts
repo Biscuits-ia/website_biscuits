@@ -49,13 +49,15 @@ function getAuthRedirectOrigin(request: Request, url: URL, site: URL | undefined
 }
 
 /**
- * Classifie les erreurs
+ * Classifie les erreurs Supabase pour le reset de mot de passe
  */
 function getErrorMessage(errorMessage: string): string {
   const msg = errorMessage.toLowerCase();
-  if (msg.includes('user')) return 'Cet email n\'existe pas dans notre système.';
-  if (msg.includes('email') || msg.includes('rate')) return 'Une erreur est survenue. Veuillez réessayer.';
-  return 'Impossible d\'envoyer le lien. Veuillez réessayer.';
+  if (msg.includes('rate') || msg.includes('limit')) return 'Trop d\'emails envoyés. Attendez quelques minutes avant de réessayer.';
+  if (msg.includes('not allowed') || msg.includes('redirect')) return 'Configuration incorrecte. Contactez le support.';
+  if (msg.includes('user not found') || msg.includes('no user')) return 'Aucun compte trouvé pour cet email.';
+  // Renvoyer l'erreur réelle loggée pour faciliter le débogage
+  return 'Impossible d\'envoyer le lien de réinitialisation. Veuillez réessayer.';
 }
 
 export const POST: APIRoute = async ({ request, cookies, url, site }) => {
@@ -72,14 +74,15 @@ export const POST: APIRoute = async ({ request, cookies, url, site }) => {
 
     const supabase = createSupabaseClient({ request, cookies });
     const origin = getAuthRedirectOrigin(request, url, site);
-    const redirectUrl = `${origin}/reinitialisation-mot-de-passe`;
+    // Passer par /auth/callback avec next= pour le flux PKCE (échange de code)
+    const redirectUrl = `${origin}/auth/callback?next=/reinitialisation-mot-de-passe`;
 
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: redirectUrl,
     });
 
     if (error) {
-      console.error('[Auth] resetPasswordForEmail error:', error.message);
+      console.error('[Auth] resetPasswordForEmail error:', error.message, '| code:', error.code);
       return new Response(
         JSON.stringify({ error: getErrorMessage(error.message) }),
         { status: 400, headers: { 'Content-Type': 'application/json' } },

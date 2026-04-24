@@ -1,66 +1,90 @@
-# Réinitialisation de mot de passe - Instructions de débogage
+# Réinitialisation de mot de passe - Flux OTP manuel
 
-## Problème actuel
+Le projet utilise maintenant un flux de réinitialisation par code OTP saisi manuellement :
 
-Quand tu cliques sur le lien de réinitialisation, tu es redirigé vers :
-```
-/connexion?error=confirmation&code=invalid_request#error=access_denied&error_code=otp_expired&error_description=Email+link+is+invalid+or+has+expired
-```
-
-Cela signifie que **le lien a expiré** ou est **invalide**.
-
----
-
-## Causes possibles
-
-### 1. Lien expiré (cause la plus probable)
-
-Les tokens de recovery Supabase expirent après **1 heure** par défaut.
-
-**Solution** : Utiliser un lien frais
-- Demander un nouveau reset via `/mot-de-passe-oublie`
-- Cliquer sur le lien **immédiatement** après réception
+1. L'utilisateur demande un reset sur /mot-de-passe-oublie
+2. Supabase envoie un email contenant un code
+3. L'utilisateur saisit email + code sur /verifier-code-reinitialisation
+4. Le serveur vérifie via verifyOtp(type=recovery)
+5. L'utilisateur accède à /reinitialisation-mot-de-passe
 
 ---
 
-### 2. Lien mal formé par Supabase
+## Configuration Supabase obligatoire
 
-Supabase peut générer des liens avec le hash (`#`) au lieu des query params (`?`) selon la configuration.
+### 1. Template Recovery email (OTP manuel)
 
-**Vérification requise dans Supabase Dashboard** :
+Aller dans : Authentication -> Email Templates -> Recovery email
 
-1. Aller dans : **Authentication → Email Templates → Recovery email**
-2. Vérifier que le template utilise `{{ .ConfirmationURL }}` (et NON `{{ .SiteURL }}/auth/v1/verify...`)
+Utiliser ce template HTML (prêt à coller) :
 
-**Template correct à utiliser** :
 ```html
-<h2>Réinitialisation de mot de passe</h2>
-<p>Cliquez sur ce lien pour réinitialiser votre mot de passe :</p>
-<p><a href="{{ .ConfirmationURL }}">Réinitialiser mon mot de passe</a></p>
-<p>Le lien expirera dans 1 heure.</p>
-<p>Si vous n'avez pas demandé ce changement, ignorez cet email.</p>
+<h2>Réinitialisation de votre mot de passe</h2>
+<p>Bonjour,</p>
+<p>Utilisez ce code pour réinitialiser votre mot de passe :</p>
+
+<p style="font-size: 32px; font-weight: 700; letter-spacing: 6px; margin: 20px 0;">
+  {{ .Token }}
+</p>
+
+<p>Ce code expire dans 1 heure.</p>
+<p>Entrez-le sur la page de vérification du site Biscuits IA.</p>
+<p>Si vous n'êtes pas à l'origine de cette demande, ignorez cet email.</p>
 ```
 
----
-
-### 3. Redirect URL non whitelistée
+### 2. URL Configuration
 
 **Vérification** :
 
-1. Aller dans : **Authentication → URL Configuration**
+1. Aller dans : Authentication -> URL Configuration
 2. Vérifier que ces URLs sont dans "Redirect URLs" :
    ```
    https://biscuits-ia.com/auth/confirm
+  https://biscuits-ia.com/reinitialisation-mot-de-passe
    http://localhost:4321/auth/confirm
+  http://localhost:4321/reinitialisation-mot-de-passe
    ```
 
 ---
 
 ## Comment déboguer
 
-### Étape 1 : Vérifier les logs
+### Étape 1 : Demander un code
 
-Quand tu cliques sur le lien, regarde les logs du serveur Astro :
+```bash
+curl -X POST http://localhost:4321/auth/mot-de-passe-oublie \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  -d "email=TON_EMAIL@test.com"
+```
+
+Attendu :
+
+```json
+{"success":true,"message":"Email envoyé. Vérifiez votre boîte de réception pour récupérer le code."}
+```
+
+### Étape 2 : Vérifier le code OTP
+
+```bash
+curl -X POST http://localhost:4321/auth/verifier-token-reinitialisation \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  -d "email=TON_EMAIL@test.com" \
+  -d "token=123456"
+```
+
+Attendu :
+
+```json
+{"success":true}
+```
+
+### Étape 3 : Mettre à jour le mot de passe
+
+Le POST de changement de mot de passe doit être fait avec la session (cookies) obtenue après verifyOtp.
+
+### Étape 4 : Vérifier les logs
+
+Regarder les logs Astro au moment de la vérification OTP :
 
 ```bash
 # En dev
@@ -72,42 +96,14 @@ vercel logs biscuits-ia
 
 Tu devrais voir quelque chose comme :
 ```
-[confirm] Received request: {
-  tokenHash: "present",
-  type: "recovery",
-  code: "missing",
-  next: "/reinitialisation-mot-de-passe"
-}
+[reset-password] verifyOtp error: ...
 ```
 
-Si tu vois `tokenHash: "missing"`, le lien n'est pas correctement formaté.
+En cas de succès, pas d'erreur et l'utilisateur est redirigé vers /reinitialisation-mot-de-passe.
 
 ---
 
-### Étape 2 : Tester manuellement avec curl
-
-```bash
-# 1. Demander un reset
-curl -X POST http://localhost:4321/auth/mot-de-passe-oublie \
-  -H "Content-Type: application/x-www-form-urlencoded" \
-  -d "email=TON_EMAIL@test.com"
-
-# 2. Récupérer le lien depuis l'email (via Supabase Dashboard → Authentication → Emails)
-
-# 3. Extraire token_hash et type de l'URL
-# Ex: http://localhost:4321/auth/confirm?token_hash=ABC123&type=recovery&next=/reset
-
-# 4. Tester manuellement
-curl -v "http://localhost:4321/auth/confirm?token_hash=ABC123&type=recovery" \
-  -c /tmp/cookies.txt
-
-# Attendre : 302 avec Location: /reinitialisation-mot-de-passe
-# Vérifier : set-cookie dans la réponse
-```
-
----
-
-### Étape 3 : Vérifier le token dans Supabase
+### Étape 5 : Vérifier le token dans Supabase
 
 Dans Supabase Dashboard → Authentication → Users :
 
@@ -142,7 +138,7 @@ supabase auth reset ton.email@test.com
 
 ---
 
-## Configuration recommandée dans Supabase
+## Récap configuration recommandée
 
 ### Authentication → URL Configuration
 
@@ -152,21 +148,18 @@ Site URL: https://biscuits-ia.com
 Redirect URLs:
   - https://biscuits-ia.com/auth/confirm
   - https://biscuits-ia.com/auth/callback
+  - https://biscuits-ia.com/reinitialisation-mot-de-passe
   - http://localhost:4321/auth/confirm
   - http://localhost:4321/auth/callback
+  - http://localhost:4321/reinitialisation-mot-de-passe
 ```
 
-### Authentication → Email Templates → Recovery
+### Authentication -> Email Templates -> Recovery
 
 ```html
 <h2>Réinitialisation de mot de passe</h2>
-<p>
-  <a href="{{ .ConfirmationURL }}">
-    Réinitialiser mon mot de passe
-  </a>
-</p>
-<p>Ou copiez ce lien : {{ .ConfirmationURL }}</p>
-<p>Ce lien expirera dans 1 heure.</p>
+<p>Utilisez ce code : <strong>{{ .Token }}</strong></p>
+<p>Ce code expirera dans 1 heure.</p>
 ```
 
 ### Authentication → Settings

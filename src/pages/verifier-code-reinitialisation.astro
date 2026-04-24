@@ -1,0 +1,175 @@
+---
+import AuthLayout from '../layouts/AuthLayout.astro';
+import { createSupabaseClient } from '../lib/supabase';
+
+const supabase = createSupabaseClient(Astro);
+const { data: { user } } = await supabase.auth.getUser();
+if (user) return Astro.redirect('/dashboard/user');
+
+const nonce = Astro.locals.nonce;
+const prefilledEmail = (Astro.url.searchParams.get('email') ?? '').trim();
+---
+
+<AuthLayout title="Vérifier le code" description="Entrez le code de vérification pour réinitialiser votre mot de passe.">
+	<div style="min-height:100vh; display:flex; align-items:center; justify-content:center; padding:2rem 1rem;">
+		<div style="width:100%; max-width:400px;">
+			<div style="background:#FDFAF4; border:1.5px solid #DDD0B8; border-radius:16px; padding:36px;">
+				<h1 style="font-size:22px; font-weight:500; color:#2C2014; margin-bottom:6px;">Vérifier le code</h1>
+				<p style="font-size:14px; color:#7A6040; line-height:1.6; margin-bottom:28px;">
+					Entrez le code reçu par email. Une fois validé, vous pourrez définir un nouveau mot de passe.
+				</p>
+
+				<div style="margin-bottom:14px;">
+					<label for="email" class="auth-label">Adresse email</label>
+					<input type="email" id="email" placeholder="vous@exemple.com" autocomplete="email" class="auth-input" value={prefilledEmail} />
+				</div>
+
+				<div style="margin-bottom:24px;">
+					<label for="token" class="auth-label">Code de vérification</label>
+					<input type="text" id="token" placeholder="123456" autocomplete="one-time-code" inputmode="numeric" class="auth-input" maxlength="10" />
+				</div>
+
+				<button id="verify-btn" class="auth-btn-primary" type="button">
+					<span id="btn-text">Vérifier le code</span>
+					<svg id="btn-loader" class="auth-spinner" style="display:none;" width="14" height="14"
+							 viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+						<path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+					</svg>
+				</button>
+
+				<div id="msg" class="auth-msg" style="display:none;" role="alert"></div>
+
+				<div style="text-align:center; margin-top:20px;">
+					<a href="/mot-de-passe-oublie" class="auth-link-back">← Demander un nouveau code</a>
+				</div>
+			</div>
+		</div>
+	</div>
+</AuthLayout>
+
+<style>
+	.auth-label {
+		display: block;
+		font-size: 11px;
+		font-family: 'Geist Mono', monospace;
+		color: #9A7E5A;
+		text-transform: uppercase;
+		letter-spacing: .08em;
+		margin-bottom: 7px;
+	}
+	.auth-input {
+		width: 100%;
+		padding: 11px 14px;
+		border: 1.5px solid #DDD0B8;
+		border-radius: 8px;
+		font-size: 14px;
+		color: #2C2014;
+		background: #F7F2E8;
+		font-family: 'Geist', sans-serif;
+		font-weight: 400;
+		box-sizing: border-box;
+		transition: border-color .15s, background .15s;
+	}
+	.auth-input:focus {
+		outline: none;
+		border-color: oklch(53.958% 0.10717 58.243);
+		background: #FDFAF4;
+		box-shadow: 0 0 0 3px rgba(196, 98, 58, .12);
+	}
+	.auth-input::placeholder { color: #C4B89A; }
+	.auth-btn-primary {
+		width: 100%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 8px;
+		padding: 12px 20px;
+		background: oklch(53.958% 0.10717 58.243);
+		color: #FDFAF4;
+		font-size: 14px;
+		font-weight: 500;
+		border-radius: 8px;
+		cursor: pointer;
+		border: none;
+		font-family: 'Geist', sans-serif;
+		transition: background .15s;
+	}
+	.auth-btn-primary:hover   { background: #754819; }
+	.auth-btn-primary:active  { background: #8b5822; }
+	.auth-btn-primary:disabled { opacity:.6; cursor:not-allowed; }
+	.auth-msg { margin-top:14px; padding:10px 14px; border-radius:8px; font-size:13px; text-align:center; line-height:1.5; }
+	.auth-msg.error   { background:#FAEAE4; border:1px solid #E8B9A6; color:#8B3820; }
+	.auth-msg.success { background:#E8F0EA; border:1px solid #B5CDB9; color:#2E5A38; }
+	.auth-link-back { font-size:13px; color:#9A7E5A; transition:color .15s; }
+	.auth-link-back:hover { color:#2C2014; }
+	.auth-spinner { animation:spin .7s linear infinite; }
+	@keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+</style>
+
+<script is:inline nonce={nonce}>
+	var msgEl = document.getElementById('msg');
+	var btn = document.getElementById('verify-btn');
+	var btnText = document.getElementById('btn-text');
+	var btnLoader = document.getElementById('btn-loader');
+	var emailInput = document.getElementById('email');
+	var tokenInput = document.getElementById('token');
+
+	function showMsg(text, type) {
+		if (type === undefined) type = 'error';
+		msgEl.textContent = text;
+		msgEl.className = 'auth-msg ' + type;
+		msgEl.style.display = 'block';
+	}
+
+	function setLoading(loading) {
+		btn.disabled = loading;
+		btnText.style.display = loading ? 'none' : 'block';
+		btnLoader.style.display = loading ? 'block' : 'none';
+	}
+
+	async function handleVerify() {
+		var email = emailInput.value.trim().toLowerCase();
+		var token = tokenInput.value.trim();
+
+		msgEl.style.display = 'none';
+
+		if (!email) return showMsg('Veuillez entrer votre adresse email.');
+		if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return showMsg('Adresse email invalide.');
+		if (!token) return showMsg('Veuillez entrer le code reçu par email.');
+		if (!/^[0-9A-Za-z]{6,10}$/.test(token)) return showMsg('Code invalide.');
+
+		setLoading(true);
+		try {
+			var formData = new FormData();
+			formData.set('email', email);
+			formData.set('token', token);
+
+			var res = await fetch('/auth/verifier-token-reinitialisation', {
+				method: 'POST',
+				body: formData,
+			});
+
+			var data = await res.json();
+			if (!res.ok) {
+				return showMsg(data.error || 'Impossible de vérifier le code.');
+			}
+
+			showMsg('Code vérifié. Redirection…', 'success');
+			setTimeout(function() {
+				window.location.href = '/reinitialisation-mot-de-passe';
+			}, 700);
+		} catch (err) {
+			showMsg('Une erreur est survenue. Veuillez réessayer.');
+		} finally {
+			setLoading(false);
+		}
+	}
+
+	btn.addEventListener('click', handleVerify);
+	emailInput.addEventListener('keydown', function(e) {
+		if (e.key === 'Enter') handleVerify();
+	});
+	tokenInput.addEventListener('keydown', function(e) {
+		if (e.key === 'Enter') handleVerify();
+	});
+</script>

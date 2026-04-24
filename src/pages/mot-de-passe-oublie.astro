@@ -26,7 +26,7 @@ const nonce = Astro.locals.nonce;
       <div style="background:#FDFAF4; border:1.5px solid #DDD0B8; border-radius:16px; padding:36px;">
         <h1 style="font-size:22px; font-weight:500; color:#2C2014; margin-bottom:6px;">Mot de passe oublié ?</h1>
         <p style="font-size:14px; color:#7A6040; line-height:1.6; margin-bottom:28px;">
-          Entrez votre email et nous vous envoyons un lien pour en créer un nouveau.
+          Entrez votre email et nous vous envoyons un code pour vérifier votre identité.
         </p>
 
         <div style="margin-bottom:24px;">
@@ -35,7 +35,7 @@ const nonce = Astro.locals.nonce;
         </div>
 
         <button id="reset-btn" class="auth-btn-primary" type="button">
-          <span id="btn-text">Envoyer le lien</span>
+          <span id="btn-text">Envoyer le code</span>
           <svg id="btn-loader" class="auth-spinner" style="display:none;" width="14" height="14"
                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
             <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
@@ -153,7 +153,10 @@ const nonce = Astro.locals.nonce;
         return showMsg(data.error || 'Une erreur est survenue.');
       }
 
-      showMsg('Lien envoyé ! Vérifiez votre boîte de réception.', 'success');
+      showMsg('Code envoyé. Vérifiez votre boîte de réception.', 'success');
+      setTimeout(function() {
+        window.location.href = '/verifier-code-reinitialisation?email=' + encodeURIComponent(email);
+      }, 900);
     } catch (e) {
       showMsg('Une erreur est survenue. Veuillez réessayer.');
     } finally {

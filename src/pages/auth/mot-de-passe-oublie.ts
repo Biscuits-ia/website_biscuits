@@ -56,7 +56,7 @@ function getErrorMessage(errorMessage: string): string {
   if (msg.includes('rate') || msg.includes('limit')) return 'Trop d\'emails envoyés. Attendez quelques minutes avant de réessayer.';
   if (msg.includes('not allowed') || msg.includes('redirect')) return 'Configuration incorrecte. Contactez le support.';
   if (msg.includes('user not found') || msg.includes('no user')) return 'Aucun compte trouvé pour cet email.';
-  return 'Impossible d\'envoyer le lien de réinitialisation. Veuillez réessayer.';
+  return 'Impossible d\'envoyer le code de réinitialisation. Veuillez réessayer.';
 }
 
 export const POST: APIRoute = async ({ request, cookies, url, site }) => {
@@ -74,16 +74,11 @@ export const POST: APIRoute = async ({ request, cookies, url, site }) => {
     const supabase = createSupabaseClient({ request, cookies });
     const origin = getAuthRedirectOrigin(request, url, site);
 
-    // IMPORTANT: Pour le reset de mot de passe, Supabase envoie un lien avec token_hash et type=recovery
-    // Le lien doit pointer vers /auth/confirm qui gère la vérification OTP
-    // On ajoute next= pour rediriger vers la page de nouveau mot de passe APRÈS vérification
-    const redirectUrl = `${origin}/auth/confirm?type=recovery&next=/reinitialisation-mot-de-passe`;
+    // Flow OTP: l'email doit contenir {{ .Token }} pour la saisie manuelle du code.
+    // On garde origin résolu pour diagnostiquer les environnements de déploiement.
+    console.log('[reset-password] Sending reset OTP email to:', email, '| origin:', origin);
 
-    console.log('[reset-password] Sending reset email to:', email, '| redirectUrl:', redirectUrl);
-
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: redirectUrl,
-    });
+    const { error } = await supabase.auth.resetPasswordForEmail(email);
 
     if (error) {
       console.error('[Auth] resetPasswordForEmail error:', error.message, '| code:', error.code);
@@ -96,7 +91,7 @@ export const POST: APIRoute = async ({ request, cookies, url, site }) => {
     return new Response(
       JSON.stringify({
         success: true,
-        message: 'Email envoyé. Vérifiez votre boîte de réception.',
+        message: 'Email envoyé. Vérifiez votre boîte de réception pour récupérer le code.',
       }),
       { status: 200, headers: { 'Content-Type': 'application/json' } },
     );

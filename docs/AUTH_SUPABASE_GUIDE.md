@@ -36,12 +36,11 @@
 │                      RÉINITIALISATION MOT DE PASSE                           │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │ 1. POST /auth/mot-de-passe-oublie                                           │
-│    - resetPasswordForEmail() avec redirectTo                                │
-│    - redirectUrl = /auth/confirm?type=recovery&next=/reinitialisation...    │
-│    - Supabase envoie email avec lien                                        │
+│    - resetPasswordForEmail()                                                 │
+│    - Supabase envoie email avec code OTP                                     │
 │                                                                             │
-│ 2. Utilisateur clique lien → /auth/confirm                                  │
-│    - Vérifie token_hash + type=recovery                                     │
+│ 2. POST /auth/verifier-token-reinitialisation                               │
+│    - Vérifie email + token + type=recovery via verifyOtp()                 │
 │    - Crée session authentifiée                                              │
 │    - Redirige vers /reinitialisation-mot-de-passe                           │
 │                                                                             │
@@ -129,7 +128,7 @@ curl http://localhost:4321/dashboard/user \
 # Attendre : Status 200, HTML de la page
 ```
 
-### Test du flux de reset de mot de passe
+### Test du flux de reset de mot de passe (OTP)
 
 ```bash
 # 1. Demander un reset
@@ -139,14 +138,17 @@ curl -X POST http://localhost:4321/auth/mot-de-passe-oublie \
 
 # Attendre : {"success":true,"message":"Email envoyé..."}
 
-# 2. Récupérer le lien depuis les emails Supabase
+# 2. Récupérer le code OTP dans l'email Supabase
 #    Dashboard → Authentication → Email Templates → Recovery
 
-# 3. Simuler le clic sur le lien
-curl -v "http://localhost:4321/auth/confirm?token_hash=XXX&type=recovery" \
+# 3. Vérifier le code OTP (crée la session)
+curl -X POST http://localhost:4321/auth/verifier-token-reinitialisation \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  -d "email=test@example.com" \
+  -d "token=123456" \
   -c cookies.txt
 
-# Attendre : 302 vers /reinitialisation-mot-de-passe
+# Attendre : {"success":true}
 # Vérifier : cookies.txt contient la session
 
 # 4. Changer le mot de passe
@@ -206,12 +208,8 @@ Supabase Dashboard → Authentication → Email Templates
 **Réinitialisation de mot de passe :**
 ```html
 <h2>Réinitialisation de mot de passe</h2>
-<p>
-  <a href="{{ .ConfirmationURL }}">
-    Changer mon mot de passe
-  </a>
-</p>
-<p>Lien : {{ .ConfirmationURL }}</p>
+<p>Utilisez ce code : <strong>{{ .Token }}</strong></p>
+<p>Ce code expire dans 1 heure.</p>
 <p>Si vous n'avez pas demandé ce changement, ignorez cet email.</p>
 ```
 

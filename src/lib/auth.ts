@@ -114,7 +114,7 @@ export async function requireAdmin(Astro: AstroGlobal): Promise<AuthResult | Res
  * Vérifie que l'utilisateur est connecté ET a le rôle `moderator` ou `admin`.
  */
 export async function requireModerator(Astro: AstroGlobal): Promise<AuthResult | Response> {
-  const supabase = createSupabaseClient(Astro);
+  const supabase = Astro.locals.supabase ?? createSupabaseClient(Astro);
 
   const { data: { user }, error } = await supabase.auth.getUser();
 

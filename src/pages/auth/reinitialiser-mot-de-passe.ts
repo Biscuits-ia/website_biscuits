@@ -1,12 +1,10 @@
 import type { APIRoute } from 'astro';
-import { createClient } from '@supabase/supabase-js';
+import { createSupabaseClient } from '@/lib/supabase';
 
 export const POST: APIRoute = async ({ request, cookies }) => {
   const formData = await request.formData();
   const password = formData.get('password') instanceof File ? null : (formData.get('password') as string | null);
-  const accessToken = formData.get('access_token') instanceof File ? null : (formData.get('access_token') as string | null);
-  const refreshToken = formData.get('refresh_token') instanceof File ? null : (formData.get('refresh_token') as string | null);
-  
+
   if (!password) {
     return new Response(
       JSON.stringify({ error: 'Le mot de passe est requis.' }),
@@ -21,50 +19,25 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     );
   }
 
-  if (!accessToken || !refreshToken) {
-    return new Response(
-      JSON.stringify({ error: 'Lien de réinitialisation invalide ou incomplet.' }),
-      { status: 400, headers: { 'Content-Type': 'application/json' } },
-    );
-  }
-
   try {
-    // Créer un client Supabase avec les tokens de récupération
-    const supabaseUrl = import.meta.env.SUPABASE_URL;
-    const supabaseKey = import.meta.env.SUPABASE_ANON_KEY;
+    // La session de récupération est déjà posée dans les cookies par /auth/callback.
+    // On la réutilise directement — pas besoin de tokens en FormData.
+    const supabase = createSupabaseClient({ request, cookies });
 
-    if (!supabaseUrl || !supabaseKey) {
-      throw new Error('Configuration Supabase manquante');
-    }
-
-    const supabase = createClient(supabaseUrl, supabaseKey, {
-      auth: {
-        persistSession: false,
-      },
-    });
-
-    // Établir la session avec les tokens de récupération
-    const { error: sessionError } = await supabase.auth.setSession({
-      access_token: accessToken,
-      refresh_token: refreshToken,
-    });
-
-    if (sessionError) {
-      console.error('Erreur setSession reset password:', sessionError.message);
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (userError || !user) {
       return new Response(
         JSON.stringify({ error: 'Lien invalide ou expiré. Veuillez demander un nouveau lien de réinitialisation.' }),
-        { status: 400, headers: { 'Content-Type': 'application/json' } },
+        { status: 401, headers: { 'Content-Type': 'application/json' } },
       );
     }
 
-    // Mettre à jour le mot de passe
-    // Avec un token de récupération, updateUser() ne devrait pas demander l'ancien mot de passe
     const { error } = await supabase.auth.updateUser({ password });
 
     if (error) {
-      console.error('Erreur mise à jour mot de passe:', error.message);
+      console.error('[Auth] updateUser (reset password) error:', error.message);
       return new Response(
-        JSON.stringify({ error: error.message || 'Impossible de mettre à jour le mot de passe.' }),
+        JSON.stringify({ error: 'Impossible de mettre à jour le mot de passe. Veuillez réessayer.' }),
         { status: 400, headers: { 'Content-Type': 'application/json' } },
       );
     }
@@ -74,7 +47,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       { status: 200, headers: { 'Content-Type': 'application/json' } },
     );
   } catch (err) {
-    console.error('Erreur serveur reset password:', err);
+    console.error('[Auth] reinitialiser-mot-de-passe error:', err);
     return new Response(
       JSON.stringify({ error: 'Erreur serveur. Veuillez réessayer.' }),
       { status: 500, headers: { 'Content-Type': 'application/json' } },

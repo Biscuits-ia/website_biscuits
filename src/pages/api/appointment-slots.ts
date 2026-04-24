@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { createSupabaseClient } from '@/lib/supabase';
+import { createSupabaseClient, createSupabaseAdminClient } from '@/lib/supabase';
 import { fetchRoleSecure } from '@/lib/auth';
 
 const JSON_HEADERS = { 'Content-Type': 'application/json' } as const;
@@ -56,7 +56,8 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       );
     }
 
-    const { data, error } = await supabase
+    const adminDb = createSupabaseAdminClient();
+    const { data, error } = await adminDb
       .from('appointment_slots')
       .insert([{ start_time, end_time, is_available: true }])
       .select()

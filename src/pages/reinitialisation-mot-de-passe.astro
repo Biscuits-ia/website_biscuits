@@ -124,79 +124,7 @@ const nonce = Astro.locals.nonce;
   var segments     = ['s1','s2','s3','s4'].map(function(id) { return document.getElementById(id); });
   var colors       = ['#E24B4A','#E89A3C','#C4623A','#3D5A47'];
   var labels       = ['Trop court','Faible','Moyen','Fort'];
-  var recoveryTokens = null;
 
-  // Parse la query string ou hash de l'URL
-  function parseUrlParams() {
-    // D'abord check le hash (ancien format)
-    var hash = window.location.hash.substring(1);
-    if (hash) {
-      var params = {};
-      hash.split('&').forEach(function(pair) {
-        var parts = pair.split('=');
-        if (parts.length === 2) {
-          params[decodeURIComponent(parts[0])] = decodeURIComponent(parts[1]);
-        }
-      });
-      return params;
-    }
-    
-    // Sinon check la query string (nouveau format Supabase)
-    var search = window.location.search.substring(1);
-    var params = {};
-    search.split('&').forEach(function(pair) {
-      var parts = pair.split('=');
-      if (parts.length === 2) {
-        params[decodeURIComponent(parts[0])] = decodeURIComponent(parts[1]);
-      }
-    });
-    return params;
-  }
-
-  async function initRecoveryTokens() {
-    var params = parseUrlParams();
-    console.log('[DEBUG] Params parsés:', params);
-
-    // Cas 1: Tokens directs dans le hash (ancien format)
-    if (params.access_token && params.refresh_token) {
-      console.log('[DEBUG] Tokens trouvés dans le hash');
-      recoveryTokens = {
-        accessToken: params.access_token,
-        refreshToken: params.refresh_token,
-      };
-      history.replaceState(null, '', window.location.pathname);
-      return;
-    }
-
-    // Cas 2: Code en query param (nouveau format Supabase)
-    if (params.code) {
-      console.log('[DEBUG] Code trouvé en query param:', params.code);
-      try {
-        var res = await fetch('/auth/exchange-code?code=' + encodeURIComponent(params.code), {
-          credentials: 'include',
-        });
-        var data = await res.json();
-        console.log('[DEBUG] Réponse exchange-code:', data);
-
-        if (data.access_token && data.refresh_token) {
-          recoveryTokens = {
-            accessToken: data.access_token,
-            refreshToken: data.refresh_token,
-          };
-          history.replaceState(null, '', window.location.pathname);
-          return;
-        }
-      } catch (err) {
-        console.error('[DEBUG] Erreur lors de l\'échange du code:', err);
-      }
-    }
-
-    console.error('[DEBUG] Tokens manquants. URL complète:', window.location.href);
-    showMsg('Lien invalide ou expiré. Veuillez demander un nouveau lien de réinitialisation.', 'error');
-    btn.disabled = true;
-  }
-
-  initRecoveryTokens();
 
   function showMsg(text, type) {
     if (!type) type = 'error';
@@ -255,12 +183,7 @@ const nonce = Astro.locals.nonce;
     var confirm  = confirmInput.value;
 
     msgEl.style.display = 'none';
-    
-    if (!recoveryTokens) {
-      showMsg('Lien invalide ou expiré. Veuillez demander un nouveau lien de réinitialisation.');
-      return;
-    }
-    
+
     if (!password || !confirm) {
       showMsg('Veuillez remplir tous les champs.');
       return;
@@ -278,8 +201,6 @@ const nonce = Astro.locals.nonce;
     try {
       var formData = new FormData();
       formData.set('password', password);
-      formData.set('access_token', recoveryTokens.accessToken);
-      formData.set('refresh_token', recoveryTokens.refreshToken);
 
       var res = await fetch('/auth/reinitialiser-mot-de-passe', {
         method: 'POST',

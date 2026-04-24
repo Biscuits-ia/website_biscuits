@@ -6,11 +6,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
   const accessToken = formData.get('access_token') as string | null;
   const refreshToken = formData.get('refresh_token') as string | null;
 
-  console.log('[DEBUG] Vérification token - access_token reçu:', accessToken ? 'OUI' : 'NON');
-  console.log('[DEBUG] Vérification token - refresh_token reçu:', refreshToken ? 'OUI' : 'NON');
-
   if (!accessToken || !refreshToken) {
-    console.error('[DEBUG] Tokens manquants dans la requête');
     return new Response(
       JSON.stringify({ error: 'Token invalide.' }),
       { status: 400, headers: { 'Content-Type': 'application/json' } },

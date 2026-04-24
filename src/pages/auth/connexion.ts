@@ -21,9 +21,10 @@ export const POST: APIRoute = async ({ request, cookies }) => {
   });
 
   if (error) {
-    const msg = error.message === "Invalid login credentials"
-      ? "Email ou mot de passe incorrect."
-      : error.message;
+    // Ne jamais exposer les messages d'erreur internes Supabase au client
+    const msg = (error.message === 'Invalid login credentials' || error.message === 'Email not confirmed')
+      ? 'Email ou mot de passe incorrect.'
+      : 'Connexion impossible. Veuillez réessayer.';
     return new Response(JSON.stringify({ error: msg }), {
       status: 401,
       headers: { "Content-Type": "application/json" },

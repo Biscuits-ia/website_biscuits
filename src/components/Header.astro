@@ -146,6 +146,15 @@ const isActive = (href: string) =>
                 </section>
               </div>
             </div>
+
+            <ul class="mega-mobile-menu" role="menu" aria-label="Nos solutions en mobile">
+              <li role="none"><a role="menuitem" href="/projects-collaboratif" class="mega-mobile-link">Projets collaboratifs</a></li>
+              <li role="none"><a role="menuitem" href="/services" class="mega-mobile-link">Nos services</a></li>
+              <li role="none"><a role="menuitem" href="/ateliers" class="mega-mobile-link">Ateliers IA</a></li>
+              <li role="none"><a role="menuitem" href="/charte-ethique" class="mega-mobile-link">Confiance et conformite</a></li>
+              <li role="none"><a role="menuitem" href="/ressources" class="mega-mobile-link">Ressources</a></li>
+              <li role="none"><a role="menuitem" href="/rdv" class="mega-mobile-link">Prendre rendez-vous</a></li>
+            </ul>
           </div>
         </li>
 
@@ -380,6 +389,29 @@ const isActive = (href: string) =>
     min-height: 0;
   }
 
+  .mega-mobile-menu {
+    display: none;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .mega-mobile-link {
+    display: block;
+    border-radius: 8px;
+    padding: 0.65rem 0.75rem;
+    font-size: 1.06rem;
+    font-weight: 600;
+    color: var(--color-text-light);
+    text-decoration: none;
+    min-height: 44px;
+  }
+
+  .mega-mobile-link:hover {
+    background: var(--color-bg-alt);
+    color: var(--color-text);
+  }
+
   .mega-categories {
     background: linear-gradient(180deg, var(--color-primary) 0%, var(--color-first) 100%);
     padding: 1rem;
@@ -580,6 +612,8 @@ const isActive = (href: string) =>
       right: -100%;
       bottom: 0;
       width: min(360px, 92vw);
+      height: calc(100dvh - 66px);
+      max-height: calc(100dvh - 66px);
       background: var(--color-bg-elevated);
       border-left: 1px solid var(--color-border-second);
       padding: 1rem;
@@ -617,13 +651,19 @@ const isActive = (href: string) =>
       border-radius: 0;
       margin: 0.2rem 0 0.5rem 0.75rem;
       display: none;
-      inline-size: max-content;
+      inline-size: auto;
+      width: calc(100% - 0.75rem);
       max-width: calc(100% - 0.75rem);
       padding: 0.3rem 0 0.3rem 0.5rem;
     }
 
     .nav-trigger[aria-expanded="true"] + .dropdown-menu {
-      display: inline-block;
+      display: block;
+    }
+
+    .dropdown-item {
+      white-space: normal;
+      overflow-wrap: anywhere;
     }
 
     .mega-panel {
@@ -635,6 +675,8 @@ const isActive = (href: string) =>
       border: 0;
       margin: 0.2rem 0 0.5rem 0.75rem;
       display: none;
+      width: calc(100% - 0.75rem);
+      max-width: calc(100% - 0.75rem);
       max-height: none;
       overflow: visible;
     }
@@ -644,30 +686,15 @@ const isActive = (href: string) =>
     }
 
     .mega-grid {
-      grid-template-columns: 1fr;
-      min-height: auto;
+      display: none;
     }
 
-    .mega-categories {
-      border-radius: 12px;
-      margin-bottom: 0.75rem;
-    }
-
-    .mega-content {
-      padding: 0;
-    }
-
-    .mega-head {
+    .mega-mobile-menu {
       display: block;
-      margin-bottom: 0.75rem;
-    }
-
-    .mega-head h3 {
-      margin-bottom: 0.4rem;
-    }
-
-    .mega-items {
-      grid-template-columns: 1fr;
+      width: 100%;
+      max-width: 100%;
+      border-left: 2px solid var(--color-border-second);
+      padding-left: 0.5rem;
     }
 
     .header-actions {
@@ -694,6 +721,7 @@ const isActive = (href: string) =>
   .nav-link:focus-visible,
   .mega-cat:focus-visible,
   .mega-item:focus-visible,
+  .mega-mobile-link:focus-visible,
   .dropdown-item:focus-visible,
   .btn-start:focus-visible,
   .btn-login:focus-visible,
@@ -730,6 +758,11 @@ const isActive = (href: string) =>
     const hamburgerEl = hamburger;
     const navEl = nav;
     const overlayEl = overlay;
+
+    if (headerEl.dataset.initialized === 'true') {
+      return;
+    }
+    headerEl.dataset.initialized = 'true';
 
     let lastScroll = 0;
     let ticking = false;
@@ -772,6 +805,7 @@ const isActive = (href: string) =>
       hamburgerEl.setAttribute('aria-expanded', 'false');
       overlayEl.classList.remove('active');
       document.body.style.overflow = '';
+      closeAllMenus();
     }
 
     hamburgerEl.addEventListener('click', () => {
@@ -866,6 +900,12 @@ const isActive = (href: string) =>
       if (!(target instanceof HTMLElement)) return;
       if (!target.closest('.has-mega') && !target.closest('.has-dropdown')) {
         closeAllMenus();
+      }
+    });
+
+    window.addEventListener('resize', () => {
+      if (window.innerWidth >= 1024) {
+        closeMobile();
       }
     });
 

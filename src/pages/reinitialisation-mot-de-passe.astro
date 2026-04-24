@@ -211,6 +211,13 @@ const nonce = Astro.locals.nonce;
 
       if (!res.ok) {
         showMsg(data.error || 'Une erreur est survenue.');
+        // Le serveur a déjà déconnecté la session — proposer un nouveau lien
+        // si c'est une erreur non liée à la politique de mot de passe
+        if (res.status === 401 || res.status === 500) {
+          setTimeout(function() {
+            window.location.href = '/mot-de-passe-oublie';
+          }, 3000);
+        }
         return;
       }
 

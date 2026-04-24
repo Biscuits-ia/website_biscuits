@@ -29,7 +29,12 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
     const { error } = await supabase.auth.updateUser({ password });
 
     if (error) {
-      console.error('[Auth] updateUser (reset password) error:', error.message, 'status:', error.status);
+      console.error('[Auth] updateUser (reset password) SUPABASE ERROR:', error.message, '| status:', error.status, '| code:', (error as any).code);
+
+      // Déconnecter immédiatement — ne jamais laisser un utilisateur connecté
+      // avec une session recovery si la mise à jour a échoué (risque de session
+      // orpheline permettant l'accès au compte sans avoir changé le mot de passe).
+      await supabase.auth.signOut();
 
       // Distinguer les erreurs de session (lien expiré) des erreurs de mise à jour
       const isSessionError = error.status === 401
@@ -43,8 +48,14 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
         );
       }
 
+      // Transmettre un message spécifique pour les politiques de mot de passe
+      const isPolicyError = /password|same|reuse|weak|strength|character/i.test(error.message);
+      const clientMessage = isPolicyError
+        ? 'Mot de passe refusé par la politique de sécurité. Essayez un mot de passe différent et plus complexe.'
+        : 'Impossible de mettre à jour le mot de passe. Veuillez réessayer.';
+
       return new Response(
-        JSON.stringify({ error: 'Impossible de mettre à jour le mot de passe. Veuillez réessayer.' }),
+        JSON.stringify({ error: clientMessage }),
         { status: 400, headers: { 'Content-Type': 'application/json' } },
       );
     }

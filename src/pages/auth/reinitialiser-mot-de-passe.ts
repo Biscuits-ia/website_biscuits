@@ -1,7 +1,7 @@
 import type { APIRoute } from 'astro';
 import { createSupabaseClient } from '@/lib/supabase';
 
-export const POST: APIRoute = async ({ request, cookies }) => {
+export const POST: APIRoute = async ({ request, cookies, locals }) => {
   const formData = await request.formData();
   const password = formData.get('password') instanceof File ? null : (formData.get('password') as string | null);
 
@@ -20,22 +20,29 @@ export const POST: APIRoute = async ({ request, cookies }) => {
   }
 
   try {
-    // La session de récupération est déjà posée dans les cookies par /auth/callback.
-    // On la réutilise directement — pas besoin de tokens en FormData.
-    const supabase = createSupabaseClient({ request, cookies });
-
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
-    if (userError || !user) {
-      return new Response(
-        JSON.stringify({ error: 'Lien invalide ou expiré. Veuillez demander un nouveau lien de réinitialisation.' }),
-        { status: 401, headers: { 'Content-Type': 'application/json' } },
-      );
-    }
+    // Réutiliser le client Supabase du middleware pour éviter de créer un second client
+    // qui lirait les anciens cookies de la requête (potentiellement obsolètes si le token
+    // a été rafraîchi par le middleware). Le client locals.supabase a déjà le token
+    // en mémoire après le getUser() du middleware.
+    const supabase = locals.supabase ?? createSupabaseClient({ request, cookies });
 
     const { error } = await supabase.auth.updateUser({ password });
 
     if (error) {
-      console.error('[Auth] updateUser (reset password) error:', error.message);
+      console.error('[Auth] updateUser (reset password) error:', error.message, 'status:', error.status);
+
+      // Distinguer les erreurs de session (lien expiré) des erreurs de mise à jour
+      const isSessionError = error.status === 401
+        || error.status === 403
+        || /session|jwt|token|not authenticated|unauthorized/i.test(error.message);
+
+      if (isSessionError) {
+        return new Response(
+          JSON.stringify({ error: 'Lien invalide ou expiré. Veuillez demander un nouveau lien de réinitialisation.' }),
+          { status: 401, headers: { 'Content-Type': 'application/json' } },
+        );
+      }
+
       return new Response(
         JSON.stringify({ error: 'Impossible de mettre à jour le mot de passe. Veuillez réessayer.' }),
         { status: 400, headers: { 'Content-Type': 'application/json' } },

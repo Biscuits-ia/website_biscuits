@@ -8,12 +8,22 @@ export const onRequest = defineMiddleware(async (context, next) => {
   const { url } = context;
   const isDev = import.meta.env.DEV;
 
-  // Rate-limit API routes and auth routes
+  // Rate-limit API/auth routes with a per-route key to avoid cross-endpoint throttling.
   if (url.pathname.startsWith('/api/') || url.pathname.startsWith('/auth/')) {
     const ip = context.clientAddress ?? context.request.headers.get('x-forwarded-for') ?? 'unknown';
-    // Auth routes get a stricter limit to prevent brute-force attacks
-    const isAuth = url.pathname.startsWith('/auth/');
-    const blocked = rateLimit(ip, isAuth ? 10 : 20, 60_000);
+    const key = `${ip}:${url.pathname}`;
+
+    let limit = 20;
+    if (url.pathname.startsWith('/auth/')) {
+      // Keep login/reset stricter, but allow signup/confirmation more retries.
+      if (url.pathname === '/auth/inscription' || url.pathname === '/auth/confirm' || url.pathname === '/auth/callback') {
+        limit = 30;
+      } else {
+        limit = 12;
+      }
+    }
+
+    const blocked = rateLimit(key, limit, 60_000);
     if (blocked) return blocked;
   }
 
@@ -81,7 +91,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
     let html = await response.text();
     // Add nonce to ALL inline <script> tags (those without a src= attribute).
     // Handles variations like <script>, <script type="module">, <script type="module" crossorigin>, etc.
-    html = html.replace(
+    html = html.replaceAll(
       /<script(\b[^>]*?)(?<!\bsrc\s*=\s*["'][^"']*["'])>/g,
       (match, attrs: string) => {
         // Skip tags that already have a nonce or have a src attribute

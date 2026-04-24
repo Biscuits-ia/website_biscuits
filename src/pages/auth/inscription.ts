@@ -39,36 +39,96 @@ function getAuthRedirectOrigin(request: Request, url: URL, site: URL | undefined
   return origin;
 }
 
-export const POST: APIRoute = async ({ request, cookies, url, site }) => {
-  const formData = await request.formData();
-  const email    = formData.get('email') instanceof File ? null : (formData.get('email') as string | null);
-  const password = formData.get('password') instanceof File ? null : (formData.get('password') as string | null);
-  if (!email || !password) {
-    return new Response(
-      JSON.stringify({ error: 'Email et mot de passe requis.' }),
-      { status: 400, headers: { 'Content-Type': 'application/json' } },
-    );
-  }
-
-  const supabase = createSupabaseClient({ request, cookies });
-  const origin = getAuthRedirectOrigin(request, url, site);
-  const { error } = await supabase.auth.signUp({
-    email,
-    password,
-    options: {
-      emailRedirectTo: `${origin}/auth/callback`,
-    },
-  });
-
-  if (error) {
-    return new Response(
-      JSON.stringify({ error: 'Impossible de créer le compte. Veuillez réessayer.' }),
-      { status: 400, headers: { 'Content-Type': 'application/json' } },
-    );
-  }
-
-  return new Response(
-    JSON.stringify({ success: true }),
-    { status: 200, headers: { 'Content-Type': 'application/json' } },
+function isRedirectUrlError(message: string): boolean {
+  const msg = message.toLowerCase();
+  return (
+    msg.includes('redirect') ||
+    msg.includes('allow list') ||
+    msg.includes('allowlist') ||
+    msg.includes('whitelist') ||
+    msg.includes('uri')
   );
+}
+
+function mapSignupError(message: string): string {
+  const msg = message.toLowerCase();
+
+  if (msg.includes('already') || msg.includes('registered')) {
+    return 'Cet email est deja inscrit. Essayez de vous connecter.';
+  }
+  if (msg.includes('password')) {
+    return 'Mot de passe invalide. Utilisez au moins 8 caracteres.';
+  }
+  if (msg.includes('signup') && msg.includes('disabled')) {
+    return 'Les inscriptions sont actuellement desactivees.';
+  }
+  if (msg.includes('rate') || msg.includes('security purposes') || msg.includes('too many')) {
+    return 'Trop de tentatives. Reessayez dans quelques minutes.';
+  }
+  if (isRedirectUrlError(msg)) {
+    return 'Configuration de redirection invalide. Contactez l\'administrateur.';
+  }
+
+  return 'Impossible de creer le compte. Veuillez reessayer.';
+}
+
+export const POST: APIRoute = async ({ request, cookies, url, site }) => {
+  try {
+    const formData = await request.formData();
+    const email    = formData.get('email') instanceof File ? null : (formData.get('email') as string | null);
+    const password = formData.get('password') instanceof File ? null : (formData.get('password') as string | null);
+    if (!email || !password) {
+      return new Response(
+        JSON.stringify({ error: 'Email et mot de passe requis.' }),
+        { status: 400, headers: { 'Content-Type': 'application/json' } },
+      );
+    }
+
+    const supabase = createSupabaseClient({ request, cookies });
+
+    let emailRedirectTo: string | undefined;
+    try {
+      const origin = getAuthRedirectOrigin(request, url, site);
+      emailRedirectTo = `${origin}/auth/callback`;
+    } catch (originError) {
+      // Fallback: keep signup functional even if public origin cannot be derived.
+      console.warn('[Auth] Signup redirect origin unresolved, fallback without emailRedirectTo:', originError);
+    }
+
+    let signupResult = await supabase.auth.signUp({
+      email,
+      password,
+      ...(emailRedirectTo
+        ? {
+            options: {
+              emailRedirectTo,
+            },
+          }
+        : {}),
+    });
+
+    if (signupResult.error && emailRedirectTo && isRedirectUrlError(signupResult.error.message)) {
+      console.warn('[Auth] Signup retry without emailRedirectTo due to redirect URL error:', signupResult.error.message);
+      signupResult = await supabase.auth.signUp({ email, password });
+    }
+
+    if (signupResult.error) {
+      console.error('[Auth] signUp error:', signupResult.error.message);
+      return new Response(
+        JSON.stringify({ error: mapSignupError(signupResult.error.message) }),
+        { status: 400, headers: { 'Content-Type': 'application/json' } },
+      );
+    }
+
+    return new Response(
+      JSON.stringify({ success: true }),
+      { status: 200, headers: { 'Content-Type': 'application/json' } },
+    );
+  } catch (err) {
+    console.error('[Auth] inscription route error:', err);
+    return new Response(
+      JSON.stringify({ error: 'Erreur serveur. Veuillez reessayer.' }),
+      { status: 500, headers: { 'Content-Type': 'application/json' } },
+    );
+  }
 };

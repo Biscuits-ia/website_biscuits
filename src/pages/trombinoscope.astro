@@ -1,15 +1,10 @@
 ---
 import Layout from '@/layouts/Layout.astro';
-import { createSupabaseClient } from '@/lib/supabase';
+import { createSupabaseAdminClient } from '@/lib/supabase';
 
 export const prerender = false;
 
-const supabase = createSupabaseClient({
-  request: Astro.request,
-  cookies: Astro.cookies,
-});
-
-const { data: membres, error } = await supabase
+const { data: membres, error } = await createSupabaseAdminClient()
   .from('benevoles')
   .select('id, prenom, nom, role, competences, photo_url, bio')
   .eq('actif', true)

@@ -25,6 +25,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   const role        = (form.get('role') as string | null)?.trim() ?? '';
   const competences = (form.get('competences') as string | null)?.trim() ?? '';
   const bio         = (form.get('bio') as string | null)?.trim() || null;
+  const lien        = (form.get('lien') as string | null)?.trim() || null;
   const ordre       = Number.parseInt((form.get('ordre') as string | null) ?? '0', 10);
   const actif       = form.get('actif') === 'true';
   const photo       = form.get('photo');
@@ -54,6 +55,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
       role,
       competences: competencesArr,
       bio,
+      lien,
       ordre: Number.isNaN(ordre) ? 0 : ordre,
       actif,
     })

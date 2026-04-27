@@ -19,6 +19,8 @@ CREATE TABLE IF NOT EXISTS public.benevoles (
   photo_url    text,
   -- Texte court de présentation (facultatif)
   bio          text,
+  -- Lien externe : portfolio, LinkedIn, site perso, etc. (facultatif)
+  lien         text,
   -- Position d'affichage au sein de son groupe (ordre croissant)
   ordre        integer     NOT NULL DEFAULT 0,
   actif        boolean     NOT NULL DEFAULT true,
@@ -30,6 +32,7 @@ COMMENT ON TABLE  public.benevoles               IS 'Membres actifs de l''associ
 COMMENT ON COLUMN public.benevoles.role          IS 'benevole | membre_ca | membre_bureau';
 COMMENT ON COLUMN public.benevoles.competences   IS 'Liste de compétences affichées sur le trombinoscope';
 COMMENT ON COLUMN public.benevoles.photo_url     IS 'URL publique Supabase Storage — image 200×200 px recommandée';
+COMMENT ON COLUMN public.benevoles.lien          IS 'Lien externe : portfolio, LinkedIn, site perso, etc.';
 COMMENT ON COLUMN public.benevoles.ordre         IS 'Ordre d''affichage croissant dans chaque groupe';
 
 -- ─────────────────────────────────────────────────────────────────────────────

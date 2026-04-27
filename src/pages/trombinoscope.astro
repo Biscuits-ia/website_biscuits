@@ -6,7 +6,7 @@ export const prerender = false;
 
 const { data: membres, error } = await createSupabaseAdminClient()
   .from('benevoles')
-  .select('id, prenom, nom, role, competences, photo_url, bio')
+  .select('id, prenom, nom, role, competences, photo_url, bio, lien')
   .eq('actif', true)
   .order('ordre', { ascending: true });
 
@@ -76,8 +76,11 @@ function photoUrl(url: string | null): string {
                       <li class="trombi-skill">{c}</li>
                     ))}
                   </ul>
-                )}
-              </div>
+                )}                {membre.lien && (
+                  <a href={membre.lien} class="trombi-link" target="_blank" rel="noopener noreferrer">
+                    🔗 Voir le profil
+                  </a>
+                )}              </div>
             </li>
           ))}
         </ul>
@@ -117,8 +120,11 @@ function photoUrl(url: string | null): string {
                       <li class="trombi-skill">{c}</li>
                     ))}
                   </ul>
-                )}
-              </div>
+                )}                {membre.lien && (
+                  <a href={membre.lien} class="trombi-link" target="_blank" rel="noopener noreferrer">
+                    🔗 Voir le profil
+                  </a>
+                )}              </div>
             </li>
           ))}
         </ul>
@@ -158,8 +164,11 @@ function photoUrl(url: string | null): string {
                       <li class="trombi-skill">{c}</li>
                     ))}
                   </ul>
-                )}
-              </div>
+                )}                {membre.lien && (
+                  <a href={membre.lien} class="trombi-link" target="_blank" rel="noopener noreferrer">
+                    🔗 Voir le profil
+                  </a>
+                )}              </div>
             </li>
           ))}
         </ul>
@@ -312,6 +321,25 @@ function photoUrl(url: string | null): string {
   font-size: var(--font-size-sm);
   color: var(--color-text-light);
   line-height: 1.55;
+}
+
+/* ── Lien profil ────────────────────────────────────────────────────────────── */
+.trombi-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-primary);
+  text-decoration: none;
+  padding: 0.25rem 0.75rem;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.trombi-link:hover {
+  background: var(--color-primary);
+  color: #fff;
 }
 
 /* ── Compétences ────────────────────────────────────────────────────────────── */

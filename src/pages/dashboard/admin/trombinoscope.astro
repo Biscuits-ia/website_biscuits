@@ -35,6 +35,7 @@ interface Membre {
   competences: string[];
   photo_url:   string | null;
   bio:         string | null;
+  lien:        string | null;
   ordre:       number;
   actif:       boolean;
   created_at:  string;
@@ -151,6 +152,7 @@ const hasFilter  = filter !== '';
                       role:        m.role,
                       competences: m.competences.join(', '),
                       bio:         m.bio ?? '',
+                      lien:        m.lien ?? '',
                       ordre:       m.ordre,
                       photo_url:   m.photo_url ?? '',
                     })}
@@ -219,6 +221,10 @@ const hasFilter  = filter !== '';
           <label>Bio <span class="field-hint">(facultatif, max 300 caractères)</span></label>
           <textarea name="bio" rows={3} maxlength="300" placeholder="Courte présentation…"></textarea>
         </div>
+        <div class="field">
+          <label>Lien <span class="field-hint">(portfolio, LinkedIn, site perso…)</span></label>
+          <input type="url" name="lien" placeholder="https://" />
+        </div>
         <div class="field-row">
           <div class="field">
             <label>Ordre d'affichage</label>
@@ -275,6 +281,10 @@ const hasFilter  = filter !== '';
         <div class="field">
           <label>Bio <span class="field-hint">(facultatif, max 300 caractères)</span></label>
           <textarea id="edit-bio" name="bio" rows={3} maxlength="300"></textarea>
+        </div>
+        <div class="field">
+          <label>Lien <span class="field-hint">(portfolio, LinkedIn, site perso…)</span></label>
+          <input type="url" id="edit-lien" name="lien" placeholder="https://" />
         </div>
         <div class="field-row">
           <div class="field">
@@ -369,7 +379,7 @@ const hasFilter  = filter !== '';
 <script>
   interface EditData {
     id: string; prenom: string; nom: string; role: string;
-    competences: string; bio: string; ordre: number; photo_url: string;
+    competences: string; bio: string; lien: string; ordre: number; photo_url: string;
   }
 
   function openEdit(data: EditData) {
@@ -379,7 +389,8 @@ const hasFilter  = filter !== '';
     (document.getElementById('edit-role')        as HTMLSelectElement).value   = data.role;
     (document.getElementById('edit-competences') as HTMLInputElement).value    = data.competences;
     (document.getElementById('edit-bio')         as HTMLTextAreaElement).value = data.bio;
-    (document.getElementById('edit-ordre')       as HTMLInputElement).value    = String(data.ordre);
+    (document.getElementById('edit-lien')         as HTMLInputElement).value    = data.lien;
+    (document.getElementById('edit-ordre')        as HTMLInputElement).value    = String(data.ordre);
 
     const wrap = document.getElementById('edit-current-photo-wrap') as HTMLElement;
     const img  = document.getElementById('edit-current-photo') as HTMLImageElement;

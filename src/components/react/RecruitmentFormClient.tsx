@@ -213,6 +213,9 @@ export default function RecruitmentFormClient({ scriptNonce }: Readonly<Recruitm
           <p className="form__subtitle">
             Rejoignez notre équipe associative et contribuez à notre mission d'intérêt général.
           </p>
+          <p className="jeveuxaider">
+            Vous pouvez aussi candidater via la plateforme <a href="https://www.jeveuxaider.gouv.fr/organisations/34315-biscuits-ia" target="_blank" rel="noopener noreferrer">jeveuxaider.gouv</a>
+          </p>
         </header>
 
         <div className="alert alert--error" role="alert" style={{ display: serverError ? 'block' : 'none' }}>

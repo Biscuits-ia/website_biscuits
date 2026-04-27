@@ -962,47 +962,15 @@ section:nth-child(odd) {
   }
 }
 
-/* Section Exemples de projets */
-.exemples-projets {
-  padding: 4rem 0 2rem 0;
-  background: var(--color-bg-alt);
-}
-.exemples-projets h2 {
-  text-align: center;
-  font-size: 2.25rem;
-  color: var(--color-primary);
-  margin-bottom: 2rem;
-}
-.exemples-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 2rem;
-  max-width: 1100px;
-  margin: 0 auto;
-}
-.exemple-card {
-  background: var(--color-bg-elevated);
-  border-radius: 1.5rem;
-  box-shadow: var(--shadow-md);
-  padding: 2rem 1.5rem;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  border: 1px solid var(--color-border-second);
-}
-.exemple-card h3 {
-  color: var(--color-secondary);
-  font-size: 1.25rem;
-  margin-bottom: 0.5rem;
-}
-.exemple-card blockquote {
-  margin: 1rem 0 0 0;
-  font-style: italic;
-  color: var(--color-accent-caramel);
-}
-.exemple-card .auteur {
-  display: block;
-  font-size: 0.95rem;
+.jeveuxaider {
+  margin-top: 1rem;
+  font-size: clamp(0.875rem, 2vw, 1rem);
   color: var(--color-text-light);
-  margin-top: 0.5rem;
+  text-align: center;
+  font-weight: 600;
+}
+
+.jeveuxaider a {
+  color: var(--color-primary);
+  text-decoration: underline;
 }

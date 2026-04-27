@@ -82,7 +82,7 @@ const hasFilter  = filter !== '';
       <h1>Trombinoscope</h1>
       <p class="subtitle">{totalLabel} au total.</p>
     </div>
-    <button class="btn btn-primary" onclick="openModal('modal-add')">
+    <button class="btn btn-primary" data-open-modal="modal-add">
       + Ajouter un membre
     </button>
   </div>
@@ -92,7 +92,7 @@ const hasFilter  = filter !== '';
 
   <!-- Filtres -->
   <form method="get" class="filters-bar">
-    <select name="role" class="filter-input" onchange="this.form.submit()">
+    <select name="role" id="role-filter" class="filter-input">
       <option value="">Tous les rôles</option>
       <option value="benevole"      selected={filter === 'benevole'}>Bénévoles</option>
       <option value="membre_ca"     selected={filter === 'membre_ca'}>Membres CA</option>
@@ -144,7 +144,7 @@ const hasFilter  = filter !== '';
                   <button
                     type="button"
                     class="btn btn-ghost btn-xs"
-                    onclick={`openEdit(${JSON.stringify({
+                    data-edit={JSON.stringify({
                       id:          m.id,
                       prenom:      m.prenom,
                       nom:         m.nom,
@@ -153,7 +153,7 @@ const hasFilter  = filter !== '';
                       bio:         m.bio ?? '',
                       ordre:       m.ordre,
                       photo_url:   m.photo_url ?? '',
-                    })})`}
+                    })}
                   >Modifier</button>
                   <form method="POST" action="/api/admin/benevoles/toggle">
                     <input type="hidden" name="id"    value={m.id} />
@@ -167,7 +167,7 @@ const hasFilter  = filter !== '';
                     <button
                       type="submit"
                       class="btn btn-danger btn-xs"
-                      onclick="return confirm('Supprimer ce membre définitivement ?')"
+                      data-confirm="Supprimer ce membre définitivement ?"
                     >✕</button>
                   </form>
                 </div>
@@ -190,7 +190,7 @@ const hasFilter  = filter !== '';
     <div class="modal-box">
       <div class="modal-header">
         <span class="card-title">Nouveau membre</span>
-        <button class="btn btn-ghost" type="button" onclick="closeModal('modal-add')">✕</button>
+        <button class="btn btn-ghost" type="button" data-close-modal="modal-add">✕</button>
       </div>
       <form method="POST" action="/api/admin/benevoles/create" enctype="multipart/form-data" class="modal-form">
         <div class="field-row">
@@ -235,7 +235,7 @@ const hasFilter  = filter !== '';
         </div>
         <div class="form-actions">
           <button type="submit" class="btn btn-primary">Créer</button>
-          <button type="button" class="btn btn-ghost" onclick="closeModal('modal-add')">Annuler</button>
+          <button type="button" class="btn btn-ghost" data-close-modal="modal-add">Annuler</button>
         </div>
       </form>
     </div>
@@ -246,7 +246,7 @@ const hasFilter  = filter !== '';
     <div class="modal-box">
       <div class="modal-header">
         <span class="card-title">Modifier le membre</span>
-        <button class="btn btn-ghost" type="button" onclick="closeModal('modal-edit')">✕</button>
+        <button class="btn btn-ghost" type="button" data-close-modal="modal-edit">✕</button>
       </div>
       <form method="POST" action="/api/admin/benevoles/update" enctype="multipart/form-data" class="modal-form">
         <input type="hidden" id="edit-id" name="id" />
@@ -292,7 +292,7 @@ const hasFilter  = filter !== '';
         </div>
         <div class="form-actions">
           <button type="submit" class="btn btn-primary">Enregistrer</button>
-          <button type="button" class="btn btn-ghost" onclick="closeModal('modal-edit')">Annuler</button>
+          <button type="button" class="btn btn-ghost" data-close-modal="modal-edit">Annuler</button>
         </div>
       </form>
     </div>
@@ -367,48 +367,74 @@ const hasFilter  = filter !== '';
 </style>
 
 <script>
-  function openModal(id: string) {
-    (document.getElementById(id) as HTMLDialogElement)?.showModal();
-  }
-  function closeModal(id: string) {
-    (document.getElementById(id) as HTMLDialogElement)?.close();
-  }
-
   interface EditData {
     id: string; prenom: string; nom: string; role: string;
     competences: string; bio: string; ordre: number; photo_url: string;
   }
 
   function openEdit(data: EditData) {
-    (document.getElementById('edit-id')        as HTMLInputElement).value  = data.id;
-    (document.getElementById('edit-prenom')    as HTMLInputElement).value  = data.prenom;
-    (document.getElementById('edit-nom')       as HTMLInputElement).value  = data.nom;
-    (document.getElementById('edit-role')      as HTMLSelectElement).value = data.role;
-    (document.getElementById('edit-competences') as HTMLInputElement).value = data.competences;
-    (document.getElementById('edit-bio')       as HTMLTextAreaElement).value = data.bio;
-    (document.getElementById('edit-ordre')     as HTMLInputElement).value  = String(data.ordre);
+    (document.getElementById('edit-id')          as HTMLInputElement).value    = data.id;
+    (document.getElementById('edit-prenom')      as HTMLInputElement).value    = data.prenom;
+    (document.getElementById('edit-nom')         as HTMLInputElement).value    = data.nom;
+    (document.getElementById('edit-role')        as HTMLSelectElement).value   = data.role;
+    (document.getElementById('edit-competences') as HTMLInputElement).value    = data.competences;
+    (document.getElementById('edit-bio')         as HTMLTextAreaElement).value = data.bio;
+    (document.getElementById('edit-ordre')       as HTMLInputElement).value    = String(data.ordre);
 
-    const wrap  = document.getElementById('edit-current-photo-wrap') as HTMLElement;
-    const img   = document.getElementById('edit-current-photo') as HTMLImageElement;
+    const wrap = document.getElementById('edit-current-photo-wrap') as HTMLElement;
+    const img  = document.getElementById('edit-current-photo') as HTMLImageElement;
     if (data.photo_url) {
-      img.src    = data.photo_url;
-      wrap.hidden = false;
+      img.src      = data.photo_url;
+      wrap.hidden  = false;
     } else {
-      wrap.hidden = true;
+      wrap.hidden  = true;
     }
 
-    openModal('modal-edit');
+    (document.getElementById('modal-edit') as HTMLDialogElement).showModal();
   }
 
-  // Expose globally for inline onclick handlers
-  (window as any).openModal  = openModal;
-  (window as any).closeModal = closeModal;
-  (window as any).openEdit   = openEdit;
+  // ── Event delegation (CSP-safe: no inline event attributes) ──────────────
+  document.addEventListener('click', (e) => {
+    const el = e.target as Element;
+
+    // Confirm before delete
+    const confirmBtn = el.closest<HTMLElement>('[data-confirm]');
+    if (confirmBtn) {
+      if (!confirm(confirmBtn.dataset.confirm ?? 'Confirmer ?')) e.preventDefault();
+      return;
+    }
+
+    // Open modal
+    const openBtn = el.closest<HTMLElement>('[data-open-modal]');
+    if (openBtn) {
+      const id = openBtn.dataset.openModal!;
+      (document.getElementById(id) as HTMLDialogElement).showModal();
+      return;
+    }
+
+    // Close modal
+    const closeBtn = el.closest<HTMLElement>('[data-close-modal]');
+    if (closeBtn) {
+      const id = closeBtn.dataset.closeModal!;
+      (document.getElementById(id) as HTMLDialogElement).close();
+      return;
+    }
+
+    // Open edit modal
+    const editBtn = el.closest<HTMLElement>('[data-edit]');
+    if (editBtn) {
+      openEdit(JSON.parse(editBtn.dataset.edit!) as EditData);
+      return;
+    }
+  });
+
+  // Filter select auto-submit
+  document.getElementById('role-filter')?.addEventListener('change', function () {
+    (this as HTMLSelectElement).form?.submit();
+  });
 
   // Close modals on backdrop click
   document.querySelectorAll<HTMLDialogElement>('.modal').forEach(dialog => {
-    dialog.addEventListener('click', (e) => {
-      if (e.target === dialog) dialog.close();
-    });
+    dialog.addEventListener('click', (e) => { if (e.target === dialog) dialog.close(); });
   });
 </script>

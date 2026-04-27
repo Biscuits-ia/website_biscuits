@@ -1,27 +1,10 @@
 ---
-export const prerender = true;
 
 import { getCollection, getEntry, render, type CollectionEntry } from 'astro:content';
 import { Image } from 'astro:assets';
 import Layout from '@/layouts/BlogLayout.astro';
 import ReadingTime from '@/components/ReadingTime.astro';
 import TableOfContents from '@/components/TableOfContents.astro';
-
-export async function getStaticPaths() {
-  const articles = await getCollection('blog');
-
-  const publishedArticles = import.meta.env.PROD
-    ? articles.filter((article: CollectionEntry<'blog'>) => !article.data.draft)
-    : articles;
-
-  if (!publishedArticles || publishedArticles.length === 0) {
-    return [];
-  }
-
-  return publishedArticles.map((article: CollectionEntry<'blog'>) => ({
-    params: { slug: article.id },
-  }));
-}
 
 const { slug } = Astro.params;
 if (!slug) {

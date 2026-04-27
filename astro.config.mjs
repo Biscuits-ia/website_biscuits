@@ -59,6 +59,10 @@ export default defineConfig({
     plugins: [tailwindcss()],
     resolve: {
       extensions: ['.tsx', '.ts', '.jsx', '.js', '.json'],
+      dedupe: ['react', 'react-dom'],
+    },
+    ssr: {
+      noExternal: ['react', 'react-dom'],
     },
   },
 

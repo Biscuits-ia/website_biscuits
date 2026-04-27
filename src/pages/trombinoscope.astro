@@ -1,0 +1,528 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import { createSupabaseClient } from '@/lib/supabase';
+
+export const prerender = false;
+
+const supabase = createSupabaseClient({
+  request: Astro.request,
+  cookies: Astro.cookies,
+});
+
+const { data: membres, error } = await supabase
+  .from('benevoles')
+  .select('id, prenom, nom, role, competences, photo_url, bio')
+  .eq('actif', true)
+  .order('ordre', { ascending: true });
+
+const bureau  = membres?.filter((m) => m.role === 'membre_bureau') ?? [];
+const ca      = membres?.filter((m) => m.role === 'membre_ca')     ?? [];
+const benevoles = membres?.filter((m) => m.role === 'benevole')    ?? [];
+
+const SUPABASE_URL = import.meta.env.SUPABASE_URL ?? '';
+
+function photoUrl(url: string | null): string {
+  if (!url) return '/illustrations/avatar-placeholder.svg';
+  // Si déjà une URL absolue, on la retourne telle quelle
+  if (url.startsWith('http')) return url;
+  // Sinon on construit l'URL Storage publique
+  return `${SUPABASE_URL}/storage/v1/object/public/benevoles/${url}`;
+}
+---
+
+<Layout
+  title="Notre équipe | Biscuits IA"
+  description="Découvrez les bénévoles, membres du CA et du bureau qui font vivre l'association Biscuits IA au quotidien."
+  canonical="/trombinoscope"
+>
+  <section class="trombi-hero">
+    <div class="container">
+      <h1>Notre équipe</h1>
+      <p class="lead">
+        Biscuits IA, c'est avant tout des personnes bénévoles, membres du conseil d'administration et du bureau qui partagent leur temps et leurs compétences pour rendre l'IA accessible à toutes et tous.
+      </p>
+    </div>
+  </section>
+
+  {error && (
+    <section class="container trombi-error" role="alert">
+      <p>Impossible de charger l'équipe pour le moment. Réessayez plus tard.</p>
+    </section>
+  )}
+
+  {benevoles.length > 0 && (
+    <section class="trombi-section" aria-labelledby="titre-benevoles">
+      <div class="container">
+        <div class="trombi-section-header">
+          <span class="trombi-badge trombi-badge--benevole">Bénévoles</span>
+          <h2 id="titre-benevoles">Nos bénévoles</h2>
+          <p>Les personnes qui donnent de leur temps et de leur expertise chaque semaine.</p>
+        </div>
+        <ul class="trombi-grid" role="list" data-paginate="benevoles" data-per-page="8">
+          {benevoles.map((membre) => (
+            <li class="trombi-card">
+              <div class="trombi-photo-wrap">
+                <img
+                  src={photoUrl(membre.photo_url)}
+                  alt={`Photo de ${membre.prenom} ${membre.nom}`}
+                  width="200"
+                  height="200"
+                  class="trombi-photo"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </div>
+              <div class="trombi-info">
+                <h3 class="trombi-name">{membre.prenom} <span class="trombi-name-last">{membre.nom}</span></h3>
+                {membre.bio && <p class="trombi-bio">{membre.bio}</p>}
+                {membre.competences?.length > 0 && (
+                  <ul class="trombi-skills" aria-label="Compétences">
+                    {membre.competences.map((c: string) => (
+                      <li class="trombi-skill">{c}</li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </li>
+          ))}
+        </ul>
+        <nav class="trombi-pagination" data-pagination="benevoles" aria-label="Pagination bénévoles" hidden></nav>
+      </div>
+    </section>
+  )}
+
+  {ca.length > 0 && (
+    <section class="trombi-section trombi-section--alt" aria-labelledby="titre-ca">
+      <div class="container">
+        <div class="trombi-section-header">
+          <span class="trombi-badge trombi-badge--ca">Conseil d'administration</span>
+          <h2 id="titre-ca">Membres du CA</h2>
+          <p>Le conseil qui définit les orientations stratégiques de l'association.</p>
+        </div>
+        <ul class="trombi-grid" role="list" data-paginate="ca" data-per-page="8">
+          {ca.map((membre) => (
+            <li class="trombi-card">
+              <div class="trombi-photo-wrap">
+                <img
+                  src={photoUrl(membre.photo_url)}
+                  alt={`Photo de ${membre.prenom} ${membre.nom}`}
+                  width="200"
+                  height="200"
+                  class="trombi-photo"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </div>
+              <div class="trombi-info">
+                <h3 class="trombi-name">{membre.prenom} <span class="trombi-name-last">{membre.nom}</span></h3>
+                {membre.bio && <p class="trombi-bio">{membre.bio}</p>}
+                {membre.competences?.length > 0 && (
+                  <ul class="trombi-skills" aria-label="Compétences">
+                    {membre.competences.map((c: string) => (
+                      <li class="trombi-skill">{c}</li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </li>
+          ))}
+        </ul>
+        <nav class="trombi-pagination" data-pagination="ca" aria-label="Pagination CA" hidden></nav>
+      </div>
+    </section>
+  )}
+
+  {bureau.length > 0 && (
+    <section class="trombi-section" aria-labelledby="titre-bureau">
+      <div class="container">
+        <div class="trombi-section-header">
+          <span class="trombi-badge trombi-badge--bureau">Bureau</span>
+          <h2 id="titre-bureau">Membres du bureau</h2>
+          <p>L'équipe exécutive qui pilote l'association au quotidien.</p>
+        </div>
+        <ul class="trombi-grid" role="list" data-paginate="bureau" data-per-page="8">
+          {bureau.map((membre) => (
+            <li class="trombi-card">
+              <div class="trombi-photo-wrap">
+                <img
+                  src={photoUrl(membre.photo_url)}
+                  alt={`Photo de ${membre.prenom} ${membre.nom}`}
+                  width="200"
+                  height="200"
+                  class="trombi-photo"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </div>
+              <div class="trombi-info">
+                <h3 class="trombi-name">{membre.prenom} <span class="trombi-name-last">{membre.nom}</span></h3>
+                {membre.bio && <p class="trombi-bio">{membre.bio}</p>}
+                {membre.competences?.length > 0 && (
+                  <ul class="trombi-skills" aria-label="Compétences">
+                    {membre.competences.map((c: string) => (
+                      <li class="trombi-skill">{c}</li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </li>
+          ))}
+        </ul>
+        <nav class="trombi-pagination" data-pagination="bureau" aria-label="Pagination bureau" hidden></nav>
+      </div>
+    </section>
+  )}
+
+  {!error && membres?.length === 0 && (
+    <section class="trombi-empty container">
+      <p>L'équipe sera présentée très prochainement. Revenez bientôt !</p>
+    </section>
+  )}
+
+  <section class="trombi-cta">
+    <div class="container">
+      <h2>Envie de nous rejoindre&nbsp;?</h2>
+      <p>L'association est ouverte à toutes les personnes qui souhaitent mettre leurs compétences au service du numérique d'intérêt général.</p>
+      <a href="/rejoignez-nous" class="btn-cta">Devenir bénévole</a>
+    </div>
+  </section>
+</Layout>
+
+<style>
+/* ── Hero ───────────────────────────────────────────────────────────────────── */
+.trombi-hero {
+  padding: var(--spacing-4xl) 0 var(--spacing-3xl);
+  background: linear-gradient(135deg, var(--color-bg-elevated) 0%, var(--color-bg) 100%);
+  text-align: center;
+}
+.trombi-hero h1 {
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  font-weight: 700;
+  color: var(--color-text);
+  margin-bottom: var(--spacing-md);
+}
+.trombi-hero .lead {
+  max-width: 640px;
+  margin: 0 auto;
+  font-size: var(--font-size-lg);
+  color: var(--color-text-light);
+  line-height: 1.7;
+}
+
+/* ── Section ────────────────────────────────────────────────────────────────── */
+.trombi-section {
+  padding: var(--spacing-4xl) 0;
+}
+.trombi-section--alt {
+  background: var(--color-bg-elevated);
+}
+.trombi-section-header {
+  text-align: center;
+  margin-bottom: var(--spacing-3xl);
+}
+.trombi-section-header h2 {
+  font-size: clamp(1.5rem, 3vw, 2.25rem);
+  font-weight: 700;
+  margin: var(--spacing-sm) 0 var(--spacing-sm);
+  color: var(--color-text);
+}
+.trombi-section-header p {
+  color: var(--color-text-light);
+  font-size: var(--font-size-base);
+  max-width: 520px;
+  margin: 0 auto;
+}
+
+/* ── Badge de rôle ──────────────────────────────────────────────────────────── */
+.trombi-badge {
+  display: inline-block;
+  padding: 0.25rem 0.875rem;
+  border-radius: 999px;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+.trombi-badge--bureau  { background: color-mix(in srgb, var(--color-primary) 15%, transparent); color: var(--color-primary); }
+.trombi-badge--ca      { background: color-mix(in srgb, var(--color-warning)  15%, transparent); color: oklch(55% 0.14 70); }
+.trombi-badge--benevole { background: color-mix(in srgb, var(--color-success)  15%, transparent); color: oklch(42% 0.14 162); }
+
+/* ── Grille ─────────────────────────────────────────────────────────────────── */
+.trombi-grid {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 260px));
+  justify-content: center;
+  gap: var(--spacing-xl);
+  padding: 0;
+  margin: 0;
+}
+
+/* ── Carte ──────────────────────────────────────────────────────────────────── */
+.trombi-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border, rgba(0,0,0,0.08));
+  border-radius: 1rem;
+  padding: var(--spacing-xl) var(--spacing-lg);
+  text-align: center;
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+.trombi-section--alt .trombi-card {
+  background: var(--color-bg);
+}
+.trombi-card:hover {
+  box-shadow: 0 8px 32px rgba(0,0,0,0.10);
+  transform: translateY(-3px);
+}
+
+/* ── Photo ──────────────────────────────────────────────────────────────────── */
+.trombi-photo-wrap {
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+  margin-bottom: var(--spacing-lg);
+  border: 3px solid var(--color-primary);
+  background: var(--color-bg);
+}
+.trombi-photo {
+  width: 200px;
+  height: 200px;
+  object-fit: cover;
+  display: block;
+}
+
+/* ── Infos ──────────────────────────────────────────────────────────────────── */
+.trombi-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-sm);
+  width: 100%;
+}
+.trombi-name {
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+  color: var(--color-text);
+  line-height: 1.2;
+}
+.trombi-name-last {
+  font-weight: 400;
+}
+.trombi-bio {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-light);
+  line-height: 1.55;
+}
+
+/* ── Compétences ────────────────────────────────────────────────────────────── */
+.trombi-skills {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.375rem;
+  padding: 0;
+  margin: 0;
+}
+.trombi-skill {
+  background: color-mix(in srgb, var(--color-primary) 10%, transparent);
+  color: var(--color-primary);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  padding: 0.2rem 0.65rem;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+/* ── Erreur / Vide ──────────────────────────────────────────────────────────── */
+.trombi-error,
+.trombi-empty {
+  padding: var(--spacing-3xl) 0;
+  text-align: center;
+  color: var(--color-text-light);
+}
+
+/* ── CTA final ──────────────────────────────────────────────────────────────── */
+.trombi-cta {
+  padding: var(--spacing-4xl) 0;
+  text-align: center;
+  background: var(--color-primary);
+  color: #fff;
+}
+.trombi-cta h2 {
+  font-size: clamp(1.5rem, 3vw, 2.25rem);
+  font-weight: 700;
+  margin-bottom: var(--spacing-md);
+}
+.trombi-cta p {
+  max-width: 520px;
+  margin: 0 auto var(--spacing-xl);
+  opacity: 0.9;
+  font-size: var(--font-size-lg);
+  line-height: 1.6;
+}
+.btn-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  background: #fff;
+  color: var(--color-primary);
+  font-weight: 700;
+  font-size: var(--font-size-base);
+  padding: 0.75rem 2rem;
+  border-radius: 0.5rem;
+  text-decoration: none;
+  transition: opacity 0.2s ease;
+}
+.btn-cta:hover { opacity: 0.88; }
+
+/* ── Responsive ─────────────────────────────────────────────────────────────── */
+@media (max-width: 480px) {
+  .trombi-grid {
+    grid-template-columns: 1fr;
+  }
+  .trombi-photo-wrap,
+  .trombi-photo {
+    width: 160px;
+    height: 160px;
+  }
+}
+
+/* ── Pagination ──────────────────────────────────────────────────────────────── */
+.trombi-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-xs);
+  margin-top: var(--spacing-2xl);
+  flex-wrap: wrap;
+}
+.trombi-pagination[hidden] { display: none; }
+
+.trombi-page-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+  min-height: 40px;
+  padding: 0 0.75rem;
+  border: 1px solid var(--color-border, rgba(0,0,0,0.12));
+  border-radius: 0.5rem;
+  background: var(--color-bg-elevated);
+  color: var(--color-text);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+.trombi-page-btn:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--color-primary) 10%, transparent);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+.trombi-page-btn[aria-current="page"] {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #fff;
+  font-weight: 700;
+}
+.trombi-page-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+.trombi-page-info {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-light);
+  padding: 0 var(--spacing-xs);
+}
+</style>
+
+<script>
+  function initPagination(gridEl: HTMLUListElement) {
+    const group = gridEl.dataset.paginate!;
+    const perPage = parseInt(gridEl.dataset.perPage ?? '8', 10);
+    const nav = document.querySelector<HTMLElement>(`[data-pagination="${group}"]`);
+    if (!nav) return;
+
+    const cards = Array.from(gridEl.querySelectorAll<HTMLLIElement>('.trombi-card'));
+    const total = cards.length;
+
+    // Pas de pagination si tout tient en une page
+    if (total <= perPage) return;
+
+    let currentPage = 1;
+    const totalPages = Math.ceil(total / perPage);
+
+    function renderPage(page: number) {
+      currentPage = page;
+      const start = (page - 1) * perPage;
+      const end = start + perPage;
+
+      cards.forEach((card, i) => {
+        card.hidden = i < start || i >= end;
+      });
+
+      renderControls();
+    }
+
+    function renderControls() {
+      nav!.hidden = false;
+      nav!.innerHTML = '';
+
+      // Bouton précédent
+      const prev = document.createElement('button');
+      prev.className = 'trombi-page-btn';
+      prev.textContent = '←';
+      prev.setAttribute('aria-label', 'Page précédente');
+      prev.disabled = currentPage === 1;
+      prev.addEventListener('click', () => renderPage(currentPage - 1));
+      nav!.appendChild(prev);
+
+      // Numéros de page
+      for (let p = 1; p <= totalPages; p++) {
+        // Afficher : première, dernière, courante ±1, et "…" entre les autres
+        const isEdge = p === 1 || p === totalPages;
+        const isNear = Math.abs(p - currentPage) <= 1;
+
+        if (!isEdge && !isNear) {
+          // Ajouter un séparateur "…" si nécessaire (une seule fois)
+          const last = nav!.lastElementChild;
+          if (last && last.textContent !== '…') {
+            const sep = document.createElement('span');
+            sep.className = 'trombi-page-info';
+            sep.textContent = '…';
+            nav!.appendChild(sep);
+          }
+          continue;
+        }
+
+        const btn = document.createElement('button');
+        btn.className = 'trombi-page-btn';
+        btn.textContent = String(p);
+        btn.setAttribute('aria-label', `Page ${p}`);
+        if (p === currentPage) btn.setAttribute('aria-current', 'page');
+        btn.addEventListener('click', () => renderPage(p));
+        nav!.appendChild(btn);
+      }
+
+      // Bouton suivant
+      const next = document.createElement('button');
+      next.className = 'trombi-page-btn';
+      next.textContent = '→';
+      next.setAttribute('aria-label', 'Page suivante');
+      next.disabled = currentPage === totalPages;
+      next.addEventListener('click', () => renderPage(currentPage + 1));
+      nav!.appendChild(next);
+    }
+
+    renderPage(1);
+  }
+
+  document.querySelectorAll<HTMLUListElement>('[data-paginate]').forEach(initPagination);
+</script>

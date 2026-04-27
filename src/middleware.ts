@@ -29,6 +29,12 @@ export const onRequest = defineMiddleware(async (context, next) => {
   const { url } = context;
   const isDev = import.meta.env.DEV;
 
+  // Skip middleware for prerendered static routes (RSS feed, etc.)
+  // The middleware cannot access request.headers on prerendered pages.
+  if (url.pathname === '/rss.xml') {
+    return next();
+  }
+
   // Rate-limit API/auth routes with a per-route key to avoid cross-endpoint throttling.
   // Skip entirely in dev — the in-memory store persists across requests in the same Node process
   // and would permanently block during normal development testing.

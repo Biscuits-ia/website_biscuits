@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200" aria-hidden="true">
+  <circle cx="100" cy="100" r="100" fill="#e8e8f0"/>
+  <!-- Corps -->
+  <ellipse cx="100" cy="155" rx="52" ry="38" fill="#c5c5d8"/>
+  <!-- Tête -->
+  <circle cx="100" cy="82" r="38" fill="#c5c5d8"/>
+  <!-- Yeux -->
+  <circle cx="87" cy="78" r="5" fill="#6b6b8a"/>
+  <circle cx="113" cy="78" r="5" fill="#6b6b8a"/>
+  <!-- Bouche -->
+  <path d="M88 95 Q100 104 112 95" stroke="#6b6b8a" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+</svg>

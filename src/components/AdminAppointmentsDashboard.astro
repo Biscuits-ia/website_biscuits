@@ -99,7 +99,7 @@ ${isPending ? `
                   <button class="btn-confirm" data-id="${appt.id}">✓ Confirmer</button>
                   <button class="btn-reject" data-id="${appt.id}">✗ Rejeter</button>
                 ` : isConfirmed ? `
-                  <a href="${buildAdminGoogleCalUrl(appt)}" target="_blank" rel="noopener noreferrer" class="btn-gcal-admin">📅</a>
+                  <a href="${buildAdminGoogleCalUrl(appt)}" target="_blank" rel="noopener noreferrer" class="btn-gcal-admin">📅 Agenda</a>
                   <button class="btn-reject" data-id="${appt.id}">✗ Annuler</button>
                 ` : `<span class="text-muted">—</span>`}
               </td>
@@ -294,14 +294,13 @@ ${isPending ? `
 
   .btn-confirm,
   .btn-reject {
-    padding: 6px 12px;
-    border: none;
-    margin-right: 1rem;
+    padding: 8px 16px;
     border-radius: 4px;
-    font-size: 12px;
-    font-weight: 600;
+    font-size: 13px;
+    font-weight: 700;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.15s ease;
+    white-space: nowrap;
   }
 
   .btn-confirm {
@@ -309,7 +308,6 @@ ${isPending ? `
     color: #fff;
     border: 2px solid #000;
     box-shadow: 3px 3px 0 #065f46;
-    border-radius: 4px;
   }
 
   .btn-confirm:hover {
@@ -324,7 +322,6 @@ ${isPending ? `
     color: #991b1b;
     border: 2px solid #991b1b;
     box-shadow: 3px 3px 0 #991b1b;
-    border-radius: 4px;
   }
 
   .btn-reject:hover {
@@ -337,21 +334,23 @@ ${isPending ? `
   .btn-gcal-admin {
     display: inline-flex;
     align-items: center;
-    justify-content: center;
-    width: 30px;
-    height: 30px;
+    gap: 5px;
+    padding: 8px 14px;
     text-decoration: none;
     border: 2px solid #1a73e8;
     border-radius: 4px;
-    box-shadow: 2px 2px 0 #1a73e8;
-    font-size: 14px;
-    transition: all 0.15s;
+    box-shadow: 3px 3px 0 #1a73e8;
+    font-size: 13px;
+    font-weight: 700;
+    color: #1a73e8;
     background: #fff;
+    white-space: nowrap;
+    transition: all 0.15s;
   }
 
   .btn-gcal-admin:hover {
     background-color: #e8f0fe;
     transform: translate(-1px, -1px);
-    box-shadow: 3px 3px 0 #1a73e8;
+    box-shadow: 4px 4px 0 #1a73e8;
   }
 </style>

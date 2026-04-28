@@ -16,10 +16,10 @@
 </div>
 
 <script>
-  const errorContainer = document.getElementById('error-container');
-  const contentDiv = document.getElementById('content');
+  const errorContainer = document.getElementById('error-container') as HTMLElement;
+  const contentDiv = document.getElementById('content') as HTMLElement;
 
-  function showError(msg, duration = 5000) {
+  function showError(msg: string, duration = 5000) {
     errorContainer.innerHTML = `<div class="error-alert">❌ ${msg}</div>`;
     if (duration) setTimeout(() => (errorContainer.innerHTML = ''), duration);
   }
@@ -50,7 +50,7 @@
     }
   }
 
-  function renderAppointments(appointments) {
+  function renderAppointments(appointments: any[]) {
     if (appointments.length === 0) {
       contentDiv.innerHTML =
         '<div class="no-appointments">Aucune réservation pour le moment</div>';
@@ -72,7 +72,7 @@
         <tbody>
           ${appointments
             .map(
-              (appt, idx) => {
+              (appt: { appointment_slots: any; status: string; user_profile: { full_name: any; email: any; }; candidate_email: any; created_at: string | number | Date; id: any; }, idx: number) => {
                 const slot = appt.appointment_slots;
                 const slotStart = slot ? new Date(slot.start_time) : null;
                 const slotEnd = slot ? new Date(slot.end_time) : null;
@@ -120,15 +120,15 @@ ${isPending ? `
 
     // Ajouter les event listeners
     document.querySelectorAll('.btn-confirm').forEach((btn) => {
-      btn.addEventListener('click', () => updateAppointmentStatus(btn.dataset.id, 'confirmed'));
+      btn.addEventListener('click', () => updateAppointmentStatus((btn as HTMLElement).dataset.id, 'confirmed'));
     });
 
     document.querySelectorAll('.btn-reject').forEach((btn) => {
-      btn.addEventListener('click', () => updateAppointmentStatus(btn.dataset.id, 'cancelled'));
+      btn.addEventListener('click', () => updateAppointmentStatus((btn as HTMLElement).dataset.id, 'cancelled'));
     });
   }
 
-  async function updateAppointmentStatus(id, status) {
+  async function updateAppointmentStatus(id: any, status: string) {
     const action = status === 'confirmed' ? 'confirmer' : 'rejeter';
     if (!confirm(`Êtes-vous sûr de vouloir ${action} cette réservation ?`)) return;
 

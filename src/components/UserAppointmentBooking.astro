@@ -43,6 +43,21 @@
     if (duration) setTimeout(() => (errorContainer.innerHTML = ''), duration);
   }
 
+  function buildGoogleCalendarUrl(slot: Slot): string {
+    const start = new Date(slot.start_time);
+    const end = new Date(slot.end_time);
+    const pad = (n: number) => n.toString().padStart(2, '0');
+    const fmt = (d: Date) =>
+      `${d.getUTCFullYear()}${pad(d.getUTCMonth() + 1)}${pad(d.getUTCDate())}T${pad(d.getUTCHours())}${pad(d.getUTCMinutes())}00Z`;
+    const params = new URLSearchParams({
+      action: 'TEMPLATE',
+      text: 'Rendez-vous Biscuits IA',
+      dates: `${fmt(start)}/${fmt(end)}`,
+      details: "Rendez-vous avec l'équipe Biscuits IA.",
+    });
+    return `https://calendar.google.com/calendar/render?${params.toString()}`;
+  }
+
   function formatSlot(slot: Slot) {
     const start = new Date(slot.start_time);
     const end = new Date(slot.end_time);
@@ -125,7 +140,10 @@
                 </span>
               </div>
             </div>
-            <button class="btn btn-danger btn-cancel" data-id="${app.id}" style="background-color:#fee2e2 !important;color:#7f1d1d !important;border:1px solid #fca5a5;">Annuler</button>
+            <div class="appointment-actions">
+              ${app.status === 'confirmed' ? `<a href="${buildGoogleCalendarUrl(app.appointment_slots)}" target="_blank" rel="noopener noreferrer" class="btn btn-gcal">📅 Agenda</a>` : ''}
+              <button class="btn btn-danger btn-cancel" data-id="${app.id}" style="background-color:#fee2e2 !important;color:#7f1d1d !important;border:1px solid #fca5a5;">Annuler</button>
+            </div>
           </div>
         `})
           .join('')}
@@ -397,6 +415,32 @@
   .btn-cancel {
     padding: 6px 12px;
     font-size: 12px;
+  }
+
+  .btn-gcal {
+    display: inline-block;
+    text-decoration: none;
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    background-color: #fff;
+    color: #1a73e8;
+    border: 1px solid #1a73e8;
+    border-radius: 6px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background-color 0.2s;
+  }
+
+  .btn-gcal:hover {
+    background-color: #e8f0fe;
+  }
+
+  .appointment-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-shrink: 0;
   }
 
   .appointment-info {

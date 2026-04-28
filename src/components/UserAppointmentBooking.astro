@@ -141,8 +141,8 @@
               </div>
             </div>
             <div class="appointment-actions">
-              ${app.status === 'confirmed' ? `<a href="${buildGoogleCalendarUrl(app.appointment_slots)}" target="_blank" rel="noopener noreferrer" class="btn btn-gcal">📅 Agenda</a>` : ''}
-              <button class="btn btn-danger btn-cancel" data-id="${app.id}" style="background-color:#fee2e2 !important;color:#7f1d1d !important;border:1px solid #fca5a5;">Annuler</button>
+              ${app.status !== 'cancelled' ? `<a href="${buildGoogleCalendarUrl(app.appointment_slots)}" target="_blank" rel="noopener noreferrer" class="btn btn-gcal">📅 Agenda</a>` : ''}
+              ${app.status !== 'cancelled' ? `<button class="btn btn-danger btn-cancel" data-id="${app.id}">Annuler</button>` : ''}
             </div>
           </div>
         `})

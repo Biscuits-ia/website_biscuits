@@ -95,12 +95,13 @@
               </td>
               <td>${new Date(appt.created_at).toLocaleDateString('fr-FR')}</td>
               <td class="actions">
-                ${isPending ? `
-                  <button class="btn-confirm" data-id="${appt.id}">Confirmer</button>
-                  <button class="btn-reject" data-id="${appt.id}">Rejeter</button>
+${isPending ? `
+                  <button class="btn-confirm" data-id="${appt.id}">✓ Confirmer</button>
+                  <button class="btn-reject" data-id="${appt.id}">✗ Rejeter</button>
                 ` : isConfirmed ? `
-                  <button class="btn-reject" data-id="${appt.id}">Annuler</button>
-                ` : `<span class="text-muted">-</span>`}
+                  <a href="${buildAdminGoogleCalUrl(appt)}" target="_blank" rel="noopener noreferrer" class="btn-gcal-admin">📅</a>
+                  <button class="btn-reject" data-id="${appt.id}">✗ Annuler</button>
+                ` : `<span class="text-muted">—</span>`}
               </td>
             </tr>
           `;
@@ -142,6 +143,24 @@
     } catch (err) {
       showError(err instanceof Error ? err.message : 'Erreur inconnue', 0);
     }
+  }
+
+  function buildAdminGoogleCalUrl(appt: any): string {
+    const slot = appt.appointment_slots;
+    if (!slot) return '#';
+    const start = new Date(slot.start_time);
+    const end = new Date(slot.end_time);
+    const pad = (n: number) => n.toString().padStart(2, '0');
+    const fmt = (d: Date) =>
+      `${d.getUTCFullYear()}${pad(d.getUTCMonth() + 1)}${pad(d.getUTCDate())}T${pad(d.getUTCHours())}${pad(d.getUTCMinutes())}00Z`;
+    const name = appt.user_profile?.full_name || appt.user_profile?.email || appt.candidate_email || 'Bénévole';
+    const params = new URLSearchParams({
+      action: 'TEMPLATE',
+      text: `RDV Biscuits IA — ${name}`,
+      dates: `${fmt(start)}/${fmt(end)}`,
+      details: `Rendez-vous avec ${name}.`,
+    });
+    return `https://calendar.google.com/calendar/render?${params.toString()}`;
   }
 
   // Charger les rendez-vous au démarrage
@@ -284,22 +303,53 @@
   }
 
   .btn-confirm {
-    background-color: #d1fae5;
-    color: #065f46;
-    border: 1px solid #6ee7b7;
+    background-color: #000;
+    color: #fff;
+    border: 2px solid #000;
+    box-shadow: 3px 3px 0 #065f46;
+    border-radius: 4px;
   }
 
   .btn-confirm:hover {
-    background-color: #a7f3d0;
+    background-color: #065f46;
+    border-color: #065f46;
+    transform: translate(-1px, -1px);
+    box-shadow: 4px 4px 0 #000;
   }
 
   .btn-reject {
-    background-color: #fee2e2;
+    background-color: #fff;
     color: #991b1b;
-    border: 1px solid #fca5a5;
+    border: 2px solid #991b1b;
+    box-shadow: 3px 3px 0 #991b1b;
+    border-radius: 4px;
   }
 
   .btn-reject:hover {
-    background-color: #fecaca;
+    background-color: #991b1b;
+    color: #fff;
+    transform: translate(-1px, -1px);
+    box-shadow: 4px 4px 0 #000;
+  }
+
+  .btn-gcal-admin {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    text-decoration: none;
+    border: 2px solid #1a73e8;
+    border-radius: 4px;
+    box-shadow: 2px 2px 0 #1a73e8;
+    font-size: 14px;
+    transition: all 0.15s;
+    background: #fff;
+  }
+
+  .btn-gcal-admin:hover {
+    background-color: #e8f0fe;
+    transform: translate(-1px, -1px);
+    box-shadow: 3px 3px 0 #1a73e8;
   }
 </style>

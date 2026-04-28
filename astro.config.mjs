@@ -61,9 +61,6 @@ export default defineConfig({
       extensions: ['.tsx', '.ts', '.jsx', '.js', '.json'],
       dedupe: ['react', 'react-dom'],
     },
-    ssr: {
-      noExternal: ['react', 'react-dom'],
-    },
   },
 
   output: 'server',

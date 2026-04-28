@@ -1,6 +1,31 @@
 ---
-
 import BaseLayout from '@/layouts/Layout.astro';
+import { createSupabaseAdminClient } from '@/lib/supabase';
+
+export const prerender = false;
+
+const { data: workshops, error } = await createSupabaseAdminClient()
+  .from('workshops')
+  .select('id, title, description, category, level, price_cents, price_label, is_free')
+  .order('price_cents', { ascending: true });
+
+// Map level label → CSS class suffix and emoji icon
+function levelClass(level: string | null): string {
+  if (!level) return 'level-beginner';
+  const l = level.toLowerCase();
+  if (l.includes('inter')) return 'level-intermediate';
+  if (l.includes('avan') || l.includes('colla')) return 'level-advanced';
+  return 'level-beginner';
+}
+
+function levelIcon(level: string | null, category: string | null): string {
+  if (!level) return '📥';
+  const l = level.toLowerCase();
+  if (l.includes('inter')) return '🧠';
+  if (l.includes('colla')) return '🌐';
+  if (l.includes('avan')) return '🚀';
+  return '📥';
+}
 ---
 
 <BaseLayout
@@ -25,145 +50,41 @@ import BaseLayout from '@/layouts/Layout.astro';
         <p>Des moments d'échange pour apprendre et expérimenter ensemble — à son rythme, sans jugement</p>
       </div>
       
+      {error && (
+        <p class="workshops-error" role="alert">
+          Impossible de charger les ateliers pour le moment. Réessayez plus tard.
+        </p>
+      )}
+
       <div class="workshops-grid">
-        <article class="workshop-card level-beginner">
-          <div class="card-header">
-            <div class="level-badge">
-              <span class="level-dot"></span>
-              Débutant
+        {(workshops ?? []).map((w, i) => (
+          <article class={`workshop-card ${levelClass(w.level)}${i === 1 ? ' featured' : ''}`}>
+            {i === 1 && <div class="featured-badge">⭐ Populaire</div>}
+            <div class="card-header">
+              <div class="level-badge">
+                <span class="level-dot"></span>
+                {w.level ?? 'Tous niveaux'}
+              </div>
+              {w.category && <div class="duration">{w.category}</div>}
             </div>
-            <div class="duration">2h</div>
-          </div>
-          
-          <div class="card-icon">
-            <span class="icon-wrapper">📥</span>
-          </div>
-          
-          <div class="card-content">
-            <h3>Découverte IA</h3>
-            <p>Introduction aux outils IA et bonnes pratiques responsables pour démarrer en toute confiance dans votre structure.</p>
-            
-            <ul class="features-list">
-              <li>
-                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                  <path d="M16.6667 5L7.50004 14.1667L3.33337 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-                Comprendre les fondamentaux
-              </li>
-              <li>
-                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                  <path d="M16.6667 5L7.50004 14.1667L3.33337 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-                Premiers pas avec Le Chat
-              </li>
-              <li>
-                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                  <path d="M16.6667 5L7.50004 14.1667L3.33337 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-                Éthique et IA responsable
-              </li>
-            </ul>
-          </div>
 
-          <div class="card-footer">
-            <div class="price">35€</div>
-            <a href="/ateliers/inscription" class="btn-workshop">S'inscrire</a>
-          </div>
-        </article>
-
-        <article class="workshop-card level-intermediate featured">
-          <div class="featured-badge">⭐ Populaire</div>
-          <div class="card-header">
-            <div class="level-badge">
-              <span class="level-dot"></span>
-              Intermédiaire
+            <div class="card-icon">
+              <span class="icon-wrapper">{levelIcon(w.level, w.category)}</span>
             </div>
-            <div class="duration">4h</div>
-          </div>
-          
-          <div class="card-icon">
-            <span class="icon-wrapper">🧠</span>
-          </div>
-          
-          <div class="card-content">
-            <h3>Atelier Pratique IA</h3>
-            <p>On crée ensemble un assistant simple et on met en place une automatisation utile pour votre structure.</p>
-            
-            <ul class="features-list">
-              <li>
-                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                  <path d="M16.6667 5L7.50004 14.1667L3.33337 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-                Créer un assistant personnalisé
-              </li>
-              <li>
-                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                  <path d="M16.6667 5L7.50004 14.1667L3.33337 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-                Automatiser vos tâches
-              </li>
-              <li>
-                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                  <path d="M16.6667 5L7.50004 14.1667L3.33337 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-                Apprendre à bien formuler ses demandes à l'IA
-              </li>
-            </ul>
-          </div>
 
-          <div class="card-footer">
-            <div class="price">
-              70€
+            <div class="card-content">
+              <h3>{w.title}</h3>
+              {w.description && <p>{w.description}</p>}
             </div>
-            <a href="/ateliers/inscription" class="btn-workshop">S'inscrire</a>
-          </div>
-        </article>
 
-        <article class="workshop-card level-advanced">
-          <div class="card-header">
-            <div class="level-badge">
-              <span class="level-dot"></span>
-              Collaboratif
+            <div class="card-footer">
+              <div class="price">
+                {w.is_free ? 'Gratuit' : (w.price_label ?? `${(w.price_cents / 100).toFixed(0)} €`)}
+              </div>
+              <a href="/ateliers/inscription" class="btn-workshop">S'inscrire</a>
             </div>
-            <div class="duration">Variable</div>
-          </div>
-          
-          <div class="card-icon">
-            <span class="icon-wrapper">🌐</span>
-          </div>
-          
-          <div class="card-content">
-            <h3>Créer un site web</h3>
-            <p>Apprenez à créer un simple site web professionnel avec les dernières technologies, adapté à vos besoins.</p>
-            
-            <ul class="features-list">
-              <li>
-                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                  <path d="M16.6667 5L7.50004 14.1667L3.33337 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-                Projets réels
-              </li>
-              <li>
-                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                  <path d="M16.6667 5L7.50004 14.1667L3.33337 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-                Travail en équipe et partage de compétences
-              </li>
-
-              <li>
-                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                  <path d="M16.6667 5L7.50004 14.1667L3.33337 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-                Deployement
-              </li>
-            </ul>
-          </div>
-
-          <div class="card-footer">
-            <div class="price">110€</div>
-            <a href="ateliers/inscription" class="btn-workshop">Rejoindre</a>
-          </div>
-        </article>
+          </article>
+        ))}
       </div>
     </div>
   </section>
@@ -416,6 +337,13 @@ import BaseLayout from '@/layouts/Layout.astro';
     .calendar-section {
       padding: 60px 0;
     }
+  }
+
+  .workshops-error {
+    text-align: center;
+    padding: 2rem;
+    color: var(--color-text-light, #666);
+    grid-column: 1 / -1;
   }
 
   /* Hero section */

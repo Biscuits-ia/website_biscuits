@@ -80,10 +80,13 @@
                   ? `${slotStart.toLocaleDateString('fr-FR')} ${slotStart.getHours().toString().padStart(2, '0')}:${slotStart.getMinutes().toString().padStart(2, '0')} - ${slotEnd.getHours().toString().padStart(2, '0')}:${slotEnd.getMinutes().toString().padStart(2, '0')}`
                   : '<em>Créneau supprimé</em>';
                 const isPending = appt.status === 'pending';
+                const isConfirmed = appt.status === 'confirmed';
+                const userName = appt.user_profile?.full_name || appt.user_profile?.email || appt.candidate_email || '-';
+                const userEmail = appt.user_profile?.email || appt.candidate_email || '-';
                 return `
             <tr class="${idx % 2 === 0 ? 'even' : 'odd'} status-${appt.status}">
-              <td>${appt.user_profile?.full_name || '-'}</td>
-              <td>${appt.user_profile?.email || appt.candidate_email || '-'}</td>
+              <td>${userName}</td>
+              <td>${userEmail}</td>
               <td class="monospace">${slotLabel}</td>
               <td>
                 <span class="badge ${appt.status === 'confirmed' ? 'badge-success' : appt.status === 'cancelled' ? 'badge-danger' : 'badge-pending'}">
@@ -95,6 +98,8 @@
                 ${isPending ? `
                   <button class="btn-confirm" data-id="${appt.id}">Confirmer</button>
                   <button class="btn-reject" data-id="${appt.id}">Rejeter</button>
+                ` : isConfirmed ? `
+                  <button class="btn-reject" data-id="${appt.id}">Annuler</button>
                 ` : `<span class="text-muted">-</span>`}
               </td>
             </tr>

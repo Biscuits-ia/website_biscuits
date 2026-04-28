@@ -1,88 +1,511 @@
 ---
 import BaseLayout from '@/layouts/Layout.astro';
+
+const services = [
+  {
+    emoji: '🎓',
+    label: 'Formation',
+    title: 'Ateliers pratiques',
+    description:
+      'Des sessions courtes et concrètes pour apprivoiser l\'IA — sans jargon, avec des cas d\'usage réels tirés du monde associatif et des TPE.',
+    points: ['Découverte IA (2h)', 'Atelier pratique IA (4h)', 'Créer un site web'],
+    href: '/ateliers',
+    cta: 'Voir les ateliers',
+    featured: false,
+  },
+  {
+    emoji: '🤝',
+    label: 'Accompagnement',
+    title: 'Suivi personnalisé',
+    description:
+      'Un échange individuel pour analyser vos besoins, identifier les outils adaptés et construire un plan d\'action concret, à votre rythme.',
+    points: ['Diagnostic numérique', 'Feuille de route sur mesure', 'Suivi post-atelier'],
+    href: '/rdv',
+    cta: 'Prendre rendez-vous',
+    featured: true,
+  },
+  {
+    emoji: '📚',
+    label: 'Ressources',
+    title: 'Outils & guides libres',
+    description:
+      'Des guides pratiques, modèles et outils open-source conçus pour être réutilisés, adaptés et partagés — sans friction, sans frais cachés.',
+    points: ['Guides téléchargeables', 'Modèles prêts à l\'emploi', 'Veille & actualités'],
+    href: '/ressources',
+    cta: 'Accéder aux ressources',
+    featured: false,
+  },
+];
+
+const engagements = [
+  { emoji: '🔓', title: 'Open source', text: 'Nos outils sont publics et librement réutilisables.' },
+  { emoji: '🧭', title: 'Indépendant', text: 'Aucune dépendance à un éditeur ou à des services propriétaires.' },
+  { emoji: '🌱', title: 'Éthique & responsable', text: 'Nous défendons une IA sobre, inclusive et explicable.' },
+  { emoji: '💬', title: 'Humain avant tout', text: 'Bénévoles disponibles, échanges directs, zéro bullshit.' },
+];
 ---
 
 <BaseLayout
-  title="Services | Biscuits IA"
-  description="Decouvrez les services et accompagnements proposes par Biscuits IA."
+  title="Nos services | Biscuits IA"
+  description="Ateliers, accompagnement personnalisé et ressources libres pour mettre l'IA au service des associations et TPE — sans jargon, sans friction."
 >
-  <section class="simple-page">
-    <div class="container">
-      <h1>Services</h1>
-      <p class="lead">Nous accompagnons les structures sur des besoins concrets et utiles.</p>
 
-      <div class="cards">
-        <a class="card" href="/ateliers">
-          <h2>Ateliers</h2>
-          <p>Sessions pratiques pour monter en competence rapidement.</p>
-        </a>
-        <a class="card" href="/ressources">
-          <h2>Ressources</h2>
-          <p>Guides, modeles et outils open-source a reutiliser librement.</p>
-        </a>
-        <a class="card" href="/rdv">
-          <h2>Accompagnement</h2>
-          <p>Echange individuel pour cadrer vos besoins et priorites.</p>
-        </a>
+  <!-- ── Hero ── -->
+  <section class="hero">
+    <div class="container">
+      <span class="hero-eyebrow">Ce que nous faisons</span>
+      <h1>Des services concrets,<br /><em>pas des promesses</em></h1>
+      <p class="hero-sub">
+        Biscuits IA accompagne les associations et TPE pour intégrer l'IA de façon utile, éthique et autonome — avec des ateliers, un suivi personnalisé et des ressources libres.
+      </p>
+      <div class="hero-actions">
+        <a href="/rdv" class="btn-primary">Prendre rendez-vous</a>
+        <a href="/ateliers" class="btn-ghost">Voir les ateliers</a>
       </div>
     </div>
   </section>
+
+  <!-- ── Services ── -->
+  <section class="services-section">
+    <div class="container">
+      <div class="services-grid">
+        {services.map((s) => (
+          <article class={`service-card${s.featured ? ' featured' : ''}`}>
+            {s.featured && <div class="featured-pill">⭐ Le plus demandé</div>}
+            <div class="service-top">
+              <span class="service-emoji" aria-hidden="true">{s.emoji}</span>
+              <span class="service-label">{s.label}</span>
+            </div>
+            <h2>{s.title}</h2>
+            <p class="service-desc">{s.description}</p>
+            <ul class="service-points">
+              {s.points.map((p) => (
+                <li>
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                    <path d="M3 8l3.5 3.5L13 5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                  {p}
+                </li>
+              ))}
+            </ul>
+            <a href={s.href} class={`service-cta${s.featured ? ' service-cta--featured' : ''}`}>
+              {s.cta}
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </a>
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Engagements ── -->
+  <section class="engagements-section">
+    <div class="container">
+      <div class="engagements-header">
+        <h2>Nos engagements</h2>
+        <p>Ce qui nous différencie des prestataires classiques.</p>
+      </div>
+      <div class="engagements-grid">
+        {engagements.map((e) => (
+          <div class="engagement-item">
+            <span class="engagement-emoji" aria-hidden="true">{e.emoji}</span>
+            <h3>{e.title}</h3>
+            <p>{e.text}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- ── CTA final ── -->
+  <section class="cta-section">
+    <div class="container">
+      <div class="cta-box">
+        <h2>Pas sûr·e par où commencer ?</h2>
+        <p>Un échange de 30 minutes suffit souvent à clarifier les priorités. C'est gratuit et sans engagement.</p>
+        <div class="cta-actions">
+          <a href="/rdv" class="btn-primary">Je prends rendez-vous</a>
+          <a href="/contact" class="btn-ghost">Poser une question</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
 </BaseLayout>
 
 <style>
-  .simple-page {
-    padding: 6rem 0 4rem;
-  }
-
+  /* ── Layout ── */
   .container {
-    width: min(1080px, 92vw);
+    width: min(1100px, 92vw);
     margin: 0 auto;
   }
 
-  h1 {
-    margin: 0 0 0.6rem;
-    font-size: clamp(2rem, 4vw, 3rem);
+  /* ── Hero ── */
+  .hero {
+    padding: 7rem 0 5rem;
+    text-align: center;
   }
 
-  .lead {
-    margin: 0;
+  .hero-eyebrow {
+    display: inline-block;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-primary);
+    border: 2px solid var(--color-primary);
+    padding: 0.3rem 0.8rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .hero h1 {
+    font-size: clamp(2.4rem, 5vw, 3.8rem);
+    font-weight: 900;
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+    margin: 0 0 1.25rem;
+    color: var(--color-text);
+  }
+
+  .hero h1 em {
+    font-style: normal;
+    color: var(--color-primary);
+    text-decoration: underline;
+    text-decoration-color: var(--color-accent-honey);
+    text-underline-offset: 6px;
+    text-decoration-thickness: 3px;
+  }
+
+  .hero-sub {
+    font-size: clamp(1rem, 2vw, 1.2rem);
+    line-height: 1.65;
     color: var(--color-text-light);
+    max-width: 640px;
+    margin: 0 auto 2.5rem;
   }
 
-  .cards {
-    margin-top: 1.25rem;
+  .hero-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  /* ── Buttons ── */
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.85rem 1.6rem;
+    background: var(--color-primary);
+    color: var(--color-bg);
+    font-weight: 700;
+    font-size: 0.95rem;
+    text-decoration: none;
+    border: 2px solid var(--color-border);
+    box-shadow: var(--shadow-md);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .btn-primary:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .btn-primary:active {
+    transform: translate(1px, 1px);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .btn-ghost {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.85rem 1.6rem;
+    background: transparent;
+    color: var(--color-text);
+    font-weight: 700;
+    font-size: 0.95rem;
+    text-decoration: none;
+    border: 2px solid var(--color-border);
+    box-shadow: var(--shadow-sm);
+    transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+  }
+
+  .btn-ghost:hover {
+    background: var(--color-bg-alt);
+    transform: translate(-2px, -2px);
+    box-shadow: var(--shadow-md);
+  }
+
+  /* ── Services ── */
+  .services-section {
+    padding: 4rem 0 6rem;
+    background: var(--color-secondary);
+  }
+
+  .services-grid {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 0.8rem;
+    gap: 1.5rem;
+    align-items: start;
   }
 
-  .card {
-    text-decoration: none;
-    color: inherit;
+  .service-card {
     background: var(--color-bg-elevated);
-    border: 1px solid var(--color-border-second);
-    border-radius: var(--radius-card);
-    padding: 1rem;
+    border: 2px solid var(--color-border);
+    box-shadow: var(--shadow-md);
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    position: relative;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
   }
 
-  .card:hover {
+  .service-card:hover {
+    transform: translate(-3px, -3px);
+    box-shadow: var(--shadow-xl);
+  }
+
+  .service-card.featured {
     border-color: var(--color-primary);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .featured-pill {
+    position: absolute;
+    top: -14px;
+    left: 1.5rem;
+    background: var(--color-primary);
+    color: var(--color-bg);
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 0.25rem 0.75rem;
+    border: 2px solid var(--color-border);
+  }
+
+  .service-top {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+
+  .service-emoji {
+    font-size: 2rem;
+    line-height: 1;
+  }
+
+  .service-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-primary);
+    background: var(--color-accent-honey);
+    padding: 0.2rem 0.6rem;
+  }
+
+  .service-card h2 {
+    font-size: 1.5rem;
+    font-weight: 800;
+    margin: 0;
+    color: var(--color-text);
+  }
+
+  .service-desc {
+    font-size: 0.95rem;
+    line-height: 1.65;
+    color: var(--color-text-light);
+    margin: 0;
+  }
+
+  .service-points {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+  }
+
+  .service-points li {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    color: var(--color-text);
+  }
+
+  .service-points svg {
+    flex-shrink: 0;
+    stroke: var(--color-primary);
+  }
+
+  .service-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: auto;
+    padding: 0.75rem 1.25rem;
+    background: var(--color-bg-alt);
+    color: var(--color-text);
+    font-weight: 700;
+    font-size: 0.9rem;
+    text-decoration: none;
+    border: 2px solid var(--color-border);
+    box-shadow: var(--shadow-sm);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    align-self: flex-start;
+  }
+
+  .service-cta:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: var(--shadow-md);
+  }
+
+  .service-cta--featured {
+    background: var(--color-primary);
+    color: var(--color-bg);
+  }
+
+  /* ── Engagements ── */
+  .engagements-section {
+    padding: 5rem 0;
+  }
+
+  .engagements-header {
+    text-align: center;
+    margin-bottom: 3rem;
+  }
+
+  .engagements-header h2 {
+    font-size: clamp(1.8rem, 3.5vw, 2.4rem);
+    font-weight: 800;
+    margin: 0 0 0.5rem;
+    color: var(--color-text);
+  }
+
+  .engagements-header p {
+    color: var(--color-text-light);
+    margin: 0;
+  }
+
+  .engagements-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1.25rem;
+  }
+
+  .engagement-item {
+    background: var(--color-bg-elevated);
+    border: 2px solid var(--color-border);
+    box-shadow: var(--shadow-sm);
+    padding: 1.5rem;
+    text-align: center;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .engagement-item:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: var(--shadow-md);
+  }
+
+  .engagement-emoji {
+    display: block;
+    font-size: 2.2rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .engagement-item h3 {
+    font-size: 1rem;
+    font-weight: 800;
+    margin: 0 0 0.4rem;
+    color: var(--color-text);
+  }
+
+  .engagement-item p {
+    font-size: 0.875rem;
+    color: var(--color-text-light);
+    line-height: 1.55;
+    margin: 0;
+  }
+
+  /* ── CTA final ── */
+  .cta-section {
+    padding: 5rem 0 6rem;
     background: var(--color-bg-alt);
   }
 
-  .card h2 {
-    margin: 0 0 0.35rem;
-    font-size: 1.25rem;
+  .cta-box {
+    background: var(--color-primary);
+    color: var(--color-bg);
+    border: 2px solid var(--color-border);
+    box-shadow: var(--shadow-xl);
+    padding: 3.5rem 3rem;
+    text-align: center;
+    max-width: 720px;
+    margin: 0 auto;
   }
 
-  .card p {
-    margin: 0;
-    color: var(--color-text-light);
+  .cta-box h2 {
+    font-size: clamp(1.6rem, 3vw, 2.2rem);
+    font-weight: 900;
+    margin: 0 0 0.75rem;
   }
 
-  @media (max-width: 840px) {
-    .cards {
+  .cta-box p {
+    font-size: 1rem;
+    line-height: 1.65;
+    opacity: 0.9;
+    margin: 0 0 2rem;
+  }
+
+  .cta-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .cta-section .btn-primary {
+    background: var(--color-bg);
+    color: var(--color-primary);
+  }
+
+  .cta-section .btn-ghost {
+    color: var(--color-bg);
+    border-color: rgba(255, 255, 255, 0.5);
+  }
+
+  .cta-section .btn-ghost:hover {
+    background: rgba(255, 255, 255, 0.12);
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 900px) {
+    .services-grid {
       grid-template-columns: 1fr;
+    }
+
+    .engagements-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 560px) {
+    .engagements-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .cta-box {
+      padding: 2.5rem 1.5rem;
+    }
+
+    .hero {
+      padding: 5rem 0 3.5rem;
     }
   }
 </style>

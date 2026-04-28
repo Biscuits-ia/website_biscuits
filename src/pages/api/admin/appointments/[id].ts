@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { createSupabaseClient } from '@/lib/supabase';
+import { createSupabaseClient, createSupabaseAdminClient } from '@/lib/supabase';
 import { fetchRoleSecure } from '@/lib/auth';
 import { isValidUUID } from '@/lib/validation';
 
@@ -28,7 +28,7 @@ export const PATCH: APIRoute = async ({ params, request, cookies }) => {
       return new Response(JSON.stringify({ error: 'Statut invalide' }), { status: 400, headers: JSON_HEADERS });
     }
 
-    const { data, error } = await supabase
+    const { data, error } = await createSupabaseAdminClient()
       .from('volunteer_appointments')
       .update({ status: body.status })
       .eq('id', params.id)

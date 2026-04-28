@@ -40,131 +40,164 @@ const statusBadge: Record<string, string> = {
   replied:  'badge-ok',
   archived: 'badge-neutral',
 };
+
+type Contact = {
+  id: string;
+  subject: string;
+  name: string;
+  email: string;
+  message: string;
+  status: string;
+  admin_notes: string | null;
+  created_at: string;
+};
+
+const typedContacts: Contact[] = (contacts ?? []) as Contact[];
 ---
 
 <DashboardLayout title="Contacts" role="admin" activePage="contacts" userName={userName} authResult={result}>
 
-  <div style="margin-bottom: 28px;">
-    <h1>Messages de contact</h1>
-    <p style="margin-top: 6px;">Gérez les messages reçus via le formulaire de contact.</p>
+  <!-- En-tête -->
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Messages de contact</h1>
+      <p class="page-subtitle">Gérez les messages reçus via le formulaire de contact.</p>
+    </div>
   </div>
 
   {saved && <div class="flash flash-ok" role="alert">✓ Modifications sauvegardées.</div>}
   {error  && <div class="flash flash-err" role="alert">✗ {decodeURIComponent(error)}</div>}
 
-  <!-- Stats rapides -->
-  <div class="stats-grid mb-6">
-    <div class="stat-card">
+  <!-- Stats -->
+  <div class="stats-grid">
+    <div class="stat-card stat-warn">
+      <div class="stat-value">{newCount ?? 0}</div>
       <div class="stat-label">Nouveaux</div>
-      <div class="stat-value" style="color: var(--warn);">{newCount ?? 0}</div>
     </div>
-    <div class="stat-card">
+    <div class="stat-card stat-info">
+      <div class="stat-value">{readCount ?? 0}</div>
       <div class="stat-label">Lus</div>
-      <div class="stat-value" style="color: var(--info);">{readCount ?? 0}</div>
     </div>
-    <div class="stat-card">
+    <div class="stat-card stat-ok">
+      <div class="stat-value">{repliedCount ?? 0}</div>
       <div class="stat-label">Répondus</div>
-      <div class="stat-value" style="color: var(--ok);">{repliedCount ?? 0}</div>
     </div>
-    <div class="stat-card">
+    <div class="stat-card stat-neutral">
+      <div class="stat-value">{archivedCount ?? 0}</div>
       <div class="stat-label">Archivés</div>
-      <div class="stat-value" style="color: var(--text-muted);">{archivedCount ?? 0}</div>
     </div>
   </div>
 
-  <!-- Filtres statut -->
+  <!-- Filtres -->
   <div class="filters-bar">
     {['', 'new', 'read', 'replied', 'archived'].map((s) => (
       <a
         href={s ? `?status=${s}` : '?'}
-        class={`btn ${filter === s ? 'btn-primary' : 'btn-ghost'}`}
-        style="font-size: 0.82rem;"
+        class={`filter-btn ${filter === s ? 'filter-active' : ''}`}
       >
         {s === '' ? 'Tous' : statusLabel[s]}
-        {s === 'new'      && newCount      ? ` (${newCount})`      : ''}
-        {s === 'read'     && readCount     ? ` (${readCount})`     : ''}
-        {s === 'replied'  && repliedCount  ? ` (${repliedCount})`  : ''}
-        {s === 'archived' && archivedCount ? ` (${archivedCount})` : ''}
+        {s === 'new'      && newCount      ? <span class="filter-count">{newCount}</span>      : ''}
+        {s === 'read'     && readCount     ? <span class="filter-count">{readCount}</span>     : ''}
+        {s === 'replied'  && repliedCount  ? <span class="filter-count">{repliedCount}</span>  : ''}
+        {s === 'archived' && archivedCount ? <span class="filter-count">{archivedCount}</span> : ''}
       </a>
     ))}
   </div>
 
   <!-- Liste des contacts -->
-  <div style="display: flex; flex-direction: column; gap: 16px;">
-    {contacts && contacts.length > 0 ? contacts.map((c: any) => {
+  <div class="contacts-list">
+    {typedContacts.length > 0 ? typedContacts.map((c) => {
       const date       = new Date(c.created_at);
-      const badgeClass = statusBadge[c.status] ?? 'badge-neutral';
-      const label      = statusLabel[c.status] ?? c.status;
+      const status     = c.status;
+      const badgeClass = statusBadge[status] ?? 'badge-neutral';
+      const label      = statusLabel[status] ?? status;
+      const subject    = c.subject;
+      const name       = c.name;
+      const email      = c.email;
+      const message    = c.message;
+      const adminNotes = c.admin_notes;
+      const id         = c.id;
 
       return (
-        <div class="card contact-card">
+        <div class="contact-card">
 
-          <div class="contact-header">
-            <div style="flex: 1; min-width: 0;">
-              <div style="font-size: 1.05rem; font-weight: 700; color: var(--text-primary);">{c.subject}</div>
-              <div style="font-size: var(--text-xs); font-family: var(--font-mono); color: var(--text-muted); margin-top: 3px;">
-                {c.name} · <a href={`mailto:${c.email}`} style="color: var(--accent);">{c.email}</a>
-                · {date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
-              </div>
+          <!-- Bandeau supérieur : sujet + badge -->
+          <div class="card-top">
+            <div class="card-subject-wrap">
+              <span class={`status-dot dot-${status}`}></span>
+              <span class="card-subject">{subject}</span>
             </div>
             <span class={`badge ${badgeClass}`}>{label}</span>
           </div>
 
-          <div class="contact-body">{c.message}</div>
+          <!-- Meta : nom · email · date -->
+          <div class="card-meta">
+            <span class="meta-name">👤 {name}</span>
+            <span class="meta-sep">·</span>
+            <a href={`mailto:${email}`} class="meta-email">{email}</a>
+            <span class="meta-sep">·</span>
+            <span class="meta-date">
+              {date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
+            </span>
+          </div>
 
-          {c.admin_notes && (
+          <!-- Corps du message -->
+          <div class="card-message">{message}</div>
+
+          {adminNotes && (
             <div class="admin-notes">
               <div class="admin-notes-header">📝 Notes admin</div>
-              <div class="admin-notes-body">{c.admin_notes}</div>
+              <div class="admin-notes-body">{adminNotes}</div>
             </div>
           )}
 
-          <!-- Formulaire de gestion -->
-          <form method="POST" action="/api/admin/contacts/update" style="display: flex; flex-direction: column; gap: 12px; padding-top: 14px; border-top: var(--brutal-border-thin);">
-            <input type="hidden" name="contact_id" value={c.id} />
+          <!-- Zone d'action -->
+          <form method="POST" action="/api/admin/contacts/update" class="action-form">
+            <input type="hidden" name="contact_id" value={id} />
 
-            <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
-              <label style="font-size: var(--text-xs); font-weight: 700; color: var(--text-muted); font-family: var(--font-mono); text-transform: uppercase;">
-                Statut :
-              </label>
-              <select name="status" class="filter-input" style="min-height: unset; padding: 6px 10px;">
-                <option value="new"      selected={c.status === 'new'}>Nouveau</option>
-                <option value="read"     selected={c.status === 'read'}>Lu</option>
-                <option value="replied"  selected={c.status === 'replied'}>Répondu</option>
-                <option value="archived" selected={c.status === 'archived'}>Archivé</option>
-              </select>
+            <div class="action-row">
+              <!-- Statut -->
+              <div class="select-wrap">
+                <label class="select-label">Statut</label>
+                <select name="status" class="status-select">
+                  <option value="new"      selected={status === 'new'}>🔵 Nouveau</option>
+                  <option value="read"     selected={status === 'read'}>👁 Lu</option>
+                  <option value="replied"  selected={status === 'replied'}>✅ Répondu</option>
+                  <option value="archived" selected={status === 'archived'}>📦 Archivé</option>
+                </select>
+              </div>
+
+              <!-- Notes internes -->
+              <div class="notes-wrap">
+                <label class="select-label">Notes internes</label>
+                <textarea
+                  name="admin_notes"
+                  rows="2"
+                  placeholder="Notes internes (non visibles par l'expéditeur)…"
+                  class="notes-textarea"
+                >{adminNotes ?? ''}</textarea>
+              </div>
             </div>
 
-            <div class="field">
-              <label>Notes internes</label>
-              <textarea
-                name="admin_notes"
-                rows="2"
-                placeholder="Notes internes (non visibles par l'expéditeur)…"
-                style="resize: vertical; font-family: var(--font-sans);"
-              >{c.admin_notes ?? ''}</textarea>
-            </div>
-
-            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-              <button type="submit" class="btn btn-primary" style="font-size: 0.85rem;">
-                Sauvegarder
+            <!-- Boutons d'action -->
+            <div class="action-btns">
+              <button type="submit" class="action-btn btn-save">
+                💾 Sauvegarder
               </button>
               <a
-                href={`mailto:${c.email}?subject=Re: ${encodeURIComponent(c.subject)}`}
-                class="btn btn-ghost"
-                style="font-size: 0.85rem;"
+                href={`mailto:${email}?subject=Re: ${encodeURIComponent(subject)}`}
+                class="action-btn btn-reply"
               >
-                ✉ Répondre par email
+                ✉ Répondre
               </a>
-              <form method="POST" action="/api/admin/contacts/delete" style="display: inline;">
-                <input type="hidden" name="contact_id" value={c.id} />
+              <form method="POST" action="/api/admin/contacts/delete" style="display: contents;">
+                <input type="hidden" name="contact_id" value={id} />
                 <button
                   type="submit"
-                  class="btn btn-danger"
-                  style="font-size: 0.85rem;"
+                  class="action-btn btn-delete"
                   onclick="return confirm('Supprimer définitivement ce message ?')"
                 >
-                  Supprimer
+                  🗑 Supprimer
                 </button>
               </form>
             </div>
@@ -173,9 +206,11 @@ const statusBadge: Record<string, string> = {
         </div>
       );
     }) : (
-      <div class="card" style="text-align: center; padding: 48px 24px;">
-        <p style="font-size: 1.5rem; margin-bottom: 8px;">📭</p>
-        <p>{filter ? `Aucun message avec le statut "${statusLabel[filter] ?? filter}".` : 'Aucun message de contact pour le moment.'}</p>
+      <div class="empty-state">
+        <p class="empty-icon">📭</p>
+        <p class="empty-text">
+          {filter ? `Aucun message avec le statut "${statusLabel[filter] ?? filter}".` : 'Aucun message de contact pour le moment.'}
+        </p>
       </div>
     )}
   </div>
@@ -183,19 +218,284 @@ const statusBadge: Record<string, string> = {
 </DashboardLayout>
 
 <style>
-  .contact-card { display: flex; flex-direction: column; gap: 14px; }
-  .contact-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
-  .contact-body { font-size: var(--text-base); color: var(--text-secondary); line-height: 1.6; white-space: pre-wrap; }
+  /* ── Page header ── */
+  .page-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 28px;
+    gap: 16px;
+  }
+  .page-title   { font-size: 1.75rem; font-weight: 900; margin: 0; }
+  .page-subtitle { color: var(--text-muted); margin: 6px 0 0; font-size: var(--text-sm); }
 
-  .admin-notes { background: var(--accent-light); border: var(--brutal-border-thin); border-left: 4px solid var(--accent); padding: 12px 16px; display: flex; flex-direction: column; gap: 6px; }
-  .admin-notes-header { font-size: var(--text-sm); font-weight: 700; color: var(--accent-dark); }
-  .admin-notes-body { font-size: var(--text-base); color: var(--text-primary); line-height: 1.6; }
-
-  .field { display: flex; flex-direction: column; gap: 6px; }
-  .field label { font-size: var(--text-xs); font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.06em; font-family: var(--font-mono); }
-  .field textarea { padding: 10px 13px; font-size: var(--text-base); width: 100%; }
-
-  .flash { padding: 12px 18px; margin-bottom: 20px; font-size: var(--text-sm); font-weight: 600; border: var(--brutal-border-thin); box-shadow: var(--shadow-sm); }
+  /* ── Flash ── */
+  .flash { padding: 14px 20px; margin-bottom: 22px; font-size: var(--text-sm); font-weight: 700; border: 2px solid; box-shadow: 3px 3px 0 currentColor; }
   .flash-ok  { background: var(--ok-bg);  color: var(--ok-fg);  border-color: var(--ok); }
   .flash-err { background: var(--err-bg); color: var(--err-fg); border-color: var(--err); }
+
+  /* ── Stats ── */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin-bottom: 28px;
+  }
+  .stat-card {
+    padding: 18px 20px;
+    border: 2px solid var(--color-border);
+    box-shadow: 4px 4px 0 var(--color-border);
+    background: #fff;
+    text-align: center;
+  }
+  .stat-value { font-size: 2rem; font-weight: 900; line-height: 1; }
+  .stat-label { font-size: var(--text-xs); font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--text-muted); margin-top: 6px; }
+  .stat-warn   .stat-value { color: #d97706; }
+  .stat-info   .stat-value { color: #2563eb; }
+  .stat-ok     .stat-value { color: #16a34a; }
+  .stat-neutral .stat-value { color: var(--text-muted); }
+
+  /* ── Filtres ── */
+  .filters-bar {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+  }
+  .filter-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 18px;
+    font-size: var(--text-sm);
+    font-weight: 700;
+    border: 2px solid var(--color-border);
+    box-shadow: 3px 3px 0 var(--color-border);
+    background: #fff;
+    text-decoration: none;
+    color: var(--text-primary);
+    transition: transform .1s, box-shadow .1s;
+  }
+  .filter-btn:hover {
+    transform: translate(-1px, -1px);
+    box-shadow: 4px 4px 0 var(--color-border);
+  }
+  .filter-active {
+    background: var(--color-primary, #000);
+    color: #fff;
+    border-color: var(--color-primary, #000);
+    box-shadow: 3px 3px 0 #555;
+  }
+  .filter-count {
+    background: rgba(255,255,255,.25);
+    color: inherit;
+    border-radius: 99px;
+    padding: 1px 7px;
+    font-size: .75rem;
+    font-weight: 800;
+  }
+  .filter-active .filter-count { background: rgba(255,255,255,.3); }
+
+  /* ── Liste ── */
+  .contacts-list { display: flex; flex-direction: column; gap: 20px; }
+
+  /* ── Carte ── */
+  .contact-card {
+    background: #fff;
+    border: 2px solid var(--color-border);
+    box-shadow: 5px 5px 0 var(--color-border);
+    padding: 24px 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .card-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .card-subject-wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+  }
+  .status-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    border: 2px solid currentColor;
+  }
+  .dot-new      { background: #fde68a; color: #d97706; }
+  .dot-read     { background: #bfdbfe; color: #2563eb; }
+  .dot-replied  { background: #bbf7d0; color: #16a34a; }
+  .dot-archived { background: #e5e7eb; color: #6b7280; }
+
+  .card-subject { font-size: 1.1rem; font-weight: 800; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  .card-meta {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    font-size: var(--text-xs);
+    font-family: var(--font-mono);
+    color: var(--text-muted);
+  }
+  .meta-name   { font-weight: 600; }
+  .meta-sep    { opacity: .4; }
+  .meta-email  { color: var(--accent, #2563eb); text-decoration: none; font-weight: 600; }
+  .meta-email:hover { text-decoration: underline; }
+
+  .card-message {
+    font-size: var(--text-base);
+    color: var(--text-secondary);
+    line-height: 1.65;
+    white-space: pre-wrap;
+    background: #fafafa;
+    border: 1px solid #e5e7eb;
+    padding: 14px 16px;
+  }
+
+  .admin-notes {
+    background: var(--accent-light, #eff6ff);
+    border: 2px solid var(--accent, #2563eb);
+    border-left: 5px solid var(--accent, #2563eb);
+    padding: 12px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .admin-notes-header { font-size: var(--text-xs); font-weight: 800; color: var(--accent-dark, #1e40af); text-transform: uppercase; letter-spacing: .06em; }
+  .admin-notes-body   { font-size: var(--text-base); color: var(--text-primary); line-height: 1.6; }
+
+  /* ── Formulaire d'action ── */
+  .action-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding-top: 18px;
+    border-top: 2px solid #e5e7eb;
+  }
+
+  .action-row {
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    gap: 16px;
+    align-items: start;
+  }
+
+  .select-label {
+    display: block;
+    font-size: var(--text-xs);
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .07em;
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    margin-bottom: 6px;
+  }
+
+  .status-select {
+    width: 100%;
+    padding: 10px 12px;
+    font-size: var(--text-sm);
+    font-weight: 600;
+    border: 2px solid var(--color-border);
+    box-shadow: 3px 3px 0 var(--color-border);
+    background: #fff;
+    cursor: pointer;
+    appearance: auto;
+  }
+  .status-select:focus {
+    outline: none;
+    border-color: var(--color-primary, #000);
+  }
+
+  .notes-wrap { display: flex; flex-direction: column; }
+  .notes-textarea {
+    width: 100%;
+    padding: 10px 13px;
+    font-size: var(--text-base);
+    font-family: var(--font-sans);
+    border: 2px solid var(--color-border);
+    box-shadow: 3px 3px 0 var(--color-border);
+    resize: vertical;
+    background: #fff;
+  }
+  .notes-textarea:focus {
+    outline: none;
+    border-color: var(--color-primary, #000);
+  }
+
+  /* ── Boutons d'action ── */
+  .action-btns {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .action-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 13px 24px;
+    font-size: 0.95rem;
+    font-weight: 800;
+    border: 2px solid;
+    cursor: pointer;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: transform .1s, box-shadow .1s;
+    min-width: 148px;
+    justify-content: center;
+  }
+  .action-btn:hover {
+    transform: translate(-2px, -2px);
+  }
+
+  .btn-save {
+    background: #000;
+    color: #fff;
+    border-color: #000;
+    box-shadow: 4px 4px 0 #333;
+  }
+  .btn-save:hover { box-shadow: 6px 6px 0 #333; }
+
+  .btn-reply {
+    background: #fff;
+    color: #2563eb;
+    border-color: #2563eb;
+    box-shadow: 4px 4px 0 #2563eb;
+  }
+  .btn-reply:hover { box-shadow: 6px 6px 0 #2563eb; }
+
+  .btn-delete {
+    background: #fff;
+    color: #dc2626;
+    border-color: #dc2626;
+    box-shadow: 4px 4px 0 #dc2626;
+  }
+  .btn-delete:hover { box-shadow: 6px 6px 0 #dc2626; }
+
+  /* ── Empty state ── */
+  .empty-state {
+    background: #fff;
+    border: 2px dashed var(--color-border);
+    padding: 56px 24px;
+    text-align: center;
+  }
+  .empty-icon { font-size: 2.5rem; margin: 0 0 12px; }
+  .empty-text { color: var(--text-muted); font-size: var(--text-base); }
+
+  /* ── Responsive ── */
+  @media (max-width: 640px) {
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    .action-row { grid-template-columns: 1fr; }
+    .action-btn { min-width: unset; width: 100%; }
+    .contact-card { padding: 18px 16px; }
+  }
 </style>

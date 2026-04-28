@@ -96,11 +96,15 @@
               <td>${new Date(appt.created_at).toLocaleDateString('fr-FR')}</td>
               <td class="actions">
 ${isPending ? `
-                  <button class="btn-confirm" data-id="${appt.id}">✓ Confirmer</button>
-                  <button class="btn-reject" data-id="${appt.id}">✗ Rejeter</button>
+                  <div class="actions-col">
+                    <button class="btn-confirm" data-id="${appt.id}">✓ Confirmer</button>
+                    <button class="btn-reject" data-id="${appt.id}">✗ Rejeter</button>
+                  </div>
                 ` : isConfirmed ? `
-                  <a href="${buildAdminGoogleCalUrl(appt)}" target="_blank" rel="noopener noreferrer" class="btn-gcal-admin">📅 Agenda</a>
-                  <button class="btn-reject" data-id="${appt.id}">✗ Annuler</button>
+                  <div class="actions-col">
+                    <a href="${buildAdminGoogleCalUrl(appt)}" target="_blank" rel="noopener noreferrer" class="btn-gcal-admin">📅 Agenda</a>
+                    <button class="btn-reject" data-id="${appt.id}">✗ Annuler</button>
+                  </div>
                 ` : `<span class="text-muted">—</span>`}
               </td>
             </tr>
@@ -265,6 +269,9 @@ ${isPending ? `
     font-size: 12px;
     font-weight: 600;
     display: inline-block;
+    border: none;
+    outline: none;
+    box-shadow: none;
   }
 
   .badge-success {
@@ -286,6 +293,13 @@ ${isPending ? `
     display: flex;
     gap: 16px;
     align-items: center;
+  }
+
+  .actions-col {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-start;
   }
 
   .text-muted {

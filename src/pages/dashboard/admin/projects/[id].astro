@@ -125,11 +125,11 @@ for (const v of volunteers) volunteerById[v.id] = v;
 
 function getMemberName(userId: string): string {
   return (
-    profileMap[userId]?.full_name
-    ?? volunteerById[userId]?.full_name
-    ?? profileMap[userId]?.email
-    ?? volunteerById[userId]?.email
-    ?? userId
+    profileMap[userId]?.full_name?.trim()
+    || volunteerById[userId]?.full_name?.trim()
+    || profileMap[userId]?.email?.trim()
+    || volunteerById[userId]?.email?.trim()
+    || userId
   );
 }
 

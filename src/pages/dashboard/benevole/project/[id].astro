@@ -19,7 +19,7 @@ if (!projectId) return Astro.redirect('/dashboard/benevole/projects');
 // ── Chargement projet + membres + tâches ─────────────────────────────────────
 const [
   { data: projectRaw, error: projErr },
-  { data: tasksRaw },
+  { data: tasksRaw, error: tasksErr },
   { data: membersRaw },
 ] = await Promise.all([
   adminSupabase
@@ -30,11 +30,10 @@ const [
     .eq('id', projectId)
     .single(),
   adminSupabase
-    .from('project_tasks')
-    .select('id, title, description, status, priority, deadline, position, created_by, assignee_id')
+    .from('tasks')
+    .select('id, reference, title, description, status, priority, due_date, reporter_id, assignee_id, corps, task_type')
     .eq('project_id', projectId)
-    .order('status')
-    .order('position'),
+    .order('updated_at', { ascending: false }),
   adminSupabase
     .from('project_members')
     .select('user_id')
@@ -42,6 +41,7 @@ const [
 ]);
 
 if (projErr || !projectRaw) return Astro.redirect('/dashboard/benevole/projects');
+if (tasksErr) console.error('[project/[id]] tasks query error:', tasksErr.message, tasksErr.code);
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 interface Project {
@@ -51,8 +51,9 @@ interface Project {
 }
 interface Task {
   id: string; title: string; description: string | null;
-  status: string; priority: string; deadline: string | null;
-  position: number; created_by: string; assignee_id: string | null;
+  status: string; priority: string; due_date: string | null;
+  reference: string | null; reporter_id: string; assignee_id: string | null;
+  corps: string | null; task_type: string | null;
 }
 interface Member { user_id: string; }
 
@@ -89,11 +90,27 @@ const columns = [
 const tasksByStatus: Record<string, Task[]> = {};
 for (const col of columns) tasksByStatus[col.key] = [];
 for (const t of tasks) {
-  if (tasksByStatus[t.status]) tasksByStatus[t.status].push(t);
+  const colKey = toProjectStatus(t.status);
+  tasksByStatus[colKey].push(t);
 }
 
-const priorityClass: Record<string, string> = { low: 'neutral', medium: 'info', high: 'err' };
-const priorityLabel: Record<string, string> = { low: 'Faible', medium: 'Moyenne', high: 'Haute' };
+const priorityClass: Record<string, string> = {
+  P0: 'err', P1: 'err', P2: 'info', P3: 'neutral',
+  low: 'neutral', medium: 'info', high: 'err',
+};
+const priorityLabel: Record<string, string> = {
+  P0: 'Critique', P1: 'Haute', P2: 'Normale', P3: 'Basse',
+  low: 'Faible', medium: 'Moyenne', high: 'Haute',
+};
+
+// Mapping statuts Task Hub → colonnes projet (4 colonnes)
+// backlog/todo → todo | in_progress → in_progress | in_review/testing → review | blocked → todo | done → done
+function toProjectStatus(s: string): string {
+  if (s === 'in_progress') return 'in_progress';
+  if (s === 'in_review' || s === 'testing') return 'review';
+  if (s === 'done') return 'done';
+  return 'todo'; // backlog, todo, blocked
+}
 const statusLabel:   Record<string, string> = {
   active: 'Actif', on_hold: 'En pause', completed: 'Terminé', archived: 'Archivé',
 };
@@ -189,7 +206,7 @@ const memberOptionsJson = JSON.stringify(memberOptions);
         <div class="kanban-cards" id={`col-${col.key}`}>
           {tasksByStatus[col.key].map((t: Task) => {
             const assigneeName = t.assignee_id ? (profileMap[t.assignee_id]?.full_name ?? profileMap[t.assignee_id]?.email ?? null) : null;
-            const taskDeadline = t.deadline ? new Date(t.deadline).toLocaleDateString('fr-FR') : null;
+            const taskDeadline = t.due_date ? new Date(t.due_date).toLocaleDateString('fr-FR') : null;
             const isMyTask     = t.assignee_id === userId;
             const isUnclaimed  = !t.assignee_id;
             return (
@@ -199,10 +216,10 @@ const memberOptionsJson = JSON.stringify(memberOptions);
                 data-status={t.status}
                 data-title={t.title}
                 data-priority={t.priority}
-                data-deadline={t.deadline ?? ''}
+                data-deadline={t.due_date ?? ''}
                 data-assignee-id={t.assignee_id ?? ''}
                 data-assignee-name={assigneeName ?? ''}
-                data-can-edit={(t.created_by === userId || isStaff) ? 'true' : 'false'}
+                data-can-edit={(t.reporter_id === userId || isStaff) ? 'true' : 'false'}
                 draggable="true"
                 role="button"
                 tabindex="0"
@@ -236,7 +253,7 @@ const memberOptionsJson = JSON.stringify(memberOptions);
                     onclick="event.stopPropagation()"
                   >↩ Libérer</button>
                 )}
-                {(t.created_by === userId || isStaff) && (
+                {(t.reporter_id === userId || isStaff) && (
                   <div class="task-card-actions">
                     <button class="btn-icon btn-edit-task" data-id={t.id} title="Modifier">✏️</button>
                     <button class="btn-icon btn-delete-task" data-id={t.id} title="Supprimer">🗑</button>

@@ -29,8 +29,33 @@ async function getAuthContext(request: Request, cookies: any) {
 
 interface TaskInput {
   project_id: string; title: string; description: string | null;
-  assignee_id: string | null; deadline: string | null;
-  priority: string; status: string;
+  assignee_id: string | null; due_date: string | null;
+  priority: string; status: string; corps: string;
+}
+
+// Mapping priorité form (low/medium/high) → Task Hub (P0-P3)
+function mapPriority(p: string): string {
+  if (p === 'high' || p === 'P0') return 'P1';
+  if (p === 'medium' || p === 'P2') return 'P2';
+  if (p === 'low' || p === 'P3') return 'P3';
+  if (p === 'P1') return 'P0';
+  return 'P2';
+}
+
+// Mapping statut projet (kanban) vers statut Task Hub
+function mapStatus(s: string): string {
+  if (s === 'in_progress') return 'in_progress';
+  if (s === 'review') return 'in_review';
+  if (s === 'done') return 'done';
+  return 'todo';
+}
+
+function validateTaskFields(project_id: string, title: string, description: string | null): string | null {
+  if (!project_id)                                    return 'project_id est requis.';
+  if (!title)                                         return 'Le titre est requis.';
+  if (title.length > 200)                             return 'Le titre ne doit pas dépasser 200 caractères.';
+  if (description && description.length > 1000)       return 'La description ne doit pas dépasser 1000 caractères.';
+  return null;
 }
 
 function parseTaskBody(body: Record<string, unknown>): { input?: TaskInput; error?: string } {
@@ -38,15 +63,16 @@ function parseTaskBody(body: Record<string, unknown>): { input?: TaskInput; erro
   const title       = typeof body.title       === 'string' ? body.title.trim()      : '';
   const description = typeof body.description === 'string' ? body.description.trim() : null;
   const assignee_id = typeof body.assignee_id === 'string' && body.assignee_id ? body.assignee_id.trim() : null;
-  const deadline    = typeof body.deadline    === 'string' && body.deadline ? body.deadline : null;
-  const priority    = ['low', 'medium', 'high'].includes(body.priority as string) ? (body.priority as string) : 'medium';
-  const status      = ['todo', 'in_progress', 'review', 'done'].includes(body.status as string) ? (body.status as string) : 'todo';
+  let due_date: string | null = null;
+  if (typeof body.due_date === 'string' && body.due_date) due_date = body.due_date;
+  else if (typeof body.deadline === 'string' && body.deadline) due_date = body.deadline;
+  const priority = mapPriority(typeof body.priority === 'string' ? body.priority : 'medium');
+  const status   = mapStatus(typeof body.status === 'string' ? body.status : '');
+  const corps    = typeof body.corps === 'string' ? body.corps : 'general';
 
-  if (!project_id)             return { error: 'project_id est requis.' };
-  if (!title)                  return { error: 'Le titre est requis.' };
-  if (title.length > 200)      return { error: 'Le titre ne doit pas dépasser 200 caractères.' };
-  if (description && description.length > 1000) return { error: 'La description ne doit pas dépasser 1000 caractères.' };
-  return { input: { project_id, title, description, assignee_id, deadline, priority, status } };
+  const err = validateTaskFields(project_id, title, description);
+  if (err) return { error: err };
+  return { input: { project_id, title, description, assignee_id, due_date, priority, status, corps } };
 }
 
 function buildTaskUpdates(body: Record<string, unknown>, isStaff: boolean): { updates: Record<string, unknown>; error?: string } {
@@ -62,9 +88,11 @@ function buildTaskUpdates(body: Record<string, unknown>, isStaff: boolean): { up
     if (d.length > 1000) return { updates, error: 'La description ne doit pas dépasser 1000 caractères.' };
     updates.description = d || null;
   }
-  if (['todo', 'in_progress', 'review', 'done'].includes(body.status as string)) updates.status = body.status;
-  if (['low', 'medium', 'high'].includes(body.priority as string))                updates.priority = body.priority;
-  if (typeof body.deadline === 'string') updates.deadline = body.deadline || null;
+  if (['backlog','todo','in_progress','in_review','testing','blocked','done'].includes(body.status as string)) updates.status = body.status;
+  else if (typeof body.status === 'string') updates.status = mapStatus(body.status);
+  if (typeof body.priority === 'string') updates.priority = mapPriority(body.priority);
+  if (typeof body.deadline === 'string') updates.due_date = body.deadline || null;
+  if (typeof body.due_date === 'string')  updates.due_date = body.due_date || null;
   if (isStaff && typeof body.assignee_id === 'string')                            updates.assignee_id = body.assignee_id || null;
   return { updates };
 }
@@ -88,8 +116,8 @@ export const POST: APIRoute = async ({ request, cookies }) => {
   if (!proj) return jsonError('Projet introuvable.', 404);
 
   const { data, error } = await supabase
-    .from('project_tasks')
-    .insert({ ...input, created_by: user.id })
+    .from('tasks')
+    .insert({ ...input, reporter_id: user.id })
     .select('id')
     .single();
 
@@ -120,7 +148,7 @@ async function handleClaim(
     if (!membership) return jsonError('Vous devez être membre du projet pour prendre une tâche.', 403);
   }
   const { error } = await supabase
-    .from('project_tasks')
+    .from('tasks')
     .update({ assignee_id: userId, status: 'in_progress' })
     .eq('id', taskId)
     .is('assignee_id', null);
@@ -139,7 +167,7 @@ async function handleUnclaim(
     return jsonError('Vous ne pouvez pas libérer une tâche qui ne vous est pas assignée.', 403);
   }
   const { error } = await supabase
-    .from('project_tasks')
+    .from('tasks')
     .update({ assignee_id: null, status: 'todo' })
     .eq('id', taskId);
   if (error) return jsonError('Erreur lors de la libération.', 500);
@@ -157,8 +185,8 @@ export const PATCH: APIRoute = async ({ request, cookies, url }) => {
   if (!taskId) return jsonError('Paramètre id manquant.');
 
   const { data: task } = await supabase
-    .from('project_tasks')
-    .select('created_by, assignee_id, project_id')
+    .from('tasks')
+    .select('reporter_id, assignee_id, project_id')
     .eq('id', taskId)
     .single();
 
@@ -174,14 +202,14 @@ export const PATCH: APIRoute = async ({ request, cookies, url }) => {
   if (body.action === 'unclaim') return handleUnclaim(supabase, taskId, task, user.id, isStaff);
 
   // ── Mise à jour normale ──────────────────────────────────────────────────
-  const isOwner = task.created_by === user.id || task.assignee_id === user.id;
+  const isOwner = task.reporter_id === user.id || task.assignee_id === user.id;
   if (!isOwner && !isStaff) return jsonError('Non autorisé.', 403);
 
   const { updates, error: valErr } = buildTaskUpdates(body, isStaff);
   if (valErr) return jsonError(valErr);
   if (Object.keys(updates).length === 0) return jsonError('Aucune donnée à mettre à jour.');
 
-  const { error } = await supabase.from('project_tasks').update(updates).eq('id', taskId);
+  const { error } = await supabase.from('tasks').update(updates).eq('id', taskId);
   if (error) {
     console.error('[api/benevole/tasks] update error:', error.message);
     return jsonError('Erreur lors de la mise à jour.', 500);
@@ -202,18 +230,18 @@ export const DELETE: APIRoute = async ({ request, cookies, url }) => {
 
   // Vérifier que l'utilisateur est créateur ou staff
   const { data: task } = await supabase
-    .from('project_tasks')
-    .select('created_by')
+    .from('tasks')
+    .select('reporter_id')
     .eq('id', taskId)
     .single();
 
   if (!task) return jsonError('Tâche introuvable.', 404);
 
-  const isCreator = task.created_by === user.id;
+  const isCreator = task.reporter_id === user.id;
   const isStaff   = role === 'admin' || role === 'moderator';
   if (!isCreator && !isStaff) return jsonError('Non autorisé.', 403);
 
-  const { error } = await supabase.from('project_tasks').delete().eq('id', taskId);
+  const { error } = await supabase.from('tasks').delete().eq('id', taskId);
 
   if (error) {
     console.error('[api/benevole/tasks] delete error:', error.message);

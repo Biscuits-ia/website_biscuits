@@ -1,6 +1,6 @@
 // src/pages/api/benevole/tasks.ts
 import type { APIRoute } from 'astro';
-import { createSupabaseAdminClient } from '@/lib/supabase';
+import { createSupabaseClient, createSupabaseAdminClient } from '@/lib/supabase';
 import { fetchRoleSecure } from '@/lib/auth';
 
 function jsonError(message: string, status = 400) {
@@ -18,11 +18,12 @@ function jsonOk(data: unknown, status = 200) {
 }
 
 async function getAuthContext(request: Request, cookies: any) {
-  const adminSupabase = createSupabaseAdminClient();
-  const { data: { user }, error } = await adminSupabase.auth.getUser();
+  const supabase = createSupabaseClient({ request, cookies });
+  const { data: { user }, error } = await supabase.auth.getUser();
   if (error || !user) return null;
   const role = await fetchRoleSecure(user.id);
   if (!role || (role !== 'benevole' && role !== 'moderator' && role !== 'admin')) return null;
+  const adminSupabase = createSupabaseAdminClient();
   return { adminSupabase, user, role };
 }
 

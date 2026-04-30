@@ -5,7 +5,7 @@ import type { SupabaseClient, User, Session } from '@supabase/supabase-js';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
-export type UserRole = 'user' | 'moderator' | 'admin';
+export type UserRole = 'user' | 'moderator' | 'admin' | 'benevole';
 
 export interface AuthResult {
   user:     User;
@@ -17,7 +17,7 @@ export interface AuthResult {
 // ── Type guard ────────────────────────────────────────────────────────────────
 
 function isUserRole(value: unknown): value is UserRole {
-  return value === 'user' || value === 'moderator' || value === 'admin';
+  return value === 'user' || value === 'moderator' || value === 'admin' || value === 'benevole';
 }
 
 // ── Helper interne : fetch du rôle via le service role (bypass RLS) ───────────
@@ -125,6 +125,32 @@ export async function requireModerator(Astro: AstroGlobal): Promise<AuthResult |
   const role = await fetchRoleSecure(user.id);
 
   if (role !== 'moderator' && role !== 'admin') {
+    return Astro.redirect('/dashboard/user');
+  }
+
+  const { data: { session } } = await supabase.auth.getSession();
+
+  return { user, session, supabase, role };
+}
+
+// ── requireBenevole ───────────────────────────────────────────────────────────
+
+/**
+ * Vérifie que l'utilisateur est connecté ET a le rôle `benevole`, `moderator` ou `admin`.
+ * Retourne un AuthResult ou une Response de redirection.
+ */
+export async function requireBenevole(Astro: AstroGlobal): Promise<AuthResult | Response> {
+  const supabase = Astro.locals.supabase ?? createSupabaseClient(Astro);
+
+  const { data: { user }, error } = await supabase.auth.getUser();
+
+  if (error || !user) {
+    return Astro.redirect('/connexion');
+  }
+
+  const role = await fetchRoleSecure(user.id);
+
+  if (role !== 'benevole' && role !== 'moderator' && role !== 'admin') {
     return Astro.redirect('/dashboard/user');
   }
 

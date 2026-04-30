@@ -41,6 +41,7 @@ if (authResult instanceof Response) return authResult;
 const role: UserRole    = authResult.role;
 const isAdmin           = role === 'admin';
 const isModerator       = role === 'moderator';
+const isBenevole        = role === 'benevole';
 const isStaff           = isAdmin || isModerator;
 
 // Nom d'affichage : priorité à la prop (passée depuis la page parente),
@@ -78,13 +79,23 @@ const adminNav: NavItem[] = [
   { id: 'logs',            label: 'Logs système',    icon: 'terminal',     badge: 'LIVE'},
 ];
 
-const nav = isAdmin ? adminNav : userNav;
-const dashRole = isAdmin ? 'admin' : 'user';
+const benevoleNav: NavItem[] = [
+  { id: 'overview',   label: "Vue d'ensemble",  icon: 'grid'     },
+  { id: 'projects',   label: 'Projets',          icon: 'folder'   },
+  { id: 'tasks',      label: 'Mes tâches',       icon: 'check'    },
+  { id: 'equipe',     label: 'Équipe',           icon: 'users'    },
+  { id: 'settings',   label: 'Paramètres',       icon: 'settings' },
+];
+
+const nav = isAdmin ? adminNav : isBenevole ? benevoleNav : userNav;
+const dashRole = isAdmin ? 'admin' : isBenevole ? 'benevole' : 'user';
 
 // ── Icônes SVG ────────────────────────────────────────────────────────────────
 
 const icons: Record<string, string> = {
   grid:         `<svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1.5" y="1.5" width="5" height="5" rx="1"/><rect x="9.5" y="1.5" width="5" height="5" rx="1"/><rect x="1.5" y="9.5" width="5" height="5" rx="1"/><rect x="9.5" y="9.5" width="5" height="5" rx="1"/></svg>`,
+  folder:       `<svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1.5 3.5h4l1.5 2h7a1 1 0 011 1V13a1 1 0 01-1 1h-12a1 1 0 01-1-1V4.5a1 1 0 011-1z"/></svg>`,
+  check:        `<svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1.5" y="1.5" width="13" height="13" rx="1"/><polyline points="4.5,8 7,10.5 11.5,5.5"/></svg>`,
   clock:        `<svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/><polyline points="8,4.5 8,8 10.5,9.5"/></svg>`,
   calendar:     `<svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1.5" y="2.5" width="13" height="12" rx="1.5"/><line x1="1.5" y1="6.5" x2="14.5" y2="6.5"/><line x1="5" y1="1" x2="5" y2="4"/><line x1="11" y1="1" x2="11" y2="4"/></svg>`,
   inbox:        `<svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1.5 10h3l1.5 2.5h4L11.5 10h3V3.5a1 1 0 00-1-1h-11a1 1 0 00-1 1V10z"/></svg>`,
@@ -106,7 +117,7 @@ const initials = displayName.split(' ').map((n: string) => n[0]).join('').toUppe
 <head>
   <BaseHead
     fullTitle={`${title} — Biscuits`}
-    description={`Espace ${isAdmin ? 'administrateur' : 'membre'} Biscuits IA`}
+    description={`Espace ${isAdmin ? 'administrateur' : isBenevole ? 'bénévole' : 'membre'} Biscuits IA`}
     fullCanonical={`${siteUrl}/dashboard/${dashRole}`}
     siteUrl={siteUrl}
     noindex={true}
@@ -122,7 +133,7 @@ const initials = displayName.split(' ').map((n: string) => n[0]).join('').toUppe
       <div class="sidebar-logo">
         <div class="sidebar-logo-text">
           <span class="sidebar-logo-name">Biscuits</span>
-          <span class="sidebar-logo-sub">{isAdmin ? 'admin' : 'espace membre'}</span>
+          <span class="sidebar-logo-sub">{isAdmin ? 'admin' : isBenevole ? 'espace bénévole' : 'espace membre'}</span>
         </div>
       </div>
 
@@ -157,7 +168,7 @@ const initials = displayName.split(' ').map((n: string) => n[0]).join('').toUppe
           <div class="user-avatar">{initials}</div>
           <div class="user-info">
             <div class="user-name">{displayName}</div>
-            <div class="user-role">{isAdmin ? 'admin' : isModerator ? 'modérateur' : 'membre'}</div>
+            <div class="user-role">{isAdmin ? 'admin' : isModerator ? 'modérateur' : isBenevole ? 'bénévole' : 'membre'}</div>
           </div>
         </div>
         <a href="/" class="btn btn-ghost btn-full btn-xs-text">

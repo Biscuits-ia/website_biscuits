@@ -15,7 +15,6 @@ if (!projectId) return Astro.redirect('/dashboard/admin/projects');
 
 const [
   { data: projectRaw, error: projectError },
-  { data: tasksRaw },
   { data: membersRaw },
   { data: volunteersRaw },
 ] = await Promise.all([
@@ -28,12 +27,6 @@ const [
     `)
     .eq('id', projectId)
     .single(),
-  adminSupabase
-    .from('project_tasks')
-    .select('id, title, description, task_type, status, priority, assignee_id, deadline, position, created_at')
-    .eq('project_id', projectId)
-    .order('status')
-    .order('position'),
   adminSupabase
     .from('project_members')
     .select('user_id, joined_at')
@@ -69,19 +62,6 @@ interface Project {
   start_date: string | null;
 }
 
-interface Task {
-  id: string;
-  title: string;
-  description: string | null;
-  task_type: string;
-  status: string;
-  priority: string;
-  assignee_id: string | null;
-  deadline: string | null;
-  position: number;
-  created_at: string;
-}
-
 interface Member {
   user_id: string;
   joined_at: string;
@@ -95,7 +75,7 @@ interface Volunteer {
 }
 
 const project = projectRaw as unknown as Project;
-const tasks = (tasksRaw ?? []) as unknown as Task[];
+
 const members = (membersRaw ?? []) as unknown as Member[];
 const volunteers = (volunteersRaw ?? []) as unknown as Volunteer[];
 
@@ -103,7 +83,6 @@ const volunteers = (volunteersRaw ?? []) as unknown as Volunteer[];
 const profileIds = [
   ...(project.leader_id ? [project.leader_id] : []),
   ...members.map((m) => m.user_id),
-  ...[...new Set(tasks.map((t) => t.assignee_id).filter(Boolean))] as string[],
 ];
 const uniqueProfileIds = [...new Set(profileIds)];
 const profileMap: Record<string, { full_name: string | null; email: string }> = {};
@@ -134,22 +113,8 @@ function getMemberName(userId: string): string {
   );
 }
 
-const memberOptions = members.map((m) => ({
-  id: m.user_id,
-  name: getMemberName(m.user_id),
-}));
-
 const statusLabel: Record<string, string> = { active: 'Actif', on_hold: 'En pause', completed: 'Terminé', archived: 'Archivé' };
 const priorityLabel: Record<string, string> = { low: 'Faible', medium: 'Moyenne', high: 'Haute' };
-const taskTypeLabel: Record<string, string> = {
-  general: 'Général',
-  dev: 'Dev',
-  db: 'DB',
-  design: 'Design',
-  qa: 'QA/Test',
-  ops: 'Ops',
-  doc: 'Documentation',
-};
 
 const leaderName = project.leader_id
   ? (profileMap[project.leader_id]?.full_name ?? profileMap[project.leader_id]?.email ?? '—')
@@ -217,124 +182,6 @@ const toolsText = project.tools.join(', ');
     </section>
   </div>
 
-  <section class="card mt-6">
-    <h2 class="card-title">Gestion des tâches</h2>
-
-    <form id="form-add-task" class="task-form mb-5">
-      <input type="hidden" name="project_id" value={projectId} />
-      <input type="text" name="title" class="input" placeholder="Titre de la tâche" required maxlength="200" />
-      <textarea name="description" class="input task-form-description" placeholder="Description de la tâche" rows="2" maxlength="1000"></textarea>
-      <select name="task_type" class="input">
-        <option value="general" selected>Type: Général</option>
-        <option value="dev">Type: Dev</option>
-        <option value="db">Type: DB</option>
-        <option value="design">Type: Design</option>
-        <option value="qa">Type: QA/Test</option>
-        <option value="ops">Type: Ops</option>
-        <option value="doc">Type: Documentation</option>
-      </select>
-      <select name="status" class="input">
-        <option value="todo">À faire</option>
-        <option value="in_progress">En cours</option>
-        <option value="review">Révision</option>
-        <option value="done">Terminé</option>
-      </select>
-      <select name="priority" class="input">
-        <option value="medium">Priorité moyenne</option>
-        <option value="high">Priorité haute</option>
-        <option value="low">Priorité faible</option>
-      </select>
-      <select name="assignee_id" class="input">
-        <option value="">Non assigné</option>
-        {memberOptions.map((m) => <option value={m.id}>{m.name}</option>)}
-      </select>
-      <button type="submit" class="btn btn-primary btn-sm">Créer tâche</button>
-    </form>
-
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>Titre</th>
-            <th>Description</th>
-            <th>Type</th>
-            <th>Statut</th>
-            <th>Priorité</th>
-            <th>Assigné</th>
-            <th>Échéance</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody id="tasks-tbody">
-          {tasks.length > 0 ? tasks.map((t) => {
-            return (
-              <tr data-task-row="1">
-                <td>{t.title}</td>
-                <td class="task-desc-cell">{t.description || '—'}</td>
-                <td>
-                  <select class="input input-xs js-task-type" data-id={t.id}>
-                    <option value="general" selected={t.task_type === 'general'}>{taskTypeLabel.general}</option>
-                    <option value="dev" selected={t.task_type === 'dev'}>{taskTypeLabel.dev}</option>
-                    <option value="db" selected={t.task_type === 'db'}>{taskTypeLabel.db}</option>
-                    <option value="design" selected={t.task_type === 'design'}>{taskTypeLabel.design}</option>
-                    <option value="qa" selected={t.task_type === 'qa'}>{taskTypeLabel.qa}</option>
-                    <option value="ops" selected={t.task_type === 'ops'}>{taskTypeLabel.ops}</option>
-                    <option value="doc" selected={t.task_type === 'doc'}>{taskTypeLabel.doc}</option>
-                  </select>
-                </td>
-                <td>
-                  <select class="input input-xs js-task-status" data-id={t.id}>
-                    <option value="todo" selected={t.status === 'todo'}>À faire</option>
-                    <option value="in_progress" selected={t.status === 'in_progress'}>En cours</option>
-                    <option value="review" selected={t.status === 'review'}>Révision</option>
-                    <option value="done" selected={t.status === 'done'}>Terminé</option>
-                  </select>
-                </td>
-                <td>
-                  <select class="input input-xs js-task-priority" data-id={t.id}>
-                    <option value="low" selected={t.priority === 'low'}>Faible</option>
-                    <option value="medium" selected={t.priority === 'medium'}>Moyenne</option>
-                    <option value="high" selected={t.priority === 'high'}>Haute</option>
-                  </select>
-                </td>
-                <td>
-                  <select class="input input-xs js-task-assignee" data-id={t.id}>
-                    <option value="">Non assigné</option>
-                    {memberOptions.map((m) => <option value={m.id} selected={t.assignee_id === m.id}>{m.name}</option>)}
-                  </select>
-                </td>
-                <td class="muted">{t.deadline ? new Date(t.deadline).toLocaleDateString('fr-FR') : '—'}</td>
-                <td>
-                  <button class="btn btn-ghost btn-xs js-delete-task" data-id={t.id}>Suppr.</button>
-                </td>
-              </tr>
-            );
-          }) : (
-            <tr class="js-empty-row">
-              <td colspan="8" class="empty-row">Aucune tâche.</td>
-            </tr>
-          )}
-        </tbody>
-      </table>
-    </div>
-    <div class="task-pagination" id="task-pagination">
-      <div class="task-pagination-left">
-        <button type="button" class="btn btn-ghost btn-xs" id="tasks-prev">← Précédent</button>
-        <button type="button" class="btn btn-ghost btn-xs" id="tasks-next">Suivant →</button>
-        <span class="task-pagination-info" id="tasks-page-info">Page 1 / 1</span>
-      </div>
-      <div class="task-pagination-right">
-        <label for="tasks-per-page" class="muted">Lignes / page</label>
-        <select id="tasks-per-page" class="input input-xs">
-          <option value="5">5</option>
-          <option value="10" selected>10</option>
-          <option value="20">20</option>
-          <option value="50">50</option>
-        </select>
-      </div>
-    </div>
-  </section>
-
   <section class="card mt-6 chat-section" id="admin-project-chat" data-user-id={user.id} data-user-name={userName}>
     <div class="chat-header">
       <h2 class="card-title">Chat du projet</h2>
@@ -376,18 +223,10 @@ const toolsText = project.tools.join(', ');
   .members-list { display: flex; flex-direction: column; gap: 6px; }
   .member-item { display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--border-mid); padding: 6px 8px; font-size: var(--text-xs); }
 
-  .task-form { display: grid; grid-template-columns: 1.8fr 1fr 1fr 1fr 1.3fr auto; gap: 8px; align-items: center; }
-  .task-form-description { grid-column: 1 / -1; resize: vertical; min-height: 70px; }
-  .task-desc-cell { max-width: 360px; white-space: normal; font-size: var(--text-xs); color: var(--text-secondary); }
-  .task-pagination { margin-top: 10px; display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
-  .task-pagination-left, .task-pagination-right { display: flex; align-items: center; gap: 8px; }
-  .task-pagination-info { font-size: var(--text-xs); color: var(--text-muted); }
-
   .input { border: var(--brutal-border-thin); background: var(--surface); padding: 6px 8px; font-size: var(--text-xs); }
   .input-xs { padding: 4px 6px; font-size: 0.72rem; }
 
   .muted { color: var(--text-muted); font-size: var(--text-xs); }
-  .empty-row { text-align: center; color: var(--text-muted); padding: 20px; }
 
   .mb-5 { margin-bottom: var(--space-lg); }
   .mb-6 { margin-bottom: var(--space-xl); }
@@ -421,16 +260,6 @@ const toolsText = project.tools.join(', ');
   const projectId = new URL(window.location.href).pathname.split('/').pop();
 
   const addMemberForm = document.getElementById('form-add-member');
-  const addTaskForm = document.getElementById('form-add-task');
-
-  const apiPatchTask = async (id: string, payload: Record<string, unknown>): Promise<void> => {
-    const res = await fetch(`/api/admin/project-tasks?id=${id}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
-    if (!res.ok) throw new Error('update failed');
-  };
 
   addMemberForm?.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -473,170 +302,6 @@ const toolsText = project.tools.join(', ');
       window.location.reload();
     });
   });
-
-  addTaskForm?.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    if (!(addTaskForm instanceof HTMLFormElement)) return;
-
-    const fd = new FormData(addTaskForm);
-    const payload = {
-      project_id: projectId,
-      title: String(fd.get('title') ?? '').trim(),
-      description: String(fd.get('description') ?? '').trim() || null,
-      task_type: String(fd.get('task_type') ?? 'general'),
-      status: String(fd.get('status') ?? 'todo'),
-      priority: String(fd.get('priority') ?? 'medium'),
-      assignee_id: String(fd.get('assignee_id') ?? '') || null,
-    };
-
-    const res = await fetch('/api/admin/project-tasks', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
-
-    if (!res.ok) {
-      const out = await res.json().catch(() => ({ error: 'Erreur' }));
-      alert(out.error ?? 'Erreur lors de la création de tâche');
-      return;
-    }
-
-    window.location.reload();
-  });
-
-  document.querySelectorAll('.js-task-status').forEach((el) => {
-    el.addEventListener('change', async () => {
-      if (!(el instanceof HTMLSelectElement)) return;
-      const id = el.getAttribute('data-id');
-      if (!id) return;
-      try {
-        await apiPatchTask(id, { status: el.value });
-      } catch {
-        alert('Erreur mise à jour statut');
-        window.location.reload();
-      }
-    });
-  });
-
-  document.querySelectorAll('.js-task-priority').forEach((el) => {
-    el.addEventListener('change', async () => {
-      if (!(el instanceof HTMLSelectElement)) return;
-      const id = el.getAttribute('data-id');
-      if (!id) return;
-      try {
-        await apiPatchTask(id, { priority: el.value });
-      } catch {
-        alert('Erreur mise à jour priorité');
-        window.location.reload();
-      }
-    });
-  });
-
-  document.querySelectorAll('.js-task-type').forEach((el) => {
-    el.addEventListener('change', async () => {
-      if (!(el instanceof HTMLSelectElement)) return;
-      const id = el.getAttribute('data-id');
-      if (!id) return;
-      try {
-        await apiPatchTask(id, { task_type: el.value });
-      } catch {
-        alert('Erreur mise à jour type de tâche');
-        window.location.reload();
-      }
-    });
-  });
-
-  document.querySelectorAll('.js-task-assignee').forEach((el) => {
-    el.addEventListener('change', async () => {
-      if (!(el instanceof HTMLSelectElement)) return;
-      const id = el.getAttribute('data-id');
-      if (!id) return;
-      try {
-        await apiPatchTask(id, { assignee_id: el.value || null });
-      } catch {
-        alert('Erreur mise à jour affectation');
-        window.location.reload();
-      }
-    });
-  });
-
-  document.querySelectorAll('.js-delete-task').forEach((el) => {
-    el.addEventListener('click', async () => {
-      const id = el.getAttribute('data-id');
-      if (!id) return;
-      if (!confirm('Supprimer cette tâche ?')) return;
-
-      const res = await fetch(`/api/admin/project-tasks?id=${id}`, { method: 'DELETE' });
-      if (!res.ok) {
-        alert('Erreur lors de la suppression.');
-        return;
-      }
-
-      window.location.reload();
-    });
-  });
-
-  function initTaskPagination() {
-    const rows = Array.from(document.querySelectorAll<HTMLTableRowElement>('#tasks-tbody tr[data-task-row="1"]'));
-    const emptyRow = document.querySelector<HTMLTableRowElement>('#tasks-tbody .js-empty-row');
-    const pager = document.getElementById('task-pagination');
-    const prevBtn = document.getElementById('tasks-prev') as HTMLButtonElement | null;
-    const nextBtn = document.getElementById('tasks-next') as HTMLButtonElement | null;
-    const info = document.getElementById('tasks-page-info');
-    const perPageSelect = document.getElementById('tasks-per-page') as HTMLSelectElement | null;
-
-    if (rows.length === 0) {
-      if (pager) pager.style.display = 'none';
-      if (emptyRow) emptyRow.style.display = '';
-      return;
-    }
-
-    if (!prevBtn || !nextBtn || !info || !perPageSelect) return;
-
-    let currentPage = 1;
-    let perPage = Number(perPageSelect.value) || 10;
-
-    const render = () => {
-      const totalPages = Math.max(1, Math.ceil(rows.length / perPage));
-      if (currentPage > totalPages) currentPage = totalPages;
-      const start = (currentPage - 1) * perPage;
-      const end = start + perPage;
-
-      rows.forEach((row, index) => {
-        row.style.display = index >= start && index < end ? '' : 'none';
-      });
-
-      info.textContent = `Page ${currentPage} / ${totalPages} (${rows.length} tâches)`;
-      prevBtn.disabled = currentPage <= 1;
-      nextBtn.disabled = currentPage >= totalPages;
-      if (emptyRow) emptyRow.style.display = 'none';
-    };
-
-    prevBtn.addEventListener('click', () => {
-      if (currentPage > 1) {
-        currentPage -= 1;
-        render();
-      }
-    });
-
-    nextBtn.addEventListener('click', () => {
-      const totalPages = Math.max(1, Math.ceil(rows.length / perPage));
-      if (currentPage < totalPages) {
-        currentPage += 1;
-        render();
-      }
-    });
-
-    perPageSelect.addEventListener('change', () => {
-      perPage = Number(perPageSelect.value) || 10;
-      currentPage = 1;
-      render();
-    });
-
-    render();
-  }
-
-  initTaskPagination();
 
   const chatRoot = document.getElementById('admin-project-chat');
 

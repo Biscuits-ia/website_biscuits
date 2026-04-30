@@ -2,6 +2,7 @@
 // src/pages/dashboard/benevole/tasks.astro
 import DashboardLayout from '../../../layouts/DashboardLayout.astro';
 import { requireBenevole } from '../../../lib/auth';
+import { createSupabaseAdminClient } from '../../../lib/supabase';
 
 const result = await requireBenevole(Astro);
 if (result instanceof Response) return result;
@@ -30,6 +31,15 @@ if (priorityFilter) query = query.eq('priority', priorityFilter);
 
 const { data: tasksRaw } = await query;
 
+// ── Task Hub tasks (table `tasks`) assignées à l'utilisateur ──────────────────
+const admin = createSupabaseAdminClient();
+const { data: hubTasksRaw } = await admin
+  .from('tasks')
+  .select('id, reference, title, description, status, priority, corps, assignee_id, time_estimate_hours, due_date')
+  .eq('assignee_id', userId)
+  .order('updated_at', { ascending: false })
+  .limit(50);
+
 interface ProjectRef { id: string; title: string; }
 interface ProfileRef { full_name: string | null; email: string; }
 interface Task {
@@ -43,6 +53,13 @@ interface Task {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tasks = (tasksRaw ?? []) as any as Task[];
 
+interface HubTask {
+  id: string; reference: string; title: string; description: string | null;
+  status: string; priority: string; corps: string;
+  time_estimate_hours: number | null; due_date: string | null;
+}
+const hubTasks = (hubTasksRaw ?? []) as HubTask[];
+
 const statusLabel: Record<string, string> = {
   todo: 'À faire', in_progress: 'En cours', review: 'Révision', done: 'Terminé',
 };
@@ -51,6 +68,17 @@ const statusClass: Record<string, string> = {
 };
 const priorityClass: Record<string, string> = { low: 'neutral', medium: 'info', high: 'err' };
 const priorityLabel: Record<string, string> = { low: 'Faible', medium: 'Moyenne', high: 'Haute' };
+
+const hubStatusLabel: Record<string, string> = {
+  backlog: 'Backlog', todo: 'À faire', in_progress: 'En cours',
+  in_review: 'En revue', testing: 'Test', blocked: 'Bloquée', done: 'Terminé',
+};
+const hubStatusClass: Record<string, string> = {
+  backlog: 'neutral', todo: 'neutral', in_progress: 'info',
+  in_review: 'warn', testing: 'warn', blocked: 'err', done: 'ok',
+};
+const hubPriorityLabel: Record<string, string> = { P0: 'Critique', P1: 'Haute', P2: 'Moyenne', P3: 'Faible' };
+const hubPriorityClass: Record<string, string> = { P0: 'err', P1: 'err', P2: 'warn', P3: 'neutral' };
 
 // Groupe par statut pour affichage
 const grouped: Record<string, Task[]> = { todo: [], in_progress: [], review: [], done: [] };
@@ -144,6 +172,32 @@ for (const t of tasks) {
       })}
     </div>
   )}
+
+  {hubTasks.length > 0 && (
+    <section class="hub-tasks-section mt-8">
+      <h2 class="hub-tasks-title">Mes tâches Task Hub <span class="section-count">{hubTasks.length}</span></h2>
+      <div class="task-table">
+        <div class="task-table-head hub-table-head">
+          <span>Référence</span>
+          <span>Tâche</span>
+          <span>Corps</span>
+          <span>Statut</span>
+          <span>Priorité</span>
+          <span>Action</span>
+        </div>
+        {hubTasks.map((t) => (
+          <div class="task-row hub-task-row">
+            <span class="hub-ref">{t.reference}</span>
+            <span class="task-name">{t.title}</span>
+            <span class="badge badge-neutral">{t.corps}</span>
+            <span class={`badge badge-${hubStatusClass[t.status] ?? 'neutral'}`}>{hubStatusLabel[t.status] ?? t.status}</span>
+            <span class={`badge badge-${hubPriorityClass[t.priority] ?? 'neutral'}`}>{hubPriorityLabel[t.priority] ?? t.priority}</span>
+            <a href={`/dashboard/tasks/${t.id}`} class="btn btn-ghost btn-sm">Voir</a>
+          </div>
+        ))}
+      </div>
+    </section>
+  )}
 </DashboardLayout>
 
 <style>
@@ -194,9 +248,17 @@ for (const t of tasks) {
 
   .empty-state     { font-size: var(--text-sm); color: var(--text-muted); padding: var(--space-md) 0; }
 
+  .hub-tasks-section  { margin-top: 2.5rem; }
+  .hub-tasks-title    { font-size: var(--text-base); font-weight: 700; margin-bottom: var(--space-sm); display: flex; align-items: center; gap: 8px; padding-bottom: 6px; border-bottom: 2px solid var(--accent); color: var(--accent-dark); }
+  .hub-table-head     { grid-template-columns: 90px 1fr 80px 110px 80px 80px !important; }
+  .hub-task-row       { grid-template-columns: 90px 1fr 80px 110px 80px 80px !important; }
+  .hub-ref            { font-family: var(--font-mono); font-size: var(--text-xs); color: var(--text-muted); }
+  .mt-8               { margin-top: 2rem; }
+
   @media (max-width: 700px) {
     .task-table-head { display: none; }
     .task-row        { grid-template-columns: 1fr; gap: 6px; }
+    .hub-task-row    { grid-template-columns: 1fr !important; }
   }
 </style>
 

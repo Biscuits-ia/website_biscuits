@@ -20,7 +20,7 @@ try {
 }
 
 const statusFilter = Astro.url.searchParams.get('status') ?? '';
-const search       = (Astro.url.searchParams.get('q') ?? '').replace(/[,()\[\]]/g, '');
+const search       = (Astro.url.searchParams.get('q') ?? '').replace(/[,()[\]]/g, '');
 
 const projectSelect = `
   id, title, description, status, priority, deadline, created_at,
@@ -81,19 +81,6 @@ if (projectsError || projectsRaw.length === 0) {
 if (projectsError) {
   console.error('[dashboard/benevole/projects] load error:', projectsError.message);
 }
-console.info('[dashboard/benevole/projects] debug', {
-  userId: user.id,
-  role,
-  source,
-  count: projectsRaw?.length ?? 0,
-  statusFilter,
-  search,
-  adminClientInitError,
-  supabaseHost: (() => {
-    try { return new URL(import.meta.env.SUPABASE_URL).host; }
-    catch { return 'invalid-supabase-url'; }
-  })(),
-});
 
 const loadError = projectsError
   ? `Impossible de charger les projets pour le moment. (${projectsError.message})`

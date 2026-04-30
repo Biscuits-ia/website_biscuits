@@ -16,14 +16,12 @@ export const GET: APIRoute = async ({ request, url, cookies, redirect }) => {
   const safeNext = next.startsWith("/") && !next.startsWith("//") ? next : "/dashboard/user";
 
   if (!authCode) {
-    console.warn('[callback] No code provided');
     return new Response("No code provided", {
       status: 400,
       headers: { 'Content-Type': 'text/plain' }
     });
   }
 
-  console.log('[callback] Exchanging auth code for session');
   const supabase = createSupabaseClient({ request, cookies });
   const { error } = await supabase.auth.exchangeCodeForSession(authCode);
 
@@ -32,7 +30,6 @@ export const GET: APIRoute = async ({ request, url, cookies, redirect }) => {
     return redirect("/connexion?error=session");
   }
 
-  console.log('[callback] Session exchanged successfully, redirecting to', safeNext);
   // Return a proper Response with redirect status to ensure cookies are sent
   return new Response(null, {
     status: 302,

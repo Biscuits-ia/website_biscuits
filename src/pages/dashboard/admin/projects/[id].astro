@@ -24,20 +24,19 @@ const [
     .select(`
       id, title, description, status, priority, deadline, created_at, updated_at,
       leader_id, objective, expected_deliverables, tech_stack, tools,
-      repository_url, document_url, communication_channel, estimated_hours, start_date,
-      profiles!projects_leader_id_fkey(full_name, email)
+      repository_url, document_url, communication_channel, estimated_hours, start_date
     `)
     .eq('id', projectId)
     .single(),
   adminSupabase
     .from('project_tasks')
-    .select('id, title, description, status, priority, assignee_id, deadline, position, created_at, profiles!project_tasks_assignee_id_fkey(full_name, email)')
+    .select('id, title, description, status, priority, assignee_id, deadline, position, created_at')
     .eq('project_id', projectId)
     .order('status')
     .order('position'),
   adminSupabase
     .from('project_members')
-    .select('user_id, joined_at, profiles(full_name, email)')
+    .select('user_id, joined_at')
     .eq('project_id', projectId)
     .order('joined_at', { ascending: true }),
   adminSupabase
@@ -48,11 +47,6 @@ const [
 ]);
 
 if (projectError || !projectRaw) return Astro.redirect('/dashboard/admin/projects');
-
-interface ProfileRef {
-  full_name: string | null;
-  email: string;
-}
 
 interface Project {
   id: string;
@@ -73,7 +67,6 @@ interface Project {
   communication_channel: string | null;
   estimated_hours: number | null;
   start_date: string | null;
-  profiles: ProfileRef[] | null;
 }
 
 interface Task {
@@ -86,13 +79,11 @@ interface Task {
   deadline: string | null;
   position: number;
   created_at: string;
-  profiles: ProfileRef[] | null;
 }
 
 interface Member {
   user_id: string;
   joined_at: string;
-  profiles: ProfileRef[] | null;
 }
 
 interface Volunteer {
@@ -107,18 +98,38 @@ const tasks = (tasksRaw ?? []) as unknown as Task[];
 const members = (membersRaw ?? []) as unknown as Member[];
 const volunteers = (volunteersRaw ?? []) as unknown as Volunteer[];
 
-const statusLabel: Record<string, string> = { active: 'Actif', on_hold: 'En pause', completed: 'Terminé', archived: 'Archivé' };
-const priorityLabel: Record<string, string> = { low: 'Faible', medium: 'Moyenne', high: 'Haute' };
+// Fetch profiles separately (avoid fragile embedded joins)
+const profileIds = [
+  ...(project.leader_id ? [project.leader_id] : []),
+  ...members.map((m) => m.user_id),
+  ...[...new Set(tasks.map((t) => t.assignee_id).filter(Boolean))] as string[],
+];
+const uniqueProfileIds = [...new Set(profileIds)];
+const profileMap: Record<string, { full_name: string | null; email: string }> = {};
+if (uniqueProfileIds.length > 0) {
+  const { data: profilesData } = await adminSupabase
+    .from('profiles')
+    .select('id, full_name, email')
+    .in('id', uniqueProfileIds);
+  for (const p of profilesData ?? []) {
+    profileMap[p.id] = { full_name: p.full_name, email: p.email };
+  }
+}
 
 const memberIds = new Set(members.map((m) => m.user_id));
 const assignableVolunteers = volunteers.filter((v) => !memberIds.has(v.id));
 
 const memberOptions = members.map((m) => ({
   id: m.user_id,
-  name: m.profiles?.[0]?.full_name ?? m.profiles?.[0]?.email ?? m.user_id,
+  name: profileMap[m.user_id]?.full_name ?? profileMap[m.user_id]?.email ?? m.user_id,
 }));
 
-const leaderName = project.profiles?.[0]?.full_name ?? project.profiles?.[0]?.email ?? '—';
+const statusLabel: Record<string, string> = { active: 'Actif', on_hold: 'En pause', completed: 'Terminé', archived: 'Archivé' };
+const priorityLabel: Record<string, string> = { low: 'Faible', medium: 'Moyenne', high: 'Haute' };
+
+const leaderName = project.leader_id
+  ? (profileMap[project.leader_id]?.full_name ?? profileMap[project.leader_id]?.email ?? '—')
+  : '—';
 const stackText = project.tech_stack.join(', ');
 const toolsText = project.tools.join(', ');
 ---
@@ -170,7 +181,7 @@ const toolsText = project.tools.join(', ');
 
       <div class="members-list">
         {members.length > 0 ? members.map((m) => {
-          const name = m.profiles?.[0]?.full_name ?? m.profiles?.[0]?.email ?? m.user_id;
+          const name = profileMap[m.user_id]?.full_name ?? profileMap[m.user_id]?.email ?? m.user_id;
           return (
             <div class="member-item">
               <span>{name}</span>
@@ -220,7 +231,6 @@ const toolsText = project.tools.join(', ');
         </thead>
         <tbody>
           {tasks.length > 0 ? tasks.map((t) => {
-            const assignee = t.profiles?.[0]?.full_name ?? t.profiles?.[0]?.email ?? '—';
             return (
               <tr>
                 <td>{t.title}</td>

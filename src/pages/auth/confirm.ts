@@ -17,25 +17,15 @@ export const GET: APIRoute = async ({ request, url, cookies, redirect }) => {
   const code = url.searchParams.get('code');
   const next = getSafeNext(url.searchParams.get('next'));
 
-  console.log('[confirm] Received request:', {
-    tokenHash: tokenHash ? 'present' : 'missing',
-    type,
-    code: code ? 'present' : 'missing',
-    next,
-    fullUrl: url.toString(),
-  });
-
   const supabase = createSupabaseClient({ request, cookies });
 
   // Flow 1: PKCE code exchange (preferred for production)
   if (code) {
-    console.log('[confirm] Exchanging auth code for session');
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (error) {
       console.error('[confirm] exchangeCodeForSession error:', error.message, '| code:', error.code);
       return redirect('/connexion?error=confirmation&code=exchange_failed');
     }
-    console.log('[confirm] Session exchanged successfully, redirecting to', next);
     // Return a proper Response with redirect status to ensure cookies are sent
     return new Response(null, {
       status: 302,
@@ -47,8 +37,6 @@ export const GET: APIRoute = async ({ request, url, cookies, redirect }) => {
 
   // Flow 2: OTP token_hash verification (for email links: signup, recovery, magic link)
   if (tokenHash && type) {
-    console.log('[confirm] Verifying OTP token_hash:', type);
-
     // Validate type is one of the expected values
     const validTypes: EmailOtpType[] = ['signup', 'recovery', 'magiclink', 'email_change', 'email'];
     if (!validTypes.includes(type)) {
@@ -77,7 +65,6 @@ export const GET: APIRoute = async ({ request, url, cookies, redirect }) => {
       return redirect(`/connexion?error=confirmation&code=${errorCode}`);
     }
 
-    console.log('[confirm] OTP verified successfully, redirecting to', next);
     return new Response(null, {
       status: 302,
       headers: {
@@ -86,6 +73,5 @@ export const GET: APIRoute = async ({ request, url, cookies, redirect }) => {
     });
   }
 
-  console.warn('[confirm] Invalid confirmation request - missing token_hash/type or code');
   return redirect('/connexion?error=confirmation&code=invalid_request');
 };

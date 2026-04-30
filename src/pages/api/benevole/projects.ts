@@ -34,15 +34,6 @@ export const POST: APIRoute = async ({ request, cookies }) => {
   const { user, role } = ctx;
   const adminSupabase = createSupabaseAdminClient();
 
-  console.info('[api/benevole/projects][POST] start', {
-    userId: user.id,
-    role,
-    supabaseHost: (() => {
-      try { return new URL(import.meta.env.SUPABASE_URL).host; }
-      catch { return 'invalid-supabase-url'; }
-    })(),
-  });
-
   // Seuls le staff peut créer un projet
   if (role !== 'admin' && role !== 'moderator') {
     return jsonError('Réservé au staff.', 403);
@@ -65,13 +56,6 @@ export const POST: APIRoute = async ({ request, cookies }) => {
   if (title.length > 120) return jsonError('Le titre ne doit pas dépasser 120 caractères.');
   if (description && description.length > 800) return jsonError('La description ne doit pas dépasser 800 caractères.');
 
-  console.info('[api/benevole/projects][POST] payload', {
-    title,
-    hasDescription: Boolean(description),
-    priority,
-    deadline,
-  });
-
   const { data, error } = await adminSupabase
     .from('projects')
     .insert({
@@ -91,8 +75,6 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     return jsonError('Erreur lors de la création.', 500);
   }
 
-  console.info('[api/benevole/projects][POST] insert ok', { projectId: data.id });
-
   // Associer automatiquement le créateur au projet pour la visibilité membre.
   const { error: memberError } = await adminSupabase
     .from('project_members')
@@ -100,11 +82,6 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 
   if (memberError) {
     console.error('[api/benevole/projects] member upsert warning:', memberError.message);
-  } else {
-    console.info('[api/benevole/projects][POST] member upsert ok', {
-      projectId: data.id,
-      memberUserId: user.id,
-    });
   }
 
   // Hard verification: ensure row is actually present right after insert.
@@ -115,21 +92,11 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     .maybeSingle();
 
   if (verifyError || !insertedProject) {
-    console.error('[api/benevole/projects][POST] verify failed', {
-      projectId: data.id,
-      verifyError: verifyError?.message,
-    });
+    console.error('[api/benevole/projects][POST] verify failed:', data.id, verifyError?.message);
     return jsonError('Creation non confirmee en base.', 500);
   }
 
-  console.info('[api/benevole/projects][POST] verify ok', {
-    projectId: insertedProject.id,
-    createdBy: insertedProject.created_by,
-    leaderId: insertedProject.leader_id,
-    createdAt: insertedProject.created_at,
-  });
-
-  return jsonOk({ id: data.id, debug_verified: true }, 201);
+  return jsonOk({ id: data.id }, 201);
 };
 
 // ── PATCH /api/benevole/projects?id=… — modifier un projet ───────────────────

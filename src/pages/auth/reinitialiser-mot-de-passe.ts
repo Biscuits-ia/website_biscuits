@@ -37,8 +37,6 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
       );
     }
 
-    console.log('[reset-password] Updating password for user:', user.id);
-
     const { error } = await supabase.auth.updateUser({ password });
 
     if (error) {
@@ -72,8 +70,6 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
         { status: 400, headers: { 'Content-Type': 'application/json' } },
       );
     }
-
-    console.log('[reset-password] Password updated successfully for user:', user.id);
 
     return new Response(
       JSON.stringify({ success: true }),

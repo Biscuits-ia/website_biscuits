@@ -75,9 +75,6 @@ export const POST: APIRoute = async ({ request, cookies, url, site }) => {
     const origin = getAuthRedirectOrigin(request, url, site);
 
     // Flow OTP: l'email doit contenir {{ .Token }} pour la saisie manuelle du code.
-    // On garde origin résolu pour diagnostiquer les environnements de déploiement.
-    console.log('[reset-password] Sending reset OTP email to:', email, '| origin:', origin);
-
     const { error } = await supabase.auth.resetPasswordForEmail(email);
 
     if (error) {

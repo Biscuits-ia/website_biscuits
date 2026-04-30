@@ -85,8 +85,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
   } catch (err) {
     // Token refresh failed (expired refresh token, invalid session, etc.)
     // Silently ignore — the user will appear unauthenticated and need to re-login.
-    // Log for debugging but don't expose to user.
-    console.log('[middleware] getUser failed (expected for expired session):', err instanceof Error ? err.message : err);
+    // Silently ignore — user will need to re-login.
   }
 
   context.locals.supabase = supabase;

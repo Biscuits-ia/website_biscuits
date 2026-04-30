@@ -26,24 +26,19 @@
 
   async function loadAppointments() {
     try {
-      console.log('📋 Chargement des rendez-vous admin...');
       const response = await fetch('/api/admin/appointments', {
         credentials: 'include',
       });
-      console.log('📋 Réponse reçue, status:', response.status);
-      
+
       if (!response.ok) {
         const errText = await response.text();
-        console.error('❌ Erreur API:', response.status, errText);
         throw new Error(`Erreur ${response.status}: ${errText}`);
       }
-      
+
       const data = await response.json();
-      console.log('📋 Données reçues:', data);
       renderAppointments(data);
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Erreur inconnue';
-      console.error('❌ loadAppointments error:', err);
       showError(msg, 0);
       contentDiv.innerHTML =
         '<div style="color: #dc2626; padding: 20px; text-align: center;">Erreur de chargement</div>';

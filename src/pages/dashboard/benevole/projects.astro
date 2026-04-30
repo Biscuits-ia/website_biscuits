@@ -17,8 +17,7 @@ let query = supabase
   .from('projects')
   .select(`
     id, title, description, status, priority, deadline, created_at,
-    leader_id,
-    profiles!projects_leader_id_fkey(full_name, email)
+    leader_id
   `)
   .order('status')
   .order('deadline', { ascending: true, nullsFirst: false });
@@ -28,12 +27,26 @@ if (search)       query = query.ilike('title', `%${search}%`);
 
 const { data: projectsRaw } = await query;
 
-interface LeaderRow { full_name: string | null; email: string; }
+const leaderIds = [...new Set(((projectsRaw ?? []) as Array<{ leader_id: string | null }>)
+  .map((p) => p.leader_id)
+  .filter((id): id is string => Boolean(id)))];
+
+let leadersById: Record<string, { full_name: string | null; email: string }> = {};
+if (leaderIds.length > 0) {
+  const { data: leadersRaw } = await supabase
+    .from('profiles')
+    .select('id, full_name, email')
+    .in('id', leaderIds);
+
+  leadersById = Object.fromEntries(
+    (leadersRaw ?? []).map((row) => [row.id, { full_name: row.full_name, email: row.email }]),
+  );
+}
+
 interface ProjectRow {
   id: string; title: string; description: string | null;
   status: string; priority: string; deadline: string | null;
   created_at: string; leader_id: string | null;
-  profiles: LeaderRow[] | null;
 }
 
 const projects = (projectsRaw ?? []) as unknown as ProjectRow[];
@@ -90,7 +103,8 @@ const priorityLabel: Record<string, string> = {
   ) : (
     <div class="projects-grid">
       {projects.map((p: ProjectRow) => {
-        const leader = p.profiles?.[0]?.full_name ?? p.profiles?.[0]?.email ?? '—';
+        const leaderProfile = p.leader_id ? leadersById[p.leader_id] : null;
+        const leader = leaderProfile?.full_name ?? leaderProfile?.email ?? '—';
         const deadlineStr = p.deadline ? new Date(p.deadline).toLocaleDateString('fr-FR') : null;
         return (
           <a href={`/dashboard/benevole/project/${p.id}`} class="project-card">
@@ -219,7 +233,12 @@ const priorityLabel: Record<string, string> = {
     });
 
     if (res.ok) {
-      window.location.reload();
+      const created = await res.json().catch(() => ({}));
+      if (created?.id) {
+        window.location.href = `/dashboard/benevole/project/${created.id}`;
+      } else {
+        window.location.reload();
+      }
     } else {
       const err = await res.json().catch(() => ({}));
       alert('Erreur : ' + (err.error ?? 'Impossible de créer le projet.'));

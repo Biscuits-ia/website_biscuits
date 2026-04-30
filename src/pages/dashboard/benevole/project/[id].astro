@@ -23,8 +23,7 @@ const [
   supabase
     .from('projects')
     .select(`
-      id, title, description, status, priority, deadline, created_at, leader_id,
-      profiles!projects_leader_id_fkey(full_name, email)
+      id, title, description, status, priority, deadline, created_at, leader_id
     `)
     .eq('id', projectId)
     .single(),
@@ -51,7 +50,6 @@ interface Project {
   id: string; title: string; description: string | null;
   status: string; priority: string; deadline: string | null;
   created_at: string; leader_id: string | null;
-  profiles: ProfileRef[] | null;
 }
 interface Task {
   id: string; title: string; description: string | null;
@@ -64,6 +62,16 @@ interface Member { user_id: string; profiles: ProfileRef[] | null; }
 const project = projectRaw as unknown as Project;
 const tasks   = (tasksRaw ?? []) as unknown as Task[];
 const members = (membersRaw ?? []) as unknown as Member[];
+
+let leaderProfile: { full_name: string | null; email: string } | null = null;
+if (project.leader_id) {
+  const { data } = await supabase
+    .from('profiles')
+    .select('full_name, email')
+    .eq('id', project.leader_id)
+    .maybeSingle();
+  leaderProfile = data;
+}
 
 // Kolonnes kanban
 const columns = [
@@ -91,7 +99,7 @@ const statusClass:   Record<string, string> = {
 const isLeader = project.leader_id === userId;
 const canEdit  = isLeader || isStaff;
 
-const leaderName = project.profiles?.[0]?.full_name ?? project.profiles?.[0]?.email ?? '—';
+const leaderName = leaderProfile?.full_name ?? leaderProfile?.email ?? '—';
 const deadlineStr = project.deadline ? new Date(project.deadline).toLocaleDateString('fr-FR') : null;
 
 // Membres pour assignation

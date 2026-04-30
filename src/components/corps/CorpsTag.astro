@@ -7,4 +7,4 @@ const { corps } = Astro.props;
 const cfg = CORPS_CONFIG[corps];
 ---
 
-<span class={`inline-flex items-center rounded border px-2 py-0.5 text-xs font-semibold ${cfg.bgColor} ${cfg.textColor} ${cfg.color}`}>{cfg.label}</span>
+<span class={`badge corps-badge ${cfg.textColor}`} data-corps={corps}>{cfg.label}</span>

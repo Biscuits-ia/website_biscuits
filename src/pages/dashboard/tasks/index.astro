@@ -6,6 +6,7 @@ import Button from '@/components/ui/Button.astro';
 import { requireAuth } from '@/lib/auth';
 import { createSupabaseAdminClient } from '@/lib/supabase';
 import type { TaskWithRelations } from '@/lib/types';
+import '@/styles/task-hub.css';
 
 const auth = await requireAuth(Astro as any);
 if (auth instanceof Response) return auth;
@@ -23,23 +24,32 @@ const userName = auth.user.user_metadata?.full_name ?? auth.user.email?.split('@
 ---
 
 <DashboardLayout title="Tâches" activePage="tasks" authResult={auth} userName={userName}>
-  <section class="space-y-4">
-    <div class="flex flex-wrap items-center justify-between gap-2">
-      <h1 class="text-xl font-bold text-slate-900">Gestion des tâches</h1>
-      <a href="/dashboard/tasks/new"><Button variant="primary">Nouvelle tâche</Button></a>
+  <section class="taskhub-shell">
+    <div class="taskhub-header">
+      <div>
+        <h1 class="taskhub-title">Gestion des tâches</h1>
+        <p class="taskhub-subtitle">Pilotage multi-corps aligné avec votre dashboard Biscuits.</p>
+      </div>
+      <div class="taskhub-density-controls">
+        <span class="taskhub-density-label">Densité</span>
+        <button id="density-comfort" type="button" class="btn btn-ghost taskhub-density-btn">Confort</button>
+        <button id="density-compact" type="button" class="btn btn-ghost taskhub-density-btn">Compact</button>
+        <a href="/dashboard/tasks/new"><Button variant="primary">Nouvelle tâche</Button></a>
+      </div>
     </div>
 
     <TaskFilters />
 
-    <div id="tasks-grid" class="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-      {tasks.map((task) => <TaskCard task={task} />)}
-      {tasks.length === 0 && <p class="rounded border border-dashed border-slate-300 p-4 text-sm text-slate-600">Aucune tâche disponible.</p>}
+    <div id="tasks-grid" class="taskhub-grid" data-density="comfort">
+      {tasks.map((task, idx) => <TaskCard task={task} class="taskhub-card-animate" style={`--stagger:${idx};`} />)}
+      {tasks.length === 0 && <p class="taskhub-empty">Aucune tâche disponible.</p>}
     </div>
   </section>
 </DashboardLayout>
 
 <script is:inline>
   const cards = Array.from(document.querySelectorAll('[data-task-id]'));
+  const tasksGrid = document.getElementById('tasks-grid');
 
   function text(el) { return (el?.textContent || '').toLowerCase(); }
   function value(id) {
@@ -76,4 +86,18 @@ const userName = auth.user.user_metadata?.full_name ?? auth.user.email?.split('@
     });
     applyFilters();
   });
+
+  function setDensity(nextDensity) {
+    if (!tasksGrid) return;
+    tasksGrid.setAttribute('data-density', nextDensity);
+    localStorage.setItem('taskhub-density', nextDensity);
+  }
+
+  const savedDensity = localStorage.getItem('taskhub-density');
+  if (savedDensity === 'compact' || savedDensity === 'comfort') {
+    setDensity(savedDensity);
+  }
+
+  document.getElementById('density-comfort')?.addEventListener('click', () => setDensity('comfort'));
+  document.getElementById('density-compact')?.addEventListener('click', () => setDensity('compact'));
 </script>

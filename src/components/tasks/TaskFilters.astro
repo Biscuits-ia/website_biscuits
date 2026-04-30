@@ -2,20 +2,26 @@
 // src/components/tasks/TaskFilters.astro — barre de filtres tâches
 ---
 
-<div class="grid gap-2 md:grid-cols-5" id="task-filters">
-  <input id="f-search" type="search" class="rounded border border-slate-300 px-3 py-2 text-sm" placeholder="Rechercher titre/référence" />
-  <select id="f-corps" class="rounded border border-slate-300 px-3 py-2 text-sm">
+<div class="taskhub-panel">
+<div class="taskhub-filters" id="task-filters">
+  <input id="f-search" type="search" class="taskhub-input" placeholder="Rechercher titre/référence" />
+  <select id="f-corps" class="taskhub-input">
     <option value="">Tous corps</option>
     <option value="DEV">DEV</option><option value="DB">DB</option><option value="DESIGN">DESIGN</option>
     <option value="QA">QA</option><option value="DATA">DATA</option><option value="PM">PM</option>
   </select>
-  <select id="f-priority" class="rounded border border-slate-300 px-3 py-2 text-sm">
+  <select id="f-priority" class="taskhub-input">
     <option value="">Toutes priorités</option><option value="P0">P0</option><option value="P1">P1</option><option value="P2">P2</option><option value="P3">P3</option>
   </select>
-  <select id="f-status" class="rounded border border-slate-300 px-3 py-2 text-sm">
+  <select id="f-status" class="taskhub-input">
     <option value="">Tous statuts</option>
     <option value="backlog">Backlog</option><option value="todo">Todo</option><option value="in_progress">In Progress</option>
     <option value="in_review">In Review</option><option value="testing">Testing</option><option value="blocked">Blocked</option><option value="done">Done</option>
   </select>
-  <button type="button" id="f-reset" class="rounded border border-slate-300 px-3 py-2 text-sm">Réinitialiser</button>
+  <button type="button" id="f-reset" class="btn btn-ghost taskhub-btn-md">Réinitialiser</button>
 </div>
+</div>
+
+<style>
+  .taskhub-btn-md { min-height: 44px; padding: 10px 16px; font-size: var(--text-sm); }
+</style>

@@ -7,4 +7,4 @@ const { priority } = Astro.props;
 const cfg = PRIORITY_CONFIG[priority];
 ---
 
-<span class={`inline-flex rounded px-2 py-0.5 text-xs font-semibold ${cfg.bgColor} ${cfg.color}`}>{cfg.label}</span>
+<span class={`badge taskhub-badge-priority ${cfg.bgColor} ${cfg.color}`}>{cfg.label}</span>

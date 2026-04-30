@@ -4,6 +4,7 @@ import TaskForm from '@/components/tasks/TaskForm.astro';
 import Toast from '@/components/ui/Toast.astro';
 import { requireAuth } from '@/lib/auth';
 import { createSupabaseAdminClient } from '@/lib/supabase';
+import '@/styles/task-hub.css';
 
 const auth = await requireAuth(Astro as any);
 if (auth instanceof Response) return auth;
@@ -20,8 +21,11 @@ const userName = auth.user.user_metadata?.full_name ?? auth.user.email?.split('@
 ---
 
 <DashboardLayout title="Nouvelle tâche" activePage="tasks" authResult={auth} userName={userName}>
-  <section class="space-y-4">
-    <h1 class="text-xl font-bold text-slate-900">Créer une tâche</h1>
+  <section class="taskhub-shell">
+    <div>
+      <h1 class="taskhub-title">Créer une tâche</h1>
+      <p class="taskhub-subtitle">Formulaire métier harmonisé avec le style du dashboard.</p>
+    </div>
     <TaskForm members={memberOptions} sprints={sprintOptions} />
   </section>
   <Toast />

@@ -1,0 +1,328 @@
+.taskhub-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.taskhub-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.taskhub-title {
+  font-size: var(--text-xl);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+}
+
+.taskhub-subtitle {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+
+.taskhub-panel {
+  background: var(--surface);
+  border: var(--brutal-border);
+  box-shadow: var(--shadow-md);
+  padding: 1rem;
+}
+
+.taskhub-filters {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.6rem;
+}
+
+.taskhub-input {
+  width: 100%;
+  border: var(--brutal-border-thin);
+  background: var(--bg);
+  color: var(--text-primary);
+  font-size: var(--text-sm);
+  padding: 0.58rem 0.7rem;
+  min-height: 44px;
+}
+
+.taskhub-input:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.taskhub-grid {
+  display: grid;
+  gap: 0.85rem;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+}
+
+.taskhub-card {
+  background: var(--surface);
+  border: var(--brutal-border-thin);
+  box-shadow: var(--shadow-sm);
+  padding: 0.8rem;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.taskhub-card-animate {
+  opacity: 0;
+  transform: translateY(8px);
+  animation: taskhubCardIn 0.35s ease forwards;
+  animation-delay: calc(var(--stagger, 0) * 35ms);
+}
+
+.taskhub-card:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: var(--shadow-md);
+}
+
+.taskhub-card-title {
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.taskhub-card-desc {
+  margin-top: 0.35rem;
+  color: var(--text-secondary);
+  font-size: var(--text-xs);
+  line-height: 1.5;
+}
+
+.taskhub-chip-row {
+  margin-top: 0.65rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.taskhub-ref {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  font-weight: 700;
+}
+
+.taskhub-board {
+  display: flex;
+  gap: 0.85rem;
+  overflow-x: auto;
+  padding-bottom: 0.3rem;
+}
+
+.taskhub-column {
+  min-width: 320px;
+  border: var(--brutal-border-thin);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+  padding: 0.55rem;
+}
+
+.taskhub-column-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.45rem;
+  margin-bottom: 0.45rem;
+}
+
+.taskhub-column-title {
+  font-family: var(--font-mono);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  font-weight: 700;
+}
+
+.taskhub-column-count {
+  border: var(--brutal-border-thin);
+  background: var(--bg);
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  padding: 2px 7px;
+}
+
+.taskhub-dropzone {
+  min-height: 120px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  transition: background var(--transition-fast), box-shadow var(--transition-fast), transform var(--transition-fast);
+}
+
+.taskhub-dropzone--active {
+  background: var(--accent-light);
+  box-shadow: inset 0 0 0 3px var(--accent-dark);
+  transform: translateY(-1px);
+}
+
+.taskhub-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.8rem;
+}
+
+.taskhub-kpi-card {
+  background: var(--surface);
+  border: var(--brutal-border);
+  box-shadow: var(--shadow-md);
+  padding: 1rem;
+}
+
+.taskhub-kpi-label {
+  font-size: var(--text-xs);
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.taskhub-kpi-value {
+  margin-top: 0.35rem;
+  font-size: 2rem;
+  line-height: 1;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.taskhub-kpi-value-danger { color: var(--err); }
+.taskhub-kpi-value-accent { color: var(--accent-dark); }
+
+.taskhub-layout-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.9rem;
+}
+
+.taskhub-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  margin: 0;
+  padding: 0;
+}
+
+.taskhub-list-item {
+  border: var(--brutal-border-thin);
+  background: var(--bg);
+  padding: 0.55rem 0.7rem;
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+.taskhub-note {
+  border: var(--brutal-border-thin);
+  background: var(--bg);
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+  padding: 0.8rem;
+}
+
+.taskhub-form {
+  background: var(--surface);
+  border: var(--brutal-border);
+  box-shadow: var(--shadow-md);
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.taskhub-label {
+  font-size: var(--text-xs);
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.2rem;
+  display: block;
+}
+
+.taskhub-form-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.taskhub-form-grid-3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.taskhub-empty {
+  border: 3px dashed var(--border-mid);
+  background: var(--surface-raised);
+  color: var(--text-muted);
+  padding: 0.9rem;
+  font-size: var(--text-sm);
+}
+
+.taskhub-density-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.taskhub-density-label {
+  font-size: var(--text-xs);
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.taskhub-density-btn {
+  min-height: 34px;
+  padding: 6px 10px;
+}
+
+.taskhub-grid[data-density='compact'] .taskhub-card {
+  padding: 0.55rem;
+}
+
+.taskhub-grid[data-density='compact'] .taskhub-card-desc {
+  -webkit-line-clamp: 2;
+}
+
+.taskhub-grid[data-density='compact'] .taskhub-chip-row {
+  margin-top: 0.45rem;
+}
+
+@keyframes taskhubCardIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .taskhub-card-animate {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.taskhub-badge-status { border-color: var(--border-mid); }
+.taskhub-badge-priority { border-color: var(--border-mid); }
+
+.corps-badge[data-corps='DEV'] { color: #264f98; background: #dce9ff; border-color: #264f98; }
+.corps-badge[data-corps='DB'] { color: #4f2e8a; background: #ebdefd; border-color: #4f2e8a; }
+.corps-badge[data-corps='DESIGN'] { color: #9d4f0e; background: #ffe7d0; border-color: #9d4f0e; }
+.corps-badge[data-corps='QA'] { color: #256d37; background: #d9f8e3; border-color: #256d37; }
+.corps-badge[data-corps='DATA'] { color: #0d6d66; background: #cff8f2; border-color: #0d6d66; }
+.corps-badge[data-corps='PM'] { color: #8c2a2f; background: #fde0e2; border-color: #8c2a2f; }
+
+@media (max-width: 1024px) {
+  .taskhub-filters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .taskhub-kpi-grid { grid-template-columns: 1fr; }
+  .taskhub-layout-2 { grid-template-columns: 1fr; }
+  .taskhub-form-grid-2 { grid-template-columns: 1fr; }
+  .taskhub-form-grid-3 { grid-template-columns: 1fr; }
+}

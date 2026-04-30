@@ -2,6 +2,7 @@
 import DashboardLayout from '@/layouts/DashboardLayout.astro';
 import { requireAuth } from '@/lib/auth';
 import { createSupabaseAdminClient } from '@/lib/supabase';
+import '@/styles/task-hub.css';
 
 interface KpiRow {
   corps: string;
@@ -40,44 +41,47 @@ const userName = auth.user.user_metadata?.full_name ?? auth.user.email?.split('@
 ---
 
 <DashboardLayout title="KPIs" activePage="kpis" authResult={auth} userName={userName}>
-  <section class="space-y-4">
-    <h1 class="text-xl font-bold text-slate-900">Tableau KPI</h1>
+  <section class="taskhub-shell">
+    <div>
+      <h1 class="taskhub-title">Tableau KPI</h1>
+      <p class="taskhub-subtitle">Indicateurs sprint et charge opérationnelle en un coup d'oeil.</p>
+    </div>
 
-    <div class="grid gap-3 md:grid-cols-3">
-      <article class="rounded border border-slate-300 bg-white p-4">
-        <p class="text-xs uppercase text-slate-500">Tâches ouvertes critiques</p>
-        <p class="mt-1 text-3xl font-bold text-red-700">{criticalOpen}</p>
+    <div class="taskhub-kpi-grid">
+      <article class="taskhub-kpi-card">
+        <p class="taskhub-kpi-label">Tâches ouvertes critiques</p>
+        <p class="taskhub-kpi-value taskhub-kpi-value-danger">{criticalOpen}</p>
       </article>
-      <article class="rounded border border-slate-300 bg-white p-4">
-        <p class="text-xs uppercase text-slate-500">Total tâches</p>
-        <p class="mt-1 text-3xl font-bold text-slate-900">{taskRows.length}</p>
+      <article class="taskhub-kpi-card">
+        <p class="taskhub-kpi-label">Total tâches</p>
+        <p class="taskhub-kpi-value">{taskRows.length}</p>
       </article>
-      <article class="rounded border border-slate-300 bg-white p-4">
-        <p class="text-xs uppercase text-slate-500">Snapshots KPI</p>
-        <p class="mt-1 text-3xl font-bold text-indigo-700">{snapshotRows.length}</p>
+      <article class="taskhub-kpi-card">
+        <p class="taskhub-kpi-label">Snapshots KPI</p>
+        <p class="taskhub-kpi-value taskhub-kpi-value-accent">{snapshotRows.length}</p>
       </article>
     </div>
 
-    <div class="grid gap-4 lg:grid-cols-2">
-      <section class="rounded border border-slate-300 bg-white p-4">
-        <h2 class="mb-2 text-sm font-semibold">Répartition statuts</h2>
-        <ul class="space-y-1 text-sm">
+    <div class="taskhub-layout-2">
+      <section class="taskhub-panel">
+        <h2 class="card-title">Répartition statuts</h2>
+        <ul class="taskhub-list">
           {Object.entries(tasksByStatus).map(([status, count]) => (
-            <li class="flex justify-between"><span>{status}</span><strong>{count}</strong></li>
+            <li class="taskhub-list-item"><span>{status}</span> <strong style="float:right">{count}</strong></li>
           ))}
         </ul>
       </section>
 
-      <section class="rounded border border-slate-300 bg-white p-4">
-        <h2 class="mb-2 text-sm font-semibold">Dernières mesures</h2>
-        <ul class="space-y-2 text-sm">
+      <section class="taskhub-panel">
+        <h2 class="card-title">Dernières mesures</h2>
+        <ul class="taskhub-list">
           {snapshotRows.slice(0, 10).map((s) => (
-            <li class="rounded bg-slate-50 p-2">
+            <li class="taskhub-list-item">
               <strong>{s.corps}</strong> · {s.metric_name} : {s.metric_value}
               {s.target_value !== null && <span class="text-slate-500"> / cible {s.target_value}</span>}
             </li>
           ))}
-          {snapshotRows.length === 0 && <li class="text-slate-500">Aucune mesure disponible.</li>}
+          {snapshotRows.length === 0 && <li class="taskhub-note">Aucune mesure disponible.</li>}
         </ul>
       </section>
     </div>

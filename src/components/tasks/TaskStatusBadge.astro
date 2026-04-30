@@ -7,4 +7,4 @@ const { status } = Astro.props;
 const cfg = STATUS_CONFIG[status];
 ---
 
-<span role="status" class={`inline-flex rounded px-2 py-0.5 text-xs font-medium ${cfg.color} bg-slate-100`}>{cfg.label}</span>
+<span role="status" class={`badge taskhub-badge-status ${cfg.color}`}>{cfg.label}</span>

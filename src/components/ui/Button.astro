@@ -11,19 +11,25 @@ interface Props {
 const { id, variant = 'primary', size = 'md', type = 'button', class: className = '', disabled = false } = Astro.props;
 
 const variantClass = {
-  primary: 'bg-blue-600 text-white hover:bg-blue-700',
-  secondary: 'bg-slate-200 text-slate-900 hover:bg-slate-300',
-  danger: 'bg-red-600 text-white hover:bg-red-700',
-  ghost: 'bg-transparent text-slate-700 hover:bg-slate-100',
+  primary: 'btn-primary',
+  secondary: 'btn-ghost',
+  danger: 'btn-danger',
+  ghost: 'btn-ghost',
 }[variant];
 
 const sizeClass = {
-  sm: 'px-2 py-1 text-xs',
-  md: 'px-3 py-2 text-sm',
-  lg: 'px-4 py-3 text-base',
+  sm: 'taskhub-btn-sm',
+  md: 'taskhub-btn-md',
+  lg: 'taskhub-btn-lg',
 }[size];
 ---
 
-<button id={id} type={type} class={`rounded border border-slate-300 transition disabled:opacity-50 disabled:cursor-not-allowed ${variantClass} ${sizeClass} ${className}`} disabled={disabled}>
+<button id={id} type={type} class={`btn ${variantClass} ${sizeClass} ${className}`} disabled={disabled}>
   <slot />
 </button>
+
+<style>
+  .taskhub-btn-sm { min-height: 36px; padding: 7px 12px; font-size: var(--text-xs); }
+  .taskhub-btn-md { min-height: 44px; padding: 10px 16px; font-size: var(--text-sm); }
+  .taskhub-btn-lg { min-height: 50px; padding: 12px 20px; font-size: var(--text-base); }
+</style>

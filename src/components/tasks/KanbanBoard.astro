@@ -16,7 +16,7 @@ const statuses: Array<{ status: TaskStatus; label: string }> = [
 ];
 ---
 
-<div class="flex gap-3 overflow-x-auto pb-2" id="kanban-board">
+<div class="taskhub-board" id="kanban-board">
   {statuses.map((s) => <KanbanColumn status={s.status} label={s.label} tasks={tasks.filter((t) => t.status === s.status)} />)}
 </div>
 
@@ -27,12 +27,22 @@ const statuses: Array<{ status: TaskStatus; label: string }> = [
     card.addEventListener('dragstart', () => {
       draggedTaskId = card.getAttribute('data-task-id');
     });
+    card.addEventListener('dragend', () => {
+      document.querySelectorAll('[data-dropzone]').forEach((zone) => zone.classList.remove('taskhub-dropzone--active'));
+    });
   });
 
   document.querySelectorAll('[data-dropzone]').forEach((zone) => {
+    zone.addEventListener('dragenter', () => {
+      zone.classList.add('taskhub-dropzone--active');
+    });
+    zone.addEventListener('dragleave', () => {
+      zone.classList.remove('taskhub-dropzone--active');
+    });
     zone.addEventListener('dragover', (e) => e.preventDefault());
     zone.addEventListener('drop', async (e) => {
       e.preventDefault();
+      zone.classList.remove('taskhub-dropzone--active');
       const nextStatus = zone.getAttribute('data-dropzone');
       if (!draggedTaskId || !nextStatus) return;
 
@@ -43,7 +53,7 @@ const statuses: Array<{ status: TaskStatus; label: string }> = [
       });
 
       if (res.ok) window.location.reload();
-      else alert('Impossible de déplacer la tâche.');
+      else window.showToast?.('Impossible de déplacer la tâche.', 'error');
     });
   });
 </script>

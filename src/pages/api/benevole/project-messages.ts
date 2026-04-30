@@ -24,7 +24,7 @@ async function getAuthContext(request: Request, cookies: Parameters<typeof creat
   const { data: { user }, error } = await sessionSupabase.auth.getUser();
   if (error || !user) return null;
   const role = await fetchRoleSecure(user.id);
-  if (!role || (role !== 'benevole' && role !== 'admin')) return null;
+  if (!role || !['benevole', 'moderator', 'admin'].includes(role)) return null;
   return { supabase: createSupabaseAdminClient(), user, role };
 }
 
@@ -34,22 +34,10 @@ export const GET: APIRoute = async ({ request, cookies, url }) => {
   const ctx = await getAuthContext(request, cookies);
   if (!ctx) return jsonError('Non autorisé.', 401);
 
-  const { supabase, user, role } = ctx;
+  const { supabase, user } = ctx;
   const projectId = url.searchParams.get('project_id') ?? '';
   const since     = url.searchParams.get('since') ?? '';
   if (!projectId) return jsonError('project_id est requis.');
-
-  // Vérifier accès au projet
-  const isAdmin = role === 'admin';
-  if (!isAdmin) {
-    const { data: membership } = await supabase
-      .from('project_members')
-      .select('user_id')
-      .eq('project_id', projectId)
-      .eq('user_id', user.id)
-      .maybeSingle();
-    if (!membership) return jsonError('Accès refusé.', 403);
-  }
 
   let query = supabase
     .from('project_messages')
@@ -95,7 +83,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
   if (!ctx) return jsonError('Non autorisé.', 401);
 
   const { supabase, user, role } = ctx;
-  const isAdmin = role === 'admin';
+  const isAdmin = role === 'admin' || role === 'moderator';
 
   let body: Record<string, unknown>;
   try { body = await request.json(); }

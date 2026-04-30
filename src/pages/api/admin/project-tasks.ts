@@ -2,6 +2,18 @@ import type { APIRoute } from 'astro';
 import { requireAdmin } from '@/lib/auth';
 import { createSupabaseAdminClient } from '@/lib/supabase';
 
+const ALLOWED_TASK_TYPES = ['general', 'dev', 'db', 'design', 'qa', 'ops', 'doc'] as const;
+const ALLOWED_STATUS = ['todo', 'in_progress', 'review', 'done'] as const;
+const ALLOWED_PRIORITY = ['low', 'medium', 'high'] as const;
+
+function pickEnum<T extends readonly string[]>(value: unknown, allowed: T, fallback: T[number]): T[number] {
+  return typeof value === 'string' && allowed.includes(value as T[number]) ? (value as T[number]) : fallback;
+}
+
+function getString(body: Record<string, unknown>, key: string): string | null {
+  return typeof body[key] === 'string' ? body[key] : null;
+}
+
 function jsonError(message: string, status = 400) {
   return new Response(JSON.stringify({ error: message }), {
     status,
@@ -18,34 +30,42 @@ function jsonOk(data: unknown, status = 200) {
 
 function buildTaskUpdates(body: Record<string, unknown>): { updates: Record<string, unknown>; error?: string } {
   const updates: Record<string, unknown> = {};
+  const titleRaw = getString(body, 'title');
+  const descriptionRaw = getString(body, 'description');
+  const deadlineRaw = getString(body, 'deadline');
+  const assigneeRaw = getString(body, 'assignee_id');
 
-  if (typeof body.title === 'string') {
-    const title = body.title.trim();
+  if (titleRaw !== null) {
+    const title = titleRaw.trim();
     if (!title) return { updates, error: 'Le titre est requis.' };
     if (title.length > 200) return { updates, error: 'Le titre ne doit pas dépasser 200 caractères.' };
     updates.title = title;
   }
 
-  if (typeof body.description === 'string') {
-    const description = body.description.trim();
+  if (descriptionRaw !== null) {
+    const description = descriptionRaw.trim();
     if (description.length > 1000) return { updates, error: 'La description ne doit pas dépasser 1000 caractères.' };
     updates.description = description || null;
   }
 
-  if (typeof body.status === 'string' && ['todo', 'in_progress', 'review', 'done'].includes(body.status)) {
-    updates.status = body.status;
+  if (getString(body, 'status') !== null) {
+    updates.status = pickEnum(body.status, ALLOWED_STATUS, 'todo');
   }
 
-  if (typeof body.priority === 'string' && ['low', 'medium', 'high'].includes(body.priority)) {
-    updates.priority = body.priority;
+  if (getString(body, 'priority') !== null) {
+    updates.priority = pickEnum(body.priority, ALLOWED_PRIORITY, 'medium');
   }
 
-  if (typeof body.deadline === 'string') {
-    updates.deadline = body.deadline || null;
+  if (getString(body, 'task_type') !== null) {
+    updates.task_type = pickEnum(body.task_type, ALLOWED_TASK_TYPES, 'general');
   }
 
-  if (typeof body.assignee_id === 'string') {
-    updates.assignee_id = body.assignee_id || null;
+  if (deadlineRaw !== null) {
+    updates.deadline = deadlineRaw || null;
+  }
+
+  if (assigneeRaw !== null) {
+    updates.assignee_id = assigneeRaw || null;
   }
 
   if (typeof body.position === 'number') {
@@ -56,22 +76,19 @@ function buildTaskUpdates(body: Record<string, unknown>): { updates: Record<stri
 }
 
 function buildTaskInsert(body: Record<string, unknown>, userId: string): { payload?: Record<string, unknown>; error?: string } {
-  const projectId = typeof body.project_id === 'string' ? body.project_id : '';
-  const title = typeof body.title === 'string' ? body.title.trim() : '';
-  const description = typeof body.description === 'string' ? body.description.trim() : null;
-  const status = typeof body.status === 'string' && ['todo', 'in_progress', 'review', 'done'].includes(body.status)
-    ? body.status
-    : 'todo';
-  const priority = typeof body.priority === 'string' && ['low', 'medium', 'high'].includes(body.priority)
-    ? body.priority
-    : 'medium';
-  const assigneeId = typeof body.assignee_id === 'string' ? (body.assignee_id || null) : null;
-  const deadline = typeof body.deadline === 'string' ? (body.deadline || null) : null;
+  const projectId = getString(body, 'project_id') ?? '';
+  const title = (getString(body, 'title') ?? '').trim();
+  const description = (getString(body, 'description') ?? '').trim();
+  const status = pickEnum(body.status, ALLOWED_STATUS, 'todo');
+  const priority = pickEnum(body.priority, ALLOWED_PRIORITY, 'medium');
+  const assigneeId = getString(body, 'assignee_id') || null;
+  const deadline = getString(body, 'deadline') || null;
+  const taskType = pickEnum(body.task_type, ALLOWED_TASK_TYPES, 'general');
 
   if (!projectId) return { error: 'project_id est requis.' };
   if (!title) return { error: 'Le titre est requis.' };
   if (title.length > 200) return { error: 'Le titre ne doit pas dépasser 200 caractères.' };
-  if (description && description.length > 1000) return { error: 'La description ne doit pas dépasser 1000 caractères.' };
+  if (description.length > 1000) return { error: 'La description ne doit pas dépasser 1000 caractères.' };
 
   return {
     payload: {
@@ -80,6 +97,7 @@ function buildTaskInsert(body: Record<string, unknown>, userId: string): { paylo
       description: description || null,
       status,
       priority,
+      task_type: taskType,
       assignee_id: assigneeId,
       deadline,
       created_by: userId,

@@ -30,7 +30,7 @@ const [
     .single(),
   adminSupabase
     .from('project_tasks')
-    .select('id, title, description, status, priority, assignee_id, deadline, position, created_at')
+    .select('id, title, description, task_type, status, priority, assignee_id, deadline, position, created_at')
     .eq('project_id', projectId)
     .order('status')
     .order('position'),
@@ -73,6 +73,7 @@ interface Task {
   id: string;
   title: string;
   description: string | null;
+  task_type: string;
   status: string;
   priority: string;
   assignee_id: string | null;
@@ -140,6 +141,15 @@ const memberOptions = members.map((m) => ({
 
 const statusLabel: Record<string, string> = { active: 'Actif', on_hold: 'En pause', completed: 'Terminé', archived: 'Archivé' };
 const priorityLabel: Record<string, string> = { low: 'Faible', medium: 'Moyenne', high: 'Haute' };
+const taskTypeLabel: Record<string, string> = {
+  general: 'Général',
+  dev: 'Dev',
+  db: 'DB',
+  design: 'Design',
+  qa: 'QA/Test',
+  ops: 'Ops',
+  doc: 'Documentation',
+};
 
 const leaderName = project.leader_id
   ? (profileMap[project.leader_id]?.full_name ?? profileMap[project.leader_id]?.email ?? '—')
@@ -213,6 +223,16 @@ const toolsText = project.tools.join(', ');
     <form id="form-add-task" class="task-form mb-5">
       <input type="hidden" name="project_id" value={projectId} />
       <input type="text" name="title" class="input" placeholder="Titre de la tâche" required maxlength="200" />
+      <textarea name="description" class="input task-form-description" placeholder="Description de la tâche" rows="2" maxlength="1000"></textarea>
+      <select name="task_type" class="input">
+        <option value="general" selected>Type: Général</option>
+        <option value="dev">Type: Dev</option>
+        <option value="db">Type: DB</option>
+        <option value="design">Type: Design</option>
+        <option value="qa">Type: QA/Test</option>
+        <option value="ops">Type: Ops</option>
+        <option value="doc">Type: Documentation</option>
+      </select>
       <select name="status" class="input">
         <option value="todo">À faire</option>
         <option value="in_progress">En cours</option>
@@ -236,6 +256,8 @@ const toolsText = project.tools.join(', ');
         <thead>
           <tr>
             <th>Titre</th>
+            <th>Description</th>
+            <th>Type</th>
             <th>Statut</th>
             <th>Priorité</th>
             <th>Assigné</th>
@@ -248,6 +270,18 @@ const toolsText = project.tools.join(', ');
             return (
               <tr>
                 <td>{t.title}</td>
+                <td class="task-desc-cell">{t.description || '—'}</td>
+                <td>
+                  <select class="input input-xs js-task-type" data-id={t.id}>
+                    <option value="general" selected={t.task_type === 'general'}>{taskTypeLabel.general}</option>
+                    <option value="dev" selected={t.task_type === 'dev'}>{taskTypeLabel.dev}</option>
+                    <option value="db" selected={t.task_type === 'db'}>{taskTypeLabel.db}</option>
+                    <option value="design" selected={t.task_type === 'design'}>{taskTypeLabel.design}</option>
+                    <option value="qa" selected={t.task_type === 'qa'}>{taskTypeLabel.qa}</option>
+                    <option value="ops" selected={t.task_type === 'ops'}>{taskTypeLabel.ops}</option>
+                    <option value="doc" selected={t.task_type === 'doc'}>{taskTypeLabel.doc}</option>
+                  </select>
+                </td>
                 <td>
                   <select class="input input-xs js-task-status" data-id={t.id}>
                     <option value="todo" selected={t.status === 'todo'}>À faire</option>
@@ -277,7 +311,7 @@ const toolsText = project.tools.join(', ');
             );
           }) : (
             <tr>
-              <td colspan="6" class="empty-row">Aucune tâche.</td>
+              <td colspan="8" class="empty-row">Aucune tâche.</td>
             </tr>
           )}
         </tbody>
@@ -326,7 +360,9 @@ const toolsText = project.tools.join(', ');
   .members-list { display: flex; flex-direction: column; gap: 6px; }
   .member-item { display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--border-mid); padding: 6px 8px; font-size: var(--text-xs); }
 
-  .task-form { display: grid; grid-template-columns: 2fr 1fr 1fr 1.3fr auto; gap: 8px; align-items: center; }
+  .task-form { display: grid; grid-template-columns: 1.8fr 1fr 1fr 1fr 1.3fr auto; gap: 8px; align-items: center; }
+  .task-form-description { grid-column: 1 / -1; resize: vertical; min-height: 70px; }
+  .task-desc-cell { max-width: 360px; white-space: normal; font-size: var(--text-xs); color: var(--text-secondary); }
 
   .input { border: var(--brutal-border-thin); background: var(--surface); padding: 6px 8px; font-size: var(--text-xs); }
   .input-xs { padding: 4px 6px; font-size: 0.72rem; }
@@ -470,6 +506,20 @@ const toolsText = project.tools.join(', ');
         await apiPatchTask(id, { priority: el.value });
       } catch {
         alert('Erreur mise à jour priorité');
+        window.location.reload();
+      }
+    });
+  });
+
+  document.querySelectorAll('.js-task-type').forEach((el) => {
+    el.addEventListener('change', async () => {
+      if (!(el instanceof HTMLSelectElement)) return;
+      const id = el.getAttribute('data-id');
+      if (!id) return;
+      try {
+        await apiPatchTask(id, { task_type: el.value });
+      } catch {
+        alert('Erreur mise à jour type de tâche');
         window.location.reload();
       }
     });

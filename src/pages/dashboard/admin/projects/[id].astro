@@ -1,0 +1,445 @@
+---
+import DashboardLayout from '@/layouts/DashboardLayout.astro';
+import { requireAdmin } from '@/lib/auth';
+
+const result = await requireAdmin(Astro);
+if (result instanceof Response) return result;
+
+const { user, supabase } = result;
+const userName = user.user_metadata?.full_name ?? user.email?.split('@')[0] ?? 'Admin';
+
+const projectId = Astro.params.id ?? '';
+if (!projectId) return Astro.redirect('/dashboard/admin/projects');
+
+const [
+  { data: projectRaw, error: projectError },
+  { data: tasksRaw },
+  { data: membersRaw },
+  { data: volunteersRaw },
+] = await Promise.all([
+  supabase
+    .from('projects')
+    .select(`
+      id, title, description, status, priority, deadline, created_at, updated_at,
+      leader_id, objective, expected_deliverables, tech_stack, tools,
+      repository_url, document_url, communication_channel, estimated_hours, start_date,
+      profiles!projects_leader_id_fkey(full_name, email)
+    `)
+    .eq('id', projectId)
+    .single(),
+  supabase
+    .from('project_tasks')
+    .select('id, title, description, status, priority, assignee_id, deadline, position, created_at, profiles!project_tasks_assignee_id_fkey(full_name, email)')
+    .eq('project_id', projectId)
+    .order('status')
+    .order('position'),
+  supabase
+    .from('project_members')
+    .select('user_id, joined_at, profiles(full_name, email)')
+    .eq('project_id', projectId)
+    .order('joined_at', { ascending: true }),
+  supabase
+    .from('profiles')
+    .select('id, full_name, email, role')
+    .eq('role', 'benevole')
+    .order('full_name', { ascending: true }),
+]);
+
+if (projectError || !projectRaw) return Astro.redirect('/dashboard/admin/projects');
+
+interface ProfileRef {
+  full_name: string | null;
+  email: string;
+}
+
+interface Project {
+  id: string;
+  title: string;
+  description: string | null;
+  status: string;
+  priority: string;
+  deadline: string | null;
+  created_at: string;
+  updated_at: string;
+  leader_id: string | null;
+  objective: string | null;
+  expected_deliverables: string | null;
+  tech_stack: string[];
+  tools: string[];
+  repository_url: string | null;
+  document_url: string | null;
+  communication_channel: string | null;
+  estimated_hours: number | null;
+  start_date: string | null;
+  profiles: ProfileRef[] | null;
+}
+
+interface Task {
+  id: string;
+  title: string;
+  description: string | null;
+  status: string;
+  priority: string;
+  assignee_id: string | null;
+  deadline: string | null;
+  position: number;
+  created_at: string;
+  profiles: ProfileRef[] | null;
+}
+
+interface Member {
+  user_id: string;
+  joined_at: string;
+  profiles: ProfileRef[] | null;
+}
+
+interface Volunteer {
+  id: string;
+  full_name: string | null;
+  email: string;
+  role: string;
+}
+
+const project = projectRaw as unknown as Project;
+const tasks = (tasksRaw ?? []) as unknown as Task[];
+const members = (membersRaw ?? []) as unknown as Member[];
+const volunteers = (volunteersRaw ?? []) as unknown as Volunteer[];
+
+const statusLabel: Record<string, string> = { active: 'Actif', on_hold: 'En pause', completed: 'Terminé', archived: 'Archivé' };
+const priorityLabel: Record<string, string> = { low: 'Faible', medium: 'Moyenne', high: 'Haute' };
+
+const memberIds = new Set(members.map((m) => m.user_id));
+const assignableVolunteers = volunteers.filter((v) => !memberIds.has(v.id));
+
+const memberOptions = members.map((m) => ({
+  id: m.user_id,
+  name: m.profiles?.[0]?.full_name ?? m.profiles?.[0]?.email ?? m.user_id,
+}));
+
+const leaderName = project.profiles?.[0]?.full_name ?? project.profiles?.[0]?.email ?? '—';
+const stackText = project.tech_stack.join(', ');
+const toolsText = project.tools.join(', ');
+---
+
+<DashboardLayout title={`Projet admin: ${project.title}`} activePage="projects" userName={userName} authResult={result}>
+  <div class="top mb-6">
+    <a href="/dashboard/admin/projects" class="back-link">← Retour aux projets</a>
+    <h1 class="page-title">{project.title}</h1>
+    <p class="description">Pilotage admin: tâches, affectations, et brief projet</p>
+  </div>
+
+  <div class="grid">
+    <section class="card">
+      <h2 class="card-title">Brief projet</h2>
+      <div class="brief-meta">
+        <span class="meta-chip">Statut: {statusLabel[project.status] ?? project.status}</span>
+        <span class="meta-chip">Priorité: {priorityLabel[project.priority] ?? project.priority}</span>
+        <span class="meta-chip">Responsable: {leaderName}</span>
+      </div>
+      {project.description && <p class="brief-text">{project.description}</p>}
+      {project.objective && <p class="brief-text"><strong>Objectif:</strong> {project.objective}</p>}
+      {project.expected_deliverables && <p class="brief-text"><strong>Livrables:</strong> {project.expected_deliverables}</p>}
+      <div class="brief-list">
+        <div><strong>Stack:</strong> {stackText || '—'}</div>
+        <div><strong>Outils:</strong> {toolsText || '—'}</div>
+        <div><strong>Canal:</strong> {project.communication_channel ?? '—'}</div>
+        <div><strong>Charge:</strong> {project.estimated_hours != null ? `${project.estimated_hours}h` : '—'}</div>
+        <div><strong>Démarrage:</strong> {project.start_date ? new Date(project.start_date).toLocaleDateString('fr-FR') : '—'}</div>
+        <div><strong>Échéance:</strong> {project.deadline ? new Date(project.deadline).toLocaleDateString('fr-FR') : '—'}</div>
+      </div>
+      <div class="links-row">
+        {project.repository_url && <a href={project.repository_url} target="_blank" rel="noopener noreferrer" class="btn btn-ghost btn-xs">Repo</a>}
+        {project.document_url && <a href={project.document_url} target="_blank" rel="noopener noreferrer" class="btn btn-ghost btn-xs">Documentation</a>}
+      </div>
+    </section>
+
+    <section class="card">
+      <h2 class="card-title">Affectation des bénévoles</h2>
+      <form id="form-add-member" class="row-form">
+        <input type="hidden" name="project_id" value={projectId} />
+        <select name="user_id" class="input" required>
+          <option value="">Ajouter un bénévole...</option>
+          {assignableVolunteers.map((v) => (
+            <option value={v.id}>{v.full_name ?? v.email} ({v.email})</option>
+          ))}
+        </select>
+        <button type="submit" class="btn btn-primary btn-sm">Affecter</button>
+      </form>
+
+      <div class="members-list">
+        {members.length > 0 ? members.map((m) => {
+          const name = m.profiles?.[0]?.full_name ?? m.profiles?.[0]?.email ?? m.user_id;
+          return (
+            <div class="member-item">
+              <span>{name}</span>
+              <button class="btn btn-ghost btn-xs js-remove-member" data-user-id={m.user_id}>Retirer</button>
+            </div>
+          );
+        }) : <p class="muted">Aucun membre affecté.</p>}
+      </div>
+    </section>
+  </div>
+
+  <section class="card mt-6">
+    <h2 class="card-title">Gestion des tâches</h2>
+
+    <form id="form-add-task" class="task-form mb-5">
+      <input type="hidden" name="project_id" value={projectId} />
+      <input type="text" name="title" class="input" placeholder="Titre de la tâche" required maxlength="200" />
+      <select name="status" class="input">
+        <option value="todo">À faire</option>
+        <option value="in_progress">En cours</option>
+        <option value="review">Révision</option>
+        <option value="done">Terminé</option>
+      </select>
+      <select name="priority" class="input">
+        <option value="medium">Priorité moyenne</option>
+        <option value="high">Priorité haute</option>
+        <option value="low">Priorité faible</option>
+      </select>
+      <select name="assignee_id" class="input">
+        <option value="">Non assigné</option>
+        {memberOptions.map((m) => <option value={m.id}>{m.name}</option>)}
+      </select>
+      <button type="submit" class="btn btn-primary btn-sm">Créer tâche</button>
+    </form>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Titre</th>
+            <th>Statut</th>
+            <th>Priorité</th>
+            <th>Assigné</th>
+            <th>Échéance</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {tasks.length > 0 ? tasks.map((t) => {
+            const assignee = t.profiles?.[0]?.full_name ?? t.profiles?.[0]?.email ?? '—';
+            return (
+              <tr>
+                <td>{t.title}</td>
+                <td>
+                  <select class="input input-xs js-task-status" data-id={t.id}>
+                    <option value="todo" selected={t.status === 'todo'}>À faire</option>
+                    <option value="in_progress" selected={t.status === 'in_progress'}>En cours</option>
+                    <option value="review" selected={t.status === 'review'}>Révision</option>
+                    <option value="done" selected={t.status === 'done'}>Terminé</option>
+                  </select>
+                </td>
+                <td>
+                  <select class="input input-xs js-task-priority" data-id={t.id}>
+                    <option value="low" selected={t.priority === 'low'}>Faible</option>
+                    <option value="medium" selected={t.priority === 'medium'}>Moyenne</option>
+                    <option value="high" selected={t.priority === 'high'}>Haute</option>
+                  </select>
+                </td>
+                <td>
+                  <select class="input input-xs js-task-assignee" data-id={t.id}>
+                    <option value="">Non assigné</option>
+                    {memberOptions.map((m) => <option value={m.id} selected={t.assignee_id === m.id}>{m.name}</option>)}
+                  </select>
+                </td>
+                <td class="muted">{t.deadline ? new Date(t.deadline).toLocaleDateString('fr-FR') : '—'}</td>
+                <td>
+                  <button class="btn btn-ghost btn-xs js-delete-task" data-id={t.id}>Suppr.</button>
+                </td>
+              </tr>
+            );
+          }) : (
+            <tr>
+              <td colspan="6" class="empty-row">Aucune tâche.</td>
+            </tr>
+          )}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</DashboardLayout>
+
+<style>
+  .top { display: flex; flex-direction: column; gap: 8px; }
+  .back-link { color: var(--accent); text-decoration: none; font-size: var(--text-xs); }
+  .back-link:hover { text-decoration: underline; }
+  .page-title { font-size: var(--text-xl); font-weight: 700; }
+
+  .grid { display: grid; grid-template-columns: 1.3fr 1fr; gap: var(--space-lg); }
+  .card { border: var(--brutal-border-thin); background: var(--surface-raised); padding: var(--space-md); }
+  .card-title { margin: 0 0 var(--space-sm); font-size: var(--text-base); font-weight: 700; }
+
+  .brief-meta { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+  .meta-chip { border: 1px solid var(--border-mid); padding: 2px 8px; font-size: 0.7rem; background: var(--surface); }
+  .brief-text { margin: 0 0 8px; color: var(--text-secondary); font-size: var(--text-sm); }
+  .brief-list { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; font-size: var(--text-xs); }
+  .links-row { display: flex; gap: 8px; margin-top: 10px; }
+
+  .row-form { display: flex; gap: 8px; align-items: center; margin-bottom: 10px; }
+  .members-list { display: flex; flex-direction: column; gap: 6px; }
+  .member-item { display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--border-mid); padding: 6px 8px; font-size: var(--text-xs); }
+
+  .task-form { display: grid; grid-template-columns: 2fr 1fr 1fr 1.3fr auto; gap: 8px; align-items: center; }
+
+  .input { border: var(--brutal-border-thin); background: var(--surface); padding: 6px 8px; font-size: var(--text-xs); }
+  .input-xs { padding: 4px 6px; font-size: 0.72rem; }
+
+  .muted { color: var(--text-muted); font-size: var(--text-xs); }
+  .empty-row { text-align: center; color: var(--text-muted); padding: 20px; }
+
+  .mb-5 { margin-bottom: var(--space-lg); }
+  .mb-6 { margin-bottom: var(--space-xl); }
+  .mt-6 { margin-top: var(--space-xl); }
+
+  @media (max-width: 900px) {
+    .grid { grid-template-columns: 1fr; }
+    .task-form { grid-template-columns: 1fr; }
+    .row-form { flex-direction: column; align-items: stretch; }
+    .brief-list { grid-template-columns: 1fr; }
+  }
+</style>
+
+<script>
+  const projectId = new URL(window.location.href).pathname.split('/').pop();
+
+  const addMemberForm = document.getElementById('form-add-member');
+  const addTaskForm = document.getElementById('form-add-task');
+
+  const apiPatchTask = async (id: string, payload: Record<string, unknown>): Promise<void> => {
+    const res = await fetch(`/api/admin/project-tasks?id=${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) throw new Error('update failed');
+  };
+
+  addMemberForm?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!(addMemberForm instanceof HTMLFormElement)) return;
+
+    const fd = new FormData(addMemberForm);
+    const userId = String(fd.get('user_id') ?? '');
+    if (!userId) return;
+
+    const res = await fetch('/api/admin/project-members', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ project_id: projectId, user_id: userId }),
+    });
+
+    if (!res.ok) {
+      const out = await res.json().catch(() => ({ error: 'Erreur' }));
+      alert(out.error ?? 'Erreur lors de l\'affectation');
+      return;
+    }
+
+    window.location.reload();
+  });
+
+  document.querySelectorAll('.js-remove-member').forEach((el) => {
+    el.addEventListener('click', async () => {
+      const userId = el.getAttribute('data-user-id');
+      if (!userId || !projectId) return;
+      if (!confirm('Retirer ce bénévole du projet ?')) return;
+
+      const res = await fetch(`/api/admin/project-members?project_id=${projectId}&user_id=${userId}`, {
+        method: 'DELETE',
+      });
+
+      if (!res.ok) {
+        alert('Erreur lors du retrait.');
+        return;
+      }
+
+      window.location.reload();
+    });
+  });
+
+  addTaskForm?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!(addTaskForm instanceof HTMLFormElement)) return;
+
+    const fd = new FormData(addTaskForm);
+    const payload = {
+      project_id: projectId,
+      title: String(fd.get('title') ?? '').trim(),
+      status: String(fd.get('status') ?? 'todo'),
+      priority: String(fd.get('priority') ?? 'medium'),
+      assignee_id: String(fd.get('assignee_id') ?? '') || null,
+    };
+
+    const res = await fetch('/api/admin/project-tasks', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+
+    if (!res.ok) {
+      const out = await res.json().catch(() => ({ error: 'Erreur' }));
+      alert(out.error ?? 'Erreur lors de la création de tâche');
+      return;
+    }
+
+    window.location.reload();
+  });
+
+  document.querySelectorAll('.js-task-status').forEach((el) => {
+    el.addEventListener('change', async () => {
+      if (!(el instanceof HTMLSelectElement)) return;
+      const id = el.getAttribute('data-id');
+      if (!id) return;
+      try {
+        await apiPatchTask(id, { status: el.value });
+      } catch {
+        alert('Erreur mise à jour statut');
+        window.location.reload();
+      }
+    });
+  });
+
+  document.querySelectorAll('.js-task-priority').forEach((el) => {
+    el.addEventListener('change', async () => {
+      if (!(el instanceof HTMLSelectElement)) return;
+      const id = el.getAttribute('data-id');
+      if (!id) return;
+      try {
+        await apiPatchTask(id, { priority: el.value });
+      } catch {
+        alert('Erreur mise à jour priorité');
+        window.location.reload();
+      }
+    });
+  });
+
+  document.querySelectorAll('.js-task-assignee').forEach((el) => {
+    el.addEventListener('change', async () => {
+      if (!(el instanceof HTMLSelectElement)) return;
+      const id = el.getAttribute('data-id');
+      if (!id) return;
+      try {
+        await apiPatchTask(id, { assignee_id: el.value || null });
+      } catch {
+        alert('Erreur mise à jour affectation');
+        window.location.reload();
+      }
+    });
+  });
+
+  document.querySelectorAll('.js-delete-task').forEach((el) => {
+    el.addEventListener('click', async () => {
+      const id = el.getAttribute('data-id');
+      if (!id) return;
+      if (!confirm('Supprimer cette tâche ?')) return;
+
+      const res = await fetch(`/api/admin/project-tasks?id=${id}`, { method: 'DELETE' });
+      if (!res.ok) {
+        alert('Erreur lors de la suppression.');
+        return;
+      }
+
+      window.location.reload();
+    });
+  });
+</script>

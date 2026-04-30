@@ -13,7 +13,7 @@ const search = (Astro.url.searchParams.get('q') ?? '').trim();
 
 let query = supabase
   .from('projects')
-  .select('id, title, description, status, priority, deadline, created_at, leader_id, profiles!projects_leader_id_fkey(full_name, email)')
+  .select('id, title, description, status, priority, deadline, created_at, leader_id, objective, tech_stack, estimated_hours, profiles!projects_leader_id_fkey(full_name, email)')
   .order('created_at', { ascending: false });
 
 if (statusFilter) query = query.eq('status', statusFilter);
@@ -35,6 +35,9 @@ interface ProjectRow {
   deadline: string | null;
   created_at: string;
   leader_id: string | null;
+  objective: string | null;
+  tech_stack: string[];
+  estimated_hours: number | null;
   profiles: LeaderRow[] | null;
 }
 
@@ -111,8 +114,11 @@ const priorityClass: Record<string, string> = {
               <tr>
                 <td>
                   <div class="project-cell">
-                    <a href={`/dashboard/benevole/project/${p.id}`} class="project-title-link">{p.title}</a>
+                    <a href={`/dashboard/admin/projects/${p.id}`} class="project-title-link">{p.title}</a>
                     {p.description && <span class="project-desc">{p.description}</span>}
+                    {p.tech_stack.length > 0 && (
+                      <span class="project-tags">{p.tech_stack.slice(0, 4).join(' · ')}</span>
+                    )}
                   </div>
                 </td>
                 <td class="mono xs">{leader}</td>
@@ -125,6 +131,7 @@ const priorityClass: Record<string, string> = {
                 <td class="mono xs muted">{p.deadline ? new Date(p.deadline).toLocaleDateString('fr-FR') : '—'}</td>
                 <td>
                   <div class="row-actions">
+                    <a class="btn btn-ghost btn-xs" href={`/dashboard/admin/projects/${p.id}`}>Gérer</a>
                     <select class="input input-xs js-status" data-id={p.id}>
                       <option value="active" selected={p.status === 'active'}>Actif</option>
                       <option value="on_hold" selected={p.status === 'on_hold'}>En pause</option>
@@ -158,6 +165,24 @@ const priorityClass: Record<string, string> = {
           <span>Description</span>
           <textarea name="description" class="input" maxlength="800" rows="4"></textarea>
         </label>
+        <label>
+          <span>Objectif du projet</span>
+          <textarea name="objective" class="input" maxlength="2000" rows="3" placeholder="Quel impact doit avoir ce projet ?"></textarea>
+        </label>
+        <label>
+          <span>Livrables attendus</span>
+          <textarea name="expected_deliverables" class="input" maxlength="2000" rows="3" placeholder="Ex: maquette, documentation, version bêta..."></textarea>
+        </label>
+        <div class="grid-2">
+          <label>
+            <span>Stack technique (séparée par des virgules)</span>
+            <input type="text" name="tech_stack" class="input" placeholder="Astro, Supabase, TypeScript" />
+          </label>
+          <label>
+            <span>Outils (séparés par des virgules)</span>
+            <input type="text" name="tools" class="input" placeholder="Figma, Notion, Discord" />
+          </label>
+        </div>
         <div class="grid-2">
           <label>
             <span>Priorité</span>
@@ -172,6 +197,30 @@ const priorityClass: Record<string, string> = {
             <input type="date" name="deadline" class="input" />
           </label>
         </div>
+        <div class="grid-2">
+          <label>
+            <span>Date de démarrage</span>
+            <input type="date" name="start_date" class="input" />
+          </label>
+          <label>
+            <span>Charge estimée (heures)</span>
+            <input type="number" name="estimated_hours" min="0" step="1" class="input" />
+          </label>
+        </div>
+        <div class="grid-2">
+          <label>
+            <span>Dépôt code (URL)</span>
+            <input type="url" name="repository_url" class="input" placeholder="https://github.com/..." />
+          </label>
+          <label>
+            <span>Documentation (URL)</span>
+            <input type="url" name="document_url" class="input" placeholder="https://..." />
+          </label>
+        </div>
+        <label>
+          <span>Canal de communication</span>
+          <input type="text" name="communication_channel" maxlength="200" class="input" placeholder="Discord #projet-xyz" />
+        </label>
       </div>
       <div class="modal-actions">
         <button type="button" class="btn btn-ghost" id="btn-close-create">Annuler</button>
@@ -194,6 +243,7 @@ const priorityClass: Record<string, string> = {
   .project-title-link { color: var(--accent); text-decoration: none; font-weight: 600; }
   .project-title-link:hover { text-decoration: underline; }
   .project-desc { font-size: var(--text-xs); color: var(--text-muted); }
+  .project-tags { font-size: 0.68rem; color: var(--accent-dark); }
   .row-actions { display: flex; align-items: center; gap: 6px; }
   .mono { font-family: var(--font-mono); }
   .xs { font-size: 0.75rem; }
@@ -218,6 +268,14 @@ const priorityClass: Record<string, string> = {
 </style>
 
 <script>
+  const parseTagInput = (value: FormDataEntryValue | null): string[] => {
+    return String(value ?? '')
+      .split(',')
+      .map((item) => item.trim())
+      .filter(Boolean)
+      .slice(0, 20);
+  };
+
   const createModal = document.getElementById('create-project-modal');
   const btnOpenCreate = document.getElementById('btn-open-create');
   const btnCloseCreate = document.getElementById('btn-close-create');
@@ -239,8 +297,17 @@ const priorityClass: Record<string, string> = {
     const payload = {
       title: String(fd.get('title') ?? '').trim(),
       description: String(fd.get('description') ?? '').trim() || null,
+      objective: String(fd.get('objective') ?? '').trim() || null,
+      expected_deliverables: String(fd.get('expected_deliverables') ?? '').trim() || null,
+      tech_stack: parseTagInput(fd.get('tech_stack')),
+      tools: parseTagInput(fd.get('tools')),
       priority: String(fd.get('priority') ?? 'medium'),
       deadline: String(fd.get('deadline') ?? '') || null,
+      start_date: String(fd.get('start_date') ?? '') || null,
+      estimated_hours: Number(fd.get('estimated_hours') || 0) || null,
+      repository_url: String(fd.get('repository_url') ?? '').trim() || null,
+      document_url: String(fd.get('document_url') ?? '').trim() || null,
+      communication_channel: String(fd.get('communication_channel') ?? '').trim() || null,
     };
 
     const res = await fetch('/api/admin/projects', {

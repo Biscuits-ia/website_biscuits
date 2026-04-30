@@ -99,6 +99,9 @@ const memberOptions = members.map((m: Member) => ({
   id: m.user_id,
   name: m.profiles?.[0]?.full_name ?? m.profiles?.[0]?.email ?? m.user_id,
 }));
+
+// Sérialisation pour le script client (mentions @)
+const memberOptionsJson = JSON.stringify(memberOptions);
 ---
 
 <DashboardLayout title={project.title} role="benevole" activePage="projects" userName={userName} userEmail={user.email ?? ''} authResult={result}>
@@ -142,6 +145,16 @@ const memberOptions = members.map((m: Member) => ({
                 class={`task-card${isMyTask ? ' task-card--mine' : ''}`}
                 data-task-id={t.id}
                 data-status={t.status}
+                data-title={t.title}
+                data-description={t.description ?? ''}
+                data-priority={t.priority}
+                data-deadline={t.deadline ?? ''}
+                data-assignee-id={t.assignee_id ?? ''}
+                data-assignee-name={assigneeName ?? ''}
+                data-can-edit={(t.created_by === userId || isStaff) ? 'true' : 'false'}
+                draggable="true"
+                role="button"
+                tabindex="0"
               >
                 <div class="task-card-title">{t.title}</div>
                 {t.description && <p class="task-card-desc">{t.description}</p>}
@@ -149,6 +162,7 @@ const memberOptions = members.map((m: Member) => ({
                   <span class={`badge badge-${priorityClass[t.priority] ?? 'neutral'}`}>{priorityLabel[t.priority]}</span>
                   {taskDeadline && <span class="task-deadline">📅 {taskDeadline}</span>}
                   {assigneeName && <span class="task-assignee">👤 {assigneeName}</span>}
+                  <span class="task-comments-count" data-task-id={t.id}>💬 …</span>
                 </div>
                 {(t.created_by === userId || isStaff) && (
                   <div class="task-card-actions">
@@ -195,17 +209,25 @@ const memberOptions = members.map((m: Member) => ({
             <input type="date" id="t-deadline" name="deadline" class="input" />
           </div>
         </div>
-        {memberOptions.length > 0 && (
-          <div class="field">
-            <label class="label" for="t-assignee">Assigner à</label>
-            <select id="t-assignee" name="assignee_id" class="input">
-              <option value="">— Non assigné —</option>
+        <div class="field">
+            <label class="label" for="t-assignee">Assigner à *</label>
+            <select id="t-assignee" name="assignee_id" class="input" required>
+              <option value="">— Sélectionner un membre —</option>
               {memberOptions.map(m => (
                 <option value={m.id}>{m.name}</option>
               ))}
             </select>
           </div>
-        )}
+        {/* watchers */}
+        <div class="field">
+          <label class="label" for="t-watchers">Watchers</label>
+          <select id="t-watchers" name="watcher_ids" class="input" multiple style="height:80px">
+            {memberOptions.map(m => (
+              <option value={m.id}>{m.name}</option>
+            ))}
+          </select>
+          <span class="field-hint">Ctrl+clic pour sélectionner plusieurs</span>
+        </div>
         <div class="modal-actions">
           <button type="button" class="btn btn-ghost" id="btn-close-task-modal">Annuler</button>
           <button type="submit" class="btn btn-primary">Créer</button>
@@ -259,6 +281,65 @@ const memberOptions = members.map((m: Member) => ({
       </div>
     </dialog>
   )}
+
+  <!-- Modal : Détail tâche + commentaires + watchers -->
+  <dialog id="modal-task-detail" class="modal modal--wide">
+    <div class="modal-box">
+      <div class="detail-header">
+        <h2 class="modal-title" id="detail-title">Tâche</h2>
+        <button class="btn btn-ghost btn-sm" id="btn-close-detail">✕</button>
+      </div>
+      <input type="hidden" id="detail-task-id" />
+
+      <div class="detail-meta" id="detail-meta"></div>
+
+      <div class="detail-body">
+        <!-- Colonne principale : description + commentaires -->
+        <div class="detail-main">
+          <p class="detail-description" id="detail-description"></p>
+
+          <div class="comments-section">
+            <h3 class="comments-title">Commentaires</h3>
+            <div id="comments-container" class="comments-list">
+              <p class="loading-text">Chargement…</p>
+            </div>
+
+            <!-- Formulaire commentaire -->
+            <form id="form-add-comment" class="comment-form" autocomplete="off">
+              <div id="reply-indicator" class="reply-indicator" style="display:none">
+                <span>↩ Réponse à <strong id="reply-to-name"></strong></span>
+                <button type="button" id="btn-cancel-reply" class="btn-cancel-reply">✕</button>
+              </div>
+              <input type="hidden" id="comment-parent-id" value="" />
+              <div class="comment-input-row">
+                <textarea
+                  id="comment-input"
+                  class="input comment-textarea"
+                  rows="2"
+                  maxlength="2000"
+                  placeholder="Écrire un commentaire… Utilisez @nom pour mentionner"
+                ></textarea>
+                <button type="submit" class="btn btn-primary btn-sm">Envoyer</button>
+              </div>
+              <!-- Autocomplete mentions -->
+              <ul id="mention-dropdown" class="mention-dropdown" style="display:none"></ul>
+            </form>
+          </div>
+        </div>
+
+        <!-- Colonne latérale : watchers -->
+        <div class="detail-sidebar">
+          <div class="sidebar-section">
+            <h4 class="sidebar-section-title">Watchers</h4>
+            <div id="watchers-container" class="watchers-list">
+              <p class="loading-text">Chargement…</p>
+            </div>
+            <button class="btn btn-ghost btn-xs" id="btn-toggle-watch">S'abonner</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </dialog>
 </DashboardLayout>
 
 <style>
@@ -324,38 +405,172 @@ const memberOptions = members.map((m: Member) => ({
   .input:focus   { box-shadow: var(--shadow-sm); }
   textarea.input { resize: vertical; }
   .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 4px; }
+
+  /* Drag & drop */
+  .task-card[draggable="true"]  { cursor: grab; }
+  .task-card.is-dragging        { opacity: .4; transform: rotate(1deg); }
+  .kanban-cards.drop-target     { background: color-mix(in srgb, var(--accent) 8%, transparent); border: 2px dashed var(--accent); border-radius: 2px; }
+
+  /* Task detail modal */
+  .modal--wide         { max-width: 860px; }
+  .detail-header       { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-md); }
+  .detail-meta         { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: var(--space-md); padding-bottom: var(--space-sm); border-bottom: 1px solid var(--border-mid); }
+  .detail-body         { display: grid; grid-template-columns: 1fr 200px; gap: var(--space-lg); }
+  @media (max-width: 600px) { .detail-body { grid-template-columns: 1fr; } }
+  .detail-main         { display: flex; flex-direction: column; gap: var(--space-md); min-width: 0; }
+  .detail-description  { font-size: var(--text-sm); color: var(--text-secondary); white-space: pre-wrap; }
+  .detail-sidebar      { display: flex; flex-direction: column; gap: var(--space-md); }
+  .sidebar-section     { display: flex; flex-direction: column; gap: 8px; }
+  .sidebar-section-title { font-size: var(--text-xs); font-weight: 700; text-transform: uppercase; letter-spacing: .06em; }
+
+  /* Comments */
+  .comments-section    { display: flex; flex-direction: column; gap: var(--space-sm); }
+  .comments-title      { font-size: var(--text-sm); font-weight: 700; margin-bottom: 4px; }
+  .comments-list       { display: flex; flex-direction: column; gap: 8px; max-height: 320px; overflow-y: auto; padding-right: 4px; }
+  .comment             { background: var(--surface); border: var(--brutal-border-thin); padding: var(--space-sm); display: flex; flex-direction: column; gap: 4px; }
+  .comment--reply      { margin-left: 20px; border-left: 3px solid var(--accent); }
+  .comment-header      { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .comment-author      { font-size: var(--text-xs); font-weight: 700; }
+  .comment-date        { font-size: var(--text-xs); color: var(--text-muted); }
+  .comment-body        { font-size: var(--text-sm); white-space: pre-wrap; word-break: break-word; }
+  .comment-body .mention { color: var(--accent); font-weight: 600; }
+  .btn-reply           { margin-left: auto; font-size: 0.7rem; padding: 2px 6px; }
+  .comment-form        { display: flex; flex-direction: column; gap: 6px; margin-top: var(--space-sm); }
+  .comment-input-row   { display: flex; gap: 8px; align-items: flex-end; }
+  .comment-textarea    { flex: 1; resize: none; min-height: 50px; }
+  .reply-indicator     { display: flex; align-items: center; gap: 8px; font-size: var(--text-xs); color: var(--text-muted); background: var(--surface-raised); padding: 4px 8px; border-left: 3px solid var(--accent); }
+  .btn-cancel-reply    { background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: 0.7rem; }
+  .no-comments, .loading-text, .error-text { font-size: var(--text-xs); color: var(--text-muted); text-align: center; padding: var(--space-sm) 0; }
+
+  /* Mention autocomplete */
+  .mention-dropdown    { position: absolute; z-index: 100; background: var(--bg); border: var(--brutal-border); list-style: none; padding: 0; margin: 0; max-height: 150px; overflow-y: auto; min-width: 180px; }
+  .mention-dropdown li { padding: 6px 12px; font-size: var(--text-sm); cursor: pointer; }
+  .mention-dropdown li:hover, .mention-dropdown li[aria-selected="true"] { background: var(--surface-raised); }
+
+  /* Watchers */
+  .watchers-list      { display: flex; flex-direction: column; gap: 4px; }
+  .watcher-item       { font-size: var(--text-xs); display: flex; align-items: center; gap: 4px; }
+  .watcher-avatar     { width: 20px; height: 20px; border-radius: 50%; background: var(--surface-raised); border: 1px solid var(--border-mid); display: flex; align-items: center; justify-content: center; font-size: 0.6rem; font-weight: 700; flex-shrink: 0; }
+  .task-comments-count { font-size: var(--text-xs); color: var(--text-muted); }
+  .field-hint          { font-size: 0.7rem; color: var(--text-muted); margin-top: 2px; }
 </style>
 
-<script define:vars={{ projectId }}>
-  // ── Modals ─────────────────────────────────────────────────────────────────
+<script define:vars={{ projectId, memberOptionsJson, userId: userId }}>
+  /* ── Helpers ──────────────────────────────────────────────────────────────── */
+  const memberOptions = JSON.parse(memberOptionsJson);
+
+  function esc(str) {
+    return String(str ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  /* ── Modals ─────────────────────────────────────────────────────────────────*/
   const modalTask    = document.getElementById('modal-add-task');
   const modalEdit    = document.getElementById('modal-edit-project');
+  const modalDetail  = document.getElementById('modal-task-detail');
   const statusInput  = document.getElementById('task-status-input');
 
   document.getElementById('btn-add-task')?.addEventListener('click', () => {
     if (statusInput) statusInput.value = 'todo';
-    modalTask?.showModal?.();
+    if (modalTask instanceof HTMLDialogElement) modalTask.showModal();
   });
-  document.getElementById('btn-close-task-modal')?.addEventListener('click', () => modalTask?.close());
+  document.getElementById('btn-close-task-modal')?.addEventListener('click', () => {
+    if (modalTask instanceof HTMLDialogElement) modalTask.close();
+  });
+  document.getElementById('btn-edit-project')?.addEventListener('click', () => {
+    if (modalEdit instanceof HTMLDialogElement) modalEdit.showModal();
+  });
+  document.getElementById('btn-close-edit-modal')?.addEventListener('click', () => {
+    if (modalEdit instanceof HTMLDialogElement) modalEdit.close();
+  });
+  document.getElementById('btn-close-detail')?.addEventListener('click', () => {
+    if (modalDetail instanceof HTMLDialogElement) modalDetail.close();
+  });
 
-  document.getElementById('btn-edit-project')?.addEventListener('click', () => modalEdit?.showModal?.());
-  document.getElementById('btn-close-edit-modal')?.addEventListener('click', () => modalEdit?.close());
-
-  // Boutons "+ Ajouter une tâche" dans chaque colonne
   document.querySelectorAll('.btn-add-col-task').forEach(btn => {
     btn.addEventListener('click', () => {
       const status = btn.getAttribute('data-status') ?? 'todo';
       if (statusInput) statusInput.value = status;
-      modalTask?.showModal?.();
+      if (modalTask instanceof HTMLDialogElement) modalTask.showModal();
     });
   });
 
-  // ── Créer tâche ────────────────────────────────────────────────────────────
+  /* ── Drag & Drop ─────────────────────────────────────────────────────────── */
+  let draggedTaskId = null;
+  let draggedEl = null;
+
+  document.querySelectorAll('.task-card').forEach(card => {
+    card.addEventListener('dragstart', (e) => {
+      draggedTaskId = card.getAttribute('data-task-id');
+      draggedEl = card;
+      card.classList.add('is-dragging');
+      if (e.dataTransfer) e.dataTransfer.effectAllowed = 'move';
+    });
+    card.addEventListener('dragend', () => {
+      card.classList.remove('is-dragging');
+      draggedTaskId = null;
+      draggedEl = null;
+      document.querySelectorAll('.kanban-cards').forEach(c => c.classList.remove('drop-target'));
+    });
+  });
+
+  document.querySelectorAll('.kanban-cards').forEach(col => {
+    col.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
+      col.classList.add('drop-target');
+    });
+    col.addEventListener('dragleave', (e) => {
+      if (!col.contains(e.relatedTarget)) col.classList.remove('drop-target');
+    });
+    col.addEventListener('drop', async (e) => {
+      e.preventDefault();
+      col.classList.remove('drop-target');
+      if (!draggedTaskId || !draggedEl) return;
+
+      const colEl    = col.closest('.kanban-col');
+      const newStatus = colEl?.getAttribute('data-status');
+      const oldStatus = draggedEl.getAttribute('data-status');
+      if (!newStatus || oldStatus === newStatus) return;
+
+      // Optimistic update in DOM
+      col.appendChild(draggedEl);
+      draggedEl.setAttribute('data-status', newStatus);
+      // Update column counts
+      updateColCounts();
+
+      try {
+        const res = await fetch(`/api/benevole/tasks?id=${draggedTaskId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: newStatus }),
+        });
+        if (!res.ok) window.location.reload();
+      } catch { window.location.reload(); }
+    });
+  });
+
+  function updateColCounts() {
+    document.querySelectorAll('.kanban-col').forEach(col => {
+      const status = col.getAttribute('data-status');
+      const count  = col.querySelectorAll('.task-card').length;
+      const badge  = col.querySelector('.kanban-col-count');
+      if (badge) badge.textContent = String(count);
+    });
+  }
+
+  /* ── Créer tâche ──────────────────────────────────────────────────────────── */
   document.getElementById('form-add-task')?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const form = e.target;
+    if (!(form instanceof HTMLFormElement)) return;
     const data = Object.fromEntries(new FormData(form));
     data.project_id = projectId;
+
+    // Handle watcher_ids (multi-select)
+    const watcherSelect = form.querySelector('#t-watchers');
+    const watcherIds = watcherSelect instanceof HTMLSelectElement
+      ? Array.from(watcherSelect.selectedOptions).map(o => o.value).filter(Boolean)
+      : [];
 
     const res = await fetch('/api/benevole/tasks', {
       method: 'POST',
@@ -364,6 +579,17 @@ const memberOptions = members.map((m: Member) => ({
     });
 
     if (res.ok) {
+      const { data: task } = await res.json();
+      // Add watchers after task creation
+      if (watcherIds.length > 0 && task?.id) {
+        await Promise.all(watcherIds.map(wId =>
+          fetch('/api/benevole/task-watchers', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ task_id: task.id, user_id: wId }),
+          })
+        ));
+      }
       window.location.reload();
     } else {
       const err = await res.json().catch(() => ({}));
@@ -371,10 +597,11 @@ const memberOptions = members.map((m: Member) => ({
     }
   });
 
-  // ── Modifier projet ────────────────────────────────────────────────────────
+  /* ── Modifier projet ──────────────────────────────────────────────────────── */
   document.getElementById('form-edit-project')?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const form = e.target;
+    if (!(form instanceof HTMLFormElement)) return;
     const data = Object.fromEntries(new FormData(form));
 
     const res = await fetch(`/api/benevole/projects?id=${projectId}`, {
@@ -391,9 +618,10 @@ const memberOptions = members.map((m: Member) => ({
     }
   });
 
-  // ── Changer statut d'une tâche (drag simplifié via select) ────────────────
+  /* ── Supprimer tâche ──────────────────────────────────────────────────────── */
   document.querySelectorAll('.btn-delete-task').forEach(btn => {
-    btn.addEventListener('click', async () => {
+    btn.addEventListener('click', async (e) => {
+      e.stopPropagation();
       const id = btn.getAttribute('data-id');
       if (!id || !confirm('Supprimer cette tâche ?')) return;
       const res = await fetch(`/api/benevole/tasks?id=${id}`, { method: 'DELETE' });
@@ -402,23 +630,309 @@ const memberOptions = members.map((m: Member) => ({
     });
   });
 
-  // ── Déplacer tâche entre colonnes (clic sur colonne header) ───────────────
+  /* ── Avancement double-clic (fallback sans D&D) ───────────────────────────── */
   document.querySelectorAll('.task-card').forEach(card => {
-    card.addEventListener('dblclick', () => {
+    card.addEventListener('dblclick', (e) => {
+      if (e.target.closest('.task-card-actions')) return;
       const id      = card.getAttribute('data-task-id');
       const current = card.getAttribute('data-status');
       if (!id) return;
-
       const order = ['todo', 'in_progress', 'review', 'done'];
       const idx   = order.indexOf(current ?? '');
       if (idx === -1 || idx === order.length - 1) return;
-
       const next = order[idx + 1];
+      card.setAttribute('data-status', next);
+      updateColCounts();
       fetch(`/api/benevole/tasks?id=${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: next }),
-      }).then(r => r.ok ? window.location.reload() : alert('Erreur lors du déplacement.'));
+      }).then(r => { if (!r.ok) window.location.reload(); });
     });
   });
+
+  /* ── Task Detail Modal ───────────────────────────────────────────────────── */
+  document.querySelectorAll('.task-card').forEach(card => {
+    card.addEventListener('click', (e) => {
+      if (e.target.closest('.task-card-actions')) return;
+      if (e.detail === 2) return; // ignore dblclick
+      const taskId = card.getAttribute('data-task-id');
+      if (!taskId) return;
+      openTaskDetail(taskId, card);
+    });
+    // Keyboard accessibility
+    card.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        const taskId = card.getAttribute('data-task-id');
+        if (taskId) openTaskDetail(taskId, card);
+      }
+    });
+  });
+
+  async function openTaskDetail(taskId, card) {
+    const detailTaskIdEl = document.getElementById('detail-task-id');
+    const detailTitle    = document.getElementById('detail-title');
+    const detailDesc     = document.getElementById('detail-description');
+    const detailMeta     = document.getElementById('detail-meta');
+    if (!detailTaskIdEl || !detailTitle || !detailDesc || !detailMeta) return;
+
+    detailTaskIdEl.value = taskId;
+
+    // Populate from card data attributes
+    const title       = card.getAttribute('data-title')         ?? '';
+    const desc        = card.getAttribute('data-description')   ?? '';
+    const priority    = card.getAttribute('data-priority')      ?? '';
+    const deadline    = card.getAttribute('data-deadline')      ?? '';
+    const assigneeName = card.getAttribute('data-assignee-name') ?? '';
+
+    detailTitle.textContent = title;
+    detailDesc.textContent  = desc || '(Pas de description)';
+
+    const priorityLabels = { low: 'Faible', medium: 'Moyenne', high: 'Haute' };
+    const priorityClasses = { low: 'neutral', medium: 'info', high: 'err' };
+    let metaHtml = `<span class="badge badge-${priorityClasses[priority] ?? 'neutral'}">${esc(priorityLabels[priority] ?? priority)}</span>`;
+    if (deadline) metaHtml += `<span class="meta-item">📅 ${new Date(deadline).toLocaleDateString('fr-FR')}</span>`;
+    if (assigneeName) metaHtml += `<span class="meta-item">👤 ${esc(assigneeName)}</span>`;
+    detailMeta.innerHTML = metaHtml;
+
+    // Reset comment form
+    const commentInput = document.getElementById('comment-input');
+    const commentParentId = document.getElementById('comment-parent-id');
+    const replyIndicator = document.getElementById('reply-indicator');
+    if (commentInput instanceof HTMLTextAreaElement) commentInput.value = '';
+    if (commentParentId instanceof HTMLInputElement) commentParentId.value = '';
+    if (replyIndicator) replyIndicator.style.display = 'none';
+
+    // Update watch button
+    await loadWatchers(taskId);
+    // Load comments
+    await loadComments(taskId);
+
+    if (modalDetail instanceof HTMLDialogElement) modalDetail.showModal();
+  }
+
+  /* ── Comments ────────────────────────────────────────────────────────────── */
+  async function loadComments(taskId) {
+    const container = document.getElementById('comments-container');
+    if (!container) return;
+    container.innerHTML = '<p class="loading-text">Chargement…</p>';
+    try {
+      const res = await fetch(`/api/benevole/task-comments?task_id=${taskId}`);
+      if (!res.ok) throw new Error();
+      const { data } = await res.json();
+      renderComments(container, data ?? [], taskId);
+    } catch {
+      container.innerHTML = '<p class="error-text">Erreur de chargement.</p>';
+    }
+  }
+
+  function renderComments(container, comments, taskId) {
+    if (!comments.length) {
+      container.innerHTML = '<p class="no-comments">Aucun commentaire.</p>';
+      return;
+    }
+    const roots   = comments.filter(c => !c.parent_id);
+    const replies = comments.filter(c =>  c.parent_id);
+    container.innerHTML = roots.map(c => {
+      const children = replies.filter(r => r.parent_id === c.id);
+      return renderOneComment(c, false) + children.map(r => renderOneComment(r, true)).join('');
+    }).join('');
+
+    container.querySelectorAll('.btn-reply').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const parentId   = btn.getAttribute('data-parent-id');
+        const authorName = btn.getAttribute('data-author-name');
+        const commentParentId = document.getElementById('comment-parent-id');
+        const replyIndicator  = document.getElementById('reply-indicator');
+        const replyToName     = document.getElementById('reply-to-name');
+        const commentInput    = document.getElementById('comment-input');
+        if (commentParentId instanceof HTMLInputElement) commentParentId.value = parentId ?? '';
+        if (replyToName) replyToName.textContent = authorName ?? '';
+        if (replyIndicator) replyIndicator.style.display = 'flex';
+        if (commentInput) commentInput.focus();
+      });
+    });
+
+    container.querySelectorAll('.btn-delete-comment').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const id = btn.getAttribute('data-id');
+        if (!id || !confirm('Supprimer ce commentaire ?')) return;
+        const res = await fetch(`/api/benevole/task-comments?id=${id}`, { method: 'DELETE' });
+        if (res.ok) await loadComments(taskId);
+        else alert('Erreur lors de la suppression.');
+      });
+    });
+  }
+
+  function renderOneComment(c, isReply) {
+    const date       = new Date(c.created_at).toLocaleDateString('fr-FR');
+    const profileArr = c.profiles;
+    const profile    = Array.isArray(profileArr) ? profileArr[0] : profileArr;
+    const authorName = profile?.full_name ?? profile?.email ?? 'Inconnu';
+    const isOwn      = c.author_id === userId;
+    const body       = esc(c.content).replace(/@([a-zA-Z0-9_\-\.]+)/g, '<span class="mention">@$1</span>');
+    return `
+      <div class="comment${isReply ? ' comment--reply' : ''}" data-comment-id="${esc(c.id)}">
+        <div class="comment-header">
+          <span class="comment-author">${esc(authorName)}</span>
+          <span class="comment-date">${date}</span>
+          ${!isReply ? `<button class="btn btn-ghost btn-xs btn-reply" data-parent-id="${esc(c.id)}" data-author-name="${esc(authorName)}">↩ Répondre</button>` : ''}
+          ${isOwn ? `<button class="btn btn-ghost btn-xs btn-delete-comment" data-id="${esc(c.id)}" style="color:var(--err)">🗑</button>` : ''}
+        </div>
+        <div class="comment-body">${body}</div>
+      </div>`;
+  }
+
+  document.getElementById('btn-cancel-reply')?.addEventListener('click', () => {
+    const commentParentId = document.getElementById('comment-parent-id');
+    const replyIndicator  = document.getElementById('reply-indicator');
+    if (commentParentId instanceof HTMLInputElement) commentParentId.value = '';
+    if (replyIndicator) replyIndicator.style.display = 'none';
+  });
+
+  document.getElementById('form-add-comment')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const taskId    = document.getElementById('detail-task-id')?.value;
+    const content   = document.getElementById('comment-input')?.value?.trim();
+    const parentId  = document.getElementById('comment-parent-id')?.value || null;
+    if (!taskId || !content) return;
+
+    const res = await fetch('/api/benevole/task-comments', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ task_id: taskId, content, parent_id: parentId }),
+    });
+
+    if (res.ok) {
+      const commentInput    = document.getElementById('comment-input');
+      const commentParentId = document.getElementById('comment-parent-id');
+      const replyIndicator  = document.getElementById('reply-indicator');
+      if (commentInput instanceof HTMLTextAreaElement) commentInput.value = '';
+      if (commentParentId instanceof HTMLInputElement) commentParentId.value = '';
+      if (replyIndicator) replyIndicator.style.display = 'none';
+      await loadComments(taskId);
+    } else {
+      const err = await res.json().catch(() => ({}));
+      alert('Erreur : ' + (err.error ?? 'Impossible d\'ajouter le commentaire.'));
+    }
+  });
+
+  /* ── @Mention Autocomplete ───────────────────────────────────────────────── */
+  const commentInput     = document.getElementById('comment-input');
+  const mentionDropdown  = document.getElementById('mention-dropdown');
+
+  if (commentInput instanceof HTMLTextAreaElement && mentionDropdown) {
+    commentInput.addEventListener('input', () => {
+      const value  = commentInput.value;
+      const cursor = commentInput.selectionStart ?? 0;
+      const textBefore = value.slice(0, cursor);
+      const mentionMatch = textBefore.match(/@([a-zA-Z0-9_\-\.]*)$/);
+
+      if (!mentionMatch) {
+        mentionDropdown.style.display = 'none';
+        return;
+      }
+
+      const query = mentionMatch[1].toLowerCase();
+      const filtered = memberOptions.filter(m =>
+        m.name.toLowerCase().includes(query)
+      ).slice(0, 5);
+
+      if (!filtered.length) {
+        mentionDropdown.style.display = 'none';
+        return;
+      }
+
+      mentionDropdown.innerHTML = filtered.map(m =>
+        `<li data-name="${esc(m.name)}">${esc(m.name)}</li>`
+      ).join('');
+      mentionDropdown.style.display = 'block';
+    });
+
+    mentionDropdown.addEventListener('mousedown', (e) => {
+      const li = e.target.closest('li');
+      if (!li) return;
+      e.preventDefault();
+      const name   = li.getAttribute('data-name') ?? '';
+      const value  = commentInput.value;
+      const cursor = commentInput.selectionStart ?? 0;
+      const before = value.slice(0, cursor).replace(/@[a-zA-Z0-9_\-\.]*$/, `@${name} `);
+      commentInput.value = before + value.slice(cursor);
+      commentInput.focus();
+      mentionDropdown.style.display = 'none';
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!commentInput.contains(e.target) && !mentionDropdown.contains(e.target)) {
+        mentionDropdown.style.display = 'none';
+      }
+    });
+  }
+
+  /* ── Watchers ────────────────────────────────────────────────────────────── */
+  let currentUserIsWatcher = false;
+
+  async function loadWatchers(taskId) {
+    const container = document.getElementById('watchers-container');
+    const btn       = document.getElementById('btn-toggle-watch');
+    if (!container) return;
+    container.innerHTML = '<p class="loading-text">Chargement…</p>';
+    try {
+      const res = await fetch(`/api/benevole/task-watchers?task_id=${taskId}`);
+      if (!res.ok) throw new Error();
+      const { data } = await res.json();
+      const watchers = data ?? [];
+      currentUserIsWatcher = watchers.some(w => w.user_id === userId);
+
+      if (!watchers.length) {
+        container.innerHTML = '<p class="no-comments">Aucun watcher.</p>';
+      } else {
+        container.innerHTML = watchers.map(w => {
+          const profileArr = w.profiles;
+          const profile    = Array.isArray(profileArr) ? profileArr[0] : profileArr;
+          const name       = profile?.full_name ?? profile?.email ?? w.user_id;
+          const initials   = name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+          return `<div class="watcher-item"><div class="watcher-avatar">${esc(initials)}</div>${esc(name)}</div>`;
+        }).join('');
+      }
+
+      if (btn) btn.textContent = currentUserIsWatcher ? 'Se désabonner' : 'S\'abonner';
+    } catch {
+      container.innerHTML = '<p class="error-text">Erreur.</p>';
+    }
+  }
+
+  document.getElementById('btn-toggle-watch')?.addEventListener('click', async () => {
+    const taskId = document.getElementById('detail-task-id')?.value;
+    if (!taskId) return;
+
+    if (currentUserIsWatcher) {
+      await fetch(`/api/benevole/task-watchers?task_id=${taskId}`, { method: 'DELETE' });
+    } else {
+      await fetch('/api/benevole/task-watchers', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ task_id: taskId }),
+      });
+    }
+    await loadWatchers(taskId);
+  });
+
+  /* ── Chargement du nombre de commentaires par carte ──────────────────────── */
+  async function loadCommentCounts() {
+    const spans = document.querySelectorAll('.task-comments-count[data-task-id]');
+    // Batch: fetch all in parallel
+    await Promise.all(Array.from(spans).map(async span => {
+      const tId = span.getAttribute('data-task-id');
+      if (!tId) return;
+      try {
+        const res = await fetch(`/api/benevole/task-comments?task_id=${tId}`);
+        if (!res.ok) return;
+        const { data } = await res.json();
+        span.textContent = `💬 ${(data ?? []).length}`;
+      } catch { /* silent */ }
+    }));
+  }
+  // Load counts in background without blocking
+  loadCommentCounts();
 </script>

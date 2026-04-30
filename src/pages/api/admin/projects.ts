@@ -15,39 +15,132 @@ function jsonOk(data: unknown, status = 200) {
   });
 }
 
+function parseTagList(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+  return value
+    .map((item) => (typeof item === 'string' ? item.trim() : ''))
+    .filter(Boolean)
+    .slice(0, 20);
+}
+
+function getTrimmedString(body: Record<string, unknown>, key: string): string | undefined {
+  const value = body[key];
+  return typeof value === 'string' ? value.trim() : undefined;
+}
+
+function applyTrimmedField(
+  body: Record<string, unknown>,
+  updates: Record<string, unknown>,
+  key: string,
+  targetKey: string,
+  maxLength: number,
+  message: string,
+): string | undefined {
+  const value = getTrimmedString(body, key);
+  if (value === undefined) return undefined;
+  if (value.length > maxLength) return message;
+  updates[targetKey] = value || null;
+  return undefined;
+}
+
+function applyEnumField(
+  body: Record<string, unknown>,
+  updates: Record<string, unknown>,
+  key: string,
+  allowed: string[],
+) {
+  const value = body[key];
+  if (typeof value === 'string' && allowed.includes(value)) {
+    updates[key] = value;
+  }
+}
+
+function applyTitleUpdate(body: Record<string, unknown>, updates: Record<string, unknown>): string | undefined {
+  const title = getTrimmedString(body, 'title');
+  if (title === undefined) return undefined;
+  if (!title) return 'Le titre est requis.';
+  if (title.length > 120) return 'Le titre ne doit pas dépasser 120 caractères.';
+  updates.title = title;
+  return undefined;
+}
+
 function buildProjectUpdates(body: Record<string, unknown>): { updates: Record<string, unknown>; error?: string } {
   const updates: Record<string, unknown> = {};
 
-  if (typeof body.title === 'string') {
-    const title = body.title.trim();
-    if (!title) return { updates, error: 'Le titre est requis.' };
-    if (title.length > 120) return { updates, error: 'Le titre ne doit pas dépasser 120 caractères.' };
-    updates.title = title;
+  const titleError = applyTitleUpdate(body, updates);
+  if (titleError) return { updates, error: titleError };
+
+  const textRules: Array<{ key: string; target: string; max: number; msg: string }> = [
+    { key: 'description', target: 'description', max: 800, msg: 'La description ne doit pas dépasser 800 caractères.' },
+    { key: 'objective', target: 'objective', max: 2000, msg: 'L\'objectif ne doit pas dépasser 2000 caractères.' },
+    { key: 'expected_deliverables', target: 'expected_deliverables', max: 2000, msg: 'Les livrables ne doivent pas dépasser 2000 caractères.' },
+    { key: 'communication_channel', target: 'communication_channel', max: 200, msg: 'Le canal de communication ne doit pas dépasser 200 caractères.' },
+    { key: 'repository_url', target: 'repository_url', max: 2000, msg: 'L\'URL du dépôt est trop longue.' },
+    { key: 'document_url', target: 'document_url', max: 2000, msg: 'L\'URL de documentation est trop longue.' },
+  ];
+
+  for (const rule of textRules) {
+    const error = applyTrimmedField(body, updates, rule.key, rule.target, rule.max, rule.msg);
+    if (error) return { updates, error };
   }
 
-  if (typeof body.description === 'string') {
-    const description = body.description.trim();
-    if (description.length > 800) return { updates, error: 'La description ne doit pas dépasser 800 caractères.' };
-    updates.description = description || null;
+  applyEnumField(body, updates, 'status', ['active', 'on_hold', 'completed', 'archived']);
+  applyEnumField(body, updates, 'priority', ['low', 'medium', 'high']);
+
+  const deadline = getTrimmedString(body, 'deadline');
+  if (deadline !== undefined) updates.deadline = deadline || null;
+
+  const leaderId = getTrimmedString(body, 'leader_id');
+  if (leaderId !== undefined) updates.leader_id = leaderId || null;
+
+  if (Array.isArray(body.tech_stack)) {
+    updates.tech_stack = parseTagList(body.tech_stack);
   }
 
-  if (typeof body.status === 'string' && ['active', 'on_hold', 'completed', 'archived'].includes(body.status)) {
-    updates.status = body.status;
+  if (Array.isArray(body.tools)) {
+    updates.tools = parseTagList(body.tools);
   }
 
-  if (typeof body.priority === 'string' && ['low', 'medium', 'high'].includes(body.priority)) {
-    updates.priority = body.priority;
+  const estimatedHours = body.estimated_hours;
+  if (typeof estimatedHours === 'number') {
+    if (estimatedHours < 0) return { updates, error: 'La charge estimée doit être positive.' };
+    updates.estimated_hours = Math.round(estimatedHours);
   }
 
-  if (typeof body.deadline === 'string') {
-    updates.deadline = body.deadline || null;
-  }
-
-  if (typeof body.leader_id === 'string') {
-    updates.leader_id = body.leader_id || null;
-  }
+  const startDate = getTrimmedString(body, 'start_date');
+  if (startDate !== undefined) updates.start_date = startDate || null;
 
   return { updates };
+}
+
+function buildProjectInsert(body: Record<string, unknown>, userId: string): { payload?: Record<string, unknown>; error?: string } {
+  const title = getTrimmedString(body, 'title') ?? '';
+  if (!title) return { error: 'Le titre est requis.' };
+  if (title.length > 120) return { error: 'Le titre ne doit pas dépasser 120 caractères.' };
+
+  const { updates, error } = buildProjectUpdates(body);
+  if (error) return { error };
+
+  return {
+    payload: {
+      title,
+      description: updates.description ?? null,
+      priority: updates.priority ?? 'medium',
+      status: updates.status ?? 'active',
+      deadline: updates.deadline ?? null,
+      objective: updates.objective ?? null,
+      expected_deliverables: updates.expected_deliverables ?? null,
+      tech_stack: updates.tech_stack ?? [],
+      tools: updates.tools ?? [],
+      repository_url: updates.repository_url ?? null,
+      document_url: updates.document_url ?? null,
+      communication_channel: updates.communication_channel ?? null,
+      estimated_hours: updates.estimated_hours ?? null,
+      start_date: updates.start_date ?? null,
+      created_by: userId,
+      leader_id: updates.leader_id ?? userId,
+    },
+  };
 }
 
 export const POST: APIRoute = async (Astro) => {
@@ -63,27 +156,12 @@ export const POST: APIRoute = async (Astro) => {
     return jsonError('Corps de requête JSON invalide.');
   }
 
-  const title = typeof body.title === 'string' ? body.title.trim() : '';
-  const description = typeof body.description === 'string' ? body.description.trim() : null;
-  const priority = typeof body.priority === 'string' && ['low', 'medium', 'high'].includes(body.priority)
-    ? body.priority
-    : 'medium';
-  const deadline = typeof body.deadline === 'string' ? (body.deadline || null) : null;
-
-  if (!title) return jsonError('Le titre est requis.');
-  if (title.length > 120) return jsonError('Le titre ne doit pas dépasser 120 caractères.');
-  if (description && description.length > 800) return jsonError('La description ne doit pas dépasser 800 caractères.');
+  const { payload, error: validationError } = buildProjectInsert(body, user.id);
+  if (validationError || !payload) return jsonError(validationError ?? 'Données invalides.');
 
   const { data, error } = await supabase
     .from('projects')
-    .insert({
-      title,
-      description: description || null,
-      priority,
-      deadline,
-      created_by: user.id,
-      leader_id: user.id,
-    })
+    .insert(payload)
     .select('id')
     .single();
 

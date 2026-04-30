@@ -119,9 +119,23 @@ if (uniqueProfileIds.length > 0) {
 const memberIds = new Set(members.map((m) => m.user_id));
 const assignableVolunteers = volunteers.filter((v) => !memberIds.has(v.id));
 
+// Index des bénévoles par id (source de vérité pour les noms dans la liste)
+const volunteerById: Record<string, Volunteer> = {};
+for (const v of volunteers) volunteerById[v.id] = v;
+
+function getMemberName(userId: string): string {
+  return (
+    profileMap[userId]?.full_name
+    ?? volunteerById[userId]?.full_name
+    ?? profileMap[userId]?.email
+    ?? volunteerById[userId]?.email
+    ?? userId
+  );
+}
+
 const memberOptions = members.map((m) => ({
   id: m.user_id,
-  name: profileMap[m.user_id]?.full_name ?? profileMap[m.user_id]?.email ?? m.user_id,
+  name: getMemberName(m.user_id),
 }));
 
 const statusLabel: Record<string, string> = { active: 'Actif', on_hold: 'En pause', completed: 'Terminé', archived: 'Archivé' };
@@ -181,7 +195,7 @@ const toolsText = project.tools.join(', ');
 
       <div class="members-list">
         {members.length > 0 ? members.map((m) => {
-          const name = profileMap[m.user_id]?.full_name ?? profileMap[m.user_id]?.email ?? m.user_id;
+          const name = getMemberName(m.user_id);
           return (
             <div class="member-item">
               <span>{name}</span>

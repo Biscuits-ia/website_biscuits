@@ -20,6 +20,15 @@ const { task, class: className = '', style = '', showActionLink = true } = Astro
     <TaskStatusBadge status={task.status} />
   </div>
 
+  <div class="taskhub-meta-row">
+    <span class={`taskhub-meta-pill ${task.assignee_id ? 'is-assigned' : 'is-unassigned'}`}>
+      {task.assignee_id ? 'Attribuée' : 'Libre'}
+    </span>
+    {typeof task.time_estimate_hours === 'number' && (
+      <span class="taskhub-meta-pill">{task.time_estimate_hours}h estimées</span>
+    )}
+  </div>
+
   {showActionLink && (
     <div class="taskhub-card-actions">
       <a href={`/dashboard/tasks/${task.id}`} class="btn btn-ghost taskhub-card-link" draggable="false">Voir / Choisir</a>
@@ -47,6 +56,34 @@ const { task, class: className = '', style = '', showActionLink = true } = Astro
     margin-top: 0.8rem;
     display: flex;
     justify-content: flex-end;
+  }
+
+  .taskhub-meta-row {
+    margin-top: 0.6rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  .taskhub-meta-pill {
+    display: inline-flex;
+    align-items: center;
+    min-height: 28px;
+    padding: 0.18rem 0.5rem;
+    border: 1px solid color-mix(in srgb, var(--border-mid) 70%, transparent);
+    background: color-mix(in srgb, var(--surface-raised) 85%, white);
+    color: var(--text-secondary);
+    font-size: var(--text-xs);
+    font-family: var(--font-mono);
+  }
+
+  .taskhub-meta-pill.is-assigned {
+    color: var(--accent-dark);
+    border-color: color-mix(in srgb, var(--accent-dark) 45%, var(--border-mid));
+  }
+
+  .taskhub-meta-pill.is-unassigned {
+    color: var(--text-muted);
   }
 
   .taskhub-card-link {

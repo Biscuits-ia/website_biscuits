@@ -6,7 +6,7 @@ import { requireAuth } from '@/lib/auth';
 import { createSupabaseAdminClient } from '@/lib/supabase';
 import '@/styles/task-hub.css';
 
-const auth = await requireAuth(Astro as any);
+const auth = await requireAuth(Astro);
 if (auth instanceof Response) return auth;
 
 const admin = createSupabaseAdminClient();

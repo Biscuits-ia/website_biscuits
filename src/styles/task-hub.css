@@ -225,10 +225,39 @@
   box-shadow: var(--shadow-sm);
 }
 
+.taskhub-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.9rem;
+  flex-wrap: wrap;
+  padding-top: 0.35rem;
+}
+
+.taskhub-pagination-meta {
+  flex: 1 1 220px;
+}
+
+.taskhub-pagination-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+}
+
+.taskhub-pagination .is-disabled {
+  pointer-events: none;
+  opacity: 0.45;
+}
+
 .taskhub-kpi-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0.8rem;
+}
+
+.taskhub-kpi-grid--tasks {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
 .taskhub-kpi-card {
@@ -236,6 +265,17 @@
   border: var(--brutal-border);
   box-shadow: var(--shadow-md);
   padding: 1rem;
+}
+
+.taskhub-kpi-card--link {
+  display: block;
+  text-decoration: none;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.taskhub-kpi-card--link:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: var(--shadow-lg, var(--shadow-md));
 }
 
 .taskhub-kpi-label {
@@ -346,6 +386,17 @@
   padding: 6px 10px;
 }
 
+.taskhub-filter-actions {
+  display: inline-flex;
+  align-items: stretch;
+  gap: 0.55rem;
+  flex-wrap: wrap;
+}
+
+.taskhub-filter-actions .btn {
+  min-height: 44px;
+}
+
 .taskhub-grid[data-density='compact'] .taskhub-card {
   padding: 0.55rem;
 }
@@ -386,6 +437,7 @@
 @media (max-width: 1024px) {
   .taskhub-filters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .taskhub-kpi-grid { grid-template-columns: 1fr; }
+  .taskhub-kpi-grid--tasks { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .taskhub-layout-2 { grid-template-columns: 1fr; }
   .taskhub-form-grid-2 { grid-template-columns: 1fr; }
   .taskhub-form-grid-3 { grid-template-columns: 1fr; }
@@ -405,5 +457,18 @@
 
   .taskhub-board .taskhub-card {
     padding: 0.85rem;
+  }
+
+  .taskhub-pagination-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .taskhub-filter-actions {
+    width: 100%;
+  }
+
+  .taskhub-kpi-grid--tasks {
+    grid-template-columns: 1fr;
   }
 }

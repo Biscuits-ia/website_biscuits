@@ -4,24 +4,89 @@ import KanbanBoard from '@/components/tasks/KanbanBoard.astro';
 import Toast from '@/components/ui/Toast.astro';
 import { requireAuth } from '@/lib/auth';
 import { createSupabaseAdminClient } from '@/lib/supabase';
-import type { TaskWithRelations } from '@/lib/types';
+import type { CorpsType, PriorityLevel, TaskStatus, TaskWithRelations } from '@/lib/types';
 import '@/styles/task-hub.css';
+
+const validCorps: CorpsType[] = ['DEV', 'DB', 'DESIGN', 'QA', 'DATA', 'PM'];
+const validPriorities: PriorityLevel[] = ['P0', 'P1', 'P2', 'P3'];
+const validStatuses: TaskStatus[] = ['backlog', 'todo', 'in_progress', 'in_review', 'testing', 'blocked', 'done'];
 
 const auth = await requireAuth(Astro);
 if (auth instanceof Response) return auth;
 
+const rawSearch = (Astro.url.searchParams.get('q') ?? '').trim();
+const search = rawSearch.replace(/[,%()[\]]/g, '');
+const corpsFilter = validCorps.includes(Astro.url.searchParams.get('corps') as CorpsType)
+  ? (Astro.url.searchParams.get('corps') as CorpsType)
+  : '';
+const priorityFilter = validPriorities.includes(Astro.url.searchParams.get('priority') as PriorityLevel)
+  ? (Astro.url.searchParams.get('priority') as PriorityLevel)
+  : '';
+const statusFilter = validStatuses.includes(Astro.url.searchParams.get('status') as TaskStatus)
+  ? (Astro.url.searchParams.get('status') as TaskStatus)
+  : '';
+const page = Math.max(1, Number(Astro.url.searchParams.get('page') ?? '1'));
+const pageSize = 21;
+const rangeFrom = (page - 1) * pageSize;
+const rangeTo = rangeFrom + pageSize - 1;
+
 const admin = createSupabaseAdminClient();
-const { data, error } = await admin
+let tasksQuery = admin
   .from('tasks')
-  .select('id, reference, title, description, corps, task_type, priority, status, assignee_id, reporter_id, sprint_id, story_points, time_estimate_hours, time_spent_hours, due_date, acceptance_criteria, deliverables, definition_of_done, dod_completed, tags, blocked_reason, parent_task_id, doc_link, figma_link, created_at, updated_at')
-  .order('updated_at', { ascending: false })
-  .limit(300);
+  .select('id, reference, title, description, corps, task_type, priority, status, assignee_id, reporter_id, sprint_id, story_points, time_estimate_hours, time_spent_hours, due_date, acceptance_criteria, deliverables, definition_of_done, dod_completed, tags, blocked_reason, parent_task_id, doc_link, figma_link, created_at, updated_at');
+
+let countQuery = admin
+  .from('tasks')
+  .select('id', { count: 'exact', head: true });
+
+if (search) {
+  const searchExpr = `title.ilike.%${search}%,reference.ilike.%${search}%`;
+  tasksQuery = tasksQuery.or(searchExpr);
+  countQuery = countQuery.or(searchExpr);
+}
+
+if (corpsFilter) {
+  tasksQuery = tasksQuery.eq('corps', corpsFilter);
+  countQuery = countQuery.eq('corps', corpsFilter);
+}
+
+if (priorityFilter) {
+  tasksQuery = tasksQuery.eq('priority', priorityFilter);
+  countQuery = countQuery.eq('priority', priorityFilter);
+}
+
+if (statusFilter) {
+  tasksQuery = tasksQuery.eq('status', statusFilter);
+  countQuery = countQuery.eq('status', statusFilter);
+}
+
+const [{ data, error }, { count: totalTasksCount }] = await Promise.all([
+  tasksQuery.order('updated_at', { ascending: false }).range(rangeFrom, rangeTo),
+  countQuery,
+]);
 if (error) console.warn('[dashboard/kanban] tasks query warning:', error.message);
 
 const tasks = (data ?? []) as unknown as TaskWithRelations[];
+const totalTasks = totalTasksCount ?? tasks.length;
+const totalPages = Math.max(1, Math.ceil(totalTasks / pageSize));
 const userName = auth.user.user_metadata?.full_name ?? auth.user.email?.split('@')[0] ?? 'Utilisateur';
 const openTasksCount = tasks.filter((task) => task.status !== 'done').length;
 const blockedTasksCount = tasks.filter((task) => task.status === 'blocked').length;
+const queryParams = new URLSearchParams();
+if (search) queryParams.set('q', search);
+if (corpsFilter) queryParams.set('corps', corpsFilter);
+if (priorityFilter) queryParams.set('priority', priorityFilter);
+if (statusFilter) queryParams.set('status', statusFilter);
+
+const hrefWithPage = (nextPage: number) => {
+  const params = new URLSearchParams(queryParams);
+  params.set('page', String(nextPage));
+  return `?${params.toString()}`;
+};
+
+const prevPageHref = page > 1 ? hrefWithPage(page - 1) : null;
+const nextPageHref = page < totalPages ? hrefWithPage(page + 1) : null;
+const resetHref = '/dashboard/kanban';
 ---
 
 <DashboardLayout title="Kanban" activePage="kanban" authResult={auth} userName={userName}>
@@ -33,18 +98,52 @@ const blockedTasksCount = tasks.filter((task) => task.status === 'blocked').leng
       </div>
     </div>
 
+    <form class="taskhub-panel" method="get">
+      <div class="taskhub-filters">
+        <input name="q" type="search" class="taskhub-input" placeholder="Rechercher titre/référence" value={search} />
+        <select name="corps" class="taskhub-input">
+          <option value="">Tous corps</option>
+          {validCorps.map((corps) => <option value={corps} selected={corpsFilter === corps}>{corps}</option>)}
+        </select>
+        <select name="priority" class="taskhub-input">
+          <option value="">Toutes priorités</option>
+          {validPriorities.map((priority) => <option value={priority} selected={priorityFilter === priority}>{priority}</option>)}
+        </select>
+        <select name="status" class="taskhub-input">
+          <option value="">Tous statuts</option>
+          {validStatuses.map((status) => <option value={status} selected={statusFilter === status}>{status}</option>)}
+        </select>
+        <div class="taskhub-filter-actions">
+          <button type="submit" class="btn btn-primary">Filtrer</button>
+          <a href={resetHref} class="btn btn-ghost">Réinitialiser</a>
+        </div>
+      </div>
+    </form>
+
     <div class="taskhub-kanban-summary">
       <p class="taskhub-note" style="margin:0; flex:1 1 320px;">
-        Faites défiler horizontalement pour parcourir les colonnes. Les cartes sont plus aérées pour mieux lire le titre, le corps métier et le statut en un coup d'oeil.
+        Le kanban est paginé pour garder une lecture plus calme. Chaque page affiche un lot de tâches plus digeste tout en conservant le drag & drop.
       </p>
       <div class="taskhub-kanban-meta">
-        <span class="taskhub-kanban-pill">{tasks.length} tâches</span>
+        <span class="taskhub-kanban-pill">{totalTasks} tâches</span>
         <span class="taskhub-kanban-pill">{openTasksCount} ouvertes</span>
         <span class="taskhub-kanban-pill">{blockedTasksCount} bloquées</span>
+        <span class="taskhub-kanban-pill">Page {page} / {totalPages}</span>
+        {(search || corpsFilter || priorityFilter || statusFilter) && <span class="taskhub-kanban-pill">Vue filtrée</span>}
       </div>
     </div>
 
     <KanbanBoard tasks={tasks} />
+
+    <nav class="taskhub-pagination" aria-label="Pagination du kanban">
+      <div class="taskhub-pagination-meta">
+        <span class="taskhub-note" style="margin:0;">Affichage {rangeFrom + 1}-{Math.min(rangeFrom + tasks.length, totalTasks)} sur {totalTasks}</span>
+      </div>
+      <div class="taskhub-pagination-actions">
+        {prevPageHref ? <a href={prevPageHref} class="btn btn-ghost">← Page précédente</a> : <span class="btn btn-ghost is-disabled" aria-disabled="true">← Page précédente</span>}
+        {nextPageHref ? <a href={nextPageHref} class="btn btn-primary">Page suivante →</a> : <span class="btn btn-primary is-disabled" aria-disabled="true">Page suivante →</span>}
+      </div>
+    </nav>
   </section>
   <Toast />
 </DashboardLayout>

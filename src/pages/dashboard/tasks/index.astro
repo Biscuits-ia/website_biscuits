@@ -1,26 +1,115 @@
 ---
 import DashboardLayout from '@/layouts/DashboardLayout.astro';
-import TaskFilters from '@/components/tasks/TaskFilters.astro';
 import TaskCard from '@/components/tasks/TaskCard.astro';
 import Button from '@/components/ui/Button.astro';
 import { requireAuth } from '@/lib/auth';
 import { createSupabaseAdminClient } from '@/lib/supabase';
-import type { TaskWithRelations } from '@/lib/types';
+import type { CorpsType, PriorityLevel, TaskStatus, TaskWithRelations } from '@/lib/types';
 import '@/styles/task-hub.css';
 
-const auth = await requireAuth(Astro as any);
+const validCorps: CorpsType[] = ['DEV', 'DB', 'DESIGN', 'QA', 'DATA', 'PM'];
+const validPriorities: PriorityLevel[] = ['P0', 'P1', 'P2', 'P3'];
+const validStatuses: TaskStatus[] = ['backlog', 'todo', 'in_progress', 'in_review', 'testing', 'blocked', 'done'];
+const validAssignmentFilters = ['unassigned'] as const;
+
+const auth = await requireAuth(Astro);
 if (auth instanceof Response) return auth;
 
+const rawSearch = (Astro.url.searchParams.get('q') ?? '').trim();
+const search = rawSearch.replace(/[,%()[\]]/g, '');
+const corpsFilter = validCorps.includes(Astro.url.searchParams.get('corps') as CorpsType)
+  ? (Astro.url.searchParams.get('corps') as CorpsType)
+  : '';
+const priorityFilter = validPriorities.includes(Astro.url.searchParams.get('priority') as PriorityLevel)
+  ? (Astro.url.searchParams.get('priority') as PriorityLevel)
+  : '';
+const statusFilter = validStatuses.includes(Astro.url.searchParams.get('status') as TaskStatus)
+  ? (Astro.url.searchParams.get('status') as TaskStatus)
+  : '';
+const assignmentFilter = validAssignmentFilters.includes(Astro.url.searchParams.get('assignment') as (typeof validAssignmentFilters)[number])
+  ? (Astro.url.searchParams.get('assignment') as (typeof validAssignmentFilters)[number])
+  : '';
+const page = Math.max(1, Number(Astro.url.searchParams.get('page') ?? '1'));
+const pageSize = 24;
+const rangeFrom = (page - 1) * pageSize;
+const rangeTo = rangeFrom + pageSize - 1;
+
 const admin = createSupabaseAdminClient();
-const { data, error } = await admin
+let tasksQuery = admin
   .from('tasks')
-  .select('id, reference, title, description, corps, task_type, priority, status, assignee_id, reporter_id, sprint_id, story_points, time_estimate_hours, time_spent_hours, due_date, acceptance_criteria, deliverables, definition_of_done, dod_completed, tags, blocked_reason, parent_task_id, doc_link, figma_link, created_at, updated_at')
-  .order('created_at', { ascending: false })
-  .limit(300);
+  .select('id, reference, title, description, corps, task_type, priority, status, assignee_id, reporter_id, sprint_id, story_points, time_estimate_hours, time_spent_hours, due_date, acceptance_criteria, deliverables, definition_of_done, dod_completed, tags, blocked_reason, parent_task_id, doc_link, figma_link, created_at, updated_at');
+
+let countQuery = admin
+  .from('tasks')
+  .select('id', { count: 'exact', head: true });
+
+if (search) {
+  const searchExpr = `title.ilike.%${search}%,reference.ilike.%${search}%`;
+  tasksQuery = tasksQuery.or(searchExpr);
+  countQuery = countQuery.or(searchExpr);
+}
+
+if (corpsFilter) {
+  tasksQuery = tasksQuery.eq('corps', corpsFilter);
+  countQuery = countQuery.eq('corps', corpsFilter);
+}
+
+if (priorityFilter) {
+  tasksQuery = tasksQuery.eq('priority', priorityFilter);
+  countQuery = countQuery.eq('priority', priorityFilter);
+}
+
+if (statusFilter) {
+  tasksQuery = tasksQuery.eq('status', statusFilter);
+  countQuery = countQuery.eq('status', statusFilter);
+}
+
+if (assignmentFilter === 'unassigned') {
+  tasksQuery = tasksQuery.is('assignee_id', null);
+  countQuery = countQuery.is('assignee_id', null);
+}
+
+const [{ data, error }, { count: totalTasksCount }] = await Promise.all([
+  tasksQuery.order('created_at', { ascending: false }).range(rangeFrom, rangeTo),
+  countQuery,
+]);
 
 if (error) console.warn('[dashboard/tasks] tasks query warning:', error.message);
 const tasks = ((data ?? []) as unknown as TaskWithRelations[]);
+const totalTasks = totalTasksCount ?? tasks.length;
+const totalPages = Math.max(1, Math.ceil(totalTasks / pageSize));
 const userName = auth.user.user_metadata?.full_name ?? auth.user.email?.split('@')[0] ?? 'Utilisateur';
+const doneTasksCount = tasks.filter((task) => task.status === 'done').length;
+const inProgressTasksCount = tasks.filter((task) => task.status === 'in_progress').length;
+const blockedTasksCount = tasks.filter((task) => task.status === 'blocked').length;
+const unassignedTasksCount = tasks.filter((task) => !task.assignee_id).length;
+const queryParams = new URLSearchParams();
+if (search) queryParams.set('q', search);
+if (corpsFilter) queryParams.set('corps', corpsFilter);
+if (priorityFilter) queryParams.set('priority', priorityFilter);
+if (statusFilter) queryParams.set('status', statusFilter);
+if (assignmentFilter) queryParams.set('assignment', assignmentFilter);
+const hrefWithPage = (nextPage: number) => {
+  const params = new URLSearchParams(queryParams);
+  params.set('page', String(nextPage));
+  return `?${params.toString()}`;
+};
+const hrefWithFilters = (nextFilters: Record<string, string>) => {
+  const params = new URLSearchParams(queryParams);
+  params.delete('page');
+  Object.entries(nextFilters).forEach(([key, value]) => {
+    if (value) params.set(key, value);
+    else params.delete(key);
+  });
+  const serialized = params.toString();
+  return serialized ? `?${serialized}` : '/dashboard/tasks';
+};
+const prevPageHref = page > 1 ? hrefWithPage(page - 1) : null;
+const nextPageHref = page < totalPages ? hrefWithPage(page + 1) : null;
+const inProgressHref = hrefWithFilters({ status: 'in_progress', assignment: '' });
+const blockedHref = hrefWithFilters({ status: 'blocked', assignment: '' });
+const unassignedHref = hrefWithFilters({ assignment: 'unassigned', status: '' });
+const doneHref = hrefWithFilters({ status: 'done', assignment: '' });
 ---
 
 <DashboardLayout title="Tâches" activePage="tasks" authResult={auth} userName={userName}>
@@ -38,54 +127,77 @@ const userName = auth.user.user_metadata?.full_name ?? auth.user.email?.split('@
       </div>
     </div>
 
-    <TaskFilters />
+    <form class="taskhub-panel" method="get">
+      <div class="taskhub-filters">
+        <input name="q" type="search" class="taskhub-input" placeholder="Rechercher titre/référence" value={search} />
+        <select name="corps" class="taskhub-input">
+          <option value="">Tous corps</option>
+          {validCorps.map((corps) => <option value={corps} selected={corpsFilter === corps}>{corps}</option>)}
+        </select>
+        <select name="priority" class="taskhub-input">
+          <option value="">Toutes priorités</option>
+          {validPriorities.map((priority) => <option value={priority} selected={priorityFilter === priority}>{priority}</option>)}
+        </select>
+        <select name="status" class="taskhub-input">
+          <option value="">Tous statuts</option>
+          {validStatuses.map((status) => <option value={status} selected={statusFilter === status}>{status}</option>)}
+        </select>
+        <div class="taskhub-filter-actions">
+          <button type="submit" class="btn btn-primary">Filtrer</button>
+          <a href="/dashboard/tasks" class="btn btn-ghost">Réinitialiser</a>
+        </div>
+      </div>
+    </form>
+
+    <div class="taskhub-kanban-summary">
+      <p class="taskhub-note" style="margin:0; flex:1 1 320px;">
+        La liste est maintenant paginée et filtrée côté serveur pour réduire le scroll et garder des temps de chargement stables.
+      </p>
+      <div class="taskhub-kanban-meta">
+        <span class="taskhub-kanban-pill">{totalTasks} tâches</span>
+        <span class="taskhub-kanban-pill">Page {page} / {totalPages}</span>
+        {(search || corpsFilter || priorityFilter || statusFilter || assignmentFilter) && <span class="taskhub-kanban-pill">Vue filtrée</span>}
+      </div>
+    </div>
+
+    <div class="taskhub-kpi-grid taskhub-kpi-grid--tasks">
+      <a href={inProgressHref} class="taskhub-kpi-card taskhub-kpi-card--link">
+        <p class="taskhub-kpi-label">En cours</p>
+        <p class="taskhub-kpi-value taskhub-kpi-value-accent">{inProgressTasksCount}</p>
+      </a>
+      <a href={blockedHref} class="taskhub-kpi-card taskhub-kpi-card--link">
+        <p class="taskhub-kpi-label">Bloquées</p>
+        <p class="taskhub-kpi-value taskhub-kpi-value-danger">{blockedTasksCount}</p>
+      </a>
+      <a href={unassignedHref} class="taskhub-kpi-card taskhub-kpi-card--link">
+        <p class="taskhub-kpi-label">Non attribuées</p>
+        <p class="taskhub-kpi-value">{unassignedTasksCount}</p>
+      </a>
+      <a href={doneHref} class="taskhub-kpi-card taskhub-kpi-card--link">
+        <p class="taskhub-kpi-label">Terminées</p>
+        <p class="taskhub-kpi-value">{doneTasksCount}</p>
+      </a>
+    </div>
 
     <div id="tasks-grid" class="taskhub-grid" data-density="comfort">
       {tasks.map((task, idx) => <TaskCard task={task} class="taskhub-card-animate" style={`--stagger:${idx};`} />)}
       {tasks.length === 0 && <p class="taskhub-empty">Aucune tâche disponible.</p>}
     </div>
+
+    <nav class="taskhub-pagination" aria-label="Pagination de la liste des tâches">
+      <div class="taskhub-pagination-meta">
+        <span class="taskhub-note" style="margin:0;">Affichage {tasks.length ? rangeFrom + 1 : 0}-{Math.min(rangeFrom + tasks.length, totalTasks)} sur {totalTasks}</span>
+      </div>
+      <div class="taskhub-pagination-actions">
+        {prevPageHref ? <a href={prevPageHref} class="btn btn-ghost">← Page précédente</a> : <span class="btn btn-ghost is-disabled" aria-disabled="true">← Page précédente</span>}
+        {nextPageHref ? <a href={nextPageHref} class="btn btn-primary">Page suivante →</a> : <span class="btn btn-primary is-disabled" aria-disabled="true">Page suivante →</span>}
+      </div>
+    </nav>
   </section>
 </DashboardLayout>
 
 <script is:inline>
-  const cards = Array.from(document.querySelectorAll('[data-task-id]'));
   const tasksGrid = document.getElementById('tasks-grid');
-
-  function text(el) { return (el?.textContent || '').toLowerCase(); }
-  function value(id) {
-    const el = document.getElementById(id);
-    return el instanceof HTMLInputElement || el instanceof HTMLSelectElement ? el.value.trim().toLowerCase() : '';
-  }
-
-  function applyFilters() {
-    const q = value('f-search');
-    const corps = value('f-corps');
-    const priority = value('f-priority');
-    const status = value('f-status');
-
-    cards.forEach((card) => {
-      const allText = text(card);
-      const okQ = !q || allText.includes(q);
-      const okCorps = !corps || allText.includes(corps);
-      const okPrio = !priority || allText.includes(priority);
-      const okStatus = !status || allText.includes(status.replace('_', ' ')) || allText.includes(status);
-      card.style.display = okQ && okCorps && okPrio && okStatus ? '' : 'none';
-    });
-  }
-
-  ['f-search','f-corps','f-priority','f-status'].forEach((id) => {
-    const el = document.getElementById(id);
-    el?.addEventListener('input', applyFilters);
-    el?.addEventListener('change', applyFilters);
-  });
-
-  document.getElementById('f-reset')?.addEventListener('click', () => {
-    ['f-search','f-corps','f-priority','f-status'].forEach((id) => {
-      const el = document.getElementById(id);
-      if (el instanceof HTMLInputElement || el instanceof HTMLSelectElement) el.value = '';
-    });
-    applyFilters();
-  });
 
   function setDensity(nextDensity) {
     if (!tasksGrid) return;

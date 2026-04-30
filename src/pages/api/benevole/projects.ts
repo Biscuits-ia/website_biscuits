@@ -1,6 +1,6 @@
 // src/pages/api/benevole/projects.ts
 import type { APIRoute } from 'astro';
-import { createSupabaseClient } from '@/lib/supabase';
+import { createSupabaseClient, createSupabaseAdminClient } from '@/lib/supabase';
 import { fetchRoleSecure } from '@/lib/auth';
 
 function jsonError(message: string, status = 400) {
@@ -31,7 +31,8 @@ export const POST: APIRoute = async ({ request, cookies }) => {
   const ctx = await getAuthContext(request, cookies);
   if (!ctx) return jsonError('Non autorisé.', 401);
 
-  const { supabase, user, role } = ctx;
+  const { user, role } = ctx;
+  const adminSupabase = createSupabaseAdminClient();
 
   // Seuls le staff peut créer un projet
   if (role !== 'admin' && role !== 'moderator') {
@@ -55,7 +56,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
   if (title.length > 120) return jsonError('Le titre ne doit pas dépasser 120 caractères.');
   if (description && description.length > 800) return jsonError('La description ne doit pas dépasser 800 caractères.');
 
-  const { data, error } = await supabase
+  const { data, error } = await adminSupabase
     .from('projects')
     .insert({
       title,
@@ -71,6 +72,15 @@ export const POST: APIRoute = async ({ request, cookies }) => {
   if (error) {
     console.error('[api/benevole/projects] insert error:', error.message);
     return jsonError('Erreur lors de la création.', 500);
+  }
+
+  // Associer automatiquement le créateur au projet pour la visibilité membre.
+  const { error: memberError } = await adminSupabase
+    .from('project_members')
+    .upsert({ project_id: data.id, user_id: user.id }, { onConflict: 'project_id,user_id' });
+
+  if (memberError) {
+    console.error('[api/benevole/projects] member upsert warning:', memberError.message);
   }
 
   return jsonOk({ id: data.id }, 201);
@@ -100,12 +110,13 @@ export const PATCH: APIRoute = async ({ request, cookies, url }) => {
   const ctx = await getAuthContext(request, cookies);
   if (!ctx) return jsonError('Non autorisé.', 401);
 
-  const { supabase, user, role } = ctx;
+  const { user, role } = ctx;
+  const adminSupabase = createSupabaseAdminClient();
 
   const projectId = url.searchParams.get('id');
   if (!projectId) return jsonError('Paramètre id manquant.');
 
-  const { data: proj } = await supabase
+  const { data: proj } = await adminSupabase
     .from('projects')
     .select('leader_id')
     .eq('id', projectId)
@@ -124,7 +135,7 @@ export const PATCH: APIRoute = async ({ request, cookies, url }) => {
   if (valErr) return jsonError(valErr);
   if (Object.keys(updates).length === 0) return jsonError('Aucune donnée à mettre à jour.');
 
-  const { error } = await supabase.from('projects').update(updates).eq('id', projectId);
+  const { error } = await adminSupabase.from('projects').update(updates).eq('id', projectId);
   if (error) {
     console.error('[api/benevole/projects] update error:', error.message);
     return jsonError('Erreur lors de la mise à jour.', 500);
@@ -138,14 +149,15 @@ export const DELETE: APIRoute = async ({ request, cookies, url }) => {
   const ctx = await getAuthContext(request, cookies);
   if (!ctx) return jsonError('Non autorisé.', 401);
 
-  const { supabase, role } = ctx;
+  const { role } = ctx;
+  const adminSupabase = createSupabaseAdminClient();
 
   if (role !== 'admin') return jsonError('Réservé aux admins.', 403);
 
   const projectId = url.searchParams.get('id');
   if (!projectId) return jsonError('Paramètre id manquant.');
 
-  const { error } = await supabase.from('projects').delete().eq('id', projectId);
+  const { error } = await adminSupabase.from('projects').delete().eq('id', projectId);
 
   if (error) {
     console.error('[api/benevole/projects] delete error:', error.message);

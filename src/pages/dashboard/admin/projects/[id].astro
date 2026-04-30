@@ -163,9 +163,6 @@ const toolsText = project.tools.join(', ');
     <a href="/dashboard/admin/projects" class="back-link">← Retour aux projets</a>
     <h1 class="page-title">{project.title}</h1>
     <p class="description">Pilotage admin: tâches, affectations, et brief projet</p>
-    <div class="top-actions">
-      <a href={`/dashboard/admin/projects/${projectId}/tasks`} class="btn btn-primary btn-sm">Gérer les tâches (page dédiée)</a>
-    </div>
   </div>
 
   <div class="grid">
@@ -236,6 +233,12 @@ const toolsText = project.tools.join(', ');
         <option value="ops">Type: Ops</option>
         <option value="doc">Type: Documentation</option>
       </select>
+      <select name="status" class="input">
+        <option value="todo">À faire</option>
+        <option value="in_progress">En cours</option>
+        <option value="review">Révision</option>
+        <option value="done">Terminé</option>
+      </select>
       <select name="priority" class="input">
         <option value="medium">Priorité moyenne</option>
         <option value="high">Priorité haute</option>
@@ -277,6 +280,14 @@ const toolsText = project.tools.join(', ');
                     <option value="qa" selected={t.task_type === 'qa'}>{taskTypeLabel.qa}</option>
                     <option value="ops" selected={t.task_type === 'ops'}>{taskTypeLabel.ops}</option>
                     <option value="doc" selected={t.task_type === 'doc'}>{taskTypeLabel.doc}</option>
+                  </select>
+                </td>
+                <td>
+                  <select class="input input-xs js-task-status" data-id={t.id}>
+                    <option value="todo" selected={t.status === 'todo'}>À faire</option>
+                    <option value="in_progress" selected={t.status === 'in_progress'}>En cours</option>
+                    <option value="review" selected={t.status === 'review'}>Révision</option>
+                    <option value="done" selected={t.status === 'done'}>Terminé</option>
                   </select>
                 </td>
                 <td>
@@ -350,7 +361,6 @@ const toolsText = project.tools.join(', ');
   .back-link { color: var(--accent); text-decoration: none; font-size: var(--text-xs); }
   .back-link:hover { text-decoration: underline; }
   .page-title { font-size: var(--text-xl); font-weight: 700; }
-  .top-actions { display: flex; gap: 8px; }
 
   .grid { display: grid; grid-template-columns: 1.3fr 1fr; gap: var(--space-lg); }
   .card { border: var(--brutal-border-thin); background: var(--surface-raised); padding: var(--space-md); }

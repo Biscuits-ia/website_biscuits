@@ -15,17 +15,16 @@ const search = (Astro.url.searchParams.get('q') ?? '').trim();
 
 let query = adminSupabase
   .from('projects')
-  .select('id, title, description, status, priority, deadline, created_at, leader_id, objective, tech_stack, estimated_hours, profiles!projects_leader_id_fkey(full_name, email)')
+  .select('id, title, description, status, priority, deadline, created_at, leader_id, objective, tech_stack, estimated_hours')
   .order('created_at', { ascending: false });
 
 if (statusFilter) query = query.eq('status', statusFilter);
 if (search) query = query.ilike('title', `%${search}%`);
 
-const { data: projectsRaw } = await query;
+const { data: projectsRaw, error: projectsError } = await query;
 
-interface LeaderRow {
-  full_name: string | null;
-  email: string;
+if (projectsError) {
+  console.error('[admin/projects] query error:', projectsError.message, projectsError.code);
 }
 
 interface ProjectRow {
@@ -40,10 +39,22 @@ interface ProjectRow {
   objective: string | null;
   tech_stack: string[];
   estimated_hours: number | null;
-  profiles: LeaderRow[] | null;
 }
 
 const projects = (projectsRaw ?? []) as unknown as ProjectRow[];
+
+// Fetch leader profiles separately (avoid fragile embedded join)
+const leaderIds = [...new Set(projects.map((p) => p.leader_id).filter(Boolean))] as string[];
+const leaderMap: Record<string, string> = {};
+if (leaderIds.length > 0) {
+  const { data: leaderProfiles } = await adminSupabase
+    .from('profiles')
+    .select('id, full_name, email')
+    .in('id', leaderIds);
+  for (const lp of leaderProfiles ?? []) {
+    leaderMap[lp.id] = lp.full_name ?? lp.email ?? lp.id;
+  }
+}
 
 const statusLabel: Record<string, string> = {
   active: 'Actif',
@@ -111,7 +122,7 @@ const priorityClass: Record<string, string> = {
         </thead>
         <tbody>
           {projects.length > 0 ? projects.map((p) => {
-            const leader = p.profiles?.[0]?.full_name ?? p.profiles?.[0]?.email ?? '—';
+            const leader = (p.leader_id ? leaderMap[p.leader_id] : null) ?? '—';
             return (
               <tr>
                 <td>

@@ -10,8 +10,9 @@ interface Props {
   nextHref?: string | null;
   page?: number;
   totalPages?: number;
+  currentUserId?: string;
 }
-const { status, label, tasks, prevHref, nextHref, page, totalPages } = Astro.props;
+const { status, label, tasks, prevHref, nextHref, page, totalPages, currentUserId = '' } = Astro.props;
 ---
 
 <section class="taskhub-column" data-kanban-status={status}>
@@ -20,7 +21,7 @@ const { status, label, tasks, prevHref, nextHref, page, totalPages } = Astro.pro
     <span class="taskhub-column-count">{tasks.length}</span>
   </header>
   <div class="taskhub-dropzone" data-dropzone={status}>
-    {tasks.map((task) => <TaskCard task={task} showActionLink={false} />)}
+    {tasks.map((task) => <TaskCard task={task} showActionLink={false} claimUserId={currentUserId} />)}
   </div>
   {(prevHref || nextHref) && (
     <nav class="taskhub-col-pag" aria-label={`Pagination colonne ${label}`}>

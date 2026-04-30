@@ -4,8 +4,9 @@ import TaskStatusBadge from './TaskStatusBadge.astro';
 import TaskPriorityBadge from './TaskPriorityBadge.astro';
 import CorpsTag from '@/components/corps/CorpsTag.astro';
 import type { TaskWithRelations } from '@/lib/types';
-interface Props { task: TaskWithRelations; class?: string; style?: string; showActionLink?: boolean; }
-const { task, class: className = '', style = '', showActionLink = true } = Astro.props;
+interface Props { task: TaskWithRelations; class?: string; style?: string; showActionLink?: boolean; claimUserId?: string; }
+const { task, class: className = '', style = '', showActionLink = true, claimUserId = '' } = Astro.props;
+const canClaim = !!claimUserId && !task.assignee_id && task.assignee_id !== claimUserId;
 ---
 
 <article class={`taskhub-card ${className}`} style={style} data-task-id={task.id} draggable="true" tabindex="0">
@@ -34,6 +35,11 @@ const { task, class: className = '', style = '', showActionLink = true } = Astro
       <a href={`/dashboard/tasks/${task.id}`} class="btn btn-ghost taskhub-card-link" draggable="false">Voir / Choisir</a>
     </div>
   )}
+  {!showActionLink && canClaim && (
+    <div class="taskhub-card-actions">
+      <button type="button" class="btn btn-primary taskhub-claim-btn" data-claim-task-id={task.id}>Je prends cette tâche</button>
+    </div>
+  )}
 </article>
 
 <style>
@@ -56,6 +62,18 @@ const { task, class: className = '', style = '', showActionLink = true } = Astro
     margin-top: 0.8rem;
     display: flex;
     justify-content: flex-end;
+  }
+
+  .taskhub-claim-btn {
+    width: 100%;
+    font-size: var(--text-xs);
+    padding: 0.4rem 0.75rem;
+    cursor: pointer;
+  }
+
+  .taskhub-claim-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
   }
 
   .taskhub-meta-row {

@@ -9,8 +9,9 @@ interface Props {
   todoNextHref?: string | null;
   todoPage?: number;
   todoTotalPages?: number;
+  currentUserId?: string;
 }
-const { tasks = [], todoTasks = [], todoPrevHref, todoNextHref, todoPage = 1, todoTotalPages = 1 } = Astro.props;
+const { tasks = [], todoTasks = [], todoPrevHref, todoNextHref, todoPage = 1, todoTotalPages = 1, currentUserId = '' } = Astro.props;
 
 const statuses: Array<{ status: TaskStatus; label: string }> = [
   { status: 'backlog', label: 'Backlog' },
@@ -23,10 +24,10 @@ const statuses: Array<{ status: TaskStatus; label: string }> = [
 ];
 ---
 
-<div class="taskhub-board" id="kanban-board">
+<div class="taskhub-board" id="kanban-board" data-current-user-id={currentUserId}>
   {statuses.map((s) => s.status === 'todo'
-    ? <KanbanColumn status={s.status} label={s.label} tasks={todoTasks} prevHref={todoPrevHref} nextHref={todoNextHref} page={todoPage} totalPages={todoTotalPages} />
-    : <KanbanColumn status={s.status} label={s.label} tasks={tasks.filter((t) => t.status === s.status)} />
+    ? <KanbanColumn status={s.status} label={s.label} tasks={todoTasks} prevHref={todoPrevHref} nextHref={todoNextHref} page={todoPage} totalPages={todoTotalPages} currentUserId={currentUserId} />
+    : <KanbanColumn status={s.status} label={s.label} tasks={tasks.filter((t) => t.status === s.status)} currentUserId={currentUserId} />
   )}
 </div>
 
@@ -73,5 +74,35 @@ const statuses: Array<{ status: TaskStatus; label: string }> = [
         window.showToast?.(json.error || 'Impossible de déplacer la tâche.', 'error');
       }
     });
+  });
+
+  // ── Claim task (Je prends cette tâche) ──────────────────────────────────────
+  const board = document.getElementById('kanban-board');
+  const currentUserId = board?.getAttribute('data-current-user-id') || '';
+
+  board?.addEventListener('click', async (e) => {
+    const btn = e.target?.closest('[data-claim-task-id]');
+    if (!btn || !currentUserId) return;
+    const taskId = btn.getAttribute('data-claim-task-id');
+    if (!taskId) return;
+
+    btn.disabled = true;
+    btn.textContent = '…';
+
+    const res = await fetch('/api/tasks/update', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: taskId, assignee_id: currentUserId }),
+    });
+
+    const json = await res.json().catch(() => ({}));
+    if (res.ok) {
+      window.showToast?.('Tâche prise en charge !', 'success');
+      setTimeout(() => window.location.reload(), 600);
+    } else {
+      window.showToast?.(json.error || 'Impossible de prendre la tâche.', 'error');
+      btn.disabled = false;
+      btn.textContent = 'Je prends cette tâche';
+    }
   });
 </script>

@@ -93,13 +93,6 @@ if (corpsFilter) queryParams.set('corps', corpsFilter);
 if (priorityFilter) queryParams.set('priority', priorityFilter);
 if (statusFilter) queryParams.set('status', statusFilter);
 
-const hrefWithPage = (nextPage: number) => {
-  const params = new URLSearchParams(queryParams);
-  params.set('page', String(nextPage));
-  if (todoPage > 1) params.set('todo_page', String(todoPage));
-  return `?${params.toString()}`;
-};
-
 const hrefWithTodoPage = (p: number) => {
   const params = new URLSearchParams(queryParams);
   if (page > 1) params.set('page', String(page));
@@ -107,8 +100,6 @@ const hrefWithTodoPage = (p: number) => {
   return `?${params.toString()}`;
 };
 
-const prevPageHref = page > 1 ? hrefWithPage(page - 1) : null;
-const nextPageHref = page < totalPages ? hrefWithPage(page + 1) : null;
 const todoPrevHref = todoPage > 1 ? hrefWithTodoPage(todoPage - 1) : null;
 const todoNextHref = todoPage < todoTotalPages ? hrefWithTodoPage(todoPage + 1) : null;
 const resetHref = '/dashboard/kanban';
@@ -158,17 +149,8 @@ const resetHref = '/dashboard/kanban';
       </div>
     </div>
 
-    <KanbanBoard tasks={tasks} todoTasks={todoTasks} todoPrevHref={todoPrevHref} todoNextHref={todoNextHref} todoPage={todoPage} todoTotalPages={todoTotalPages} />
+    <KanbanBoard tasks={tasks} todoTasks={todoTasks} todoPrevHref={todoPrevHref} todoNextHref={todoNextHref} todoPage={todoPage} todoTotalPages={todoTotalPages} currentUserId={auth.user.id} />
 
-    <nav class="taskhub-pagination" aria-label="Pagination du kanban">
-      <div class="taskhub-pagination-meta">
-        <span class="taskhub-note" style="margin:0;">Affichage {rangeFrom + 1}-{Math.min(rangeFrom + tasks.length, totalTasks)} sur {totalTasks}</span>
-      </div>
-      <div class="taskhub-pagination-actions">
-        {prevPageHref ? <a href={prevPageHref} class="btn btn-ghost">← Page précédente</a> : <span class="btn btn-ghost is-disabled" aria-disabled="true">← Page précédente</span>}
-        {nextPageHref ? <a href={nextPageHref} class="btn btn-primary">Page suivante →</a> : <span class="btn btn-primary is-disabled" aria-disabled="true">Page suivante →</span>}
-      </div>
-    </nav>
   </section>
   <Toast />
 </DashboardLayout>

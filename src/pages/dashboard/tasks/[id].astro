@@ -28,6 +28,8 @@ if (error || !taskRaw) return Astro.redirect('/dashboard/tasks');
 const task = taskRaw as unknown as TaskWithRelations;
 const userName = auth.user.user_metadata?.full_name ?? auth.user.email?.split('@')[0] ?? 'Utilisateur';
 const canDelete = auth.role === 'admin';
+const isTakenByMe = task.assignee_id === auth.user.id;
+const isTakenByOther = Boolean(task.assignee_id) && task.assignee_id !== auth.user.id;
 ---
 
 <DashboardLayout title={`Tâche ${task.reference}`} activePage="tasks" authResult={auth} userName={userName}>
@@ -46,6 +48,15 @@ const canDelete = auth.role === 'admin';
         {canDelete && <button id="task-delete-btn" type="button" class="btn btn-danger">Supprimer</button>}
       </div>
       <p id="task-description" class="taskhub-note" style="margin-top:0.65rem; white-space:pre-wrap">{task.description || 'Aucune description'}</p>
+
+      <div class="taskhub-chip-row" style="margin-top:0.8rem; justify-content:flex-end;">
+        {!isTakenByMe && !isTakenByOther && (
+          <button id="task-claim-btn" type="button" class="btn btn-primary">Je prends cette tâche</button>
+        )}
+        {isTakenByMe && (
+          <button id="task-unclaim-btn" type="button" class="btn btn-ghost">Je libère cette tâche</button>
+        )}
+      </div>
 
       <form id="task-update-form" class="taskhub-form-grid-2" style="margin-top:0.8rem">
         <input type="hidden" name="id" value={task.id} />
@@ -99,7 +110,7 @@ const canDelete = auth.role === 'admin';
   <Toast />
 </DashboardLayout>
 
-<script define:vars={{ taskId }} is:inline>
+<script define:vars={{ taskId, currentUserId: auth.user.id }} is:inline>
   function escapeHtml(value) {
     return String(value)
       .replaceAll('&', '&amp;')
@@ -219,5 +230,32 @@ const canDelete = auth.role === 'admin';
     setTimeout(() => {
       window.location.href = '/dashboard/tasks';
     }, 350);
+  });
+
+  async function updateAssignee(nextAssigneeId) {
+    const res = await fetch('/api/tasks/update', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: taskId, assignee_id: nextAssigneeId }),
+    });
+
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      window.showToast?.(json.error || 'Impossible de modifier l\'attribution.', 'error');
+      return;
+    }
+
+    window.showToast?.('Attribution mise à jour', 'success');
+    setTimeout(() => {
+      window.location.reload();
+    }, 250);
+  }
+
+  document.getElementById('task-claim-btn')?.addEventListener('click', async () => {
+    await updateAssignee(currentUserId);
+  });
+
+  document.getElementById('task-unclaim-btn')?.addEventListener('click', async () => {
+    await updateAssignee(null);
   });
 </script>

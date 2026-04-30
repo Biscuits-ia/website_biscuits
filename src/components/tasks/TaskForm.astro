@@ -10,9 +10,10 @@ interface Props {
   method?: 'POST' | 'PATCH';
   members?: MemberOption[];
   sprints?: SprintOption[];
+  showAssignee?: boolean;
 }
 
-const { action = '/api/tasks/create', method = 'POST', members = [], sprints = [] } = Astro.props;
+const { action = '/api/tasks/create', method = 'POST', members = [], sprints = [], showAssignee = true } = Astro.props;
 const corpsKeys = Object.keys(CORPS_CONFIG) as CorpsType[];
 ---
 
@@ -55,13 +56,15 @@ const corpsKeys = Object.keys(CORPS_CONFIG) as CorpsType[];
   </div>
 
   <div class="taskhub-form-grid-2">
-    <div>
-      <label for="assignee_id" class="taskhub-label">Assigné</label>
-      <select id="assignee_id" name="assignee_id" class="taskhub-input">
-        <option value="">Non assigné</option>
-        {members.map((m) => <option value={m.id}>{m.name}</option>)}
-      </select>
-    </div>
+    {showAssignee && (
+      <div>
+        <label for="assignee_id" class="taskhub-label">Assigné</label>
+        <select id="assignee_id" name="assignee_id" class="taskhub-input">
+          <option value="">Non assigné</option>
+          {members.map((m) => <option value={m.id}>{m.name}</option>)}
+        </select>
+      </div>
+    )}
     <div>
       <label for="sprint_id" class="taskhub-label">Sprint</label>
       <select id="sprint_id" name="sprint_id" class="taskhub-input">

@@ -19,6 +19,10 @@ const { task, class: className = '', style = '' } = Astro.props;
     <CorpsTag corps={task.corps} />
     <TaskStatusBadge status={task.status} />
   </div>
+
+  <div class="taskhub-card-actions">
+    <a href={`/dashboard/tasks/${task.id}`} class="btn btn-ghost taskhub-card-link">Voir / Choisir</a>
+  </div>
 </article>
 
 <style>
@@ -35,5 +39,15 @@ const { task, class: className = '', style = '' } = Astro.props;
     -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
     overflow: hidden;
+  }
+
+  .taskhub-card-actions {
+    margin-top: 0.8rem;
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .taskhub-card-link {
+    text-decoration: none;
   }
 </style>

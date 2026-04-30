@@ -20,6 +20,46 @@ function json(data: unknown, status = 200) {
   return new Response(JSON.stringify(data), { status, headers: { 'Content-Type': 'application/json' } });
 }
 
+function canEditTask(args: {
+  isManager: boolean;
+  isAssignee: boolean;
+  assigneeIdInPatch: string | null | undefined;
+  currentUserId: string;
+  currentAssigneeId: string | null;
+}) {
+  const { isManager, isAssignee, assigneeIdInPatch, currentUserId, currentAssigneeId } = args;
+  if (isManager || isAssignee) return true;
+  return assigneeIdInPatch === currentUserId && currentAssigneeId === null;
+}
+
+function validateAssigneeChange(args: {
+  hasAssigneeChange: boolean;
+  requestedAssignee: string | null | undefined;
+  currentUserId: string;
+  currentAssigneeId: string | null;
+  isVolunteerLike: boolean;
+}) {
+  const { hasAssigneeChange, requestedAssignee, currentUserId, currentAssigneeId, isVolunteerLike } = args;
+  if (!hasAssigneeChange) return null;
+
+  const isSelf = requestedAssignee === currentUserId;
+  const isUnassign = requestedAssignee === null;
+
+  if (!isSelf && !isUnassign) {
+    return { status: 403, error: 'Attribution non autorisée. Une tâche ne peut être attribuée qu\'à soi-même.' };
+  }
+
+  if (isVolunteerLike && isSelf && currentAssigneeId && currentAssigneeId !== currentUserId) {
+    return { status: 409, error: 'Cette tâche est déjà prise par un autre bénévole.' };
+  }
+
+  if (isVolunteerLike && isUnassign && currentAssigneeId !== currentUserId) {
+    return { status: 403, error: 'Vous ne pouvez libérer que vos propres tâches.' };
+  }
+
+  return null;
+}
+
 export const PATCH: APIRoute = async (Astro) => {
   const auth = await requireAuth(Astro as any);
   if (auth instanceof Response) return auth;
@@ -45,17 +85,35 @@ export const PATCH: APIRoute = async (Astro) => {
 
   if (!existingTask) return json({ error: 'Tâche introuvable' }, 404);
 
-  const role = profile?.role ?? 'member';
+  const role = profile?.role ?? auth.role ?? 'member';
   const isManager = ['admin', 'pm', 'tech_lead'].includes(role);
   const isAssignee = existingTask.assignee_id === auth.user.id;
+  const isVolunteerLike = ['benevole', 'member', 'user', 'moderator'].includes(role);
 
-  if (!isManager && !isAssignee) {
+  if (!canEditTask({
+    isManager,
+    isAssignee,
+    assigneeIdInPatch: parsed.data.assignee_id,
+    currentUserId: auth.user.id,
+    currentAssigneeId: existingTask.assignee_id,
+  })) {
     return json({ error: 'Modification non autorisée.' }, 403);
   }
 
   const updates: Record<string, unknown> = { ...parsed.data };
   delete updates.id;
   if ('description' in updates && updates.description === '') updates.description = null;
+
+  const assigneeError = validateAssigneeChange({
+    hasAssigneeChange: 'assignee_id' in updates,
+    requestedAssignee: parsed.data.assignee_id,
+    currentUserId: auth.user.id,
+    currentAssigneeId: existingTask.assignee_id,
+    isVolunteerLike,
+  });
+  if (assigneeError) {
+    return json({ error: assigneeError.error }, assigneeError.status);
+  }
 
   const { error } = await admin.from('tasks').update(updates).eq('id', parsed.data.id);
   if (error) {

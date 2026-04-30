@@ -2,18 +2,20 @@
 // src/pages/dashboard/benevole/projects.astro
 import DashboardLayout from '../../../layouts/DashboardLayout.astro';
 import { requireBenevole } from '../../../lib/auth';
+import { createSupabaseAdminClient } from '../../../lib/supabase';
 
 const result = await requireBenevole(Astro);
 if (result instanceof Response) return result;
 
-const { user, supabase, role } = result;
+const { user, role } = result;
 const userName = user.user_metadata?.full_name ?? user.email?.split('@')[0] ?? 'Bénévole';
 const isStaff  = role === 'admin' || role === 'moderator';
+const adminSupabase = createSupabaseAdminClient();
 
 const statusFilter = Astro.url.searchParams.get('status') ?? '';
 const search       = (Astro.url.searchParams.get('q') ?? '').replace(/[,()\[\]]/g, '');
 
-let query = supabase
+let query = adminSupabase
   .from('projects')
   .select(`
     id, title, description, status, priority, deadline, created_at,
@@ -25,7 +27,11 @@ let query = supabase
 if (statusFilter) query = query.eq('status', statusFilter);
 if (search)       query = query.ilike('title', `%${search}%`);
 
-const { data: projectsRaw } = await query;
+const { data: projectsRaw, error: projectsError } = await query;
+if (projectsError) {
+  console.error('[dashboard/benevole/projects] load error:', projectsError.message);
+}
+const loadError = projectsError ? 'Impossible de charger les projets pour le moment.' : null;
 
 const leaderIds = [...new Set(((projectsRaw ?? []) as Array<{ leader_id: string | null }>)
   .map((p) => p.leader_id)
@@ -33,7 +39,7 @@ const leaderIds = [...new Set(((projectsRaw ?? []) as Array<{ leader_id: string 
 
 let leadersById: Record<string, { full_name: string | null; email: string }> = {};
 if (leaderIds.length > 0) {
-  const { data: leadersRaw } = await supabase
+  const { data: leadersRaw } = await adminSupabase
     .from('profiles')
     .select('id, full_name, email')
     .in('id', leaderIds);
@@ -66,6 +72,12 @@ const priorityLabel: Record<string, string> = {
 ---
 
 <DashboardLayout title="Projets" role="benevole" activePage="projects" userName={userName} userEmail={user.email ?? ''} authResult={result}>
+  {loadError && (
+    <div class="card mb-4">
+      <p class="empty-state" style="color: var(--err-fg)">{loadError}</p>
+    </div>
+  )}
+
   <div class="page-header mb-6">
     <div>
       <h1 class="page-title">Projets</h1>

@@ -2,14 +2,16 @@
 // src/pages/dashboard/benevole/project/[id].astro
 import DashboardLayout from '../../../../layouts/DashboardLayout.astro';
 import { requireBenevole } from '../../../../lib/auth';
+import { createSupabaseAdminClient } from '../../../../lib/supabase';
 
 const result = await requireBenevole(Astro);
 if (result instanceof Response) return result;
 
-const { user, supabase, role } = result;
+const { user, role } = result;
 const userId   = user.id;
 const userName = user.user_metadata?.full_name ?? user.email?.split('@')[0] ?? 'Bénévole';
 const isStaff  = role === 'admin' || role === 'moderator';
+const adminSupabase = createSupabaseAdminClient();
 
 const projectId = Astro.params.id ?? '';
 if (!projectId) return Astro.redirect('/dashboard/benevole/projects');
@@ -20,14 +22,14 @@ const [
   { data: tasksRaw },
   { data: membersRaw },
 ] = await Promise.all([
-  supabase
+  adminSupabase
     .from('projects')
     .select(`
       id, title, description, status, priority, deadline, created_at, leader_id
     `)
     .eq('id', projectId)
     .single(),
-  supabase
+  adminSupabase
     .from('project_tasks')
     .select(`
       id, title, description, status, priority, deadline, position, created_by, assignee_id,
@@ -36,7 +38,7 @@ const [
     .eq('project_id', projectId)
     .order('status')
     .order('position'),
-  supabase
+  adminSupabase
     .from('project_members')
     .select('user_id, profiles(full_name, email)')
     .eq('project_id', projectId),
@@ -65,7 +67,7 @@ const members = (membersRaw ?? []) as unknown as Member[];
 
 let leaderProfile: { full_name: string | null; email: string } | null = null;
 if (project.leader_id) {
-  const { data } = await supabase
+  const { data } = await adminSupabase
     .from('profiles')
     .select('full_name, email')
     .eq('id', project.leader_id)

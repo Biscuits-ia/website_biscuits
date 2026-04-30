@@ -20,15 +20,21 @@ function json(data: unknown, status = 200) {
   return new Response(JSON.stringify(data), { status, headers: { 'Content-Type': 'application/json' } });
 }
 
+function isStatusOnlyUpdate(payload: z.infer<typeof patchSchema>) {
+  const allowedKeys = new Set(['id', 'status']);
+  return Object.keys(payload).every((key) => allowedKeys.has(key)) && payload.status !== undefined;
+}
+
 function canEditTask(args: {
   isManager: boolean;
   isAssignee: boolean;
+  isStatusOnly: boolean;
   assigneeIdInPatch: string | null | undefined;
   currentUserId: string;
   currentAssigneeId: string | null;
 }) {
-  const { isManager, isAssignee, assigneeIdInPatch, currentUserId, currentAssigneeId } = args;
-  if (isManager || isAssignee) return true;
+  const { isManager, isAssignee, isStatusOnly, assigneeIdInPatch, currentUserId, currentAssigneeId } = args;
+  if (isManager || isAssignee || isStatusOnly) return true;
   return assigneeIdInPatch === currentUserId && currentAssigneeId === null;
 }
 
@@ -89,10 +95,12 @@ export const PATCH: APIRoute = async (Astro) => {
   const isManager = ['admin', 'pm', 'tech_lead'].includes(role);
   const isAssignee = existingTask.assignee_id === auth.user.id;
   const isVolunteerLike = ['benevole', 'member', 'user', 'moderator'].includes(role);
+  const statusOnlyUpdate = isStatusOnlyUpdate(parsed.data);
 
   if (!canEditTask({
     isManager,
     isAssignee,
+    isStatusOnly: statusOnlyUpdate,
     assigneeIdInPatch: parsed.data.assignee_id,
     currentUserId: auth.user.id,
     currentAssigneeId: existingTask.assignee_id,

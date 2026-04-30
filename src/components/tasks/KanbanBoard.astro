@@ -58,7 +58,10 @@ const statuses: Array<{ status: TaskStatus; label: string }> = [
       });
 
       if (res.ok) window.location.reload();
-      else window.showToast?.('Impossible de déplacer la tâche.', 'error');
+      else {
+        const json = await res.json().catch(() => ({}));
+        window.showToast?.(json.error || 'Impossible de déplacer la tâche.', 'error');
+      }
     });
   });
 </script>

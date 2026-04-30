@@ -107,23 +107,22 @@
 }
 
 .taskhub-board {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 1.1rem;
-  overflow-x: auto;
-  padding: 0.35rem 0.35rem 0.8rem;
-  scroll-snap-type: x proximity;
-  align-items: flex-start;
+  overflow-x: visible;
+  padding: 0.35rem 0 0.8rem;
+  align-items: stretch;
 }
 
 .taskhub-column {
-  min-width: 360px;
-  max-width: 360px;
+  min-width: 0;
+  max-width: none;
   border: var(--brutal-border);
   background: linear-gradient(180deg, var(--surface-raised) 0%, var(--surface) 100%);
   box-shadow: var(--shadow-md);
   padding: 0.8rem;
   border-radius: 18px;
-  scroll-snap-align: start;
 }
 
 .taskhub-column-header {
@@ -159,7 +158,7 @@
 }
 
 .taskhub-dropzone {
-  min-height: 62vh;
+  min-height: 280px;
   display: flex;
   flex-direction: column;
   gap: 0.8rem;
@@ -170,22 +169,6 @@
   background: var(--accent-light);
   box-shadow: inset 0 0 0 3px var(--accent-dark);
   transform: translateY(-1px);
-}
-
-.taskhub-board::-webkit-scrollbar {
-  height: 14px;
-}
-
-.taskhub-board::-webkit-scrollbar-track {
-  background: color-mix(in srgb, var(--surface) 82%, transparent);
-  border-radius: 999px;
-}
-
-.taskhub-board::-webkit-scrollbar-thumb {
-  background: color-mix(in srgb, var(--accent-dark) 52%, var(--border-strong));
-  border-radius: 999px;
-  border: 3px solid transparent;
-  background-clip: padding-box;
 }
 
 .taskhub-board .taskhub-card {
@@ -406,19 +389,17 @@
   .taskhub-layout-2 { grid-template-columns: 1fr; }
   .taskhub-form-grid-2 { grid-template-columns: 1fr; }
   .taskhub-form-grid-3 { grid-template-columns: 1fr; }
-  .taskhub-column { min-width: 320px; max-width: 320px; }
-  .taskhub-dropzone { min-height: 52vh; }
+  .taskhub-board { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+  .taskhub-dropzone { min-height: 240px; }
 }
 
 @media (max-width: 720px) {
   .taskhub-board {
-    padding-inline: 0.1rem;
+    grid-template-columns: 1fr;
     gap: 0.85rem;
   }
 
   .taskhub-column {
-    min-width: min(88vw, 320px);
-    max-width: min(88vw, 320px);
     padding: 0.7rem;
   }
 

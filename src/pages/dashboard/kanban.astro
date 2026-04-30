@@ -1,12 +1,13 @@
 ---
 import DashboardLayout from '@/layouts/DashboardLayout.astro';
 import KanbanBoard from '@/components/tasks/KanbanBoard.astro';
+import Toast from '@/components/ui/Toast.astro';
 import { requireAuth } from '@/lib/auth';
 import { createSupabaseAdminClient } from '@/lib/supabase';
 import type { TaskWithRelations } from '@/lib/types';
 import '@/styles/task-hub.css';
 
-const auth = await requireAuth(Astro as any);
+const auth = await requireAuth(Astro);
 if (auth instanceof Response) return auth;
 
 const admin = createSupabaseAdminClient();
@@ -31,4 +32,5 @@ const userName = auth.user.user_metadata?.full_name ?? auth.user.email?.split('@
     </div>
     <KanbanBoard tasks={tasks} />
   </section>
+  <Toast />
 </DashboardLayout>

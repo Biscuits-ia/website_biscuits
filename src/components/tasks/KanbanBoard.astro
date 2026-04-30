@@ -24,11 +24,14 @@ const statuses: Array<{ status: TaskStatus; label: string }> = [
   let draggedTaskId = null;
 
   document.querySelectorAll('[data-task-id]').forEach((card) => {
-    card.addEventListener('dragstart', () => {
+    card.addEventListener('dragstart', (event) => {
       draggedTaskId = card.getAttribute('data-task-id');
+      event.dataTransfer?.setData('text/plain', draggedTaskId || '');
+      if (event.dataTransfer) event.dataTransfer.effectAllowed = 'move';
     });
     card.addEventListener('dragend', () => {
       document.querySelectorAll('[data-dropzone]').forEach((zone) => zone.classList.remove('taskhub-dropzone--active'));
+      draggedTaskId = null;
     });
   });
 
@@ -44,6 +47,8 @@ const statuses: Array<{ status: TaskStatus; label: string }> = [
       e.preventDefault();
       zone.classList.remove('taskhub-dropzone--active');
       const nextStatus = zone.getAttribute('data-dropzone');
+      const taskIdFromTransfer = e.dataTransfer?.getData('text/plain') || null;
+      if (taskIdFromTransfer) draggedTaskId = taskIdFromTransfer;
       if (!draggedTaskId || !nextStatus) return;
 
       const res = await fetch('/api/tasks/update', {

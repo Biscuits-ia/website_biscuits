@@ -12,6 +12,6 @@ const { status, label, tasks } = Astro.props;
     <span class="taskhub-column-count">{tasks.length}</span>
   </header>
   <div class="taskhub-dropzone" data-dropzone={status}>
-    {tasks.map((task) => <TaskCard task={task} />)}
+    {tasks.map((task) => <TaskCard task={task} showActionLink={false} />)}
   </div>
 </section>

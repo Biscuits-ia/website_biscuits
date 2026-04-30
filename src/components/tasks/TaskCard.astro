@@ -4,8 +4,8 @@ import TaskStatusBadge from './TaskStatusBadge.astro';
 import TaskPriorityBadge from './TaskPriorityBadge.astro';
 import CorpsTag from '@/components/corps/CorpsTag.astro';
 import type { TaskWithRelations } from '@/lib/types';
-interface Props { task: TaskWithRelations; class?: string; style?: string; }
-const { task, class: className = '', style = '' } = Astro.props;
+interface Props { task: TaskWithRelations; class?: string; style?: string; showActionLink?: boolean; }
+const { task, class: className = '', style = '', showActionLink = true } = Astro.props;
 ---
 
 <article class={`taskhub-card ${className}`} style={style} data-task-id={task.id} draggable="true" tabindex="0">
@@ -20,9 +20,11 @@ const { task, class: className = '', style = '' } = Astro.props;
     <TaskStatusBadge status={task.status} />
   </div>
 
-  <div class="taskhub-card-actions">
-    <a href={`/dashboard/tasks/${task.id}`} class="btn btn-ghost taskhub-card-link">Voir / Choisir</a>
-  </div>
+  {showActionLink && (
+    <div class="taskhub-card-actions">
+      <a href={`/dashboard/tasks/${task.id}`} class="btn btn-ghost taskhub-card-link" draggable="false">Voir / Choisir</a>
+    </div>
+  )}
 </article>
 
 <style>

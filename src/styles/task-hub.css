@@ -129,6 +129,10 @@
   box-shadow: var(--shadow-md);
   padding: 0.8rem;
   border-radius: 18px;
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 220px);
+  min-height: 300px;
 }
 
 .taskhub-column-header {
@@ -165,10 +169,15 @@
 
 .taskhub-dropzone {
   min-height: 280px;
+  flex: 1;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 0.8rem;
+  padding-right: 2px;
   transition: background var(--transition-fast), box-shadow var(--transition-fast), transform var(--transition-fast);
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-mid) transparent;
 }
 
 .taskhub-dropzone--active {

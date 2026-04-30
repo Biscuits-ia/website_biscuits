@@ -20,6 +20,8 @@ if (error) console.warn('[dashboard/kanban] tasks query warning:', error.message
 
 const tasks = (data ?? []) as unknown as TaskWithRelations[];
 const userName = auth.user.user_metadata?.full_name ?? auth.user.email?.split('@')[0] ?? 'Utilisateur';
+const openTasksCount = tasks.filter((task) => task.status !== 'done').length;
+const blockedTasksCount = tasks.filter((task) => task.status === 'blocked').length;
 ---
 
 <DashboardLayout title="Kanban" activePage="kanban" authResult={auth} userName={userName}>
@@ -27,9 +29,21 @@ const userName = auth.user.user_metadata?.full_name ?? auth.user.email?.split('@
     <div class="taskhub-header">
       <div>
         <h1 class="taskhub-title">Kanban multi-corps</h1>
-        <p class="taskhub-subtitle">Glisser-déposer les cartes avec une vue métier nette et cohérente.</p>
+        <p class="taskhub-subtitle">Glisser-déposer les cartes avec plus d'espace, une lecture plus calme et des colonnes mieux séparées.</p>
       </div>
     </div>
+
+    <div class="taskhub-kanban-summary">
+      <p class="taskhub-note" style="margin:0; flex:1 1 320px;">
+        Faites défiler horizontalement pour parcourir les colonnes. Les cartes sont plus aérées pour mieux lire le titre, le corps métier et le statut en un coup d'oeil.
+      </p>
+      <div class="taskhub-kanban-meta">
+        <span class="taskhub-kanban-pill">{tasks.length} tâches</span>
+        <span class="taskhub-kanban-pill">{openTasksCount} ouvertes</span>
+        <span class="taskhub-kanban-pill">{blockedTasksCount} bloquées</span>
+      </div>
+    </div>
+
     <KanbanBoard tasks={tasks} />
   </section>
   <Toast />

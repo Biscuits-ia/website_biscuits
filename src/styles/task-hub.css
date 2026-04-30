@@ -108,25 +108,36 @@
 
 .taskhub-board {
   display: flex;
-  gap: 0.85rem;
+  gap: 1.1rem;
   overflow-x: auto;
-  padding-bottom: 0.3rem;
+  padding: 0.35rem 0.35rem 0.8rem;
+  scroll-snap-type: x proximity;
+  align-items: flex-start;
 }
 
 .taskhub-column {
-  min-width: 320px;
-  border: var(--brutal-border-thin);
-  background: var(--surface);
-  box-shadow: var(--shadow-sm);
-  padding: 0.55rem;
+  min-width: 360px;
+  max-width: 360px;
+  border: var(--brutal-border);
+  background: linear-gradient(180deg, var(--surface-raised) 0%, var(--surface) 100%);
+  box-shadow: var(--shadow-md);
+  padding: 0.8rem;
+  border-radius: 18px;
+  scroll-snap-align: start;
 }
 
 .taskhub-column-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 0.45rem;
-  margin-bottom: 0.45rem;
+  gap: 0.6rem;
+  margin-bottom: 0.7rem;
+  padding-bottom: 0.55rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--border-mid) 60%, transparent);
+  position: sticky;
+  top: 0;
+  background: inherit;
+  z-index: 1;
 }
 
 .taskhub-column-title {
@@ -148,10 +159,10 @@
 }
 
 .taskhub-dropzone {
-  min-height: 120px;
+  min-height: 62vh;
   display: flex;
   flex-direction: column;
-  gap: 0.55rem;
+  gap: 0.8rem;
   transition: background var(--transition-fast), box-shadow var(--transition-fast), transform var(--transition-fast);
 }
 
@@ -159,6 +170,76 @@
   background: var(--accent-light);
   box-shadow: inset 0 0 0 3px var(--accent-dark);
   transform: translateY(-1px);
+}
+
+.taskhub-board::-webkit-scrollbar {
+  height: 14px;
+}
+
+.taskhub-board::-webkit-scrollbar-track {
+  background: color-mix(in srgb, var(--surface) 82%, transparent);
+  border-radius: 999px;
+}
+
+.taskhub-board::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--accent-dark) 52%, var(--border-strong));
+  border-radius: 999px;
+  border: 3px solid transparent;
+  background-clip: padding-box;
+}
+
+.taskhub-board .taskhub-card {
+  padding: 1rem;
+  border-radius: 14px;
+  box-shadow: var(--shadow-md);
+}
+
+.taskhub-board .taskhub-card-title {
+  font-size: var(--text-base);
+  line-height: 1.35;
+}
+
+.taskhub-board .taskhub-card-desc {
+  margin-top: 0.5rem;
+  font-size: var(--text-sm);
+  -webkit-line-clamp: 4;
+}
+
+.taskhub-board .taskhub-chip-row {
+  margin-top: 0.8rem;
+  gap: 0.45rem;
+}
+
+.taskhub-kanban-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+  padding: 0.9rem 1rem;
+  border: var(--brutal-border-thin);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--accent-light) 75%, white), var(--surface));
+  box-shadow: var(--shadow-sm);
+}
+
+.taskhub-kanban-meta {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+
+.taskhub-kanban-pill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 0.3rem 0.65rem;
+  border: var(--brutal-border-thin);
+  background: var(--surface);
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  box-shadow: var(--shadow-sm);
 }
 
 .taskhub-kpi-grid {
@@ -325,4 +406,23 @@
   .taskhub-layout-2 { grid-template-columns: 1fr; }
   .taskhub-form-grid-2 { grid-template-columns: 1fr; }
   .taskhub-form-grid-3 { grid-template-columns: 1fr; }
+  .taskhub-column { min-width: 320px; max-width: 320px; }
+  .taskhub-dropzone { min-height: 52vh; }
+}
+
+@media (max-width: 720px) {
+  .taskhub-board {
+    padding-inline: 0.1rem;
+    gap: 0.85rem;
+  }
+
+  .taskhub-column {
+    min-width: min(88vw, 320px);
+    max-width: min(88vw, 320px);
+    padding: 0.7rem;
+  }
+
+  .taskhub-board .taskhub-card {
+    padding: 0.85rem;
+  }
 }

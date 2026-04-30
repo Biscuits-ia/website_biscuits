@@ -1,0 +1,111 @@
+---
+// src/components/tasks/TaskForm.astro — formulaire complet de création/édition tâche
+import { CORPS_CONFIG } from '@/lib/constants';
+import type { CorpsType, TaskTypeEnum } from '@/lib/types';
+
+interface MemberOption { id: string; name: string; corps?: CorpsType[]; }
+interface SprintOption { id: string; name: string; }
+interface Props {
+  action?: string;
+  method?: 'POST' | 'PATCH';
+  members?: MemberOption[];
+  sprints?: SprintOption[];
+}
+
+const { action = '/api/tasks/create', method = 'POST', members = [], sprints = [] } = Astro.props;
+const corpsKeys = Object.keys(CORPS_CONFIG) as CorpsType[];
+---
+
+<form id="task-form" action={action} method={method} class="space-y-3 rounded border border-slate-300 bg-white p-4">
+  <div>
+    <label for="corps" class="mb-1 block text-xs font-medium">Corps métier</label>
+    <select id="corps" name="corps" class="w-full rounded border border-slate-300 px-3 py-2 text-sm" required>
+      {corpsKeys.map((c) => <option value={c}>{CORPS_CONFIG[c].label}</option>)}
+    </select>
+  </div>
+
+  <div>
+    <label for="task_type" class="mb-1 block text-xs font-medium">Type de tâche</label>
+    <select id="task_type" name="task_type" class="w-full rounded border border-slate-300 px-3 py-2 text-sm" required></select>
+  </div>
+
+  <div>
+    <label for="title" class="mb-1 block text-xs font-medium">Titre (min. 10 caractères)</label>
+    <input id="title" name="title" class="w-full rounded border border-slate-300 px-3 py-2 text-sm" minlength="10" maxlength="200" required />
+  </div>
+
+  <div>
+    <label for="description" class="mb-1 block text-xs font-medium">Description</label>
+    <textarea id="description" name="description" rows="4" class="w-full rounded border border-slate-300 px-3 py-2 text-sm"></textarea>
+  </div>
+
+  <div class="grid gap-3 md:grid-cols-2">
+    <div>
+      <label for="priority" class="mb-1 block text-xs font-medium">Priorité</label>
+      <select id="priority" name="priority" class="w-full rounded border border-slate-300 px-3 py-2 text-sm">
+        <option value="P0">P0</option><option value="P1">P1</option><option value="P2" selected>P2</option><option value="P3">P3</option>
+      </select>
+    </div>
+    <div>
+      <label for="status" class="mb-1 block text-xs font-medium">Statut</label>
+      <select id="status" name="status" class="w-full rounded border border-slate-300 px-3 py-2 text-sm">
+        <option value="backlog" selected>Backlog</option><option value="todo">To Do</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="grid gap-3 md:grid-cols-2">
+    <div>
+      <label for="assignee_id" class="mb-1 block text-xs font-medium">Assigné</label>
+      <select id="assignee_id" name="assignee_id" class="w-full rounded border border-slate-300 px-3 py-2 text-sm">
+        <option value="">Non assigné</option>
+        {members.map((m) => <option value={m.id}>{m.name}</option>)}
+      </select>
+    </div>
+    <div>
+      <label for="sprint_id" class="mb-1 block text-xs font-medium">Sprint</label>
+      <select id="sprint_id" name="sprint_id" class="w-full rounded border border-slate-300 px-3 py-2 text-sm">
+        <option value="">Aucun</option>
+        {sprints.map((s) => <option value={s.id}>{s.name}</option>)}
+      </select>
+    </div>
+  </div>
+
+  <div class="grid gap-3 md:grid-cols-2">
+    <input name="story_points" type="number" min="0" step="1" placeholder="Story points" class="rounded border border-slate-300 px-3 py-2 text-sm" />
+    <input name="time_estimate_hours" type="number" min="0" step="0.5" placeholder="Heures estimées" class="rounded border border-slate-300 px-3 py-2 text-sm" />
+  </div>
+
+  <div id="dynamic-lists" class="grid gap-3 md:grid-cols-3">
+    <textarea name="acceptance_criteria_text" rows="3" class="rounded border border-slate-300 px-3 py-2 text-sm" placeholder="Critères (1 par ligne)"></textarea>
+    <textarea name="deliverables_text" rows="3" class="rounded border border-slate-300 px-3 py-2 text-sm" placeholder="Livrables (1 par ligne)"></textarea>
+    <textarea name="definition_of_done_text" rows="3" class="rounded border border-slate-300 px-3 py-2 text-sm" placeholder="DoD (1 par ligne)"></textarea>
+  </div>
+
+  <div class="grid gap-3 md:grid-cols-2">
+    <input name="doc_link" type="url" placeholder="Lien documentation" class="rounded border border-slate-300 px-3 py-2 text-sm" />
+    <input name="figma_link" type="url" placeholder="Lien Figma (DESIGN)" class="rounded border border-slate-300 px-3 py-2 text-sm" />
+  </div>
+
+  <button class="rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white">Enregistrer la tâche</button>
+</form>
+
+<script define:vars={{ CORPS_CONFIG }}>
+  const corpsSelect = document.getElementById('corps');
+  const taskTypeSelect = document.getElementById('task_type');
+
+  function hydrateTaskTypes() {
+    if (!(corpsSelect instanceof HTMLSelectElement) || !(taskTypeSelect instanceof HTMLSelectElement)) return;
+    const corps = corpsSelect.value;
+    const config = CORPS_CONFIG[corps];
+    if (!config) return;
+
+    const html = config.defaultTaskTypes
+      .map((tt, idx) => `<option value="${tt}" ${idx === 0 ? 'selected' : ''}>${tt}</option>`)
+      .join('');
+    taskTypeSelect.innerHTML = html;
+  }
+
+  corpsSelect?.addEventListener('change', hydrateTaskTypes);
+  hydrateTaskTypes();
+</script>

@@ -1,0 +1,25 @@
+---
+// src/components/ui/Modal.astro — modal accessible basé sur <dialog>
+interface Props { id: string; title: string; class?: string; }
+const { id, title, class: className = '' } = Astro.props;
+---
+
+<dialog id={id} class={`rounded-lg border border-slate-300 p-0 backdrop:bg-black/40 ${className}`}>
+  <div class="min-w-[320px] max-w-[720px] bg-white p-4">
+    <div class="mb-3 flex items-center justify-between">
+      <h2 class="text-base font-semibold">{title}</h2>
+      <button type="button" class="rounded border border-slate-300 px-2 py-1 text-xs" data-close-modal={id} aria-label="Fermer">Fermer</button>
+    </div>
+    <slot />
+  </div>
+</dialog>
+
+<script is:inline>
+  document.querySelectorAll('[data-close-modal]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const id = btn.getAttribute('data-close-modal');
+      const modal = id ? document.getElementById(id) : null;
+      if (modal instanceof HTMLDialogElement) modal.close();
+    });
+  });
+</script>

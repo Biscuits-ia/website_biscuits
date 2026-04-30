@@ -1,0 +1,49 @@
+---
+// src/components/tasks/KanbanBoard.astro — tableau kanban avec DnD HTML5
+import KanbanColumn from './KanbanColumn.astro';
+import type { TaskWithRelations, TaskStatus } from '@/lib/types';
+interface Props { tasks: TaskWithRelations[]; }
+const { tasks = [] } = Astro.props;
+
+const statuses: Array<{ status: TaskStatus; label: string }> = [
+  { status: 'backlog', label: 'Backlog' },
+  { status: 'todo', label: 'To Do' },
+  { status: 'in_progress', label: 'In Progress' },
+  { status: 'in_review', label: 'In Review' },
+  { status: 'testing', label: 'Testing' },
+  { status: 'blocked', label: 'Blocked' },
+  { status: 'done', label: 'Done' },
+];
+---
+
+<div class="flex gap-3 overflow-x-auto pb-2" id="kanban-board">
+  {statuses.map((s) => <KanbanColumn status={s.status} label={s.label} tasks={tasks.filter((t) => t.status === s.status)} />)}
+</div>
+
+<script is:inline>
+  let draggedTaskId = null;
+
+  document.querySelectorAll('[data-task-id]').forEach((card) => {
+    card.addEventListener('dragstart', () => {
+      draggedTaskId = card.getAttribute('data-task-id');
+    });
+  });
+
+  document.querySelectorAll('[data-dropzone]').forEach((zone) => {
+    zone.addEventListener('dragover', (e) => e.preventDefault());
+    zone.addEventListener('drop', async (e) => {
+      e.preventDefault();
+      const nextStatus = zone.getAttribute('data-dropzone');
+      if (!draggedTaskId || !nextStatus) return;
+
+      const res = await fetch('/api/tasks/update', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: draggedTaskId, status: nextStatus }),
+      });
+
+      if (res.ok) window.location.reload();
+      else alert('Impossible de déplacer la tâche.');
+    });
+  });
+</script>

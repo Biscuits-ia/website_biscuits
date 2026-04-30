@@ -1,6 +1,7 @@
 // src/lib/supabase.ts
-import { createServerClient, parseCookieHeader, serializeCookieHeader } from '@supabase/ssr';
+import { createServerClient, parseCookieHeader } from '@supabase/ssr';
 import { createClient } from '@supabase/supabase-js';
+import type { AppSupabaseClient, Database } from './types';
 
 export function createSupabaseClient(context: { request: Request; cookies: any }) {
   return createServerClient(
@@ -61,4 +62,55 @@ export function createSupabaseAdminClient() {
       autoRefreshToken: false,
     },
   });
+}
+
+// Helpers module tâches (compatibles stack actuelle)
+function resolvePublicSupabaseUrl(): string {
+  return import.meta.env.PUBLIC_SUPABASE_URL || import.meta.env.SUPABASE_URL;
+}
+
+function resolvePublicSupabaseAnonKey(): string {
+  return import.meta.env.PUBLIC_SUPABASE_ANON_KEY || import.meta.env.SUPABASE_ANON_KEY;
+}
+
+export function createServerSupabaseClient(context: { request: Request; cookies: any }): AppSupabaseClient {
+  return createServerClient<Database>(
+    resolvePublicSupabaseUrl(),
+    resolvePublicSupabaseAnonKey(),
+    {
+      cookies: {
+        getAll() {
+          return parseCookieHeader(context.request.headers.get('Cookie') ?? '')
+            .filter((cookie) => cookie.name)
+            .map((cookie) => ({ name: cookie.name, value: cookie.value ?? '' }));
+        },
+        setAll(cookiesToSet) {
+          for (const { name, value, options } of cookiesToSet) {
+            context.cookies.set(name, value, {
+              ...options,
+              httpOnly: true,
+              secure: import.meta.env.PROD,
+              sameSite: 'lax',
+              path: '/',
+            });
+          }
+        },
+      },
+      auth: {
+        autoRefreshToken: false,
+        detectSessionInUrl: false,
+      },
+    },
+  ) as AppSupabaseClient;
+}
+
+let browserClient: AppSupabaseClient | null = null;
+
+export function createBrowserSupabaseClient(): AppSupabaseClient {
+  browserClient ??= createClient<Database>(
+    resolvePublicSupabaseUrl(),
+    resolvePublicSupabaseAnonKey(),
+    { auth: { persistSession: true, autoRefreshToken: true } },
+  );
+  return browserClient;
 }

@@ -1,0 +1,17 @@
+---
+// src/components/tasks/KanbanColumn.astro — colonne kanban
+import TaskCard from './TaskCard.astro';
+import type { TaskWithRelations, TaskStatus } from '@/lib/types';
+interface Props { status: TaskStatus; label: string; tasks: TaskWithRelations[]; }
+const { status, label, tasks } = Astro.props;
+---
+
+<section class="min-w-[280px] rounded border border-slate-300 bg-slate-50 p-2" data-kanban-status={status}>
+  <header class="mb-2 flex items-center justify-between">
+    <h3 class="text-xs font-semibold uppercase tracking-wide text-slate-600">{label}</h3>
+    <span class="rounded bg-white px-2 py-0.5 text-xs text-slate-500">{tasks.length}</span>
+  </header>
+  <div class="flex min-h-[120px] flex-col gap-2" data-dropzone={status}>
+    {tasks.map((task) => <TaskCard task={task} />)}
+  </div>
+</section>

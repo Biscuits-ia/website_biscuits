@@ -1,0 +1,77 @@
+---
+import DashboardLayout from '@/layouts/DashboardLayout.astro';
+import TaskForm from '@/components/tasks/TaskForm.astro';
+import Toast from '@/components/ui/Toast.astro';
+import { requireAuth } from '@/lib/auth';
+import { createSupabaseAdminClient } from '@/lib/supabase';
+
+const auth = await requireAuth(Astro as any);
+if (auth instanceof Response) return auth;
+
+const admin = createSupabaseAdminClient();
+const [{ data: members }, { data: sprints }] = await Promise.all([
+  admin.from('profiles').select('id, full_name, corps').order('full_name', { ascending: true }).limit(200),
+  admin.from('sprints').select('id, name').eq('status', 'active').order('start_date', { ascending: false }).limit(20),
+]);
+
+const memberOptions = (members ?? []).map((m) => ({ id: m.id, name: m.full_name ?? 'Membre', corps: m.corps ?? [] }));
+const sprintOptions = (sprints ?? []).map((s) => ({ id: s.id, name: s.name }));
+const userName = auth.user.user_metadata?.full_name ?? auth.user.email?.split('@')[0] ?? 'Utilisateur';
+---
+
+<DashboardLayout title="Nouvelle tâche" activePage="tasks" authResult={auth} userName={userName}>
+  <section class="space-y-4">
+    <h1 class="text-xl font-bold text-slate-900">Créer une tâche</h1>
+    <TaskForm members={memberOptions} sprints={sprintOptions} />
+  </section>
+  <Toast />
+</DashboardLayout>
+
+<script is:inline>
+  const form = document.getElementById('task-form');
+
+  function toLines(value) {
+    return String(value || '').split('\n').map((v) => v.trim()).filter(Boolean);
+  }
+
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!(form instanceof HTMLFormElement)) return;
+
+    const fd = new FormData(form);
+    const payload = {
+      title: fd.get('title'),
+      description: fd.get('description'),
+      corps: fd.get('corps'),
+      task_type: fd.get('task_type'),
+      priority: fd.get('priority'),
+      status: fd.get('status'),
+      assignee_id: fd.get('assignee_id') || null,
+      sprint_id: fd.get('sprint_id') || null,
+      story_points: fd.get('story_points') ? Number(fd.get('story_points')) : null,
+      time_estimate_hours: fd.get('time_estimate_hours') ? Number(fd.get('time_estimate_hours')) : null,
+      acceptance_criteria: toLines(fd.get('acceptance_criteria_text')),
+      deliverables: toLines(fd.get('deliverables_text')),
+      definition_of_done: toLines(fd.get('definition_of_done_text')),
+      doc_link: fd.get('doc_link') || null,
+      figma_link: fd.get('figma_link') || null,
+    };
+
+    const res = await fetch('/api/tasks/create', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      window.showToast?.(json.error || 'Erreur de création', 'error');
+      return;
+    }
+
+    window.showToast?.('Tâche créée avec succès', 'success');
+    setTimeout(() => {
+      window.location.href = `/dashboard/tasks/${json.id}`;
+    }, 500);
+  });
+</script>

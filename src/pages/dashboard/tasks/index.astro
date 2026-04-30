@@ -1,0 +1,79 @@
+---
+import DashboardLayout from '@/layouts/DashboardLayout.astro';
+import TaskFilters from '@/components/tasks/TaskFilters.astro';
+import TaskCard from '@/components/tasks/TaskCard.astro';
+import Button from '@/components/ui/Button.astro';
+import { requireAuth } from '@/lib/auth';
+import { createSupabaseAdminClient } from '@/lib/supabase';
+import type { TaskWithRelations } from '@/lib/types';
+
+const auth = await requireAuth(Astro as any);
+if (auth instanceof Response) return auth;
+
+const admin = createSupabaseAdminClient();
+const { data, error } = await admin
+  .from('tasks')
+  .select('id, reference, title, description, corps, task_type, priority, status, assignee_id, reporter_id, sprint_id, story_points, time_estimate_hours, time_spent_hours, due_date, acceptance_criteria, deliverables, definition_of_done, dod_completed, tags, blocked_reason, parent_task_id, doc_link, figma_link, created_at, updated_at')
+  .order('created_at', { ascending: false })
+  .limit(300);
+
+if (error) console.warn('[dashboard/tasks] tasks query warning:', error.message);
+const tasks = ((data ?? []) as unknown as TaskWithRelations[]);
+const userName = auth.user.user_metadata?.full_name ?? auth.user.email?.split('@')[0] ?? 'Utilisateur';
+---
+
+<DashboardLayout title="Tâches" activePage="tasks" authResult={auth} userName={userName}>
+  <section class="space-y-4">
+    <div class="flex flex-wrap items-center justify-between gap-2">
+      <h1 class="text-xl font-bold text-slate-900">Gestion des tâches</h1>
+      <a href="/dashboard/tasks/new"><Button variant="primary">Nouvelle tâche</Button></a>
+    </div>
+
+    <TaskFilters />
+
+    <div id="tasks-grid" class="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+      {tasks.map((task) => <TaskCard task={task} />)}
+      {tasks.length === 0 && <p class="rounded border border-dashed border-slate-300 p-4 text-sm text-slate-600">Aucune tâche disponible.</p>}
+    </div>
+  </section>
+</DashboardLayout>
+
+<script is:inline>
+  const cards = Array.from(document.querySelectorAll('[data-task-id]'));
+
+  function text(el) { return (el?.textContent || '').toLowerCase(); }
+  function value(id) {
+    const el = document.getElementById(id);
+    return el instanceof HTMLInputElement || el instanceof HTMLSelectElement ? el.value.trim().toLowerCase() : '';
+  }
+
+  function applyFilters() {
+    const q = value('f-search');
+    const corps = value('f-corps');
+    const priority = value('f-priority');
+    const status = value('f-status');
+
+    cards.forEach((card) => {
+      const allText = text(card);
+      const okQ = !q || allText.includes(q);
+      const okCorps = !corps || allText.includes(corps);
+      const okPrio = !priority || allText.includes(priority);
+      const okStatus = !status || allText.includes(status.replace('_', ' ')) || allText.includes(status);
+      card.style.display = okQ && okCorps && okPrio && okStatus ? '' : 'none';
+    });
+  }
+
+  ['f-search','f-corps','f-priority','f-status'].forEach((id) => {
+    const el = document.getElementById(id);
+    el?.addEventListener('input', applyFilters);
+    el?.addEventListener('change', applyFilters);
+  });
+
+  document.getElementById('f-reset')?.addEventListener('click', () => {
+    ['f-search','f-corps','f-priority','f-status'].forEach((id) => {
+      const el = document.getElementById(id);
+      if (el instanceof HTMLInputElement || el instanceof HTMLSelectElement) el.value = '';
+    });
+    applyFilters();
+  });
+</script>

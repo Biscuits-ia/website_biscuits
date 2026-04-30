@@ -1,0 +1,10 @@
+---
+// src/components/corps/CorpsTag.astro — badge corps métier
+import { CORPS_CONFIG } from '@/lib/constants';
+import type { CorpsType } from '@/lib/types';
+interface Props { corps: CorpsType; }
+const { corps } = Astro.props;
+const cfg = CORPS_CONFIG[corps];
+---
+
+<span class={`inline-flex items-center rounded border px-2 py-0.5 text-xs font-semibold ${cfg.bgColor} ${cfg.textColor} ${cfg.color}`}>{cfg.label}</span>

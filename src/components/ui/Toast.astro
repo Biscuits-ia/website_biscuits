@@ -1,0 +1,18 @@
+---
+// src/components/ui/Toast.astro — conteneur de notifications client
+---
+
+<div id="toast-root" class="pointer-events-none fixed right-4 top-4 z-50 flex w-80 flex-col gap-2"></div>
+
+<script is:inline>
+  window.showToast = (message, type = 'info') => {
+    const root = document.getElementById('toast-root');
+    if (!root) return;
+    const el = document.createElement('div');
+    const map = { info: 'bg-slate-800', success: 'bg-emerald-600', error: 'bg-red-600' };
+    el.className = `pointer-events-auto rounded px-3 py-2 text-sm text-white shadow ${map[type] || map.info}`;
+    el.textContent = String(message);
+    root.appendChild(el);
+    setTimeout(() => el.remove(), 2800);
+  };
+</script>

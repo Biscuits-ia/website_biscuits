@@ -1,0 +1,10 @@
+---
+// src/components/tasks/TaskPriorityBadge.astro — badge de priorité
+import { PRIORITY_CONFIG } from '@/lib/constants';
+import type { PriorityLevel } from '@/lib/types';
+interface Props { priority: PriorityLevel; }
+const { priority } = Astro.props;
+const cfg = PRIORITY_CONFIG[priority];
+---
+
+<span class={`inline-flex rounded px-2 py-0.5 text-xs font-semibold ${cfg.bgColor} ${cfg.color}`}>{cfg.label}</span>

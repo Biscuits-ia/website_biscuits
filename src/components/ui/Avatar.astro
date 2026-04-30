@@ -1,0 +1,9 @@
+---
+// src/components/ui/Avatar.astro — avatar initiales
+interface Props { name: string; size?: 'sm' | 'md'; }
+const { name, size = 'md' } = Astro.props;
+const initials = name.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase();
+const sz = size === 'sm' ? 'h-7 w-7 text-[10px]' : 'h-9 w-9 text-xs';
+---
+
+<div class={`inline-flex items-center justify-center rounded-full border border-slate-300 bg-slate-100 font-semibold ${sz}`} aria-label={`Avatar de ${name}`}>{initials}</div>

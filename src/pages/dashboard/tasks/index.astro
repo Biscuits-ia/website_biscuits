@@ -30,7 +30,7 @@ const assignmentFilter = validAssignmentFilters.includes(Astro.url.searchParams.
   ? (Astro.url.searchParams.get('assignment') as (typeof validAssignmentFilters)[number])
   : '';
 const page = Math.max(1, Number(Astro.url.searchParams.get('page') ?? '1'));
-const pageSize = 24;
+const pageSize = 4;
 const rangeFrom = (page - 1) * pageSize;
 const rangeTo = rangeFrom + pageSize - 1;
 

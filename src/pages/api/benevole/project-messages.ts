@@ -95,10 +95,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
   if (!ctx) return jsonError('Non autorisé.', 401);
 
   const { supabase, user, role } = ctx;
-
-  if (role !== 'benevole') {
-    return jsonError('Seuls les bénévoles membres du projet peuvent écrire dans ce chat.', 403);
-  }
+  const isStaff = role === 'admin' || role === 'moderator';
 
   let body: Record<string, unknown>;
   try { body = await request.json(); }
@@ -111,13 +108,15 @@ export const POST: APIRoute = async ({ request, cookies }) => {
   if (!content)   return jsonError('Le message ne peut pas être vide.');
   if (content.length > 2000) return jsonError('Le message ne doit pas dépasser 2000 caractères.');
 
-  const { data: membership } = await supabase
-    .from('project_members')
-    .select('user_id')
-    .eq('project_id', projectId)
-    .eq('user_id', user.id)
-    .maybeSingle();
-  if (!membership) return jsonError('Vous devez être membre du projet pour envoyer un message.', 403);
+  if (!isStaff) {
+    const { data: membership } = await supabase
+      .from('project_members')
+      .select('user_id')
+      .eq('project_id', projectId)
+      .eq('user_id', user.id)
+      .maybeSingle();
+    if (!membership) return jsonError('Vous devez être membre du projet pour envoyer un message.', 403);
+  }
 
   const { data, error } = await supabase
     .from('project_messages')

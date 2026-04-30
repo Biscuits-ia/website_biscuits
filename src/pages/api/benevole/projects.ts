@@ -107,7 +107,29 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     });
   }
 
-  return jsonOk({ id: data.id }, 201);
+  // Hard verification: ensure row is actually present right after insert.
+  const { data: insertedProject, error: verifyError } = await adminSupabase
+    .from('projects')
+    .select('id, title, created_by, leader_id, created_at')
+    .eq('id', data.id)
+    .maybeSingle();
+
+  if (verifyError || !insertedProject) {
+    console.error('[api/benevole/projects][POST] verify failed', {
+      projectId: data.id,
+      verifyError: verifyError?.message,
+    });
+    return jsonError('Creation non confirmee en base.', 500);
+  }
+
+  console.info('[api/benevole/projects][POST] verify ok', {
+    projectId: insertedProject.id,
+    createdBy: insertedProject.created_by,
+    leaderId: insertedProject.leader_id,
+    createdAt: insertedProject.created_at,
+  });
+
+  return jsonOk({ id: data.id, debug_verified: true }, 201);
 };
 
 // ── PATCH /api/benevole/projects?id=… — modifier un projet ───────────────────

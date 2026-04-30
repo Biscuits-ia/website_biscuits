@@ -99,6 +99,8 @@ const loadError = projectsError
   ? `Impossible de charger les projets pour le moment. (${projectsError.message})`
   : null;
 
+const debugMode = Astro.url.searchParams.get('debug') === '1';
+
 const leaderIds = [...new Set(((projectsRaw ?? []) as Array<{ leader_id: string | null }>)
   .map((p) => p.leader_id)
   .filter((id): id is string => Boolean(id)))];
@@ -150,6 +152,18 @@ const priorityLabel: Record<string, string> = {
   {loadError && (
     <div class="card mb-4">
       <p class="empty-state" style="color: var(--err-fg)">{loadError}</p>
+    </div>
+  )}
+
+  {debugMode && (
+    <div class="card mb-4">
+      <p class="empty-state" style="margin-bottom:6px;"><strong>Debug Projets</strong></p>
+      <p class="empty-state">source={source} | count={projectsRaw.length} | role={role}</p>
+      <p class="empty-state">userId={user.id}</p>
+      <p class="empty-state">adminClientInitError={adminClientInitError ?? 'none'}</p>
+      <p class="empty-state">supabaseHost={(() => { try { return new URL(import.meta.env.SUPABASE_URL).host; } catch { return 'invalid-supabase-url'; } })()}</p>
+      <p class="empty-state">projectsError={projectsError?.message ?? 'none'}</p>
+      <p class="empty-state">ids={projectsRaw.slice(0, 10).map(p => p.id).join(', ') || 'none'}</p>
     </div>
   )}
 

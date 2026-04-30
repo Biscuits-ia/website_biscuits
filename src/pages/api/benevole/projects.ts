@@ -34,6 +34,15 @@ export const POST: APIRoute = async ({ request, cookies }) => {
   const { user, role } = ctx;
   const adminSupabase = createSupabaseAdminClient();
 
+  console.info('[api/benevole/projects][POST] start', {
+    userId: user.id,
+    role,
+    supabaseHost: (() => {
+      try { return new URL(import.meta.env.SUPABASE_URL).host; }
+      catch { return 'invalid-supabase-url'; }
+    })(),
+  });
+
   // Seuls le staff peut créer un projet
   if (role !== 'admin' && role !== 'moderator') {
     return jsonError('Réservé au staff.', 403);
@@ -56,11 +65,19 @@ export const POST: APIRoute = async ({ request, cookies }) => {
   if (title.length > 120) return jsonError('Le titre ne doit pas dépasser 120 caractères.');
   if (description && description.length > 800) return jsonError('La description ne doit pas dépasser 800 caractères.');
 
+  console.info('[api/benevole/projects][POST] payload', {
+    title,
+    hasDescription: Boolean(description),
+    priority,
+    deadline,
+  });
+
   const { data, error } = await adminSupabase
     .from('projects')
     .insert({
       title,
       description: description || null,
+      status: 'active',
       priority,
       deadline,
       created_by: user.id,
@@ -74,6 +91,8 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     return jsonError('Erreur lors de la création.', 500);
   }
 
+  console.info('[api/benevole/projects][POST] insert ok', { projectId: data.id });
+
   // Associer automatiquement le créateur au projet pour la visibilité membre.
   const { error: memberError } = await adminSupabase
     .from('project_members')
@@ -81,6 +100,11 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 
   if (memberError) {
     console.error('[api/benevole/projects] member upsert warning:', memberError.message);
+  } else {
+    console.info('[api/benevole/projects][POST] member upsert ok', {
+      projectId: data.id,
+      memberUserId: user.id,
+    });
   }
 
   return jsonOk({ id: data.id }, 201);

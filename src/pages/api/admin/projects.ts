@@ -1,5 +1,6 @@
 import type { APIRoute } from 'astro';
 import { requireAdmin } from '@/lib/auth';
+import { createSupabaseAdminClient } from '@/lib/supabase';
 
 function jsonError(message: string, status = 400) {
   return new Response(JSON.stringify({ error: message }), {
@@ -147,7 +148,8 @@ export const POST: APIRoute = async (Astro) => {
   const auth = await requireAdmin(Astro as any);
   if (auth instanceof Response) return auth;
 
-  const { supabase, user } = auth;
+  const { user } = auth;
+  const adminSupabase = createSupabaseAdminClient();
 
   let body: Record<string, unknown>;
   try {
@@ -159,7 +161,7 @@ export const POST: APIRoute = async (Astro) => {
   const { payload, error: validationError } = buildProjectInsert(body, user.id);
   if (validationError || !payload) return jsonError(validationError ?? 'Données invalides.');
 
-  const { data, error } = await supabase
+  const { data, error } = await adminSupabase
     .from('projects')
     .insert(payload)
     .select('id')
@@ -177,6 +179,7 @@ export const PATCH: APIRoute = async (Astro) => {
   const auth = await requireAdmin(Astro as any);
   if (auth instanceof Response) return auth;
 
+  const adminSupabase = createSupabaseAdminClient();
   const projectId = Astro.url.searchParams.get('id');
   if (!projectId) return jsonError('Paramètre id manquant.');
 
@@ -191,7 +194,7 @@ export const PATCH: APIRoute = async (Astro) => {
   if (validationError) return jsonError(validationError);
   if (Object.keys(updates).length === 0) return jsonError('Aucune donnée à mettre à jour.');
 
-  const { error } = await auth.supabase
+  const { error } = await adminSupabase
     .from('projects')
     .update(updates)
     .eq('id', projectId);
@@ -208,10 +211,11 @@ export const DELETE: APIRoute = async (Astro) => {
   const auth = await requireAdmin(Astro as any);
   if (auth instanceof Response) return auth;
 
+  const adminSupabase = createSupabaseAdminClient();
   const projectId = Astro.url.searchParams.get('id');
   if (!projectId) return jsonError('Paramètre id manquant.');
 
-  const { error } = await auth.supabase
+  const { error } = await adminSupabase
     .from('projects')
     .delete()
     .eq('id', projectId);

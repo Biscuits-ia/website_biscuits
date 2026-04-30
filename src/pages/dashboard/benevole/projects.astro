@@ -7,39 +7,114 @@ import { createSupabaseAdminClient } from '../../../lib/supabase';
 const result = await requireBenevole(Astro);
 if (result instanceof Response) return result;
 
-const { user, role } = result;
+const { user, role, supabase } = result;
 const userName = user.user_metadata?.full_name ?? user.email?.split('@')[0] ?? 'Bénévole';
 const isStaff  = role === 'admin' || role === 'moderator';
-const adminSupabase = createSupabaseAdminClient();
+let adminSupabase: ReturnType<typeof createSupabaseAdminClient> | null = null;
+let adminClientInitError: string | null = null;
+try {
+  adminSupabase = createSupabaseAdminClient();
+} catch (e) {
+  adminClientInitError = e instanceof Error ? e.message : 'Unknown admin client init error';
+  console.error('[dashboard/benevole/projects] admin client init failed:', adminClientInitError);
+}
 
 const statusFilter = Astro.url.searchParams.get('status') ?? '';
 const search       = (Astro.url.searchParams.get('q') ?? '').replace(/[,()\[\]]/g, '');
 
-let query = adminSupabase
-  .from('projects')
-  .select(`
-    id, title, description, status, priority, deadline, created_at,
-    leader_id
-  `)
-  .order('status')
-  .order('deadline', { ascending: true, nullsFirst: false });
+const projectSelect = `
+  id, title, description, status, priority, deadline, created_at,
+  leader_id
+`;
 
-if (statusFilter) query = query.eq('status', statusFilter);
-if (search)       query = query.ilike('title', `%${search}%`);
+type ProjectDbRow = {
+  id: string;
+  title: string;
+  description: string | null;
+  status: string;
+  priority: string;
+  deadline: string | null;
+  created_at: string;
+  leader_id: string | null;
+};
 
-const { data: projectsRaw, error: projectsError } = await query;
+let projectsRaw: ProjectDbRow[] = [];
+let projectsError: { message: string } | null = null;
+let source: 'service_role' | 'user_client' = 'service_role';
+
+if (adminSupabase) {
+  let query = adminSupabase
+    .from('projects')
+    .select(projectSelect)
+    .order('status')
+    .order('deadline', { ascending: true, nullsFirst: false });
+
+  if (statusFilter) query = query.eq('status', statusFilter);
+  if (search)       query = query.ilike('title', `%${search}%`);
+
+  const { data, error } = await query;
+  projectsRaw = (data ?? []) as unknown as ProjectDbRow[];
+  projectsError = error ? { message: error.message } : null;
+}
+
+// Fallback: if service_role cannot read, try user-bound client to detect env mismatch.
+if (projectsError || projectsRaw.length === 0) {
+  source = 'user_client';
+  let fallbackQuery = supabase
+    .from('projects')
+    .select(projectSelect)
+    .order('status')
+    .order('deadline', { ascending: true, nullsFirst: false });
+
+  if (statusFilter) fallbackQuery = fallbackQuery.eq('status', statusFilter);
+  if (search)       fallbackQuery = fallbackQuery.ilike('title', `%${search}%`);
+
+  const { data: fallbackData, error: fallbackError } = await fallbackQuery;
+  if (fallbackData && fallbackData.length > 0) {
+    projectsRaw = fallbackData as unknown as ProjectDbRow[];
+    projectsError = null;
+  } else if (projectsRaw.length === 0) {
+    projectsError = fallbackError ? { message: fallbackError.message } : projectsError;
+  }
+}
+
 if (projectsError) {
   console.error('[dashboard/benevole/projects] load error:', projectsError.message);
 }
-const loadError = projectsError ? 'Impossible de charger les projets pour le moment.' : null;
+console.info('[dashboard/benevole/projects] debug', {
+  userId: user.id,
+  role,
+  source,
+  count: projectsRaw?.length ?? 0,
+  statusFilter,
+  search,
+  adminClientInitError,
+  supabaseHost: (() => {
+    try { return new URL(import.meta.env.SUPABASE_URL).host; }
+    catch { return 'invalid-supabase-url'; }
+  })(),
+});
+
+const loadError = projectsError
+  ? `Impossible de charger les projets pour le moment. (${projectsError.message})`
+  : null;
 
 const leaderIds = [...new Set(((projectsRaw ?? []) as Array<{ leader_id: string | null }>)
   .map((p) => p.leader_id)
   .filter((id): id is string => Boolean(id)))];
 
 let leadersById: Record<string, { full_name: string | null; email: string }> = {};
-if (leaderIds.length > 0) {
+if (leaderIds.length > 0 && adminSupabase) {
   const { data: leadersRaw } = await adminSupabase
+    .from('profiles')
+    .select('id, full_name, email')
+    .in('id', leaderIds);
+
+  leadersById = Object.fromEntries(
+    (leadersRaw ?? []).map((row) => [row.id, { full_name: row.full_name, email: row.email }]),
+  );
+} else if (leaderIds.length > 0) {
+  const { data: leadersRaw } = await supabase
     .from('profiles')
     .select('id, full_name, email')
     .in('id', leaderIds);

@@ -1,11 +1,13 @@
 ---
 import DashboardLayout from '@/layouts/DashboardLayout.astro';
 import { requireAdmin } from '@/lib/auth';
+import { createSupabaseAdminClient } from '@/lib/supabase';
 
 const result = await requireAdmin(Astro);
 if (result instanceof Response) return result;
 
-const { user, supabase } = result;
+const { user } = result;
+const adminSupabase = createSupabaseAdminClient();
 const userName = user.user_metadata?.full_name ?? user.email?.split('@')[0] ?? 'Admin';
 
 const projectId = Astro.params.id ?? '';
@@ -17,7 +19,7 @@ const [
   { data: membersRaw },
   { data: volunteersRaw },
 ] = await Promise.all([
-  supabase
+  adminSupabase
     .from('projects')
     .select(`
       id, title, description, status, priority, deadline, created_at, updated_at,
@@ -27,18 +29,18 @@ const [
     `)
     .eq('id', projectId)
     .single(),
-  supabase
+  adminSupabase
     .from('project_tasks')
     .select('id, title, description, status, priority, assignee_id, deadline, position, created_at, profiles!project_tasks_assignee_id_fkey(full_name, email)')
     .eq('project_id', projectId)
     .order('status')
     .order('position'),
-  supabase
+  adminSupabase
     .from('project_members')
     .select('user_id, joined_at, profiles(full_name, email)')
     .eq('project_id', projectId)
     .order('joined_at', { ascending: true }),
-  supabase
+  adminSupabase
     .from('profiles')
     .select('id, full_name, email, role')
     .eq('role', 'benevole')

@@ -1,17 +1,19 @@
 ---
 import DashboardLayout from '@/layouts/DashboardLayout.astro';
 import { requireAdmin } from '@/lib/auth';
+import { createSupabaseAdminClient } from '@/lib/supabase';
 
 const result = await requireAdmin(Astro);
 if (result instanceof Response) return result;
 
-const { user, supabase } = result;
+const { user } = result;
+const adminSupabase = createSupabaseAdminClient();
 const userName = user.user_metadata?.full_name ?? user.email?.split('@')[0] ?? 'Admin';
 
 const statusFilter = Astro.url.searchParams.get('status') ?? '';
 const search = (Astro.url.searchParams.get('q') ?? '').trim();
 
-let query = supabase
+let query = adminSupabase
   .from('projects')
   .select('id, title, description, status, priority, deadline, created_at, leader_id, objective, tech_stack, estimated_hours, profiles!projects_leader_id_fkey(full_name, email)')
   .order('created_at', { ascending: false });

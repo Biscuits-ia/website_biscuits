@@ -1,5 +1,6 @@
 import type { APIRoute } from 'astro';
 import { requireAdmin } from '@/lib/auth';
+import { createSupabaseAdminClient } from '@/lib/supabase';
 
 function jsonError(message: string, status = 400) {
   return new Response(JSON.stringify({ error: message }), {
@@ -19,6 +20,8 @@ export const POST: APIRoute = async (Astro) => {
   const auth = await requireAdmin(Astro as any);
   if (auth instanceof Response) return auth;
 
+  const adminSupabase = createSupabaseAdminClient();
+
   let body: Record<string, unknown>;
   try {
     body = await Astro.request.json();
@@ -31,7 +34,7 @@ export const POST: APIRoute = async (Astro) => {
 
   if (!projectId || !userId) return jsonError('project_id et user_id sont requis.');
 
-  const { error } = await auth.supabase
+  const { error } = await adminSupabase
     .from('project_members')
     .insert({ project_id: projectId, user_id: userId });
 
@@ -50,11 +53,13 @@ export const DELETE: APIRoute = async (Astro) => {
   const auth = await requireAdmin(Astro as any);
   if (auth instanceof Response) return auth;
 
+  const adminSupabase = createSupabaseAdminClient();
+
   const projectId = Astro.url.searchParams.get('project_id') ?? '';
   const userId = Astro.url.searchParams.get('user_id') ?? '';
   if (!projectId || !userId) return jsonError('project_id et user_id sont requis.');
 
-  const { error } = await auth.supabase
+  const { error } = await adminSupabase
     .from('project_members')
     .delete()
     .eq('project_id', projectId)

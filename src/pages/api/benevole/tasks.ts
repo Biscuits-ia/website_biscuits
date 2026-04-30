@@ -1,6 +1,6 @@
 // src/pages/api/benevole/tasks.ts
 import type { APIRoute } from 'astro';
-import { createSupabaseClient } from '@/lib/supabase';
+import { createSupabaseClient, createSupabaseAdminClient } from '@/lib/supabase';
 import { fetchRoleSecure } from '@/lib/auth';
 
 function jsonError(message: string, status = 400) {
@@ -18,12 +18,12 @@ function jsonOk(data: unknown, status = 200) {
 }
 
 async function getAuthContext(request: Request, cookies: any) {
-  const supabase = createSupabaseClient({ request, cookies });
-  const { data: { user }, error } = await supabase.auth.getUser();
+  const adminSupabase = createSupabaseAdminClient();
+  const { data: { user }, error } = await adminSupabase.auth.getUser();
   if (error || !user) return null;
   const role = await fetchRoleSecure(user.id);
   if (!role || (role !== 'benevole' && role !== 'moderator' && role !== 'admin')) return null;
-  return { supabase, user, role };
+  return { adminSupabase, user, role };
 }
 
 interface TaskInput {
@@ -73,7 +73,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
   const ctx = await getAuthContext(request, cookies);
   if (!ctx) return jsonError('Non autorisé.', 401);
 
-  const { supabase, user, role } = ctx;
+  const { adminSupabase: supabase, user, role } = ctx;
   if (role !== 'admin' && role !== 'moderator') return jsonError('Réservé au staff.', 403);
 
   let body: Record<string, unknown>;
@@ -105,7 +105,7 @@ export const PATCH: APIRoute = async ({ request, cookies, url }) => {
   const ctx = await getAuthContext(request, cookies);
   if (!ctx) return jsonError('Non autorisé.', 401);
 
-  const { supabase, user, role } = ctx;
+  const { adminSupabase: supabase, user, role } = ctx;
 
   const taskId = url.searchParams.get('id');
   if (!taskId) return jsonError('Paramètre id manquant.');
@@ -144,7 +144,7 @@ export const DELETE: APIRoute = async ({ request, cookies, url }) => {
   const ctx = await getAuthContext(request, cookies);
   if (!ctx) return jsonError('Non autorisé.', 401);
 
-  const { supabase, user, role } = ctx;
+  const { adminSupabase: supabase, user, role } = ctx;
 
   const taskId = url.searchParams.get('id');
   if (!taskId) return jsonError('Paramètre id manquant.');

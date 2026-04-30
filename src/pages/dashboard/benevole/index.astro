@@ -2,13 +2,15 @@
 // src/pages/dashboard/benevole/index.astro
 import DashboardLayout from '../../../layouts/DashboardLayout.astro';
 import { requireBenevole } from '../../../lib/auth';
+import { createSupabaseAdminClient } from '../../../lib/supabase';
 
 const result = await requireBenevole(Astro);
 if (result instanceof Response) return result;
 
-const { user, supabase } = result;
+const { user } = result;
 const userId   = user.id;
 const userName = user.user_metadata?.full_name ?? user.email?.split('@')[0] ?? 'Bénévole';
+const adminSupabase = createSupabaseAdminClient();
 
 // ── Données ──────────────────────────────────────────────────────────────────
 const [
@@ -16,20 +18,20 @@ const [
   { data: myTasksRaw },
   { data: announcementsRaw },
 ] = await Promise.all([
-  supabase
+  adminSupabase
     .from('projects')
     .select('id, title, status, priority, deadline')
     .in('status', ['active', 'on_hold'])
     .order('deadline', { ascending: true })
     .limit(5),
-  supabase
+  adminSupabase
     .from('project_tasks')
     .select('id, title, status, priority, deadline, project_id, projects(title)')
     .eq('assignee_id', userId)
     .neq('status', 'done')
     .order('deadline', { ascending: true, nullsFirst: false })
     .limit(8),
-  supabase
+  adminSupabase
     .from('announcements')
     .select('id, title, content, pinned, created_at, author_id, profiles(full_name, email)')
     .order('pinned', { ascending: false })

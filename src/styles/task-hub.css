@@ -186,6 +186,51 @@
   transform: translateY(-1px);
 }
 
+.taskhub-col-pag {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding-top: 0.6rem;
+  margin-top: 0.4rem;
+  border-top: 1px solid color-mix(in srgb, var(--border-mid) 50%, transparent);
+  flex-shrink: 0;
+}
+
+.taskhub-col-pag-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: var(--brutal-border-thin);
+  background: var(--bg);
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  text-decoration: none;
+  transition: background var(--transition-fast);
+}
+
+.taskhub-col-pag-btn:hover:not(.is-disabled) {
+  background: var(--accent-light);
+}
+
+.taskhub-col-pag-btn.is-disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.taskhub-col-pag-info {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  min-width: 40px;
+  text-align: center;
+}
+
 .taskhub-board .taskhub-card {
   padding: 1rem;
   border-radius: 14px;

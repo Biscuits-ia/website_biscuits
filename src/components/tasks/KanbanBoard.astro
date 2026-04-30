@@ -2,8 +2,15 @@
 // src/components/tasks/KanbanBoard.astro — tableau kanban avec DnD HTML5
 import KanbanColumn from './KanbanColumn.astro';
 import type { TaskWithRelations, TaskStatus } from '@/lib/types';
-interface Props { tasks: TaskWithRelations[]; }
-const { tasks = [] } = Astro.props;
+interface Props {
+  tasks: TaskWithRelations[];
+  todoTasks?: TaskWithRelations[];
+  todoPrevHref?: string | null;
+  todoNextHref?: string | null;
+  todoPage?: number;
+  todoTotalPages?: number;
+}
+const { tasks = [], todoTasks = [], todoPrevHref, todoNextHref, todoPage = 1, todoTotalPages = 1 } = Astro.props;
 
 const statuses: Array<{ status: TaskStatus; label: string }> = [
   { status: 'backlog', label: 'Backlog' },
@@ -17,7 +24,10 @@ const statuses: Array<{ status: TaskStatus; label: string }> = [
 ---
 
 <div class="taskhub-board" id="kanban-board">
-  {statuses.map((s) => <KanbanColumn status={s.status} label={s.label} tasks={tasks.filter((t) => t.status === s.status)} />)}
+  {statuses.map((s) => s.status === 'todo'
+    ? <KanbanColumn status={s.status} label={s.label} tasks={todoTasks} prevHref={todoPrevHref} nextHref={todoNextHref} page={todoPage} totalPages={todoTotalPages} />
+    : <KanbanColumn status={s.status} label={s.label} tasks={tasks.filter((t) => t.status === s.status)} />
+  )}
 </div>
 
 <script is:inline>

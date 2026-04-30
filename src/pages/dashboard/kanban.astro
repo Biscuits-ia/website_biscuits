@@ -30,48 +30,63 @@ const pageSize = 21;
 const rangeFrom = (page - 1) * pageSize;
 const rangeTo = rangeFrom + pageSize - 1;
 
-const admin = createSupabaseAdminClient();
-let tasksQuery = admin
-  .from('tasks')
-  .select('id, reference, title, description, corps, task_type, priority, status, assignee_id, reporter_id, sprint_id, story_points, time_estimate_hours, time_spent_hours, due_date, acceptance_criteria, deliverables, definition_of_done, dod_completed, tags, blocked_reason, parent_task_id, doc_link, figma_link, created_at, updated_at');
+const todoPage = Math.max(1, Number(Astro.url.searchParams.get('todo_page') ?? '1'));
+const todoPageSize = 4;
+const todoRangeFrom = (todoPage - 1) * todoPageSize;
+const todoRangeTo = todoRangeFrom + todoPageSize - 1;
 
-let countQuery = admin
-  .from('tasks')
-  .select('id', { count: 'exact', head: true });
+const admin = createSupabaseAdminClient();
+const TASK_SELECT = 'id, reference, title, description, corps, task_type, priority, status, assignee_id, reporter_id, sprint_id, story_points, time_estimate_hours, time_spent_hours, due_date, acceptance_criteria, deliverables, definition_of_done, dod_completed, tags, blocked_reason, parent_task_id, doc_link, figma_link, created_at, updated_at';
+let tasksQuery = admin.from('tasks').select(TASK_SELECT).neq('status', 'todo');
+let countQuery = admin.from('tasks').select('id', { count: 'exact', head: true }).neq('status', 'todo');
+let todoQuery = admin.from('tasks').select(TASK_SELECT).eq('status', 'todo');
+let todoCountQuery = admin.from('tasks').select('id', { count: 'exact', head: true }).eq('status', 'todo');
 
 if (search) {
   const searchExpr = `title.ilike.%${search}%,reference.ilike.%${search}%`;
   tasksQuery = tasksQuery.or(searchExpr);
   countQuery = countQuery.or(searchExpr);
+  todoQuery = todoQuery.or(searchExpr);
+  todoCountQuery = todoCountQuery.or(searchExpr);
 }
 
 if (corpsFilter) {
   tasksQuery = tasksQuery.eq('corps', corpsFilter);
   countQuery = countQuery.eq('corps', corpsFilter);
+  todoQuery = todoQuery.eq('corps', corpsFilter);
+  todoCountQuery = todoCountQuery.eq('corps', corpsFilter);
 }
 
 if (priorityFilter) {
   tasksQuery = tasksQuery.eq('priority', priorityFilter);
   countQuery = countQuery.eq('priority', priorityFilter);
+  todoQuery = todoQuery.eq('priority', priorityFilter);
+  todoCountQuery = todoCountQuery.eq('priority', priorityFilter);
 }
 
-if (statusFilter) {
+if (statusFilter && statusFilter !== 'todo') {
   tasksQuery = tasksQuery.eq('status', statusFilter);
   countQuery = countQuery.eq('status', statusFilter);
 }
 
-const [{ data, error }, { count: totalTasksCount }] = await Promise.all([
+const [{ data, error }, { count: totalTasksCount }, { data: todoData }, { count: todoCount }] = await Promise.all([
   tasksQuery.order('updated_at', { ascending: false }).range(rangeFrom, rangeTo),
   countQuery,
+  todoQuery.order('updated_at', { ascending: false }).range(todoRangeFrom, todoRangeTo),
+  todoCountQuery,
 ]);
 if (error) console.warn('[dashboard/kanban] tasks query warning:', error.message);
 
 const tasks = (data ?? []) as unknown as TaskWithRelations[];
-const totalTasks = totalTasksCount ?? tasks.length;
-const totalPages = Math.max(1, Math.ceil(totalTasks / pageSize));
+const todoTasks = (todoData ?? []) as unknown as TaskWithRelations[];
+const mainTotal = totalTasksCount ?? tasks.length;
+const todoTotal = todoCount ?? 0;
+const totalTasks = mainTotal + todoTotal;
+const totalPages = Math.max(1, Math.ceil(mainTotal / pageSize));
+const todoTotalPages = Math.max(1, Math.ceil(todoTotal / todoPageSize));
 const userName = auth.user.user_metadata?.full_name ?? auth.user.email?.split('@')[0] ?? 'Utilisateur';
-const openTasksCount = tasks.filter((task) => task.status !== 'done').length;
-const blockedTasksCount = tasks.filter((task) => task.status === 'blocked').length;
+const openTasksCount = [...tasks, ...todoTasks].filter((task) => task.status !== 'done').length;
+const blockedTasksCount = [...tasks, ...todoTasks].filter((task) => task.status === 'blocked').length;
 const queryParams = new URLSearchParams();
 if (search) queryParams.set('q', search);
 if (corpsFilter) queryParams.set('corps', corpsFilter);
@@ -81,11 +96,21 @@ if (statusFilter) queryParams.set('status', statusFilter);
 const hrefWithPage = (nextPage: number) => {
   const params = new URLSearchParams(queryParams);
   params.set('page', String(nextPage));
+  if (todoPage > 1) params.set('todo_page', String(todoPage));
+  return `?${params.toString()}`;
+};
+
+const hrefWithTodoPage = (p: number) => {
+  const params = new URLSearchParams(queryParams);
+  if (page > 1) params.set('page', String(page));
+  params.set('todo_page', String(p));
   return `?${params.toString()}`;
 };
 
 const prevPageHref = page > 1 ? hrefWithPage(page - 1) : null;
 const nextPageHref = page < totalPages ? hrefWithPage(page + 1) : null;
+const todoPrevHref = todoPage > 1 ? hrefWithTodoPage(todoPage - 1) : null;
+const todoNextHref = todoPage < todoTotalPages ? hrefWithTodoPage(todoPage + 1) : null;
 const resetHref = '/dashboard/kanban';
 ---
 
@@ -133,7 +158,7 @@ const resetHref = '/dashboard/kanban';
       </div>
     </div>
 
-    <KanbanBoard tasks={tasks} />
+    <KanbanBoard tasks={tasks} todoTasks={todoTasks} todoPrevHref={todoPrevHref} todoNextHref={todoNextHref} todoPage={todoPage} todoTotalPages={todoTotalPages} />
 
     <nav class="taskhub-pagination" aria-label="Pagination du kanban">
       <div class="taskhub-pagination-meta">

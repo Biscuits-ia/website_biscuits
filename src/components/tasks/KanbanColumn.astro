@@ -2,8 +2,16 @@
 // src/components/tasks/KanbanColumn.astro — colonne kanban
 import TaskCard from './TaskCard.astro';
 import type { TaskWithRelations, TaskStatus } from '@/lib/types';
-interface Props { status: TaskStatus; label: string; tasks: TaskWithRelations[]; }
-const { status, label, tasks } = Astro.props;
+interface Props {
+  status: TaskStatus;
+  label: string;
+  tasks: TaskWithRelations[];
+  prevHref?: string | null;
+  nextHref?: string | null;
+  page?: number;
+  totalPages?: number;
+}
+const { status, label, tasks, prevHref, nextHref, page, totalPages } = Astro.props;
 ---
 
 <section class="taskhub-column" data-kanban-status={status}>
@@ -14,4 +22,17 @@ const { status, label, tasks } = Astro.props;
   <div class="taskhub-dropzone" data-dropzone={status}>
     {tasks.map((task) => <TaskCard task={task} showActionLink={false} />)}
   </div>
+  {(prevHref || nextHref) && (
+    <nav class="taskhub-col-pag" aria-label={`Pagination colonne ${label}`}>
+      {prevHref
+        ? <a href={prevHref} class="taskhub-col-pag-btn">←</a>
+        : <span class="taskhub-col-pag-btn is-disabled" aria-disabled="true">←</span>
+      }
+      <span class="taskhub-col-pag-info">{page} / {totalPages}</span>
+      {nextHref
+        ? <a href={nextHref} class="taskhub-col-pag-btn">→</a>
+        : <span class="taskhub-col-pag-btn is-disabled" aria-disabled="true">→</span>
+      }
+    </nav>
+  )}
 </section>

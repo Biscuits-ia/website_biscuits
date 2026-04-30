@@ -1,13 +1,14 @@
 ---
 // src/components/ui/Button.astro — bouton réutilisable
 interface Props {
+  id?: string;
   variant?: 'primary' | 'secondary' | 'danger' | 'ghost';
   size?: 'sm' | 'md' | 'lg';
   type?: 'button' | 'submit' | 'reset';
   class?: string;
   disabled?: boolean;
 }
-const { variant = 'primary', size = 'md', type = 'button', class: className = '', disabled = false } = Astro.props;
+const { id, variant = 'primary', size = 'md', type = 'button', class: className = '', disabled = false } = Astro.props;
 
 const variantClass = {
   primary: 'bg-blue-600 text-white hover:bg-blue-700',
@@ -23,6 +24,6 @@ const sizeClass = {
 }[size];
 ---
 
-<button type={type} class={`rounded border border-slate-300 transition disabled:opacity-50 disabled:cursor-not-allowed ${variantClass} ${sizeClass} ${className}`} disabled={disabled}>
+<button id={id} type={type} class={`rounded border border-slate-300 transition disabled:opacity-50 disabled:cursor-not-allowed ${variantClass} ${sizeClass} ${className}`} disabled={disabled}>
   <slot />
 </button>

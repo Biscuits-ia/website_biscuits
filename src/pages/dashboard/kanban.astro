@@ -20,7 +20,7 @@ const tasks = (data ?? []) as unknown as TaskWithRelations[];
 const userName = auth.user.user_metadata?.full_name ?? auth.user.email?.split('@')[0] ?? 'Utilisateur';
 ---
 
-<DashboardLayout title="Kanban" activePage="tasks" authResult={auth} userName={userName}>
+<DashboardLayout title="Kanban" activePage="kanban" authResult={auth} userName={userName}>
   <section class="space-y-3">
     <div class="flex items-center justify-between">
       <h1 class="text-xl font-bold text-slate-900">Kanban multi-corps</h1>

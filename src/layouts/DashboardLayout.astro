@@ -15,6 +15,7 @@ export interface NavItem {
   label:  string;
   icon:   string;
   badge?: string | null;
+  href?:  string;
 }
 
 export interface Props {
@@ -69,6 +70,10 @@ const userNav: NavItem[] = [
 const adminNav: NavItem[] = [
   { id: 'users',           label: 'Utilisateurs',   icon: 'users',        badge: null  },
   { id: 'projects',        label: 'Projets',        icon: 'folder',       badge: null  },
+  { id: 'tasks',           label: 'Task Hub',       icon: 'check',        badge: null, href: '/dashboard/tasks' },
+  { id: 'task-hub',        label: 'Seed Task Hub',  icon: 'terminal',     badge: null  },
+  { id: 'kanban',          label: 'Kanban',         icon: 'grid',         badge: null, href: '/dashboard/kanban' },
+  { id: 'kpis',            label: 'KPIs',           icon: 'bar-chart',    badge: null, href: '/dashboard/kpis' },
   { id: 'demandes',        label: 'Demandes',        icon: 'inbox',        badge: null  },
   { id: 'contacts',        label: 'Contacts',        icon: 'mail',         badge: null  },
   { id: 'candidatures',    label: 'Candidatures',    icon: 'user-plus',    badge: null  },
@@ -84,6 +89,7 @@ const benevoleNav: NavItem[] = [
   { id: 'overview',   label: "Vue d'ensemble",  icon: 'grid'     },
   { id: 'projects',   label: 'Projets',          icon: 'folder'   },
   { id: 'tasks',      label: 'Mes tâches',       icon: 'check'    },
+  { id: 'kanban',     label: 'Kanban global',    icon: 'grid',    href: '/dashboard/kanban' },
   { id: 'calendar',   label: 'Calendrier',       icon: 'calendar' },
   { id: 'equipe',     label: 'Équipe',           icon: 'users'    },
   { id: 'settings',   label: 'Paramètres',       icon: 'settings' },
@@ -144,7 +150,7 @@ const initials = displayName.split(' ').map((n: string) => n[0]).join('').toUppe
         <span class="nav-section">Navigation</span>
         {nav.map((item: NavItem) => (
           <a
-            href={`/dashboard/${dashRole}/${item.id === 'overview' ? '' : item.id}`}
+            href={item.href ?? `/dashboard/${dashRole}/${item.id === 'overview' ? '' : item.id}`}
             class={`nav-item${activePage === item.id ? ' active' : ''}`}
           >
             <span set:html={icons[item.icon]} />

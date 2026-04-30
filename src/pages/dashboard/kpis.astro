@@ -39,7 +39,7 @@ const criticalOpen = taskRows.filter((t) => (t.priority === 'P0' || t.priority =
 const userName = auth.user.user_metadata?.full_name ?? auth.user.email?.split('@')[0] ?? 'Utilisateur';
 ---
 
-<DashboardLayout title="KPIs" activePage="overview" authResult={auth} userName={userName}>
+<DashboardLayout title="KPIs" activePage="kpis" authResult={auth} userName={userName}>
   <section class="space-y-4">
     <h1 class="text-xl font-bold text-slate-900">Tableau KPI</h1>
 

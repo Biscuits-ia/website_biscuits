@@ -280,14 +280,6 @@ const toolsText = project.tools.join(', ');
                   </select>
                 </td>
                 <td>
-                  <select class="input input-xs js-task-status" data-id={t.id}>
-                    <option value="todo" selected={t.status === 'todo'}>À faire</option>
-                    <option value="in_progress" selected={t.status === 'in_progress'}>En cours</option>
-                    <option value="review" selected={t.status === 'review'}>Révision</option>
-                    <option value="done" selected={t.status === 'done'}>Terminé</option>
-                  </select>
-                </td>
-                <td>
                   <select class="input input-xs js-task-priority" data-id={t.id}>
                     <option value="low" selected={t.priority === 'low'}>Faible</option>
                     <option value="medium" selected={t.priority === 'medium'}>Moyenne</option>

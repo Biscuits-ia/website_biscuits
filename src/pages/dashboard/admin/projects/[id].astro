@@ -163,6 +163,9 @@ const toolsText = project.tools.join(', ');
     <a href="/dashboard/admin/projects" class="back-link">← Retour aux projets</a>
     <h1 class="page-title">{project.title}</h1>
     <p class="description">Pilotage admin: tâches, affectations, et brief projet</p>
+    <div class="top-actions">
+      <a href={`/dashboard/admin/projects/${projectId}/tasks`} class="btn btn-primary btn-sm">Gérer les tâches (page dédiée)</a>
+    </div>
   </div>
 
   <div class="grid">
@@ -265,10 +268,10 @@ const toolsText = project.tools.join(', ');
             <th></th>
           </tr>
         </thead>
-        <tbody>
+        <tbody id="tasks-tbody">
           {tasks.length > 0 ? tasks.map((t) => {
             return (
-              <tr>
+              <tr data-task-row="1">
                 <td>{t.title}</td>
                 <td class="task-desc-cell">{t.description || '—'}</td>
                 <td>
@@ -310,12 +313,28 @@ const toolsText = project.tools.join(', ');
               </tr>
             );
           }) : (
-            <tr>
+            <tr class="js-empty-row">
               <td colspan="8" class="empty-row">Aucune tâche.</td>
             </tr>
           )}
         </tbody>
       </table>
+    </div>
+    <div class="task-pagination" id="task-pagination">
+      <div class="task-pagination-left">
+        <button type="button" class="btn btn-ghost btn-xs" id="tasks-prev">← Précédent</button>
+        <button type="button" class="btn btn-ghost btn-xs" id="tasks-next">Suivant →</button>
+        <span class="task-pagination-info" id="tasks-page-info">Page 1 / 1</span>
+      </div>
+      <div class="task-pagination-right">
+        <label for="tasks-per-page" class="muted">Lignes / page</label>
+        <select id="tasks-per-page" class="input input-xs">
+          <option value="5">5</option>
+          <option value="10" selected>10</option>
+          <option value="20">20</option>
+          <option value="50">50</option>
+        </select>
+      </div>
     </div>
   </section>
 
@@ -345,6 +364,7 @@ const toolsText = project.tools.join(', ');
   .back-link { color: var(--accent); text-decoration: none; font-size: var(--text-xs); }
   .back-link:hover { text-decoration: underline; }
   .page-title { font-size: var(--text-xl); font-weight: 700; }
+  .top-actions { display: flex; gap: 8px; }
 
   .grid { display: grid; grid-template-columns: 1.3fr 1fr; gap: var(--space-lg); }
   .card { border: var(--brutal-border-thin); background: var(--surface-raised); padding: var(--space-md); }
@@ -363,6 +383,9 @@ const toolsText = project.tools.join(', ');
   .task-form { display: grid; grid-template-columns: 1.8fr 1fr 1fr 1fr 1.3fr auto; gap: 8px; align-items: center; }
   .task-form-description { grid-column: 1 / -1; resize: vertical; min-height: 70px; }
   .task-desc-cell { max-width: 360px; white-space: normal; font-size: var(--text-xs); color: var(--text-secondary); }
+  .task-pagination { margin-top: 10px; display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+  .task-pagination-left, .task-pagination-right { display: flex; align-items: center; gap: 8px; }
+  .task-pagination-info { font-size: var(--text-xs); color: var(--text-muted); }
 
   .input { border: var(--brutal-border-thin); background: var(--surface); padding: 6px 8px; font-size: var(--text-xs); }
   .input-xs { padding: 4px 6px; font-size: 0.72rem; }
@@ -463,6 +486,8 @@ const toolsText = project.tools.join(', ');
     const payload = {
       project_id: projectId,
       title: String(fd.get('title') ?? '').trim(),
+      description: String(fd.get('description') ?? '').trim() || null,
+      task_type: String(fd.get('task_type') ?? 'general'),
       status: String(fd.get('status') ?? 'todo'),
       priority: String(fd.get('priority') ?? 'medium'),
       assignee_id: String(fd.get('assignee_id') ?? '') || null,
@@ -554,6 +579,68 @@ const toolsText = project.tools.join(', ');
       window.location.reload();
     });
   });
+
+  function initTaskPagination() {
+    const rows = Array.from(document.querySelectorAll<HTMLTableRowElement>('#tasks-tbody tr[data-task-row="1"]'));
+    const emptyRow = document.querySelector<HTMLTableRowElement>('#tasks-tbody .js-empty-row');
+    const pager = document.getElementById('task-pagination');
+    const prevBtn = document.getElementById('tasks-prev') as HTMLButtonElement | null;
+    const nextBtn = document.getElementById('tasks-next') as HTMLButtonElement | null;
+    const info = document.getElementById('tasks-page-info');
+    const perPageSelect = document.getElementById('tasks-per-page') as HTMLSelectElement | null;
+
+    if (rows.length === 0) {
+      if (pager) pager.style.display = 'none';
+      if (emptyRow) emptyRow.style.display = '';
+      return;
+    }
+
+    if (!prevBtn || !nextBtn || !info || !perPageSelect) return;
+
+    let currentPage = 1;
+    let perPage = Number(perPageSelect.value) || 10;
+
+    const render = () => {
+      const totalPages = Math.max(1, Math.ceil(rows.length / perPage));
+      if (currentPage > totalPages) currentPage = totalPages;
+      const start = (currentPage - 1) * perPage;
+      const end = start + perPage;
+
+      rows.forEach((row, index) => {
+        row.style.display = index >= start && index < end ? '' : 'none';
+      });
+
+      info.textContent = `Page ${currentPage} / ${totalPages} (${rows.length} tâches)`;
+      prevBtn.disabled = currentPage <= 1;
+      nextBtn.disabled = currentPage >= totalPages;
+      if (emptyRow) emptyRow.style.display = 'none';
+    };
+
+    prevBtn.addEventListener('click', () => {
+      if (currentPage > 1) {
+        currentPage -= 1;
+        render();
+      }
+    });
+
+    nextBtn.addEventListener('click', () => {
+      const totalPages = Math.max(1, Math.ceil(rows.length / perPage));
+      if (currentPage < totalPages) {
+        currentPage += 1;
+        render();
+      }
+    });
+
+    perPageSelect.addEventListener('change', () => {
+      perPage = Number(perPageSelect.value) || 10;
+      currentPage = 1;
+      render();
+    });
+
+    render();
+  }
+
+  initTaskPagination();
 
   const chatRoot = document.getElementById('admin-project-chat');
 

@@ -284,6 +284,26 @@ const toolsText = project.tools.join(', ');
       </table>
     </div>
   </section>
+
+  <section class="card mt-6 chat-section" id="admin-project-chat" data-user-id={user.id} data-user-name={userName}>
+    <div class="chat-header">
+      <h2 class="card-title">Chat du projet</h2>
+      <span class="chat-subtitle">Visible uniquement par les bénévoles membres et les admins</span>
+    </div>
+    <div class="chat-messages" id="chat-messages" aria-live="polite">
+      <p class="chat-placeholder">Chargement…</p>
+    </div>
+    <form id="chat-form" class="chat-input-row" autocomplete="off">
+      <input
+        type="text"
+        id="chat-input"
+        class="input chat-input"
+        placeholder="Écrire un message…"
+        maxlength="2000"
+      />
+      <button type="submit" class="btn btn-primary btn-sm">Envoyer</button>
+    </form>
+  </section>
 </DashboardLayout>
 
 <style>
@@ -317,6 +337,24 @@ const toolsText = project.tools.join(', ');
   .mb-5 { margin-bottom: var(--space-lg); }
   .mb-6 { margin-bottom: var(--space-xl); }
   .mt-6 { margin-top: var(--space-xl); }
+
+  .chat-section { padding: 0; }
+  .chat-header { display: flex; justify-content: space-between; align-items: center; padding: var(--space-sm) var(--space-md); border-bottom: 1px solid var(--border-mid); }
+  .chat-header .card-title { margin: 0; }
+  .chat-subtitle { font-size: 0.68rem; color: var(--text-muted); }
+  .chat-messages { display: flex; flex-direction: column; gap: 6px; height: 340px; overflow-y: auto; padding: var(--space-sm) var(--space-md); }
+  .chat-placeholder { font-size: var(--text-xs); color: var(--text-muted); margin: auto; }
+  .chat-msg { display: flex; flex-direction: column; gap: 2px; padding: 6px 10px; max-width: 78%; }
+  .chat-msg--own { align-self: flex-end; background: color-mix(in srgb, var(--accent) 12%, var(--surface-raised)); border-left: 3px solid var(--accent); }
+  .chat-msg--other { align-self: flex-start; background: var(--surface); border: var(--brutal-border-thin); }
+  .chat-msg-header { display: flex; gap: 8px; align-items: center; }
+  .chat-msg-author { font-size: 0.68rem; font-weight: 700; color: var(--text-secondary); }
+  .chat-msg-time { font-size: 0.64rem; color: var(--text-muted); }
+  .chat-msg-body { font-size: var(--text-sm); word-break: break-word; white-space: pre-wrap; }
+  .btn-delete-msg { background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: 0.68rem; padding: 0 2px; opacity: 0.5; }
+  .btn-delete-msg:hover { opacity: 1; color: var(--err); }
+  .chat-input-row { display: flex; gap: 8px; padding: var(--space-sm) var(--space-md); border-top: 1px solid var(--border-mid); }
+  .chat-input { flex: 1; }
 
   @media (max-width: 900px) {
     .grid { grid-template-columns: 1fr; }
@@ -468,4 +506,130 @@ const toolsText = project.tools.join(', ');
       window.location.reload();
     });
   });
+
+  const chatRoot = document.getElementById('admin-project-chat');
+
+  function esc(str: unknown): string {
+    return String(str ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  if (chatRoot) {
+    const currentUserId = chatRoot.getAttribute('data-user-id') ?? '';
+    const currentUserName = chatRoot.getAttribute('data-user-name') ?? 'Admin';
+    const chatMessages = document.getElementById('chat-messages');
+    const chatForm = document.getElementById('chat-form');
+    const chatInput = document.getElementById('chat-input');
+    let lastMsgTime = '';
+
+    function renderChatMsg(msg: Record<string, unknown>): string {
+      const authorId = String(msg.author_id ?? '');
+      const isOwn = authorId === currentUserId;
+      const time = new Date(String(msg.created_at ?? '')).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+      return `<div class="chat-msg ${isOwn ? 'chat-msg--own' : 'chat-msg--other'}" data-msg-id="${esc(msg.id)}">
+        <div class="chat-msg-header">
+          <span class="chat-msg-author">${esc(isOwn ? 'Moi' : msg.author_name)}</span>
+          <span class="chat-msg-time">${time}</span>
+          <button class="btn-delete-msg" data-id="${esc(msg.id)}" title="Supprimer">🗑</button>
+        </div>
+        <div class="chat-msg-body">${esc(msg.content)}</div>
+      </div>`;
+    }
+
+    async function fetchMessages(since = ''): Promise<Array<Record<string, unknown>>> {
+      let url = `/api/benevole/project-messages?project_id=${encodeURIComponent(projectId ?? '')}`;
+      if (since) url += `&since=${encodeURIComponent(since)}`;
+      const res = await fetch(url);
+      if (!res.ok) return [];
+      const { data } = await res.json();
+      return Array.isArray(data) ? data : [];
+    }
+
+    function bindDeleteButtons() {
+      document.querySelectorAll('.btn-delete-msg:not([data-bound])').forEach((btn) => {
+        btn.setAttribute('data-bound', '1');
+        btn.addEventListener('click', async () => {
+          const id = btn.getAttribute('data-id');
+          if (!id || !confirm('Supprimer ce message ?')) return;
+          const res = await fetch(`/api/benevole/project-messages?id=${encodeURIComponent(id)}`, { method: 'DELETE' });
+          if (res.ok) btn.closest('.chat-msg')?.remove();
+          else alert('Erreur lors de la suppression.');
+        });
+      });
+    }
+
+    async function initChat() {
+      if (!chatMessages) return;
+      const messages = await fetchMessages();
+      if (messages.length === 0) {
+        chatMessages.innerHTML = '<p class="chat-placeholder">Aucun message pour le moment.</p>';
+      } else {
+        chatMessages.innerHTML = messages.map(renderChatMsg).join('');
+        lastMsgTime = String(messages[messages.length - 1]?.created_at ?? '');
+        bindDeleteButtons();
+      }
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+
+      setInterval(async () => {
+        if (!chatMessages) return;
+        const newMessages = await fetchMessages(lastMsgTime);
+        if (newMessages.length === 0) return;
+        const placeholder = chatMessages.querySelector('.chat-placeholder');
+        if (placeholder) placeholder.remove();
+        chatMessages.insertAdjacentHTML('beforeend', newMessages.map(renderChatMsg).join(''));
+        lastMsgTime = String(newMessages[newMessages.length - 1]?.created_at ?? '');
+        bindDeleteButtons();
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+      }, 4000);
+    }
+
+    chatForm?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!(chatInput instanceof HTMLInputElement)) return;
+      const content = chatInput.value.trim();
+      if (!content) return;
+
+      const submitBtn = chatForm.querySelector('button[type="submit"]');
+      if (submitBtn instanceof HTMLButtonElement) submitBtn.disabled = true;
+      chatInput.disabled = true;
+
+      const res = await fetch('/api/benevole/project-messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ project_id: projectId, content }),
+      });
+
+      if (res.ok) {
+        const { data: msg } = await res.json();
+        if (chatMessages && msg) {
+          const placeholder = chatMessages.querySelector('.chat-placeholder');
+          if (placeholder) placeholder.remove();
+          chatMessages.insertAdjacentHTML('beforeend', renderChatMsg({ ...msg, author_name: currentUserName, author_id: currentUserId }));
+          lastMsgTime = String(msg.created_at ?? lastMsgTime);
+          bindDeleteButtons();
+          chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+        chatInput.value = '';
+      } else {
+        const err = await res.json().catch(() => ({}));
+        alert((err as { error?: string }).error ?? 'Impossible d\'envoyer le message.');
+      }
+
+      chatInput.disabled = false;
+      if (submitBtn instanceof HTMLButtonElement) submitBtn.disabled = false;
+      chatInput.focus();
+    });
+
+    chatInput?.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        chatForm?.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+      }
+    });
+
+    initChat();
+  }
 </script>

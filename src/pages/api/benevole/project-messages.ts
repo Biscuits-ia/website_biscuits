@@ -24,7 +24,7 @@ async function getAuthContext(request: Request, cookies: Parameters<typeof creat
   const { data: { user }, error } = await sessionSupabase.auth.getUser();
   if (error || !user) return null;
   const role = await fetchRoleSecure(user.id);
-  if (!role || (role !== 'benevole' && role !== 'moderator' && role !== 'admin')) return null;
+  if (!role || (role !== 'benevole' && role !== 'admin')) return null;
   return { supabase: createSupabaseAdminClient(), user, role };
 }
 
@@ -40,8 +40,8 @@ export const GET: APIRoute = async ({ request, cookies, url }) => {
   if (!projectId) return jsonError('project_id est requis.');
 
   // Vérifier accès au projet
-  const isStaff = role === 'admin' || role === 'moderator';
-  if (!isStaff) {
+  const isAdmin = role === 'admin';
+  if (!isAdmin) {
     const { data: membership } = await supabase
       .from('project_members')
       .select('user_id')
@@ -95,7 +95,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
   if (!ctx) return jsonError('Non autorisé.', 401);
 
   const { supabase, user, role } = ctx;
-  const isStaff = role === 'admin' || role === 'moderator';
+  const isAdmin = role === 'admin';
 
   let body: Record<string, unknown>;
   try { body = await request.json(); }
@@ -108,7 +108,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
   if (!content)   return jsonError('Le message ne peut pas être vide.');
   if (content.length > 2000) return jsonError('Le message ne doit pas dépasser 2000 caractères.');
 
-  if (!isStaff) {
+  if (!isAdmin) {
     const { data: membership } = await supabase
       .from('project_members')
       .select('user_id')
@@ -143,14 +143,23 @@ export const DELETE: APIRoute = async ({ request, cookies, url }) => {
 
   const { data: msg } = await supabase
     .from('project_messages')
-    .select('author_id')
+    .select('author_id, project_id')
     .eq('id', messageId)
     .maybeSingle();
 
   if (!msg) return jsonError('Message introuvable.', 404);
 
-  const isStaff = role === 'admin' || role === 'moderator';
-  if (msg.author_id !== user.id && !isStaff) return jsonError('Non autorisé.', 403);
+  const isAdmin = role === 'admin';
+  if (!isAdmin) {
+    const { data: membership } = await supabase
+      .from('project_members')
+      .select('user_id')
+      .eq('project_id', msg.project_id)
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    if (!membership) return jsonError('Non autorisé.', 403);
+  }
 
   const { error } = await supabase
     .from('project_messages')

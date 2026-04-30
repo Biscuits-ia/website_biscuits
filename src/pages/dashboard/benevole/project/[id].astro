@@ -1067,6 +1067,7 @@ const memberOptionsJson = JSON.stringify(memberOptions);
 
     function renderChatMsg(msg) {
       const isOwn = msg.is_own ?? msg.author_id === userId;
+      const canDelete = isMember || isStaff;
       const t = new Date(msg.created_at);
       const now = new Date();
       const sameDay = t.toDateString() === now.toDateString();
@@ -1078,7 +1079,7 @@ const memberOptionsJson = JSON.stringify(memberOptions);
         <div class="chat-msg-header">
           <span class="chat-msg-author">${esc(isOwn ? 'Moi' : msg.author_name)}</span>
           <span class="chat-msg-time">${timeStr}</span>
-          ${isOwn ? `<button class="btn-delete-msg" data-id="${esc(msg.id)}" title="Supprimer">🗑</button>` : ''}
+          ${canDelete ? `<button class="btn-delete-msg" data-id="${esc(msg.id)}" title="Supprimer">🗑</button>` : ''}
         </div>
         <div class="chat-msg-body">${esc(msg.content)}</div>
       </div>`;

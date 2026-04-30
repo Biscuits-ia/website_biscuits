@@ -13,11 +13,11 @@ export const PRIORITY_CONFIG: Record<PriorityLevel, { label: string; color: stri
 };
 
 export const STATUS_CONFIG: Record<TaskStatus, { label: string; color: string; nextStatuses: TaskStatus[] }> = {
-  backlog: { label: 'Backlog', color: 'text-slate-700', nextStatuses: ['todo'] },
+  backlog: { label: 'Carnet', color: 'text-slate-700', nextStatuses: ['todo'] },
   todo: { label: 'À faire', color: 'text-sky-700', nextStatuses: ['in_progress', 'blocked'] },
   in_progress: { label: 'En cours', color: 'text-indigo-700', nextStatuses: ['in_review', 'blocked'] },
   in_review: { label: 'En review', color: 'text-violet-700', nextStatuses: ['testing', 'in_progress', 'blocked'] },
-  testing: { label: 'Testing', color: 'text-emerald-700', nextStatuses: ['done', 'in_progress', 'blocked'] },
+  testing: { label: 'Tests', color: 'text-emerald-700', nextStatuses: ['done', 'in_progress', 'blocked'] },
   blocked: { label: 'Bloquée', color: 'text-red-700', nextStatuses: ['todo', 'in_progress'] },
   done: { label: 'Terminée', color: 'text-green-700', nextStatuses: [] },
 };

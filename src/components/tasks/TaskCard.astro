@@ -23,7 +23,7 @@ const canClaim = !!claimUserId && !task.assignee_id && task.assignee_id !== clai
 
   <div class="taskhub-meta-row">
     <span class={`taskhub-meta-pill ${task.assignee_id ? 'is-assigned' : 'is-unassigned'}`}>
-      {task.assignee_id ? 'Attribuée' : 'Libre'}
+      {task.assignee_id ? 'Attribuée' : 'Disponible'}
     </span>
     {typeof task.time_estimate_hours === 'number' && (
       <span class="taskhub-meta-pill">{task.time_estimate_hours}h estimées</span>
@@ -37,7 +37,7 @@ const canClaim = !!claimUserId && !task.assignee_id && task.assignee_id !== clai
   )}
   {!showActionLink && canClaim && (
     <div class="taskhub-card-actions">
-      <button type="button" class="btn btn-primary taskhub-claim-btn" data-claim-task-id={task.id}>Je prends cette tâche</button>
+      <button type="button" class="btn btn-primary taskhub-claim-btn" data-claim-task-id={task.id}>Je prends cette tâche ✓</button>
     </div>
   )}
 </article>

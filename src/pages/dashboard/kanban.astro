@@ -127,7 +127,13 @@ const resetHref = '/dashboard/kanban';
         </select>
         <select name="status" class="taskhub-input">
           <option value="">Tous statuts</option>
-          {validStatuses.map((status) => <option value={status} selected={statusFilter === status}>{status}</option>)}
+          <option value="backlog" selected={statusFilter === 'backlog'}>Carnet</option>
+          <option value="todo" selected={statusFilter === 'todo'}>À faire</option>
+          <option value="in_progress" selected={statusFilter === 'in_progress'}>En cours</option>
+          <option value="in_review" selected={statusFilter === 'in_review'}>En revue</option>
+          <option value="testing" selected={statusFilter === 'testing'}>Tests</option>
+          <option value="blocked" selected={statusFilter === 'blocked'}>Bloquée</option>
+          <option value="done" selected={statusFilter === 'done'}>Terminée</option>
         </select>
         <div class="taskhub-filter-actions">
           <button type="submit" class="btn btn-primary">Filtrer</button>

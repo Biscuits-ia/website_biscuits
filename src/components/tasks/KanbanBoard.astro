@@ -14,13 +14,13 @@ interface Props {
 const { tasks = [], todoTasks = [], todoPrevHref, todoNextHref, todoPage = 1, todoTotalPages = 1, currentUserId = '' } = Astro.props;
 
 const statuses: Array<{ status: TaskStatus; label: string }> = [
-  { status: 'backlog', label: 'Backlog' },
-  { status: 'todo', label: 'To Do' },
-  { status: 'in_progress', label: 'In Progress' },
-  { status: 'in_review', label: 'In Review' },
-  { status: 'testing', label: 'Testing' },
-  { status: 'blocked', label: 'Blocked' },
-  { status: 'done', label: 'Done' },
+  { status: 'backlog', label: 'Carnet' },
+  { status: 'todo', label: 'À faire' },
+  { status: 'in_progress', label: 'En cours' },
+  { status: 'in_review', label: 'En revue' },
+  { status: 'testing', label: 'Tests' },
+  { status: 'blocked', label: 'Bloquée' },
+  { status: 'done', label: 'Terminée' },
 ];
 ---
 

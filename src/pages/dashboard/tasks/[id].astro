@@ -61,21 +61,26 @@ const isTakenByOther = Boolean(task.assignee_id) && task.assignee_id !== auth.us
       <form id="task-update-form" class="taskhub-form-grid-2" style="margin-top:0.8rem">
         <input type="hidden" name="id" value={task.id} />
         <select name="status" class="taskhub-input">
-          {['backlog','todo','in_progress','in_review','testing','blocked','done'].map((s) => (
-            <option value={s} selected={task.status === s}>{s}</option>
-          ))}
+          <option value="backlog" selected={task.status === 'backlog'}>Carnet</option>
+          <option value="todo" selected={task.status === 'todo'}>À faire</option>
+          <option value="in_progress" selected={task.status === 'in_progress'}>En cours</option>
+          <option value="in_review" selected={task.status === 'in_review'}>En revue</option>
+          <option value="testing" selected={task.status === 'testing'}>Tests</option>
+          <option value="blocked" selected={task.status === 'blocked'}>Bloquée</option>
+          <option value="done" selected={task.status === 'done'}>Terminée</option>
         </select>
         <select name="priority" class="taskhub-input">
-          {['P0','P1','P2','P3'].map((p) => (
-            <option value={p} selected={task.priority === p}>{p}</option>
-          ))}
+          <option value="P0" selected={task.priority === 'P0'}>P0 — Critique</option>
+          <option value="P1" selected={task.priority === 'P1'}>P1 — Haute</option>
+          <option value="P2" selected={task.priority === 'P2'}>P2 — Normale</option>
+          <option value="P3" selected={task.priority === 'P3'}>P3 — Basse</option>
         </select>
-        <input type="number" name="time_spent_hours" min="0" step="0.5" value={task.time_spent_hours ?? 0} class="taskhub-input" />
+        <input type="number" name="time_spent_hours" min="0" step="0.5" value={task.time_spent_hours ?? 0} class="taskhub-input" placeholder="Heures passées" />
         <Button type="submit" variant="primary">Mettre à jour</Button>
       </form>
 
       <div class="mt-3 flex justify-end">
-        <button id="task-refresh-btn" type="button" class="btn btn-ghost">Rafraîchir</button>
+        <button id="task-refresh-btn" type="button" class="btn btn-ghost">Recharger</button>
       </div>
     </article>
 
@@ -83,14 +88,14 @@ const isTakenByOther = Boolean(task.assignee_id) && task.assignee_id !== auth.us
       <section class="taskhub-panel">
         <h2 class="card-title">Commentaires</h2>
         <form id="task-comment-form" class="mb-3 space-y-2">
-          <textarea id="task-comment-content" rows="3" maxlength="1500" class="taskhub-input" placeholder="Ajouter un commentaire..."></textarea>
+          <textarea id="task-comment-content" rows="3" maxlength="1500" class="taskhub-input" placeholder="Ajouter un commentaire…"></textarea>
           <div class="flex justify-end">
             <button type="submit" class="btn btn-primary">Publier</button>
           </div>
         </form>
         <ul id="task-comments" class="space-y-2">
           {(comments ?? []).map((c) => <li class="taskhub-list-item">{c.content}</li>)}
-          {(!comments || comments.length === 0) && <li class="taskhub-note">Aucun commentaire.</li>}
+          {(!comments || comments.length === 0) && <li class="taskhub-note">Aucun commentaire pour l'instant.</li>}
         </ul>
       </section>
 
@@ -102,7 +107,7 @@ const isTakenByOther = Boolean(task.assignee_id) && task.assignee_id !== auth.us
               <strong>{h.field_name}</strong> : {h.old_value || '∅'} → {h.new_value || '∅'}
             </li>
           ))}
-          {(!history || history.length === 0) && <li class="taskhub-note">Aucun historique.</li>}
+          {(!history || history.length === 0) && <li class="taskhub-note">Aucun historique pour l'instant.</li>}
         </ul>
       </section>
     </div>
@@ -140,7 +145,7 @@ const isTakenByOther = Boolean(task.assignee_id) && task.assignee_id !== auth.us
         ? comments
             .map((c) => `<li class=\"rounded bg-slate-50 p-2 text-sm\">${escapeHtml(c.content || '')}</li>`)
             .join('')
-        : '<li class="text-sm text-slate-500">Aucun commentaire.</li>';
+        : '<li class="taskhub-note">Aucun commentaire pour l\'instant.</li>';
     }
 
     const historyEl = document.getElementById('task-history');
@@ -150,7 +155,7 @@ const isTakenByOther = Boolean(task.assignee_id) && task.assignee_id !== auth.us
         ? rows
             .map((h) => `<li class=\"rounded bg-slate-50 p-2 text-xs text-slate-700\"><strong>${escapeHtml(h.field_name || '')}</strong> : ${escapeHtml(h.old_value || '∅')} → ${escapeHtml(h.new_value || '∅')}</li>`)
             .join('')
-        : '<li class="text-sm text-slate-500">Aucun historique.</li>';
+        : '<li class="taskhub-note">Aucun historique pour l\'instant.</li>';
     }
   }
 
@@ -179,13 +184,13 @@ const isTakenByOther = Boolean(task.assignee_id) && task.assignee_id !== auth.us
       return;
     }
 
-    window.showToast?.('Tâche mise à jour', 'success');
+    window.showToast?.('Tâche mise à jour avec succès', 'success');
     await refreshTaskFromApi();
   });
 
   document.getElementById('task-refresh-btn')?.addEventListener('click', async () => {
     await refreshTaskFromApi();
-    window.showToast?.('Données rafraîchies', 'success');
+    window.showToast?.('Données rechargées', 'success');
   });
 
   document.getElementById('task-comment-form')?.addEventListener('submit', async (e) => {
@@ -211,7 +216,7 @@ const isTakenByOther = Boolean(task.assignee_id) && task.assignee_id !== auth.us
     }
 
     textarea.value = '';
-    window.showToast?.('Commentaire ajouté', 'success');
+    window.showToast?.('Commentaire publié', 'success');
     await refreshTaskFromApi();
   });
 
@@ -226,7 +231,7 @@ const isTakenByOther = Boolean(task.assignee_id) && task.assignee_id !== auth.us
       return;
     }
 
-    window.showToast?.('Tâche supprimée', 'success');
+    window.showToast?.('Tâche supprimée définitivement', 'success');
     setTimeout(() => {
       window.location.href = '/dashboard/tasks';
     }, 350);
@@ -245,7 +250,7 @@ const isTakenByOther = Boolean(task.assignee_id) && task.assignee_id !== auth.us
       return;
     }
 
-    window.showToast?.('Attribution mise à jour', 'success');
+    window.showToast?.('Attribution modifiée avec succès', 'success');
     setTimeout(() => {
       window.location.reload();
     }, 250);

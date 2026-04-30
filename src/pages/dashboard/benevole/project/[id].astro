@@ -31,23 +31,19 @@ const [
     .single(),
   adminSupabase
     .from('project_tasks')
-    .select(`
-      id, title, description, status, priority, deadline, position, created_by, assignee_id,
-      profiles!project_tasks_assignee_id_fkey(full_name, email)
-    `)
+    .select('id, title, description, status, priority, deadline, position, created_by, assignee_id')
     .eq('project_id', projectId)
     .order('status')
     .order('position'),
   adminSupabase
     .from('project_members')
-    .select('user_id, profiles(full_name, email)')
+    .select('user_id')
     .eq('project_id', projectId),
 ]);
 
 if (projErr || !projectRaw) return Astro.redirect('/dashboard/benevole/projects');
 
 // ── Types ─────────────────────────────────────────────────────────────────────
-interface ProfileRef { full_name: string | null; email: string; }
 interface Project {
   id: string; title: string; description: string | null;
   status: string; priority: string; deadline: string | null;
@@ -57,23 +53,30 @@ interface Task {
   id: string; title: string; description: string | null;
   status: string; priority: string; deadline: string | null;
   position: number; created_by: string; assignee_id: string | null;
-  profiles: ProfileRef[] | null;
 }
-interface Member { user_id: string; profiles: ProfileRef[] | null; }
+interface Member { user_id: string; }
 
 const project = projectRaw as unknown as Project;
 const tasks   = (tasksRaw ?? []) as unknown as Task[];
 const members = (membersRaw ?? []) as unknown as Member[];
 
-let leaderProfile: { full_name: string | null; email: string } | null = null;
-if (project.leader_id) {
-  const { data } = await adminSupabase
+// ── Récupération des profils (sans embedded join) ─────────────────────────────
+const allProfileIds = [...new Set([
+  ...(project.leader_id ? [project.leader_id] : []),
+  ...tasks.map((t: Task) => t.assignee_id).filter((id): id is string => !!id),
+  ...members.map((m: Member) => m.user_id),
+])];
+
+const profileMap: Record<string, { full_name: string | null; email: string }> = {};
+if (allProfileIds.length > 0) {
+  const { data: profilesRaw } = await adminSupabase
     .from('profiles')
-    .select('full_name, email')
-    .eq('id', project.leader_id)
-    .maybeSingle();
-  leaderProfile = data;
+    .select('id, full_name, email')
+    .in('id', allProfileIds);
+  for (const p of profilesRaw ?? []) profileMap[p.id] = p;
 }
+
+const leaderProfile = project.leader_id ? (profileMap[project.leader_id] ?? null) : null;
 
 // Kolonnes kanban
 const columns = [
@@ -105,9 +108,11 @@ const leaderName = leaderProfile?.full_name ?? leaderProfile?.email ?? '—';
 const deadlineStr = project.deadline ? new Date(project.deadline).toLocaleDateString('fr-FR') : null;
 
 // Membres pour assignation
+const isMember = members.some((m: Member) => m.user_id === userId);
+
 const memberOptions = members.map((m: Member) => ({
   id: m.user_id,
-  name: m.profiles?.[0]?.full_name ?? m.profiles?.[0]?.email ?? m.user_id,
+  name: profileMap[m.user_id]?.full_name ?? profileMap[m.user_id]?.email ?? m.user_id,
 }));
 
 // Sérialisation pour le script client (mentions @)
@@ -147,9 +152,10 @@ const memberOptionsJson = JSON.stringify(memberOptions);
         </div>
         <div class="kanban-cards" id={`col-${col.key}`}>
           {tasksByStatus[col.key].map((t: Task) => {
-            const assigneeName = t.profiles?.[0]?.full_name ?? t.profiles?.[0]?.email ?? null;
+            const assigneeName = t.assignee_id ? (profileMap[t.assignee_id]?.full_name ?? profileMap[t.assignee_id]?.email ?? null) : null;
             const taskDeadline = t.deadline ? new Date(t.deadline).toLocaleDateString('fr-FR') : null;
             const isMyTask     = t.assignee_id === userId;
+            const isUnclaimed  = !t.assignee_id;
             return (
               <div
                 class={`task-card${isMyTask ? ' task-card--mine' : ''}`}
@@ -171,9 +177,30 @@ const memberOptionsJson = JSON.stringify(memberOptions);
                 <div class="task-card-footer">
                   <span class={`badge badge-${priorityClass[t.priority] ?? 'neutral'}`}>{priorityLabel[t.priority]}</span>
                   {taskDeadline && <span class="task-deadline">📅 {taskDeadline}</span>}
-                  {assigneeName && <span class="task-assignee">👤 {assigneeName}</span>}
+                  {assigneeName
+                    ? <span class="task-assignee">{isMyTask ? '✋ Moi' : `👤 ${assigneeName}`}</span>
+                    : <span class="task-assignee task-assignee--free">Disponible</span>
+                  }
                   <span class="task-comments-count" data-task-id={t.id}>💬 …</span>
                 </div>
+                {/* Bouton claim pour tâches libres (membres seulement) */}
+                {isUnclaimed && (isMember || isStaff) && (
+                  <button
+                    class="btn-claim-task"
+                    data-id={t.id}
+                    title="Prendre cette tâche"
+                    onclick="event.stopPropagation()"
+                  >✋ Je prends cette tâche</button>
+                )}
+                {/* Bouton libérer pour le porteur actuel */}
+                {isMyTask && (
+                  <button
+                    class="btn-unclaim-task"
+                    data-id={t.id}
+                    title="Libérer la tâche"
+                    onclick="event.stopPropagation()"
+                  >↩ Libérer</button>
+                )}
                 {(t.created_by === userId || isStaff) && (
                   <div class="task-card-actions">
                     <button class="btn-icon btn-edit-task" data-id={t.id} title="Modifier">✏️</button>
@@ -220,9 +247,9 @@ const memberOptionsJson = JSON.stringify(memberOptions);
           </div>
         </div>
         <div class="field">
-            <label class="label" for="t-assignee">Assigner à *</label>
-            <select id="t-assignee" name="assignee_id" class="input" required>
-              <option value="">— Sélectionner un membre —</option>
+            <label class="label" for="t-assignee">Assigner à</label>
+            <select id="t-assignee" name="assignee_id" class="input">
+              <option value="">— Laisser non assigné (claim libre) —</option>
               {memberOptions.map(m => (
                 <option value={m.id}>{m.name}</option>
               ))}
@@ -388,6 +415,11 @@ const memberOptionsJson = JSON.stringify(memberOptions);
   .task-card-actions  { display: flex; gap: 4px; justify-content: flex-end; }
   .task-deadline      { font-size: var(--text-xs); color: var(--text-muted); }
   .task-assignee      { font-size: var(--text-xs); color: var(--text-muted); }
+  .task-assignee--free { color: var(--ok); font-style: italic; }
+  .btn-claim-task     { display: block; width: 100%; margin-top: 4px; padding: 4px 8px; font-size: 0.72rem; font-weight: 600; background: var(--accent); color: var(--accent-fg, #fff); border: var(--brutal-border-thin); cursor: pointer; text-align: center; }
+  .btn-claim-task:hover { opacity: .85; }
+  .btn-unclaim-task   { display: block; width: 100%; margin-top: 2px; padding: 2px 8px; font-size: 0.68rem; background: none; color: var(--text-muted); border: 1px dashed var(--border-mid); cursor: pointer; text-align: center; }
+  .btn-unclaim-task:hover { color: var(--err); border-color: var(--err); }
   .btn-icon           { background: none; border: none; cursor: pointer; font-size: 0.85rem; padding: 2px 4px; opacity: .6; }
   .btn-icon:hover     { opacity: 1; }
 
@@ -465,7 +497,7 @@ const memberOptionsJson = JSON.stringify(memberOptions);
   .field-hint          { font-size: 0.7rem; color: var(--text-muted); margin-top: 2px; }
 </style>
 
-<script define:vars={{ projectId, memberOptionsJson, userId: userId }}>
+<script define:vars={{ projectId, memberOptionsJson, userId, isMember, isStaff }}>
   /* ── Helpers ──────────────────────────────────────────────────────────────── */
   const memberOptions = JSON.parse(memberOptionsJson);
 
@@ -626,6 +658,51 @@ const memberOptionsJson = JSON.stringify(memberOptions);
       const err = await res.json().catch(() => ({}));
       alert('Erreur : ' + (err.error ?? 'Impossible de modifier le projet.'));
     }
+  });
+
+  /* ── Claim tâche ─────────────────────────────────────────────────────────── */
+  document.querySelectorAll('.btn-claim-task').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      const id = btn.getAttribute('data-id');
+      if (!id) return;
+      btn.disabled = true;
+      btn.textContent = '…';
+      try {
+        const res = await fetch(`/api/benevole/tasks?id=${id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'claim' }),
+        });
+        if (res.ok) {
+          window.location.reload();
+        } else {
+          const err = await res.json().catch(() => ({}));
+          alert(err.error ?? 'Impossible de prendre cette tâche.');
+          btn.disabled = false;
+          btn.textContent = '✋ Je prends cette tâche';
+        }
+      } catch {
+        btn.disabled = false;
+        btn.textContent = '✋ Je prends cette tâche';
+      }
+    });
+  });
+
+  /* ── Unclaim tâche ────────────────────────────────────────────────────────── */
+  document.querySelectorAll('.btn-unclaim-task').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      const id = btn.getAttribute('data-id');
+      if (!id || !confirm('Libérer cette tâche ?')) return;
+      const res = await fetch(`/api/benevole/tasks?id=${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'unclaim' }),
+      });
+      if (res.ok) window.location.reload();
+      else alert('Erreur lors de la libération.');
+    });
   });
 
   /* ── Supprimer tâche ──────────────────────────────────────────────────────── */

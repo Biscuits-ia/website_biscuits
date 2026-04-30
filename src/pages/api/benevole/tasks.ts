@@ -1,6 +1,6 @@
 // src/pages/api/benevole/tasks.ts
 import type { APIRoute } from 'astro';
-import { createSupabaseClient, createSupabaseAdminClient } from '@/lib/supabase';
+import { createSupabaseAdminClient } from '@/lib/supabase';
 import { fetchRoleSecure } from '@/lib/auth';
 
 function jsonError(message: string, status = 400) {
@@ -100,6 +100,51 @@ export const POST: APIRoute = async ({ request, cookies }) => {
   return jsonOk({ id: data.id }, 201);
 };
 
+// ── Helpers claim / unclaim ───────────────────────────────────────────────────
+async function handleClaim(
+  supabase: ReturnType<typeof createSupabaseAdminClient>,
+  taskId: string,
+  task: { assignee_id: string | null; project_id: string },
+  userId: string,
+  isStaff: boolean,
+) {
+  if (task.assignee_id) return jsonError('Cette tâche est déjà prise par quelqu\'un d\'autre.', 409);
+  if (!isStaff) {
+    const { data: membership } = await supabase
+      .from('project_members')
+      .select('user_id')
+      .eq('project_id', task.project_id)
+      .eq('user_id', userId)
+      .maybeSingle();
+    if (!membership) return jsonError('Vous devez être membre du projet pour prendre une tâche.', 403);
+  }
+  const { error } = await supabase
+    .from('project_tasks')
+    .update({ assignee_id: userId, status: 'in_progress' })
+    .eq('id', taskId)
+    .is('assignee_id', null);
+  if (error) return jsonError('La tâche vient d\'être prise par quelqu\'un d\'autre.', 409);
+  return jsonOk({ ok: true });
+}
+
+async function handleUnclaim(
+  supabase: ReturnType<typeof createSupabaseAdminClient>,
+  taskId: string,
+  task: { assignee_id: string | null },
+  userId: string,
+  isStaff: boolean,
+) {
+  if (task.assignee_id !== userId && !isStaff) {
+    return jsonError('Vous ne pouvez pas libérer une tâche qui ne vous est pas assignée.', 403);
+  }
+  const { error } = await supabase
+    .from('project_tasks')
+    .update({ assignee_id: null, status: 'todo' })
+    .eq('id', taskId);
+  if (error) return jsonError('Erreur lors de la libération.', 500);
+  return jsonOk({ ok: true });
+}
+
 // ── PATCH /api/benevole/tasks?id=… — modifier une tâche ──────────────────────
 export const PATCH: APIRoute = async ({ request, cookies, url }) => {
   const ctx = await getAuthContext(request, cookies);
@@ -112,19 +157,24 @@ export const PATCH: APIRoute = async ({ request, cookies, url }) => {
 
   const { data: task } = await supabase
     .from('project_tasks')
-    .select('created_by, assignee_id')
+    .select('created_by, assignee_id, project_id')
     .eq('id', taskId)
     .single();
 
   if (!task) return jsonError('Tâche introuvable.', 404);
 
   const isStaff = role === 'admin' || role === 'moderator';
-  const isOwner = task.created_by === user.id || task.assignee_id === user.id;
-  if (!isOwner && !isStaff) return jsonError('Non autorisé.', 403);
 
   let body: Record<string, unknown>;
   try { body = await request.json(); }
   catch { return jsonError('Corps de requête JSON invalide.'); }
+
+  if (body.action === 'claim')   return handleClaim(supabase, taskId, task, user.id, isStaff);
+  if (body.action === 'unclaim') return handleUnclaim(supabase, taskId, task, user.id, isStaff);
+
+  // ── Mise à jour normale ──────────────────────────────────────────────────
+  const isOwner = task.created_by === user.id || task.assignee_id === user.id;
+  if (!isOwner && !isStaff) return jsonError('Non autorisé.', 403);
 
   const { updates, error: valErr } = buildTaskUpdates(body, isStaff);
   if (valErr) return jsonError(valErr);

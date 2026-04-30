@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS public.project_messages (
   created_at timestamptz NOT NULL DEFAULT now()
 );
 
-COMMENT ON TABLE public.project_messages IS 'Messages du chat par projet (membres + staff)';
+COMMENT ON TABLE public.project_messages IS 'Messages du chat par projet (lecture staff, écriture membres bénévoles)';
 
 CREATE INDEX IF NOT EXISTS idx_project_messages_lookup
   ON public.project_messages (project_id, created_at DESC);
@@ -33,19 +33,18 @@ CREATE POLICY "pm_select" ON public.project_messages FOR SELECT
     )
   );
 
--- Membres + staff peuvent insérer leur propre message
+-- Seuls les membres bénévoles du projet peuvent insérer leur propre message
 DROP POLICY IF EXISTS "pm_insert" ON public.project_messages;
 CREATE POLICY "pm_insert" ON public.project_messages FOR INSERT
   WITH CHECK (
     author_id = auth.uid()
     AND (
       EXISTS (
-        SELECT 1 FROM public.project_members
-        WHERE project_id = project_messages.project_id AND user_id = auth.uid()
-      )
-      OR EXISTS (
-        SELECT 1 FROM public.profiles
-        WHERE id = auth.uid() AND role IN ('admin', 'moderator')
+        SELECT 1 FROM public.project_members pm
+        JOIN public.profiles p ON p.id = pm.user_id
+        WHERE pm.project_id = project_messages.project_id
+          AND pm.user_id = auth.uid()
+          AND p.role = 'benevole'
       )
     )
   );

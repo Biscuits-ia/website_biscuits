@@ -381,21 +381,25 @@ const memberOptionsJson = JSON.stringify(memberOptions);
   <section class="chat-section mt-6" aria-label="Chat du projet">
     <div class="chat-header">
       <h2 class="chat-title">💬 Chat du projet</h2>
-      <span class="chat-subtitle">Messages en temps réel • membres uniquement</span>
+      <span class="chat-subtitle">Messages bénévoles • lecture staff uniquement</span>
     </div>
     <div class="chat-messages" id="chat-messages" aria-live="polite">
       <p class="chat-placeholder">Chargement…</p>
     </div>
-    <form id="chat-form" class="chat-input-row" autocomplete="off">
-      <input
-        type="text"
-        id="chat-input"
-        class="input chat-input"
-        placeholder="Écrire un message… (Entrée pour envoyer)"
-        maxlength="2000"
-      />
-      <button type="submit" class="btn btn-primary btn-sm">Envoyer</button>
-    </form>
+    {isStaff ? (
+      <p class="chat-readonly-note">Les admins et modérateurs peuvent consulter ce chat, mais pas y écrire.</p>
+    ) : (
+      <form id="chat-form" class="chat-input-row" autocomplete="off">
+        <input
+          type="text"
+          id="chat-input"
+          class="input chat-input"
+          placeholder="Écrire un message… (Entrée pour envoyer)"
+          maxlength="2000"
+        />
+        <button type="submit" class="btn btn-primary btn-sm">Envoyer</button>
+      </form>
+    )}
   </section>
 </DashboardLayout>
 
@@ -533,6 +537,7 @@ const memberOptionsJson = JSON.stringify(memberOptions);
   .chat-msg:hover .btn-delete-msg { opacity: 1; }
   .chat-input-row     { display: flex; gap: 8px; padding: var(--space-sm) var(--space-md); border-top: 1px solid var(--border-mid); }
   .chat-input         { flex: 1; }
+  .chat-readonly-note { padding: var(--space-sm) var(--space-md); border-top: 1px solid var(--border-mid); font-size: var(--text-xs); color: var(--text-muted); }
   .mt-6               { margin-top: var(--space-xl); }
 </style>
 

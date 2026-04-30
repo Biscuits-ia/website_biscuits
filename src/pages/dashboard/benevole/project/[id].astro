@@ -529,8 +529,6 @@ const memberOptionsJson = JSON.stringify(memberOptions);
   .chat-msg-author    { font-size: 0.68rem; font-weight: 700; color: var(--text-secondary); }
   .chat-msg-time      { font-size: 0.64rem; color: var(--text-muted); }
   .chat-msg-body      { font-size: var(--text-sm); word-break: break-word; white-space: pre-wrap; }
-  .btn-delete-msg     { background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: 0.65rem; padding: 0 2px; opacity: 0; transition: opacity .15s; }
-  .chat-msg:hover .btn-delete-msg { opacity: 1; }
   .chat-input-row     { display: flex; gap: 8px; padding: var(--space-sm) var(--space-md); border-top: 1px solid var(--border-mid); }
   .chat-input         { flex: 1; }
   .mt-6               { margin-top: var(--space-xl); }
@@ -1067,7 +1065,6 @@ const memberOptionsJson = JSON.stringify(memberOptions);
 
     function renderChatMsg(msg) {
       const isOwn = msg.is_own ?? msg.author_id === userId;
-      const canDelete = isMember || isStaff;
       const t = new Date(msg.created_at);
       const now = new Date();
       const sameDay = t.toDateString() === now.toDateString();
@@ -1079,23 +1076,9 @@ const memberOptionsJson = JSON.stringify(memberOptions);
         <div class="chat-msg-header">
           <span class="chat-msg-author">${esc(isOwn ? 'Moi' : msg.author_name)}</span>
           <span class="chat-msg-time">${timeStr}</span>
-          ${canDelete ? `<button class="btn-delete-msg" data-id="${esc(msg.id)}" title="Supprimer">🗑</button>` : ''}
         </div>
         <div class="chat-msg-body">${esc(msg.content)}</div>
       </div>`;
-    }
-
-    function attachChatDeleteHandlers() {
-      document.querySelectorAll('.btn-delete-msg:not([data-bound])').forEach(btn => {
-        btn.setAttribute('data-bound', '1');
-        btn.addEventListener('click', async () => {
-          const id = btn.getAttribute('data-id');
-          if (!id || !confirm('Supprimer ce message ?')) return;
-          const res = await fetch(`/api/benevole/project-messages?id=${id}`, { method: 'DELETE' });
-          if (res.ok) btn.closest('.chat-msg')?.remove();
-          else alert('Erreur lors de la suppression.');
-        });
-      });
     }
 
     async function loadChatMessages(since = '') {
@@ -1116,7 +1099,6 @@ const memberOptionsJson = JSON.stringify(memberOptions);
       } else {
         container.innerHTML = messages.map(renderChatMsg).join('');
         lastMsgTime = messages[messages.length - 1].created_at;
-        attachChatDeleteHandlers();
       }
       container.scrollTop = container.scrollHeight;
       setInterval(async () => {
@@ -1127,7 +1109,6 @@ const memberOptionsJson = JSON.stringify(memberOptions);
         if (placeholder) placeholder.remove();
         container.insertAdjacentHTML('beforeend', newMsgs.map(renderChatMsg).join(''));
         lastMsgTime = newMsgs[newMsgs.length - 1].created_at;
-        attachChatDeleteHandlers();
         if (wasAtBottom) container.scrollTop = container.scrollHeight;
       }, 4000);
     }
@@ -1154,7 +1135,6 @@ const memberOptionsJson = JSON.stringify(memberOptions);
           if (placeholder) placeholder.remove();
           container.insertAdjacentHTML('beforeend', renderChatMsg({ ...msg, author_name: userName, is_own: true }));
           lastMsgTime = msg.created_at;
-          attachChatDeleteHandlers();
           container.scrollTop = container.scrollHeight;
         }
         input.value = '';

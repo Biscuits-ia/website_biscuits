@@ -351,8 +351,6 @@ const toolsText = project.tools.join(', ');
   .chat-msg-author { font-size: 0.68rem; font-weight: 700; color: var(--text-secondary); }
   .chat-msg-time { font-size: 0.64rem; color: var(--text-muted); }
   .chat-msg-body { font-size: var(--text-sm); word-break: break-word; white-space: pre-wrap; }
-  .btn-delete-msg { background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: 0.68rem; padding: 0 2px; opacity: 0.5; }
-  .btn-delete-msg:hover { opacity: 1; color: var(--err); }
   .chat-input-row { display: flex; gap: 8px; padding: var(--space-sm) var(--space-md); border-top: 1px solid var(--border-mid); }
   .chat-input { flex: 1; }
 
@@ -533,7 +531,6 @@ const toolsText = project.tools.join(', ');
         <div class="chat-msg-header">
           <span class="chat-msg-author">${esc(isOwn ? 'Moi' : msg.author_name)}</span>
           <span class="chat-msg-time">${time}</span>
-          <button class="btn-delete-msg" data-id="${esc(msg.id)}" title="Supprimer">🗑</button>
         </div>
         <div class="chat-msg-body">${esc(msg.content)}</div>
       </div>`;
@@ -548,19 +545,6 @@ const toolsText = project.tools.join(', ');
       return Array.isArray(data) ? data : [];
     }
 
-    function bindDeleteButtons() {
-      document.querySelectorAll('.btn-delete-msg:not([data-bound])').forEach((btn) => {
-        btn.setAttribute('data-bound', '1');
-        btn.addEventListener('click', async () => {
-          const id = btn.getAttribute('data-id');
-          if (!id || !confirm('Supprimer ce message ?')) return;
-          const res = await fetch(`/api/benevole/project-messages?id=${encodeURIComponent(id)}`, { method: 'DELETE' });
-          if (res.ok) btn.closest('.chat-msg')?.remove();
-          else alert('Erreur lors de la suppression.');
-        });
-      });
-    }
-
     async function initChat() {
       if (!chatMessages) return;
       const messages = await fetchMessages();
@@ -569,7 +553,6 @@ const toolsText = project.tools.join(', ');
       } else {
         chatMessages.innerHTML = messages.map(renderChatMsg).join('');
         lastMsgTime = String(messages[messages.length - 1]?.created_at ?? '');
-        bindDeleteButtons();
       }
       chatMessages.scrollTop = chatMessages.scrollHeight;
 
@@ -581,7 +564,6 @@ const toolsText = project.tools.join(', ');
         if (placeholder) placeholder.remove();
         chatMessages.insertAdjacentHTML('beforeend', newMessages.map(renderChatMsg).join(''));
         lastMsgTime = String(newMessages[newMessages.length - 1]?.created_at ?? '');
-        bindDeleteButtons();
         chatMessages.scrollTop = chatMessages.scrollHeight;
       }, 4000);
     }
@@ -609,7 +591,6 @@ const toolsText = project.tools.join(', ');
           if (placeholder) placeholder.remove();
           chatMessages.insertAdjacentHTML('beforeend', renderChatMsg({ ...msg, author_name: currentUserName, author_id: currentUserId }));
           lastMsgTime = String(msg.created_at ?? lastMsgTime);
-          bindDeleteButtons();
           chatMessages.scrollTop = chatMessages.scrollHeight;
         }
         chatInput.value = '';

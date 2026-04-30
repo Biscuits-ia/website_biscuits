@@ -263,67 +263,9 @@ const memberOptionsJson = JSON.stringify(memberOptions);
             );
           })}
         </div>
-        {canEdit && (
-          <button class="btn-add-col-task" data-status={col.key}>+ Ajouter une tâche</button>
-        )}
       </div>
     ))}
   </div>
-
-  <!-- Modal : Nouvelle tâche -->
-  <dialog id="modal-add-task" class="modal">
-    <div class="modal-box">
-      <h2 class="modal-title">Nouvelle tâche</h2>
-      <form id="form-add-task" class="form-stack">
-        <input type="hidden" id="task-status-input" name="status" value="todo" />
-        <div class="field">
-          <label class="label" for="t-title">Titre *</label>
-          <input type="text" id="t-title" name="title" required class="input" maxlength="120" />
-        </div>
-        <div class="field">
-          <label class="label" for="t-desc">Description</label>
-          <textarea id="t-desc" name="description" class="input" rows="3" maxlength="800"></textarea>
-        </div>
-        <div class="field-row">
-          <div class="field">
-            <label class="label" for="t-priority">Priorité</label>
-            <select id="t-priority" name="priority" class="input">
-              <option value="low">Faible</option>
-              <option value="medium" selected>Moyenne</option>
-              <option value="high">Haute</option>
-            </select>
-          </div>
-          <div class="field">
-            <label class="label" for="t-deadline">Échéance</label>
-            <input type="date" id="t-deadline" name="deadline" class="input" />
-          </div>
-        </div>
-        <div class="field">
-            <label class="label" for="t-assignee">Assigner à</label>
-            <select id="t-assignee" name="assignee_id" class="input">
-              <option value="">— Laisser non assigné (claim libre) —</option>
-              {memberOptions.map(m => (
-                <option value={m.id}>{m.name}</option>
-              ))}
-            </select>
-          </div>
-        {/* watchers */}
-        <div class="field">
-          <label class="label" for="t-watchers">Watchers</label>
-          <select id="t-watchers" name="watcher_ids" class="input" multiple style="height:80px">
-            {memberOptions.map(m => (
-              <option value={m.id}>{m.name}</option>
-            ))}
-          </select>
-          <span class="field-hint">Ctrl+clic pour sélectionner plusieurs</span>
-        </div>
-        <div class="modal-actions">
-          <button type="button" class="btn btn-ghost" id="btn-close-task-modal">Annuler</button>
-          <button type="submit" class="btn btn-primary">Créer</button>
-        </div>
-      </form>
-    </div>
-  </dialog>
 
   <!-- Modal : Modifier projet -->
   {canEdit && (
@@ -593,7 +535,6 @@ const memberOptionsJson = JSON.stringify(memberOptions);
   .watcher-item       { font-size: var(--text-xs); display: flex; align-items: center; gap: 4px; }
   .watcher-avatar     { width: 20px; height: 20px; border-radius: 50%; background: var(--surface-raised); border: 1px solid var(--border-mid); display: flex; align-items: center; justify-content: center; font-size: 0.6rem; font-weight: 700; flex-shrink: 0; }
   .task-comments-count { font-size: var(--text-xs); color: var(--text-muted); }
-  .field-hint          { font-size: 0.7rem; color: var(--text-muted); margin-top: 2px; }
   /* ── Chat ─────────────────────────────────────────────────────────────── */
   .chat-section       { border: var(--brutal-border-thin); background: var(--surface); }
   .chat-header        { display: flex; justify-content: space-between; align-items: center; padding: var(--space-sm) var(--space-md); border-bottom: 1px solid var(--border-mid); }
@@ -622,18 +563,9 @@ const memberOptionsJson = JSON.stringify(memberOptions);
   }
 
   /* ── Modals ─────────────────────────────────────────────────────────────────*/
-  const modalTask    = document.getElementById('modal-add-task');
   const modalEdit    = document.getElementById('modal-edit-project');
   const modalDetail  = document.getElementById('modal-task-detail');
-  const statusInput  = document.getElementById('task-status-input');
 
-  document.getElementById('btn-add-task')?.addEventListener('click', () => {
-    if (statusInput) statusInput.value = 'todo';
-    if (modalTask instanceof HTMLDialogElement) modalTask.showModal();
-  });
-  document.getElementById('btn-close-task-modal')?.addEventListener('click', () => {
-    if (modalTask instanceof HTMLDialogElement) modalTask.close();
-  });
   document.getElementById('btn-edit-project')?.addEventListener('click', () => {
     if (modalEdit instanceof HTMLDialogElement) modalEdit.showModal();
   });
@@ -642,14 +574,6 @@ const memberOptionsJson = JSON.stringify(memberOptions);
   });
   document.getElementById('btn-close-detail')?.addEventListener('click', () => {
     if (modalDetail instanceof HTMLDialogElement) modalDetail.close();
-  });
-
-  document.querySelectorAll('.btn-add-col-task').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const status = btn.getAttribute('data-status') ?? 'todo';
-      if (statusInput) statusInput.value = status;
-      if (modalTask instanceof HTMLDialogElement) modalTask.showModal();
-    });
   });
 
   /* ── Drag & Drop ─────────────────────────────────────────────────────────── */
@@ -715,45 +639,6 @@ const memberOptionsJson = JSON.stringify(memberOptions);
       if (badge) badge.textContent = String(count);
     });
   }
-
-  /* ── Créer tâche ──────────────────────────────────────────────────────────── */
-  document.getElementById('form-add-task')?.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const form = e.target;
-    if (!(form instanceof HTMLFormElement)) return;
-    const data = Object.fromEntries(new FormData(form));
-    data.project_id = projectId;
-
-    // Handle watcher_ids (multi-select)
-    const watcherSelect = form.querySelector('#t-watchers');
-    const watcherIds = watcherSelect instanceof HTMLSelectElement
-      ? Array.from(watcherSelect.selectedOptions).map(o => o.value).filter(Boolean)
-      : [];
-
-    const res = await fetch('/api/benevole/tasks', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
-    });
-
-    if (res.ok) {
-      const { data: task } = await res.json();
-      // Add watchers after task creation
-      if (watcherIds.length > 0 && task?.id) {
-        await Promise.all(watcherIds.map(wId =>
-          fetch('/api/benevole/task-watchers', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ task_id: task.id, user_id: wId }),
-          })
-        ));
-      }
-      window.location.reload();
-    } else {
-      const err = await res.json().catch(() => ({}));
-      alert('Erreur : ' + (err.error ?? 'Impossible de créer la tâche.'));
-    }
-  });
 
   /* ── Modifier projet ──────────────────────────────────────────────────────── */
   document.getElementById('form-edit-project')?.addEventListener('submit', async (e) => {

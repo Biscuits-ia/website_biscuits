@@ -10,8 +10,9 @@ interface Props {
   todoPage?: number;
   todoTotalPages?: number;
   currentUserId?: string;
+  viewStatus?: TaskStatus | '';
 }
-const { tasks = [], todoTasks = [], todoPrevHref, todoNextHref, todoPage = 1, todoTotalPages = 1, currentUserId = '' } = Astro.props;
+const { tasks = [], todoTasks = [], todoPrevHref, todoNextHref, todoPage = 1, todoTotalPages = 1, currentUserId = '', viewStatus = '' } = Astro.props;
 
 const statuses: Array<{ status: TaskStatus; label: string }> = [
   { status: 'todo', label: 'À faire' },
@@ -22,10 +23,14 @@ const statuses: Array<{ status: TaskStatus; label: string }> = [
   { status: 'blocked', label: 'Bloquée' },
   { status: 'done', label: 'Terminée' },
 ];
+
+const visibleStatuses = viewStatus
+  ? statuses.filter((s) => s.status === viewStatus)
+  : statuses;
 ---
 
-<div class="taskhub-board" id="kanban-board" data-current-user-id={currentUserId}>
-  {statuses.map((s) => s.status === 'todo'
+<div class="taskhub-board" id="kanban-board" data-current-user-id={currentUserId} data-view-status={viewStatus}>
+  {visibleStatuses.map((s) => s.status === 'todo'
     ? <KanbanColumn status={s.status} label={s.label} tasks={todoTasks} prevHref={todoPrevHref} nextHref={todoNextHref} page={todoPage} totalPages={todoTotalPages} currentUserId={currentUserId} />
     : <KanbanColumn status={s.status} label={s.label} tasks={tasks.filter((t) => t.status === s.status)} currentUserId={currentUserId} />
   )}
@@ -103,6 +108,32 @@ const statuses: Array<{ status: TaskStatus; label: string }> = [
       window.showToast?.(json.error || 'Impossible de prendre la tâche.', 'error');
       btn.disabled = false;
       btn.textContent = 'Je prends cette tâche';
+    }
+  });
+
+  board?.addEventListener('click', async (e) => {
+    const moveBtn = e.target?.closest('[data-move-task-id][data-move-status]');
+    if (!moveBtn) return;
+
+    const taskId = moveBtn.getAttribute('data-move-task-id');
+    const nextStatus = moveBtn.getAttribute('data-move-status');
+    if (!taskId || !nextStatus) return;
+
+    moveBtn.setAttribute('disabled', 'true');
+
+    const res = await fetch('/api/tasks/update', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: taskId, status: nextStatus }),
+    });
+
+    const json = await res.json().catch(() => ({}));
+    if (res.ok) {
+      window.showToast?.('Tâche déplacée.', 'success');
+      setTimeout(() => window.location.reload(), 350);
+    } else {
+      window.showToast?.(json.error || 'Impossible de déplacer la tâche.', 'error');
+      moveBtn.removeAttribute('disabled');
     }
   });
 </script>

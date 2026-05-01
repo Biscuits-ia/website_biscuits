@@ -15,6 +15,16 @@ interface Props {
 const { status, label, tasks, prevHref, nextHref, page, totalPages, currentUserId = '' } = Astro.props;
 const todoAvailable = status === 'todo' ? tasks.filter((task) => !task.assignee_id) : [];
 const todoAssigned = status === 'todo' ? tasks.filter((task) => !!task.assignee_id) : [];
+const moveTargetsByStatus: Record<TaskStatus, TaskStatus[]> = {
+  backlog: ['todo', 'in_progress'],
+  todo: ['in_progress', 'blocked'],
+  in_progress: ['in_review', 'blocked', 'todo'],
+  in_review: ['testing', 'in_progress', 'done'],
+  testing: ['done', 'in_review', 'blocked'],
+  blocked: ['todo', 'in_progress'],
+  done: ['in_review'],
+};
+const moveTargets = moveTargetsByStatus[status] ?? [];
 ---
 
 <section class="taskhub-column" data-kanban-status={status}>
@@ -31,7 +41,7 @@ const todoAssigned = status === 'todo' ? tasks.filter((task) => !!task.assignee_
         </header>
         <div class="taskhub-dropzone" data-dropzone={status}>
           {todoAvailable.length > 0
-            ? todoAvailable.map((task) => <TaskCard task={task} showActionLink={false} claimUserId={currentUserId} />)
+            ? todoAvailable.map((task) => <TaskCard task={task} showActionLink={false} claimUserId={currentUserId} moveTargets={moveTargets} />)
             : <p class="taskhub-todo-empty">Aucune tâche disponible.</p>
           }
         </div>
@@ -44,7 +54,7 @@ const todoAssigned = status === 'todo' ? tasks.filter((task) => !!task.assignee_
         </header>
         <div class="taskhub-dropzone" data-dropzone={status}>
           {todoAssigned.length > 0
-            ? todoAssigned.map((task) => <TaskCard task={task} showActionLink={false} claimUserId={currentUserId} />)
+            ? todoAssigned.map((task) => <TaskCard task={task} showActionLink={false} claimUserId={currentUserId} moveTargets={moveTargets} />)
             : <p class="taskhub-todo-empty">Aucune tâche attribuée.</p>
           }
         </div>
@@ -52,7 +62,7 @@ const todoAssigned = status === 'todo' ? tasks.filter((task) => !!task.assignee_
     </div>
   ) : (
     <div class="taskhub-dropzone" data-dropzone={status}>
-      {tasks.map((task) => <TaskCard task={task} showActionLink={false} claimUserId={currentUserId} />)}
+      {tasks.map((task) => <TaskCard task={task} showActionLink={false} claimUserId={currentUserId} moveTargets={moveTargets} />)}
     </div>
   )}
   {(prevHref || nextHref) && (

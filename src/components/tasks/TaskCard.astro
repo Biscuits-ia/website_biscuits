@@ -3,10 +3,19 @@
 import TaskStatusBadge from './TaskStatusBadge.astro';
 import TaskPriorityBadge from './TaskPriorityBadge.astro';
 import CorpsTag from '@/components/corps/CorpsTag.astro';
-import type { TaskWithRelations } from '@/lib/types';
-interface Props { task: TaskWithRelations; class?: string; style?: string; showActionLink?: boolean; claimUserId?: string; }
-const { task, class: className = '', style = '', showActionLink = true, claimUserId = '' } = Astro.props;
+import type { TaskStatus, TaskWithRelations } from '@/lib/types';
+interface Props { task: TaskWithRelations; class?: string; style?: string; showActionLink?: boolean; claimUserId?: string; moveTargets?: TaskStatus[]; }
+const { task, class: className = '', style = '', showActionLink = true, claimUserId = '', moveTargets = [] } = Astro.props;
 const canClaim = !!claimUserId && !task.assignee_id && task.assignee_id !== claimUserId;
+const statusLabel: Record<TaskStatus, string> = {
+  backlog: 'Carnet',
+  todo: 'À faire',
+  in_progress: 'En cours',
+  in_review: 'Revue',
+  testing: 'Tests',
+  blocked: 'Bloquée',
+  done: 'Terminée',
+};
 ---
 
 <article class={`taskhub-card ${className}`} style={style} data-task-id={task.id} draggable="true" tabindex="0">
@@ -38,6 +47,22 @@ const canClaim = !!claimUserId && !task.assignee_id && task.assignee_id !== clai
   {!showActionLink && canClaim && (
     <div class="taskhub-card-actions">
       <button type="button" class="btn btn-primary taskhub-claim-btn" data-claim-task-id={task.id}>Je prends cette tâche ✓</button>
+    </div>
+  )}
+
+  {!showActionLink && moveTargets.length > 0 && (
+    <div class="taskhub-move-actions" aria-label="Déplacement rapide">
+      {moveTargets.map((status) => (
+        <button
+          type="button"
+          class="taskhub-move-btn"
+          data-move-task-id={task.id}
+          data-move-status={status}
+          title={`Déplacer vers ${statusLabel[status]}`}
+        >
+          → {statusLabel[status]}
+        </button>
+      ))}
     </div>
   )}
 </article>
@@ -106,5 +131,32 @@ const canClaim = !!claimUserId && !task.assignee_id && task.assignee_id !== clai
 
   .taskhub-card-link {
     text-decoration: none;
+  }
+
+  .taskhub-move-actions {
+    margin-top: 0.55rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+  }
+
+  .taskhub-move-btn {
+    border: 1px solid var(--border-mid);
+    background: var(--surface);
+    color: var(--text-secondary);
+    font-size: 0.72rem;
+    font-family: var(--font-mono);
+    padding: 0.22rem 0.5rem;
+    cursor: pointer;
+  }
+
+  .taskhub-move-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .taskhub-move-btn:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
   }
 </style>

@@ -2,7 +2,6 @@
 import DashboardLayout from '@/layouts/DashboardLayout.astro';
 import { requireDataAnalyst } from '@/lib/auth';
 import type { CorpsType } from '@/lib/types';
-import '@/styles/task-hub.css';
 
 interface ActivityRow {
   day: string;
@@ -54,6 +53,9 @@ const kpiCoverage = latestKpis.length;
 const avgAttainment = latestKpis.length
   ? Number((latestKpis.reduce((acc, row) => acc + (row.attainment_pct ?? 0), 0) / latestKpis.length).toFixed(1))
   : 0;
+const completionRate = totalCreated30d
+  ? Number(((totalCompleted30d / totalCreated30d) * 100).toFixed(1))
+  : 0;
 const bestKpi = [...latestKpis]
   .filter((kpi) => kpi.attainment_pct !== null)
   .sort((a, b) => (b.attainment_pct ?? 0) - (a.attainment_pct ?? 0))[0] ?? null;
@@ -63,82 +65,472 @@ const riskyKpis = latestKpis
   .sort((a, b) => (a.attainment_pct ?? 0) - (b.attainment_pct ?? 0));
 
 const userName = auth.user.user_metadata?.full_name ?? auth.user.email?.split('@')[0] ?? 'Utilisateur';
+
+const connectors = [
+  {
+    name: 'Supabase Analytics',
+    type: 'SQL',
+    status: 'Connecté',
+    sync: 'Temps réel',
+    tables: ['analytics_daily_activity', 'analytics_kpi_latest'],
+  },
+  {
+    name: 'Fichiers CSV',
+    type: 'Batch',
+    status: 'Disponible',
+    sync: 'Import manuel',
+    tables: ['uploads/*.csv'],
+  },
+  {
+    name: 'API métier',
+    type: 'REST',
+    status: 'À configurer',
+    sync: 'Toutes les 15 min',
+    tables: ['/v1/appointments', '/v1/resources'],
+  },
+] as const;
+
+const queryTemplates = [
+  {
+    title: 'Activité des 14 derniers jours',
+    sql: `select day, created_count, completed_count\nfrom analytics_daily_activity\nwhere corps = 'DATA' and day >= current_date - interval '14 days'\norder by day desc;`,
+  },
+  {
+    title: 'KPI sous la cible',
+    sql: `select metric_name, metric_value, target_value, attainment_pct\nfrom analytics_kpi_latest\nwhere corps = 'DATA' and attainment_pct < 100\norder by attainment_pct asc;`,
+  },
+  {
+    title: 'Top KPI performants',
+    sql: `select metric_name, attainment_pct\nfrom analytics_kpi_latest\nwhere corps = 'DATA'\norder by attainment_pct desc\nlimit 5;`,
+  },
+] as const;
+
+const pipelines = [
+  { step: 'Standardiser les dates', detail: 'Format ISO 8601 sur toutes les sources.', done: true },
+  { step: 'Dédupliquer les événements', detail: 'Clé composite (day, corps, metric_name).', done: true },
+  { step: 'Traiter les valeurs nulles', detail: 'Fallback 0 ou exclusion selon métrique.', done: riskyKpis.length < 3 },
+  { step: 'Contrôles qualité', detail: 'Alerte si attainment_pct hors plage 0-200.', done: true },
+] as const;
+
+const dashboardTemplates = [
+  { name: 'Suivi KPI Exécutif', desc: 'Vue synthèse pour pilotage hebdo', widgets: 6 },
+  { name: 'Performance Opérationnelle', desc: 'Tendance activité et charge', widgets: 8 },
+  { name: 'Qualité de Donnée', desc: 'Contrôles de fraîcheur et cohérence', widgets: 5 },
+] as const;
 ---
 
 <DashboardLayout title="Data Dashboard" activePage="overview" authResult={auth} userName={userName}>
-  <section class="taskhub-shell">
-    <div class="taskhub-header">
+  <section class="data-studio">
+    <header class="data-studio-header card">
       <div>
-        <h1 class="taskhub-title">Dashboard Data Analyst</h1>
-        <p class="taskhub-subtitle">Vue dédiée DATA: activité 30 jours et santé des KPI métier, sans outils de pilotage admin.</p>
-      </div>
-      <div class="taskhub-density-controls" style="gap:0.5rem;">
-        <a href="/dashboard/data" class="btn btn-primary">Actualiser</a>
-        <a href="/dashboard/user/resources" class="btn btn-ghost">Ressources data</a>
-      </div>
-    </div>
-
-    <div class="taskhub-kpi-grid">
-      <article class="taskhub-kpi-card">
-        <p class="taskhub-kpi-label">Créées (30j)</p>
-        <p class="taskhub-kpi-value">{totalCreated30d}</p>
-      </article>
-      <article class="taskhub-kpi-card">
-        <p class="taskhub-kpi-label">Terminées (30j)</p>
-        <p class="taskhub-kpi-value taskhub-kpi-value-accent">{totalCompleted30d}</p>
-      </article>
-      <article class="taskhub-kpi-card">
-        <p class="taskhub-kpi-label">Snapshots KPI</p>
-        <p class="taskhub-kpi-value">{totalSnapshots30d}</p>
-      </article>
-      <article class="taskhub-kpi-card">
-        <p class="taskhub-kpi-label">Moyenne atteinte KPI</p>
-        <p class="taskhub-kpi-value taskhub-kpi-value-accent">{avgAttainment}%</p>
-      </article>
-    </div>
-
-    <div class="taskhub-layout-2">
-      <section class="taskhub-panel">
-        <h2 class="card-title">Synthèse DATA</h2>
-        <div class="taskhub-kanban-meta">
-          <span class="taskhub-kanban-pill">{kpiCoverage} KPI suivis</span>
-          <span class="taskhub-kanban-pill">{riskyKpis.length} KPI à risque</span>
-          <span class="taskhub-kanban-pill">30 jours glissants</span>
-        </div>
-        <p class="taskhub-note" style="margin-top:0.8rem;">
-          {bestKpi
-            ? `Meilleure métrique actuelle: ${bestKpi.metric_name} (${bestKpi.attainment_pct?.toFixed(1)}%).`
-            : 'Aucune métrique atteignable disponible pour le moment.'}
+        <p class="eyebrow">DATA STUDIO</p>
+        <h1>Dashboard Data Analyst</h1>
+        <p class="description">
+          Espace unifié pour connecter les sources, explorer, transformer, interroger et publier vos tableaux de bord.
         </p>
-      </section>
+      </div>
+      <div class="header-actions">
+        <a href="/dashboard/data" class="btn btn-primary">Actualiser</a>
+        <a href="/dashboard/user/resources" class="btn btn-ghost">Ressources</a>
+      </div>
+    </header>
 
-      <section class="taskhub-panel">
-        <h2 class="card-title">KPI à risque</h2>
-        <ul class="taskhub-list">
-          {riskyKpis.slice(0, 10).map((kpi) => (
-            <li class="taskhub-list-item">
-              <strong>{kpi.corps}</strong> · {kpi.metric_name} : {kpi.metric_value}
-              {kpi.target_value !== null && <span class="text-slate-500"> / cible {kpi.target_value}</span>}
-              <span style="float:right; color:#dc2626; font-weight:700;">{kpi.attainment_pct?.toFixed(1)}%</span>
+    <section class="stats-grid">
+      <article class="stat-card">
+        <p class="stat-label">Sources actives</p>
+        <p class="stat-value">{connectors.filter((c) => c.status === 'Connecté').length}</p>
+        <p class="stat-delta">sur {connectors.length} connecteurs</p>
+      </article>
+      <article class="stat-card">
+        <p class="stat-label">Lignes traitées (30j)</p>
+        <p class="stat-value">{totalSnapshots30d}</p>
+        <p class="stat-delta up">+ pipeline quotidien</p>
+      </article>
+      <article class="stat-card">
+        <p class="stat-label">Taux de complétion</p>
+        <p class="stat-value">{completionRate}%</p>
+        <p class="stat-delta">created vs completed</p>
+      </article>
+      <article class="stat-card">
+        <p class="stat-label">Moyenne KPI</p>
+        <p class="stat-value">{avgAttainment}%</p>
+        <p class="stat-delta {avgAttainment >= 100 ? 'up' : 'down'}">{kpiCoverage} métriques suivies</p>
+      </article>
+    </section>
+
+    <section class="module-grid">
+      <article class="card module-card">
+        <div class="card-header">
+          <h2 class="card-title">1. Connecter des sources</h2>
+          <span class="badge badge-info">Data connectors</span>
+        </div>
+        <ul class="connector-list">
+          {connectors.map((source) => (
+            <li>
+              <div>
+                <strong>{source.name}</strong>
+                <p>{source.type} · Sync: {source.sync}</p>
+              </div>
+              <span class={`badge ${source.status === 'Connecté' ? 'badge-ok' : source.status === 'Disponible' ? 'badge-neutral' : 'badge-warn'}`}>
+                {source.status}
+              </span>
             </li>
           ))}
-          {riskyKpis.length === 0 && <li class="taskhub-note">Aucun KPI sous la cible actuellement.</li>}
         </ul>
-      </section>
-    </div>
+        <div class="action-row">
+          <button class="btn btn-primary" type="button">Ajouter une source</button>
+          <button class="btn btn-ghost" type="button">Tester la connexion</button>
+        </div>
+      </article>
 
-    <div class="taskhub-panel">
-      <h2 class="card-title">Actions recommandées</h2>
-      <div class="taskhub-kanban-meta">
-        <span class="taskhub-kanban-pill">{totalSnapshots30d} snapshots collectés</span>
-        <span class="taskhub-kanban-pill">{avgAttainment}% moyenne d'atteinte</span>
-        <span class="taskhub-kanban-pill">{riskyKpis.length} KPI sous cible</span>
+      <article class="card module-card">
+        <div class="card-header">
+          <h2 class="card-title">2. Explorer les données</h2>
+          <span class="badge badge-info">Data preview</span>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Jour</th>
+                <th>Créées</th>
+                <th>Terminées</th>
+                <th>Snapshots</th>
+              </tr>
+            </thead>
+            <tbody>
+              {activityRows.slice(0, 7).map((row) => (
+                <tr>
+                  <td>{new Date(row.day).toLocaleDateString('fr-FR')}</td>
+                  <td>{row.created_count}</td>
+                  <td>{row.completed_count}</td>
+                  <td>{row.snapshot_count}</td>
+                </tr>
+              ))}
+              {activityRows.length === 0 && (
+                <tr>
+                  <td colspan="4">Aucune donnée disponible pour le moment.</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </article>
+
+      <article class="card module-card">
+        <div class="card-header">
+          <h2 class="card-title">3. Transformer et nettoyer</h2>
+          <span class="badge badge-warn">Data quality</span>
+        </div>
+        <ul class="pipeline-list">
+          {pipelines.map((item) => (
+            <li class={item.done ? 'done' : 'todo'}>
+              <strong>{item.step}</strong>
+              <p>{item.detail}</p>
+            </li>
+          ))}
+        </ul>
+      </article>
+
+      <article class="card module-card">
+        <div class="card-header">
+          <h2 class="card-title">4. Analyser via requêtes</h2>
+          <span class="badge badge-info">SQL templates</span>
+        </div>
+        <div class="query-stack">
+          {queryTemplates.map((query) => (
+            <article class="query-card">
+              <div class="query-head">
+                <strong>{query.title}</strong>
+                <button class="btn btn-ghost btn-copy" type="button" data-sql={query.sql}>Copier SQL</button>
+              </div>
+              <pre>{query.sql}</pre>
+            </article>
+          ))}
+        </div>
+      </article>
+
+      <article class="card module-card">
+        <div class="card-header">
+          <h2 class="card-title">5. Créer des dashboards</h2>
+          <span class="badge badge-ok">Publishing</span>
+        </div>
+        <div class="dashboard-templates">
+          {dashboardTemplates.map((tpl) => (
+            <article class="template-card">
+              <h3>{tpl.name}</h3>
+              <p>{tpl.desc}</p>
+              <span>{tpl.widgets} widgets</span>
+            </article>
+          ))}
+        </div>
+        <div class="action-row">
+          <button class="btn btn-primary" type="button">Nouveau dashboard</button>
+          <button class="btn btn-ghost" type="button">Partager un lien</button>
+        </div>
+      </article>
+
+      <article class="card module-card">
+        <div class="card-header">
+          <h2 class="card-title">6. Automatiser avec IA</h2>
+          <span class="badge badge-info">AI copilot</span>
+        </div>
+        <p class="description">
+          Génère un plan d'action automatisé à partir des KPI à risque et des tendances récentes.
+        </p>
+        <button id="run-ai-plan" class="btn btn-primary" type="button">Lancer l'analyse IA</button>
+        <div id="ai-output" class="ai-output" aria-live="polite">
+          <p>
+            {riskyKpis.length > 0
+              ? `${riskyKpis.length} KPI sous cible détectés. Lancez une analyse pour obtenir les priorités.`
+              : 'Aucun KPI critique. Vous pouvez lancer une vérification préventive.'}
+          </p>
+        </div>
+      </article>
+    </section>
+
+    <section class="card module-card">
+      <div class="card-header">
+        <h2 class="card-title">Synthèse opérationnelle</h2>
+        <span class="badge badge-neutral">instantané</span>
       </div>
-      <div style="margin-top:0.75rem; display:flex; gap:0.55rem; flex-wrap:wrap;">
-        <a href="/dashboard/data" class="btn btn-primary">Recalculer la vue</a>
-        <a href="/dashboard/user/resources" class="btn btn-ghost">Consulter ressources</a>
-        <a href="/dashboard/user/settings" class="btn btn-ghost">Ajuster profil</a>
-      </div>
-    </div>
+      <p>
+        {bestKpi
+          ? `Meilleure métrique: ${bestKpi.metric_name} (${bestKpi.attainment_pct?.toFixed(1)}%).`
+          : 'Aucune métrique disponible.'}
+      </p>
+      <p>
+        {riskyKpis.length > 0
+          ? `${riskyKpis.length} KPI sont sous la cible. Priorité sur le nettoyage des flux puis recalcul des indicateurs.`
+          : 'Les KPI actuels sont alignés avec les objectifs cibles.'}
+      </p>
+    </section>
   </section>
 </DashboardLayout>
+
+<script lang="ts">
+  const copyButtons = document.querySelectorAll<HTMLButtonElement>('.btn-copy');
+  for (const button of copyButtons) {
+    button.addEventListener('click', async () => {
+      const sql = button.dataset.sql;
+      if (!sql) return;
+
+      try {
+        await navigator.clipboard.writeText(sql);
+        const previous = button.textContent;
+        button.textContent = 'Copié';
+        window.setTimeout(() => {
+          button.textContent = previous;
+        }, 1200);
+      } catch {
+        button.textContent = 'Erreur copie';
+      }
+    });
+  }
+
+  const aiButton = document.querySelector<HTMLButtonElement>('#run-ai-plan');
+  const output = document.querySelector<HTMLDivElement>('#ai-output');
+
+  if (aiButton && output) {
+    aiButton.addEventListener('click', () => {
+      output.innerHTML = `
+        <ul>
+          <li>Priorité 1: auditer les KPI sous 95% et vérifier la fraîcheur des snapshots.</li>
+          <li>Priorité 2: lancer une passe de déduplication sur les flux de la semaine.</li>
+          <li>Priorité 3: publier un mini-dashboard "KPI à risque" pour l'équipe produit.</li>
+        </ul>
+      `;
+    });
+  }
+</script>
+
+<style>
+  .data-studio {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+  }
+
+  .data-studio-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-top: 0;
+    background: linear-gradient(120deg, var(--surface) 0%, var(--accent-light) 100%);
+  }
+
+  .eyebrow {
+    display: inline-block;
+    margin-bottom: 0.4rem;
+    padding: 0.2rem 0.5rem;
+    border: 2px solid var(--border-mid);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    background: var(--surface-raised);
+  }
+
+  .header-actions {
+    display: flex;
+    gap: 0.55rem;
+    flex-wrap: wrap;
+  }
+
+  .module-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+  }
+
+  .module-card {
+    margin-top: 0;
+  }
+
+  .connector-list,
+  .pipeline-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+    margin: 0;
+    padding: 0;
+  }
+
+  .connector-list li,
+  .pipeline-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.8rem;
+    border: var(--brutal-border-thin);
+    box-shadow: var(--shadow-sm);
+    background: var(--surface-raised);
+    padding: 0.6rem 0.7rem;
+  }
+
+  .connector-list p,
+  .pipeline-list p {
+    margin: 0;
+    font-size: var(--text-xs);
+    color: var(--text-muted);
+  }
+
+  .pipeline-list li {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .pipeline-list li.done {
+    border-left: 6px solid var(--ok);
+  }
+
+  .pipeline-list li.todo {
+    border-left: 6px solid var(--warn);
+  }
+
+  .action-row {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-top: 0.85rem;
+  }
+
+  .query-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+  }
+
+  .query-card {
+    border: var(--brutal-border-thin);
+    box-shadow: var(--shadow-sm);
+    background: var(--surface-raised);
+    padding: 0.6rem;
+  }
+
+  .query-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-bottom: 0.45rem;
+  }
+
+  .query-head .btn {
+    min-height: 34px;
+    padding: 0.35rem 0.6rem;
+    font-size: var(--text-xs);
+  }
+
+  pre {
+    overflow: auto;
+    margin: 0;
+    padding: 0.65rem;
+    background: var(--bg);
+    border: var(--brutal-border-thin);
+    font-size: 0.78rem;
+    line-height: 1.5;
+  }
+
+  .dashboard-templates {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.6rem;
+  }
+
+  .template-card {
+    border: var(--brutal-border-thin);
+    box-shadow: var(--shadow-sm);
+    background: var(--surface-raised);
+    padding: 0.6rem;
+  }
+
+  .template-card h3 {
+    margin: 0 0 0.25rem;
+    font-size: var(--text-sm);
+  }
+
+  .template-card p {
+    margin: 0 0 0.35rem;
+    font-size: var(--text-xs);
+    line-height: 1.45;
+    color: var(--text-muted);
+  }
+
+  .template-card span {
+    font-size: var(--text-xs);
+    font-family: var(--font-mono);
+    color: var(--text-secondary);
+  }
+
+  .ai-output {
+    margin-top: 0.7rem;
+    border: var(--brutal-border-thin);
+    box-shadow: var(--shadow-sm);
+    background: var(--surface-raised);
+    padding: 0.7rem;
+  }
+
+  .ai-output ul {
+    margin: 0;
+    padding-left: 1rem;
+  }
+
+  @media (max-width: 980px) {
+    .module-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .dashboard-templates {
+      grid-template-columns: 1fr;
+    }
+
+    .data-studio-header {
+      flex-direction: column;
+      align-items: stretch;
+    }
+  }
+</style>

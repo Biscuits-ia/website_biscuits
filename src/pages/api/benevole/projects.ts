@@ -17,7 +17,7 @@ function jsonOk(data: unknown, status = 200) {
   });
 }
 
-async function getAuthContext(request: Request, cookies: any) {
+async function getAuthContext(request: Request, cookies: unknown) {
   const supabase = createSupabaseClient({ request, cookies });
   const { data: { user }, error } = await supabase.auth.getUser();
   if (error || !user) return null;

@@ -29,7 +29,7 @@ export interface Props {
   role?:       string;
 }
 
-const { title, activePage = '', userName = 'Utilisateur', userEmail = '', authResult: passedAuth } = Astro.props;
+const { title, activePage = '', userName = 'Utilisateur', authResult: passedAuth } = Astro.props;
 
 // ── Rôle réel depuis la BDD ───────────────────────────────────────────────────
 // Réutilise le résultat auth de la page parente si disponible,
@@ -43,6 +43,7 @@ const role: UserRole    = authResult.role;
 const isAdmin           = role === 'admin';
 const isModerator       = role === 'moderator';
 const isBenevole        = role === 'benevole';
+const isDataAnalyst     = role === 'data_analyst';
 
 // Nom d'affichage : priorité à la prop (passée depuis la page parente),
 // sinon on prend le user de authResult
@@ -92,8 +93,16 @@ const benevoleNav: NavItem[] = [
   { id: 'settings',   label: 'Paramètres',       icon: 'settings' },
 ];
 
-const nav = isAdmin ? adminNav : isBenevole ? benevoleNav : userNav;
-const dashRole = isAdmin ? 'admin' : isBenevole ? 'benevole' : 'user';
+const dataAnalystNav: NavItem[] = [
+  { id: 'overview',   label: "Vue data",         icon: 'grid',      href: '/dashboard/data' },
+  { id: 'kpis',       label: 'Cockpit KPI',       icon: 'bar-chart', href: '/dashboard/kpis' },
+  { id: 'tasks',      label: 'Task Hub',          icon: 'check',     href: '/dashboard/tasks' },
+  { id: 'kanban',     label: 'Kanban',            icon: 'grid',      href: '/dashboard/kanban' },
+  { id: 'settings',   label: 'Paramètres',        icon: 'settings',  href: '/dashboard/user/settings' },
+];
+
+const nav = isAdmin ? adminNav : isDataAnalyst ? dataAnalystNav : isBenevole ? benevoleNav : userNav;
+const dashRole = isAdmin ? 'admin' : isDataAnalyst ? 'data' : isBenevole ? 'benevole' : 'user';
 
 // ── Icônes SVG ────────────────────────────────────────────────────────────────
 
@@ -123,7 +132,7 @@ const initials = displayName.split(' ').map((n: string) => n[0]).join('').toUppe
 <head>
   <BaseHead
     fullTitle={`${title} — Biscuits`}
-    description={`Espace ${isAdmin ? 'administrateur' : isBenevole ? 'bénévole' : 'membre'} Biscuits IA`}
+    description={`Espace ${isAdmin ? 'administrateur' : isDataAnalyst ? 'data analyst' : isBenevole ? 'bénévole' : 'membre'} Biscuits IA`}
     fullCanonical={`${siteUrl}/dashboard/${dashRole}`}
     siteUrl={siteUrl}
     noindex={true}
@@ -139,7 +148,7 @@ const initials = displayName.split(' ').map((n: string) => n[0]).join('').toUppe
       <div class="sidebar-logo">
         <div class="sidebar-logo-text">
           <span class="sidebar-logo-name">Biscuits</span>
-          <span class="sidebar-logo-sub">{isAdmin ? 'admin' : isBenevole ? 'espace bénévole' : 'espace membre'}</span>
+          <span class="sidebar-logo-sub">{isAdmin ? 'admin' : isDataAnalyst ? 'espace data' : isBenevole ? 'espace bénévole' : 'espace membre'}</span>
         </div>
       </div>
 
@@ -174,7 +183,7 @@ const initials = displayName.split(' ').map((n: string) => n[0]).join('').toUppe
           <div class="user-avatar">{initials}</div>
           <div class="user-info">
             <div class="user-name">{displayName}</div>
-            <div class="user-role">{isAdmin ? 'admin' : isModerator ? 'modérateur' : isBenevole ? 'bénévole' : 'membre'}</div>
+            <div class="user-role">{isAdmin ? 'admin' : isDataAnalyst ? 'data analyst' : isModerator ? 'modérateur' : isBenevole ? 'bénévole' : 'membre'}</div>
           </div>
         </div>
         <a href="/" class="btn btn-ghost btn-full btn-xs-text">
@@ -200,6 +209,9 @@ const initials = displayName.split(' ').map((n: string) => n[0]).join('').toUppe
           )}
           {isModerator && !isAdmin && (
             <span class="badge badge-info badge-admin">🛡 Modérateur</span>
+          )}
+          {isDataAnalyst && !isAdmin && (
+            <span class="badge badge-info badge-admin">📊 Data analyst</span>
           )}
           <!-- Cloche de notifications (tous les rôles connectés) -->
           <div class="notif-bell" id="notif-bell-wrapper" style="position:relative">

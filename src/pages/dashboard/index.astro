@@ -1,10 +1,11 @@
 ---
 import { requireAuth } from '@/lib/auth';
 
-const auth = await requireAuth(Astro as any);
+const auth = await requireAuth(Astro);
 if (auth instanceof Response) return auth;
 
 if (auth.role === 'admin') return Astro.redirect('/dashboard/admin');
+if (auth.role === 'data_analyst') return Astro.redirect('/dashboard/data');
 if (auth.role === 'benevole' || auth.role === 'moderator') return Astro.redirect('/dashboard/benevole');
 return Astro.redirect('/dashboard/user');
 ---

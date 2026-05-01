@@ -7,6 +7,12 @@ set -e
 BASE_URL="${BASE_URL:-http://localhost:4321}"
 TEST_EMAIL="test+auth$(date +%s)@example.com"
 TEST_PASSWORD="TestPassword123!"
+ADMIN_EMAIL="${ADMIN_EMAIL:-}"
+ADMIN_PASSWORD="${ADMIN_PASSWORD:-}"
+DATA_ANALYST_EMAIL="${DATA_ANALYST_EMAIL:-}"
+DATA_ANALYST_PASSWORD="${DATA_ANALYST_PASSWORD:-}"
+USER_EMAIL="${USER_EMAIL:-}"
+USER_PASSWORD="${USER_PASSWORD:-}"
 
 echo "========================================"
 echo "  Test des flux d'authentification"
@@ -172,9 +178,56 @@ echo ""
 echo "========================================"
 echo "  Tests terminés"
 echo "========================================"
+
+# Test 7: Protection analytics par role (optionnel)
+echo ""
+echo "----------------------------------------"
+echo "Test 7: Protection analytics par role"
+echo "----------------------------------------"
+
+test_role_access() {
+    local role_label="$1"
+    local email="$2"
+    local password="$3"
+    local expected_code="$4"
+    local cookie_file="/tmp/test-${role_label}-cookies.txt"
+
+    if [ -z "$email" ] || [ -z "$password" ]; then
+        skip_test "Role ${role_label}: credentials manquants (variables ${role_label^^}_EMAIL/${role_label^^}_PASSWORD)"
+        return
+    fi
+
+    LOGIN_CODE=$(curl -s -w "%{http_code}" -o /tmp/test-${role_label}-login.txt -X POST "$BASE_URL/auth/connexion" \
+        -H "Content-Type: application/x-www-form-urlencoded" \
+        -d "email=$email&password=$password" \
+        -c "$cookie_file")
+
+    if [ "$LOGIN_CODE" != "200" ]; then
+        fail_test "Role ${role_label}: connexion" "Status: $LOGIN_CODE"
+        rm -f "$cookie_file" "/tmp/test-${role_label}-login.txt"
+        return
+    fi
+
+    ACCESS_CODE=$(curl -s -w "%{http_code}" -o /tmp/test-${role_label}-analytics.txt \
+        -b "$cookie_file" "$BASE_URL/api/analytics-export?scope=overview&days=7")
+
+    if [ "$ACCESS_CODE" = "$expected_code" ]; then
+        pass_test "Role ${role_label}: access /api/analytics-export (status $ACCESS_CODE)"
+    else
+        fail_test "Role ${role_label}: access /api/analytics-export" "Expected $expected_code, got $ACCESS_CODE"
+    fi
+
+    rm -f "$cookie_file" "/tmp/test-${role_label}-login.txt" "/tmp/test-${role_label}-analytics.txt"
+}
+
+test_role_access "admin" "$ADMIN_EMAIL" "$ADMIN_PASSWORD" "200"
+test_role_access "data_analyst" "$DATA_ANALYST_EMAIL" "$DATA_ANALYST_PASSWORD" "200"
+test_role_access "user" "$USER_EMAIL" "$USER_PASSWORD" "403"
+
 echo ""
 echo "Notes:"
 echo "- Les tests 2 et 3 peuvent échouer si l'email n'est pas confirmé"
 echo "- Pour tester le flux complet, confirmez l'email dans Supabase Dashboard"
 echo "- Les cookies sont stockés dans /tmp/test-cookies.txt pendant les tests"
+echo "- Pour le test 7, fournissez ADMIN_EMAIL/ADMIN_PASSWORD, DATA_ANALYST_EMAIL/DATA_ANALYST_PASSWORD, USER_EMAIL/USER_PASSWORD"
 echo ""

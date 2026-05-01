@@ -14,6 +14,10 @@ export interface AuthResult {
   role:     UserRole;
 }
 
+export function canAccessAnalytics(role: UserRole | null | undefined): role is 'admin' | 'data_analyst' {
+  return role === 'admin' || role === 'data_analyst';
+}
+
 // ── Type guard ────────────────────────────────────────────────────────────────
 
 function isUserRole(value: unknown): value is UserRole {
@@ -176,7 +180,7 @@ export async function requireDataAnalyst(Astro: AstroGlobal): Promise<AuthResult
 
   const role = await fetchRoleSecure(user.id);
 
-  if (role !== 'data_analyst' && role !== 'admin') {
+  if (!canAccessAnalytics(role)) {
     return Astro.redirect('/dashboard/user');
   }
 

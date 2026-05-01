@@ -1,7 +1,7 @@
 import type { APIRoute } from 'astro';
 import type { CorpsType } from '@/lib/types';
 import { createSupabaseAdminClient, createSupabaseClient } from '@/lib/supabase';
-import { fetchRoleSecure } from '@/lib/auth';
+import { canAccessAnalytics, fetchRoleSecure } from '@/lib/auth';
 
 type AnalyticsScope = 'overview' | 'kpis' | 'activity';
 type AnalyticsWindow = 7 | 30 | 90;
@@ -109,7 +109,7 @@ export const GET: APIRoute = async ({ request, cookies }) => {
   }
 
   const role = await fetchRoleSecure(user.id);
-  if (role !== 'admin') {
+  if (!canAccessAnalytics(role)) {
     return new Response('Non autorisé', { status: 403 });
   }
 

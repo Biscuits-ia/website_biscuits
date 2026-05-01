@@ -223,7 +223,7 @@ const exportBase = new URLSearchParams(queryParams);
 const exportHref = (scope: 'overview' | 'kpis' | 'activity') => {
   const params = new URLSearchParams(exportBase);
   params.set('scope', scope);
-  return `/api/admin/analytics-export?${params.toString()}`;
+  return `/api/analytics-export?${params.toString()}`;
 };
 
 const blockedTasksHref = `/dashboard/tasks?${new URLSearchParams({ ...(corpsFilter ? { corps: corpsFilter } : {}), status: 'blocked' }).toString()}`;
@@ -249,10 +249,11 @@ const userName = auth.user.user_metadata?.full_name ?? auth.user.email?.split('@
         <p class="taskhub-subtitle">Conçu pour lire les signaux, repérer les dérives et sortir rapidement une synthèse exploitable par l'équipe DATA ou le pilotage.</p>
       </div>
       <div class="analytics-actions">
-        <a href={exportHref('overview')} class="btn btn-ghost">Exporter synthèse</a>
-        <a href={exportHref('kpis')} class="btn btn-ghost">Exporter KPI</a>
-        <a href={exportHref('activity')} class="btn btn-primary">Exporter activité</a>
+        <a href={exportHref('overview')} class="btn btn-ghost" data-export-link="overview">Exporter synthèse</a>
+        <a href={exportHref('kpis')} class="btn btn-ghost" data-export-link="kpis">Exporter KPI</a>
+        <a href={exportHref('activity')} class="btn btn-primary" data-export-link="activity">Exporter activité</a>
       </div>
+      <p id="analytics-export-status" class="analytics-export-status" aria-live="polite">Prêt pour export.</p>
     </div>
 
     <form class="taskhub-panel analytics-toolbar" method="get">
@@ -345,11 +346,11 @@ const userName = auth.user.user_metadata?.full_name ?? auth.user.email?.split('@
           </div>
         </div>
         <div class="analytics-tools-grid">
-          <a href={exportHref('overview')} class="analytics-tool-card">
+          <a href={exportHref('overview')} class="analytics-tool-card" data-export-link="overview-card">
             <strong>CSV synthèse</strong>
             <span>Vue corps, charge, blocages et complétion.</span>
           </a>
-          <a href={exportHref('kpis')} class="analytics-tool-card">
+          <a href={exportHref('kpis')} class="analytics-tool-card" data-export-link="kpis-card">
             <strong>CSV KPI latest</strong>
             <span>Dernière mesure, cible et taux d'atteinte.</span>
           </a>
@@ -494,6 +495,88 @@ const userName = auth.user.user_metadata?.full_name ?? auth.user.email?.split('@
   </section>
 </DashboardLayout>
 
+<script is:inline>
+  (() => {
+    const exportLinks = Array.from(document.querySelectorAll('a[data-export-link]'));
+    const statusNode = document.getElementById('analytics-export-status');
+
+    if (!exportLinks.length || !statusNode) return;
+
+    const setStatus = (message, state) => {
+      statusNode.textContent = message;
+      statusNode.classList.remove('is-busy', 'is-ok', 'is-error');
+      if (state) statusNode.classList.add(`is-${state}`);
+    };
+
+    const setBusy = (busy) => {
+      for (const link of exportLinks) {
+        if (busy) {
+          link.setAttribute('aria-disabled', 'true');
+          link.classList.add('is-disabled');
+        } else {
+          link.removeAttribute('aria-disabled');
+          link.classList.remove('is-disabled');
+        }
+      }
+    };
+
+    const parseFilename = (disposition, fallback) => {
+      if (!disposition) return fallback;
+      const utf8Match = disposition.match(/filename\*=UTF-8''([^;]+)/i);
+      if (utf8Match?.[1]) return decodeURIComponent(utf8Match[1]);
+      const plainMatch = disposition.match(/filename="?([^";]+)"?/i);
+      if (plainMatch?.[1]) return plainMatch[1];
+      return fallback;
+    };
+
+    const triggerDownload = (blob, filename) => {
+      const objectUrl = URL.createObjectURL(blob);
+      const tmpLink = document.createElement('a');
+      tmpLink.href = objectUrl;
+      tmpLink.download = filename;
+      tmpLink.style.display = 'none';
+      document.body.appendChild(tmpLink);
+      tmpLink.click();
+      document.body.removeChild(tmpLink);
+      URL.revokeObjectURL(objectUrl);
+    };
+
+    for (const link of exportLinks) {
+      link.addEventListener('click', async (event) => {
+        if (link.getAttribute('aria-disabled') === 'true') {
+          event.preventDefault();
+          return;
+        }
+
+        event.preventDefault();
+        const href = link.getAttribute('href');
+        if (!href) return;
+
+        setBusy(true);
+        setStatus('Export en cours...', 'busy');
+
+        try {
+          const response = await fetch(href, { credentials: 'include' });
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+          }
+
+          const blob = await response.blob();
+          const fallbackName = 'analytics-export.csv';
+          const filename = parseFilename(response.headers.get('content-disposition'), fallbackName);
+          triggerDownload(blob, filename);
+          setStatus(`Export terminé: ${filename}`, 'ok');
+        } catch (error) {
+          const detail = error instanceof Error ? error.message : 'erreur inconnue';
+          setStatus(`Échec export: ${detail}`, 'error');
+        } finally {
+          setBusy(false);
+        }
+      });
+    }
+  })();
+</script>
+
 <style>
   .analytics-shell {
     gap: 1rem;
@@ -518,6 +601,31 @@ const userName = auth.user.user_metadata?.full_name ?? auth.user.email?.split('@
     gap: 0.65rem;
     flex-wrap: wrap;
     justify-content: flex-end;
+  }
+
+  .analytics-export-status {
+    margin: 0;
+    width: 100%;
+    font-size: var(--text-xs);
+    color: var(--text-secondary);
+    font-family: var(--font-mono);
+  }
+
+  .analytics-export-status.is-busy {
+    color: var(--warn-fg);
+  }
+
+  .analytics-export-status.is-ok {
+    color: var(--ok-fg);
+  }
+
+  .analytics-export-status.is-error {
+    color: var(--err-fg);
+  }
+
+  .is-disabled {
+    pointer-events: none;
+    opacity: 0.65;
   }
 
   .analytics-toolbar {

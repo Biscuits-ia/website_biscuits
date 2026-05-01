@@ -7,91 +7,100 @@ import { createSupabaseAdminClient } from '@/lib/supabase';
 import type { CorpsType, PriorityLevel, TaskStatus, TaskWithRelations } from '@/lib/types';
 import '@/styles/task-hub.css';
 
-const validCorps: CorpsType[] = ['DEV', 'DB', 'DESIGN', 'QA', 'DATA', 'PM'];
+const validCorps: CorpsType[]       = ['DEV', 'DB', 'DESIGN', 'QA', 'DATA', 'PM'];
 const validPriorities: PriorityLevel[] = ['P0', 'P1', 'P2', 'P3'];
-const validStatuses: TaskStatus[] = ['backlog', 'todo', 'in_progress', 'in_review', 'testing', 'blocked', 'done'];
+const validStatuses: TaskStatus[]   = ['backlog', 'todo', 'in_progress', 'in_review', 'testing', 'blocked', 'done'];
 
 const auth = await requireAuth(Astro);
 if (auth instanceof Response) return auth;
 
-const rawSearch = (Astro.url.searchParams.get('q') ?? '').trim();
-const search = rawSearch.replace(/[,%()[\]]/g, '');
-const corpsFilter = validCorps.includes(Astro.url.searchParams.get('corps') as CorpsType)
-  ? (Astro.url.searchParams.get('corps') as CorpsType)
-  : '';
+/* ── Paramètres URL ────────────────────────────────────────── */
+const rawSearch     = (Astro.url.searchParams.get('q') ?? '').trim();
+const search        = rawSearch.replace(/[,%()[\]]/g, '');
+const corpsFilter   = validCorps.includes(Astro.url.searchParams.get('corps') as CorpsType)
+  ? (Astro.url.searchParams.get('corps') as CorpsType) : '';
 const priorityFilter = validPriorities.includes(Astro.url.searchParams.get('priority') as PriorityLevel)
-  ? (Astro.url.searchParams.get('priority') as PriorityLevel)
-  : '';
-const statusFilter = validStatuses.includes(Astro.url.searchParams.get('status') as TaskStatus)
-  ? (Astro.url.searchParams.get('status') as TaskStatus)
-  : '';
-const page = Math.max(1, Number(Astro.url.searchParams.get('page') ?? '1'));
-const pageSize = 21;
-const rangeFrom = (page - 1) * pageSize;
-const rangeTo = rangeFrom + pageSize - 1;
+  ? (Astro.url.searchParams.get('priority') as PriorityLevel) : '';
+const statusFilter  = validStatuses.includes(Astro.url.searchParams.get('status') as TaskStatus)
+  ? (Astro.url.searchParams.get('status') as TaskStatus) : '';
 
-const todoPage = Math.max(1, Number(Astro.url.searchParams.get('todo_page') ?? '1'));
-const todoPageSize = 4;
-const todoRangeFrom = (todoPage - 1) * todoPageSize;
-const todoRangeTo = todoRangeFrom + todoPageSize - 1;
+const page         = Math.max(1, Number(Astro.url.searchParams.get('page') ?? '1'));
+const pageSize     = 21;
+const rangeFrom    = (page - 1) * pageSize;
+const rangeTo      = rangeFrom + pageSize - 1;
 
-const admin = createSupabaseAdminClient();
+const todoPage       = Math.max(1, Number(Astro.url.searchParams.get('todo_page') ?? '1'));
+const todoPageSize   = 4;
+const todoRangeFrom  = (todoPage - 1) * todoPageSize;
+const todoRangeTo    = todoRangeFrom + todoPageSize - 1;
+
+/* ── Requêtes Supabase ─────────────────────────────────────── */
+const admin       = createSupabaseAdminClient();
 const TASK_SELECT = 'id, reference, title, description, corps, task_type, priority, status, assignee_id, reporter_id, sprint_id, story_points, time_estimate_hours, time_spent_hours, due_date, acceptance_criteria, deliverables, definition_of_done, dod_completed, tags, blocked_reason, parent_task_id, doc_link, figma_link, created_at, updated_at';
-let tasksQuery = admin.from('tasks').select(TASK_SELECT).neq('status', 'todo');
-let countQuery = admin.from('tasks').select('id', { count: 'exact', head: true }).neq('status', 'todo');
-let todoQuery = admin.from('tasks').select(TASK_SELECT).eq('status', 'todo');
+
+let tasksQuery     = admin.from('tasks').select(TASK_SELECT).neq('status', 'todo');
+let countQuery     = admin.from('tasks').select('id', { count: 'exact', head: true }).neq('status', 'todo');
+let todoQuery      = admin.from('tasks').select(TASK_SELECT).eq('status', 'todo');
 let todoCountQuery = admin.from('tasks').select('id', { count: 'exact', head: true }).eq('status', 'todo');
 
 if (search) {
   const searchExpr = `title.ilike.%${search}%,reference.ilike.%${search}%`;
-  tasksQuery = tasksQuery.or(searchExpr);
-  countQuery = countQuery.or(searchExpr);
-  todoQuery = todoQuery.or(searchExpr);
+  tasksQuery     = tasksQuery.or(searchExpr);
+  countQuery     = countQuery.or(searchExpr);
+  todoQuery      = todoQuery.or(searchExpr);
   todoCountQuery = todoCountQuery.or(searchExpr);
 }
-
 if (corpsFilter) {
-  tasksQuery = tasksQuery.eq('corps', corpsFilter);
-  countQuery = countQuery.eq('corps', corpsFilter);
-  todoQuery = todoQuery.eq('corps', corpsFilter);
+  tasksQuery     = tasksQuery.eq('corps', corpsFilter);
+  countQuery     = countQuery.eq('corps', corpsFilter);
+  todoQuery      = todoQuery.eq('corps', corpsFilter);
   todoCountQuery = todoCountQuery.eq('corps', corpsFilter);
 }
-
 if (priorityFilter) {
-  tasksQuery = tasksQuery.eq('priority', priorityFilter);
-  countQuery = countQuery.eq('priority', priorityFilter);
-  todoQuery = todoQuery.eq('priority', priorityFilter);
+  tasksQuery     = tasksQuery.eq('priority', priorityFilter);
+  countQuery     = countQuery.eq('priority', priorityFilter);
+  todoQuery      = todoQuery.eq('priority', priorityFilter);
   todoCountQuery = todoCountQuery.eq('priority', priorityFilter);
 }
-
 if (statusFilter && statusFilter !== 'todo') {
   tasksQuery = tasksQuery.eq('status', statusFilter);
   countQuery = countQuery.eq('status', statusFilter);
 }
 
-const [{ data, error }, { count: totalTasksCount }, { data: todoData }, { count: todoCount }] = await Promise.all([
+const [
+  { data, error },
+  { count: totalTasksCount },
+  { data: todoData },
+  { count: todoCount },
+] = await Promise.all([
   tasksQuery.order('updated_at', { ascending: false }).range(rangeFrom, rangeTo),
   countQuery,
   todoQuery.order('updated_at', { ascending: false }).range(todoRangeFrom, todoRangeTo),
   todoCountQuery,
 ]);
+
 if (error) console.warn('[dashboard/kanban] tasks query warning:', error.message);
 
-const tasks = (data ?? []) as unknown as TaskWithRelations[];
-const todoTasks = (todoData ?? []) as unknown as TaskWithRelations[];
-const mainTotal = totalTasksCount ?? tasks.length;
-const todoTotal = todoCount ?? 0;
-const totalTasks = mainTotal + todoTotal;
-const totalPages = Math.max(1, Math.ceil(mainTotal / pageSize));
-const todoTotalPages = Math.max(1, Math.ceil(todoTotal / todoPageSize));
-const userName = auth.user.user_metadata?.full_name ?? auth.user.email?.split('@')[0] ?? 'Utilisateur';
-const openTasksCount = [...tasks, ...todoTasks].filter((task) => task.status !== 'done').length;
-const blockedTasksCount = [...tasks, ...todoTasks].filter((task) => task.status === 'blocked').length;
+/* ── Dérivés ───────────────────────────────────────────────── */
+const tasks           = (data ?? [])     as unknown as TaskWithRelations[];
+const todoTasks       = (todoData ?? []) as unknown as TaskWithRelations[];
+const mainTotal       = totalTasksCount ?? tasks.length;
+const todoTotal       = todoCount ?? 0;
+const totalTasks      = mainTotal + todoTotal;
+const totalPages      = Math.max(1, Math.ceil(mainTotal / pageSize));
+const todoTotalPages  = Math.max(1, Math.ceil(todoTotal / todoPageSize));
+const userName        = auth.user.user_metadata?.full_name ?? auth.user.email?.split('@')[0] ?? 'Utilisateur';
+const openTasksCount  = [...tasks, ...todoTasks].filter((t) => t.status !== 'done').length;
+const blockedCount    = [...tasks, ...todoTasks].filter((t) => t.status === 'blocked').length;
+const isFiltered      = !!(search || corpsFilter || priorityFilter || statusFilter);
+const hasSecondary    = !!(corpsFilter || priorityFilter || statusFilter);
+
+/* ── Pagination todo ───────────────────────────────────────── */
 const queryParams = new URLSearchParams();
-if (search) queryParams.set('q', search);
-if (corpsFilter) queryParams.set('corps', corpsFilter);
+if (search)        queryParams.set('q',        search);
+if (corpsFilter)   queryParams.set('corps',    corpsFilter);
 if (priorityFilter) queryParams.set('priority', priorityFilter);
-if (statusFilter) queryParams.set('status', statusFilter);
+if (statusFilter)  queryParams.set('status',   statusFilter);
 
 const hrefWithTodoPage = (p: number) => {
   const params = new URLSearchParams(queryParams);
@@ -100,60 +109,223 @@ const hrefWithTodoPage = (p: number) => {
   return `?${params.toString()}`;
 };
 
-const todoPrevHref = todoPage > 1 ? hrefWithTodoPage(todoPage - 1) : null;
+const todoPrevHref = todoPage > 1              ? hrefWithTodoPage(todoPage - 1) : null;
 const todoNextHref = todoPage < todoTotalPages ? hrefWithTodoPage(todoPage + 1) : null;
-const resetHref = '/dashboard/kanban';
+const resetHref    = '/dashboard/kanban';
+
+/* Labels affichés pour les filtres actifs */
+const activeFilterLabels: string[] = [];
+if (corpsFilter)    activeFilterLabels.push(corpsFilter);
+if (priorityFilter) activeFilterLabels.push(priorityFilter);
+if (statusFilter)   activeFilterLabels.push(statusFilter);
 ---
 
 <DashboardLayout title="Kanban" activePage="kanban" authResult={auth} userName={userName}>
   <section class="taskhub-shell">
+
+    <!-- ── Header + stats intégrées ───────────────────────────── -->
     <div class="taskhub-header">
       <div>
-        <h1 class="taskhub-title">Kanban multi-corps</h1>
-        <p class="taskhub-subtitle">Glisser-déposer les cartes avec plus d'espace, une lecture plus calme et des colonnes mieux séparées.</p>
+        <h1 class="taskhub-title">
+          Kanban
+          <span class="taskhub-title-stats">
+            <span class="taskhub-title-pill">{totalTasks} tâches</span>
+            <span class="taskhub-title-pill">{openTasksCount} ouvertes</span>
+            {blockedCount > 0 && (
+              <span class="taskhub-title-pill taskhub-title-pill--blocked">{blockedCount} bloquées</span>
+            )}
+            {isFiltered && (
+              <span class="taskhub-title-pill taskhub-title-pill--filtered">
+                Vue filtrée{activeFilterLabels.length > 0 ? ` — ${activeFilterLabels.join(', ')}` : ''}
+              </span>
+            )}
+          </span>
+        </h1>
+        <p class="taskhub-subtitle">Glisser-déposer · scroll horizontal · {totalPages > 1 ? `page ${page}/${totalPages}` : `${totalTasks} tâche${totalTasks > 1 ? 's' : ''}`}</p>
       </div>
     </div>
 
-    <form class="taskhub-panel" method="get">
-      <div class="taskhub-filters">
-        <input name="q" type="search" class="taskhub-input" placeholder="Rechercher titre/référence" value={search} />
-        <select name="corps" class="taskhub-input">
-          <option value="">Tous corps</option>
-          {validCorps.map((corps) => <option value={corps} selected={corpsFilter === corps}>{corps}</option>)}
-        </select>
-        <select name="priority" class="taskhub-input">
-          <option value="">Toutes priorités</option>
-          {validPriorities.map((priority) => <option value={priority} selected={priorityFilter === priority}>{priority}</option>)}
-        </select>
-        <select name="status" class="taskhub-input">
-          <option value="">Tous statuts</option>
-          <option value="backlog" selected={statusFilter === 'backlog'}>Carnet</option>
-          <option value="todo" selected={statusFilter === 'todo'}>À faire</option>
-          <option value="in_progress" selected={statusFilter === 'in_progress'}>En cours</option>
-          <option value="in_review" selected={statusFilter === 'in_review'}>En revue</option>
-          <option value="testing" selected={statusFilter === 'testing'}>Tests</option>
-          <option value="blocked" selected={statusFilter === 'blocked'}>Bloquée</option>
-          <option value="done" selected={statusFilter === 'done'}>Terminée</option>
-        </select>
+    <!-- ── Filtres : primary toujours visibles, secondary collapsable ── -->
+    <form class="taskhub-panel" method="get" id="kanban-filter-form">
+
+      <!-- Ligne primaire : recherche + toggle + actions -->
+      <div class="taskhub-filters-primary">
+        <input
+          name="q"
+          type="search"
+          class="taskhub-input"
+          placeholder="Rechercher titre ou référence…"
+          value={search}
+          autocomplete="off"
+        />
+        <button
+          type="button"
+          class="taskhub-more-btn"
+          id="kanban-more-filters-btn"
+          aria-expanded={hasSecondary ? 'true' : 'false'}
+          aria-controls="kanban-filters-secondary"
+        >
+          Filtres
+          {hasSecondary && activeFilterLabels.length > 0
+            ? ` (${activeFilterLabels.length})`
+            : ''}
+          <i class="taskhub-more-btn-arrow" aria-hidden="true">▾</i>
+        </button>
         <div class="taskhub-filter-actions">
           <button type="submit" class="btn btn-primary">Filtrer</button>
           <a href={resetHref} class="btn btn-ghost">Réinitialiser</a>
         </div>
       </div>
+
+      <!-- Ligne secondaire : filtres avancés -->
+      <div
+        class="taskhub-filters-secondary"
+        id="kanban-filters-secondary"
+        hidden={!hasSecondary || undefined}
+      >
+        <div>
+          <label class="taskhub-label" for="filter-corps">Corps</label>
+          <select name="corps" id="filter-corps" class="taskhub-input">
+            <option value="">Tous les corps</option>
+            {validCorps.map((c) => (
+              <option value={c} selected={corpsFilter === c}>{c}</option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label class="taskhub-label" for="filter-priority">Priorité</label>
+          <select name="priority" id="filter-priority" class="taskhub-input">
+            <option value="">Toutes priorités</option>
+            {validPriorities.map((p) => (
+              <option value={p} selected={priorityFilter === p}>{p}</option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label class="taskhub-label" for="filter-status">Statut</label>
+          <select name="status" id="filter-status" class="taskhub-input">
+            <option value="">Tous statuts</option>
+            <option value="backlog"     selected={statusFilter === 'backlog'}>Carnet</option>
+            <option value="todo"        selected={statusFilter === 'todo'}>À faire</option>
+            <option value="in_progress" selected={statusFilter === 'in_progress'}>En cours</option>
+            <option value="in_review"   selected={statusFilter === 'in_review'}>En revue</option>
+            <option value="testing"     selected={statusFilter === 'testing'}>Tests</option>
+            <option value="blocked"     selected={statusFilter === 'blocked'}>Bloquée</option>
+            <option value="done"        selected={statusFilter === 'done'}>Terminée</option>
+          </select>
+        </div>
+      </div>
     </form>
 
-    <div class="taskhub-kanban-summary">
-      <div class="taskhub-kanban-meta">
-        <span class="taskhub-kanban-pill">{totalTasks} tâches</span>
-        <span class="taskhub-kanban-pill">{openTasksCount} ouvertes</span>
-        <span class="taskhub-kanban-pill">{blockedTasksCount} bloquées</span>
-        <span class="taskhub-kanban-pill">Page {page} / {totalPages}</span>
-        {(search || corpsFilter || priorityFilter || statusFilter) && <span class="taskhub-kanban-pill">Vue filtrée</span>}
+    <!-- ── Toolbar : densité + meta page ───────────────────────── -->
+    <div class="taskhub-toolbar">
+      <div class="taskhub-board-meta">
+        {totalPages > 1 && (
+          <span class="taskhub-board-pill">Page {page} / {totalPages}</span>
+        )}
+        {todoTotalPages > 1 && (
+          <span class="taskhub-board-pill">À faire : {todoPage}/{todoTotalPages}</span>
+        )}
+      </div>
+
+      <div class="taskhub-density-controls" role="group" aria-label="Densité des cartes">
+        <span class="taskhub-density-label">Densité</span>
+        <button
+          type="button"
+          class="btn taskhub-density-btn"
+          data-density="compact"
+          aria-pressed="false"
+        >Compact</button>
+        <button
+          type="button"
+          class="btn taskhub-density-btn is-active"
+          data-density="normal"
+          aria-pressed="true"
+        >Normal</button>
+        <button
+          type="button"
+          class="btn taskhub-density-btn"
+          data-density="expanded"
+          aria-pressed="false"
+        >Étendu</button>
       </div>
     </div>
 
-    <KanbanBoard tasks={tasks} todoTasks={todoTasks} todoPrevHref={todoPrevHref} todoNextHref={todoNextHref} todoPage={todoPage} todoTotalPages={todoTotalPages} currentUserId={auth.user.id} />
+    <!-- ── Board kanban ─────────────────────────────────────────── -->
+    <KanbanBoard
+      tasks={tasks}
+      todoTasks={todoTasks}
+      todoPrevHref={todoPrevHref}
+      todoNextHref={todoNextHref}
+      todoPage={todoPage}
+      todoTotalPages={todoTotalPages}
+      currentUserId={auth.user.id}
+    />
 
   </section>
   <Toast />
 </DashboardLayout>
+
+<!-- ── Scripts client ──────────────────────────────────────────── -->
+<script>
+  /* ── Toggle filtres secondaires ──────────────────────────── */
+  const moreBtn   = document.getElementById('kanban-more-filters-btn');
+  const secondary = document.getElementById('kanban-filters-secondary');
+
+  moreBtn?.addEventListener('click', () => {
+    const isOpen = moreBtn.getAttribute('aria-expanded') === 'true';
+    moreBtn.setAttribute('aria-expanded', String(!isOpen));
+    if (isOpen) {
+      secondary?.setAttribute('hidden', '');
+    } else {
+      secondary?.removeAttribute('hidden');
+      // Focus le premier select pour l'accessibilité
+      secondary?.querySelector('select')?.focus();
+    }
+  });
+
+  /* ── Densité des cartes ───────────────────────────────────── */
+  const board        = document.querySelector('.taskhub-board') as HTMLElement | null;
+  const densityBtns  = document.querySelectorAll<HTMLButtonElement>('[data-density]');
+
+  densityBtns.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const density = btn.dataset.density ?? 'normal';
+
+      // Mise à jour du board
+      if (board) board.dataset.density = density;
+
+      // Mise à jour des boutons
+      densityBtns.forEach((b) => {
+        const active = b.dataset.density === density;
+        b.classList.toggle('is-active', active);
+        b.setAttribute('aria-pressed', String(active));
+      });
+
+      // Persistance légère en sessionStorage
+      try { sessionStorage.setItem('kanban-density', density); } catch {}
+    });
+  });
+
+  // Restaure la densité sauvegardée
+  try {
+    const saved = sessionStorage.getItem('kanban-density');
+    if (saved && board) {
+      board.dataset.density = saved;
+      densityBtns.forEach((b) => {
+        const active = b.dataset.density === saved;
+        b.classList.toggle('is-active', active);
+        b.setAttribute('aria-pressed', String(active));
+      });
+    }
+  } catch {}
+
+  /* ── Scroll horizontal : snap au clavier (← →) ──────────── */
+  board?.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight') {
+      board.scrollBy({ left: 288, behavior: 'smooth' });
+    } else if (e.key === 'ArrowLeft') {
+      board.scrollBy({ left: -288, behavior: 'smooth' });
+    }
+  });
+</script>

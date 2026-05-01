@@ -1,9 +1,24 @@
 ---
 // src/components/tasks/KanbanBoard.astro — tableau kanban avec DnD HTML5
 import KanbanColumn from './KanbanColumn.astro';
-import type { TaskWithRelations, TaskStatus } from '@/lib/types';
+import type { TaskWithRelations, TaskStatus, CorpsType } from '@/lib/types';
+
+/* ── Types ──────────────────────────────────────────────────── */
+interface TodoCorpsGroup {
+  corps: CorpsType;
+  total: number;
+  tasks: TaskWithRelations[];
+  page: number;
+  totalPages: number;
+  prevHref: string | null;
+  nextHref: string | null;
+}
+
 interface Props {
   tasks: TaskWithRelations[];
+  /** Nouvelle API : colonnes À faire groupées par corps */
+  todoByCorps?: TodoCorpsGroup[];
+  /** Ancienne API conservée pour rétrocompatibilité */
   todoTasks?: TaskWithRelations[];
   todoPrevHref?: string | null;
   todoNextHref?: string | null;
@@ -11,26 +26,91 @@ interface Props {
   todoTotalPages?: number;
   currentUserId?: string;
 }
-const { tasks = [], todoTasks = [], todoPrevHref, todoNextHref, todoPage = 1, todoTotalPages = 1, currentUserId = '' } = Astro.props;
 
-const statuses: Array<{ status: TaskStatus; label: string }> = [
-  { status: 'todo', label: 'À faire' },
-  { status: 'backlog', label: 'Carnet' },
-  { status: 'in_progress', label: 'En cours' },
-  { status: 'in_review', label: 'En revue' },
-  { status: 'testing', label: 'Tests' },
-  { status: 'blocked', label: 'Bloquée' },
-  { status: 'done', label: 'Terminée' },
+const {
+  tasks          = [],
+  todoByCorps,
+  todoTasks      = [],
+  todoPrevHref,
+  todoNextHref,
+  todoPage       = 1,
+  todoTotalPages = 1,
+  currentUserId  = '',
+} = Astro.props;
+
+/* Mode groupé ou mode legacy */
+const useGroupedTodo = Array.isArray(todoByCorps) && todoByCorps.length > 0;
+
+/* Statuts hors todo */
+const nonTodoStatuses: Array<{ status: TaskStatus; label: string }> = [
+  { status: 'backlog',      label: 'Carnet'   },
+  { status: 'in_progress',  label: 'En cours' },
+  { status: 'in_review',    label: 'En revue' },
+  { status: 'testing',      label: 'Tests'    },
+  { status: 'blocked',      label: 'Bloquée'  },
+  { status: 'done',         label: 'Terminée' },
 ];
 
-const visibleStatuses = statuses;
+/* Label lisible par corps pour la colonne todo */
+const CORPS_LABEL: Record<string, string> = {
+  DEV:    'À faire · DEV',
+  DB:     'À faire · DB',
+  DESIGN: 'À faire · DESIGN',
+  QA:     'À faire · QA',
+  DATA:   'À faire · DATA',
+  PM:     'À faire · PM',
+};
 ---
 
 <div class="taskhub-board" id="kanban-board" data-current-user-id={currentUserId}>
-  {visibleStatuses.map((s) => s.status === 'todo'
-    ? <KanbanColumn status={s.status} label={s.label} tasks={todoTasks} prevHref={todoPrevHref} nextHref={todoNextHref} page={todoPage} totalPages={todoTotalPages} currentUserId={currentUserId} />
-    : <KanbanColumn status={s.status} label={s.label} tasks={tasks.filter((t) => t.status === s.status)} currentUserId={currentUserId} />
-  )}
+
+  {useGroupedTodo
+    ? (
+        /* ── Nouvelle API : une colonne todo par corps ──────── */
+        <>
+          {(todoByCorps ?? [])
+            .filter((g) => g.total > 0)
+            .map((g) => (
+              <KanbanColumn
+                status="todo"
+                label={CORPS_LABEL[g.corps] ?? `À faire · ${g.corps}`}
+                tasks={g.tasks}
+                prevHref={g.prevHref}
+                nextHref={g.nextHref}
+                page={g.page}
+                totalPages={g.totalPages}
+                currentUserId={currentUserId}
+                corps={g.corps}
+              />
+            ))
+          }
+        </>
+      )
+    : (
+        /* ── Ancienne API : une seule colonne todo ──────────── */
+        <KanbanColumn
+          status="todo"
+          label="À faire"
+          tasks={todoTasks}
+          prevHref={todoPrevHref}
+          nextHref={todoNextHref}
+          page={todoPage}
+          totalPages={todoTotalPages}
+          currentUserId={currentUserId}
+        />
+      )
+  }
+
+  {/* Colonnes hors todo */}
+  {nonTodoStatuses.map((s) => (
+    <KanbanColumn
+      status={s.status}
+      label={s.label}
+      tasks={tasks.filter((t) => t.status === s.status)}
+      currentUserId={currentUserId}
+    />
+  ))}
+
 </div>
 
 <script is:inline>
@@ -43,19 +123,17 @@ const visibleStatuses = statuses;
       if (event.dataTransfer) event.dataTransfer.effectAllowed = 'move';
     });
     card.addEventListener('dragend', () => {
-      document.querySelectorAll('[data-dropzone]').forEach((zone) => zone.classList.remove('taskhub-dropzone--active'));
+      document.querySelectorAll('[data-dropzone]').forEach((zone) =>
+        zone.classList.remove('taskhub-dropzone--active')
+      );
       draggedTaskId = null;
     });
   });
 
   document.querySelectorAll('[data-dropzone]').forEach((zone) => {
-    zone.addEventListener('dragenter', () => {
-      zone.classList.add('taskhub-dropzone--active');
-    });
-    zone.addEventListener('dragleave', () => {
-      zone.classList.remove('taskhub-dropzone--active');
-    });
-    zone.addEventListener('dragover', (e) => e.preventDefault());
+    zone.addEventListener('dragenter', () => zone.classList.add('taskhub-dropzone--active'));
+    zone.addEventListener('dragleave', () => zone.classList.remove('taskhub-dropzone--active'));
+    zone.addEventListener('dragover',  (e) => e.preventDefault());
     zone.addEventListener('drop', async (e) => {
       e.preventDefault();
       zone.classList.remove('taskhub-dropzone--active');
@@ -78,7 +156,7 @@ const visibleStatuses = statuses;
     });
   });
 
-  // ── Claim task (Je prends cette tâche) ──────────────────────────────────────
+  /* ── Claim task ─────────────────────────────────────────── */
   const board = document.getElementById('kanban-board');
   const currentUserId = board?.getAttribute('data-current-user-id') || '';
 
@@ -108,11 +186,12 @@ const visibleStatuses = statuses;
     }
   });
 
+  /* ── Move task ──────────────────────────────────────────── */
   board?.addEventListener('click', async (e) => {
     const moveBtn = e.target?.closest('[data-move-task-id][data-move-status]');
     if (!moveBtn) return;
 
-    const taskId = moveBtn.getAttribute('data-move-task-id');
+    const taskId     = moveBtn.getAttribute('data-move-task-id');
     const nextStatus = moveBtn.getAttribute('data-move-status');
     if (!taskId || !nextStatus) return;
 

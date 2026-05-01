@@ -1,8 +1,7 @@
 ---
 import DashboardLayout from '@/layouts/DashboardLayout.astro';
 import { requireDataAnalyst } from '@/lib/auth';
-import { createSupabaseAdminClient } from '@/lib/supabase';
-import type { CorpsType, TaskStatus } from '@/lib/types';
+import type { CorpsType } from '@/lib/types';
 import '@/styles/task-hub.css';
 
 interface ActivityRow {
@@ -21,71 +20,43 @@ interface KpiRow {
   attainment_pct: number | null;
 }
 
-interface TaskRow {
-  status: TaskStatus;
-  priority: 'P0' | 'P1' | 'P2' | 'P3';
-  corps: CorpsType;
-}
-
 const auth = await requireDataAnalyst(Astro);
 if (auth instanceof Response) return auth;
 
-const admin = createSupabaseAdminClient();
+const supabase = auth.supabase;
 
-const [activityRes, latestKpiRes, taskRes] = await Promise.all([
-  admin
+const [activityRes, latestKpiRes] = await Promise.all([
+  supabase
     .from('analytics_daily_activity')
     .select('day, corps, created_count, completed_count, snapshot_count')
-    .is('corps', null)
+    .eq('corps', 'DATA')
     .order('day', { ascending: false })
     .limit(30),
-  admin
+  supabase
     .from('analytics_kpi_latest')
     .select('corps, metric_name, metric_value, target_value, attainment_pct')
+    .eq('corps', 'DATA')
     .order('corps')
     .order('metric_name'),
-  admin
-    .from('tasks')
-    .select('status, priority, corps')
-    .limit(1200),
 ]);
 
 if (activityRes.error) console.warn('[dashboard/data] activity warning:', activityRes.error.message);
 if (latestKpiRes.error) console.warn('[dashboard/data] kpi warning:', latestKpiRes.error.message);
-if (taskRes.error) console.warn('[dashboard/data] tasks warning:', taskRes.error.message);
 
 const activityRows = (activityRes.data ?? []) as ActivityRow[];
 const latestKpis = (latestKpiRes.data ?? []) as KpiRow[];
-const taskRows = (taskRes.data ?? []) as TaskRow[];
 
 const totalCreated30d = activityRows.reduce((acc, row) => acc + row.created_count, 0);
 const totalCompleted30d = activityRows.reduce((acc, row) => acc + row.completed_count, 0);
 const totalSnapshots30d = activityRows.reduce((acc, row) => acc + row.snapshot_count, 0);
-const criticalOpen = taskRows.filter((row) => (row.priority === 'P0' || row.priority === 'P1') && row.status !== 'done').length;
-const blockedTasks = taskRows.filter((row) => row.status === 'blocked').length;
 
-const statusCounts = taskRows.reduce<Record<TaskStatus, number>>((acc, row) => {
-  acc[row.status] = (acc[row.status] ?? 0) + 1;
-  return acc;
-}, {
-  backlog: 0,
-  todo: 0,
-  in_progress: 0,
-  in_review: 0,
-  testing: 0,
-  blocked: 0,
-  done: 0,
-});
-
-const statusLabels: Record<TaskStatus, string> = {
-  backlog: 'Carnet',
-  todo: 'À faire',
-  in_progress: 'En cours',
-  in_review: 'En revue',
-  testing: 'Tests',
-  blocked: 'Bloquées',
-  done: 'Terminées',
-};
+const kpiCoverage = latestKpis.length;
+const avgAttainment = latestKpis.length
+  ? Number((latestKpis.reduce((acc, row) => acc + (row.attainment_pct ?? 0), 0) / latestKpis.length).toFixed(1))
+  : 0;
+const bestKpi = [...latestKpis]
+  .filter((kpi) => kpi.attainment_pct !== null)
+  .sort((a, b) => (b.attainment_pct ?? 0) - (a.attainment_pct ?? 0))[0] ?? null;
 
 const riskyKpis = latestKpis
   .filter((kpi) => kpi.attainment_pct !== null && kpi.attainment_pct < 100)
@@ -99,11 +70,11 @@ const userName = auth.user.user_metadata?.full_name ?? auth.user.email?.split('@
     <div class="taskhub-header">
       <div>
         <h1 class="taskhub-title">Dashboard Data Analyst</h1>
-        <p class="taskhub-subtitle">Vue dédiée aux analystes: activité 30 jours, risques KPI et signaux opérationnels.</p>
+        <p class="taskhub-subtitle">Vue dédiée DATA: activité 30 jours et santé des KPI métier, sans outils de pilotage admin.</p>
       </div>
       <div class="taskhub-density-controls" style="gap:0.5rem;">
-        <a href="/dashboard/kpis" class="btn btn-primary">Cockpit complet</a>
-        <a href="/api/admin/analytics-export?scope=activity&days=30" class="btn btn-ghost">Export CSV</a>
+        <a href="/dashboard/data" class="btn btn-primary">Actualiser</a>
+        <a href="/dashboard/user/resources" class="btn btn-ghost">Ressources data</a>
       </div>
     </div>
 
@@ -121,19 +92,24 @@ const userName = auth.user.user_metadata?.full_name ?? auth.user.email?.split('@
         <p class="taskhub-kpi-value">{totalSnapshots30d}</p>
       </article>
       <article class="taskhub-kpi-card">
-        <p class="taskhub-kpi-label">P0/P1 ouvertes</p>
-        <p class="taskhub-kpi-value taskhub-kpi-value-danger">{criticalOpen}</p>
+        <p class="taskhub-kpi-label">Moyenne atteinte KPI</p>
+        <p class="taskhub-kpi-value taskhub-kpi-value-accent">{avgAttainment}%</p>
       </article>
     </div>
 
     <div class="taskhub-layout-2">
       <section class="taskhub-panel">
-        <h2 class="card-title">Répartition des statuts</h2>
-        <ul class="taskhub-list">
-          {Object.entries(statusCounts).map(([status, count]) => (
-            <li class="taskhub-list-item"><span>{statusLabels[status as TaskStatus]}</span> <strong style="float:right">{count}</strong></li>
-          ))}
-        </ul>
+        <h2 class="card-title">Synthèse DATA</h2>
+        <div class="taskhub-kanban-meta">
+          <span class="taskhub-kanban-pill">{kpiCoverage} KPI suivis</span>
+          <span class="taskhub-kanban-pill">{riskyKpis.length} KPI à risque</span>
+          <span class="taskhub-kanban-pill">30 jours glissants</span>
+        </div>
+        <p class="taskhub-note" style="margin-top:0.8rem;">
+          {bestKpi
+            ? `Meilleure métrique actuelle: ${bestKpi.metric_name} (${bestKpi.attainment_pct?.toFixed(1)}%).`
+            : 'Aucune métrique atteignable disponible pour le moment.'}
+        </p>
       </section>
 
       <section class="taskhub-panel">
@@ -152,16 +128,16 @@ const userName = auth.user.user_metadata?.full_name ?? auth.user.email?.split('@
     </div>
 
     <div class="taskhub-panel">
-      <h2 class="card-title">Alertes rapides</h2>
+      <h2 class="card-title">Actions recommandées</h2>
       <div class="taskhub-kanban-meta">
-        <span class="taskhub-kanban-pill">{blockedTasks} bloquées</span>
-        <span class="taskhub-kanban-pill">{criticalOpen} critiques ouvertes</span>
+        <span class="taskhub-kanban-pill">{totalSnapshots30d} snapshots collectés</span>
+        <span class="taskhub-kanban-pill">{avgAttainment}% moyenne d'atteinte</span>
         <span class="taskhub-kanban-pill">{riskyKpis.length} KPI sous cible</span>
       </div>
       <div style="margin-top:0.75rem; display:flex; gap:0.55rem; flex-wrap:wrap;">
-        <a href="/dashboard/tasks?status=blocked" class="btn btn-ghost">Inspecter blocages</a>
-        <a href="/dashboard/tasks?priority=P0" class="btn btn-ghost">Inspecter P0</a>
-        <a href="/dashboard/kpis" class="btn btn-primary">Voir analytics détaillé</a>
+        <a href="/dashboard/data" class="btn btn-primary">Recalculer la vue</a>
+        <a href="/dashboard/user/resources" class="btn btn-ghost">Consulter ressources</a>
+        <a href="/dashboard/user/settings" class="btn btn-ghost">Ajuster profil</a>
       </div>
     </div>
   </section>

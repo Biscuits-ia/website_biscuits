@@ -1,9 +1,10 @@
 ---
 // Composant formulaire "Besoin d'aide ?" ultra simplifié + CTA bénévole
 const siteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
+const nonce = Astro.locals.nonce;
 ---
 <!-- Script Cloudflare Turnstile (widget HTML natif) -->
-<script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+<script is:inline nonce={nonce} src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 
 <section class="aide-section" aria-labelledby="aide-title">
   <div class="aide-inner">

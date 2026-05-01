@@ -39,6 +39,15 @@ function readAccessTokenIssuedAtMs(accessToken: string | null | undefined): numb
   }
 }
 
+function routeUsesTurnstile(pathname: string): boolean {
+  if (pathname === '/') return true;
+  if (pathname === '/contact') return true;
+  if (pathname === '/rejoignez-nous') return true;
+  if (pathname === '/ateliers/inscription') return true;
+  if (pathname.startsWith('/dashboard/user/')) return true;
+  return false;
+}
+
 function checkRouteRateLimit(context: any, isDev: boolean, pathname: string): Response | null {
   if (isDev) return null;
   if (!pathname.startsWith('/api/') && !pathname.startsWith('/auth/')) return null;
@@ -104,6 +113,7 @@ async function mustInvalidateSession(supabase: ReturnType<typeof createSupabaseC
 export const onRequest = defineMiddleware(async (context, next) => {
   const { url } = context;
   const isDev = import.meta.env.DEV;
+  const usesTurnstile = routeUsesTurnstile(url.pathname);
 
   // Skip middleware for prerendered static routes (RSS feed, etc.)
   // The middleware cannot access request.headers on prerendered pages.
@@ -163,6 +173,12 @@ export const onRequest = defineMiddleware(async (context, next) => {
     'https://vercel.live',
     'https://cdn.jsdelivr.net',
   ];
+
+  // Cloudflare Turnstile and challenge iframes can inject inline scripts into
+  // `about:srcdoc`; allow it only on routes that actually mount Turnstile.
+  if (usesTurnstile) {
+    scriptSrc.push("'unsafe-inline'");
+  }
 
   const connectSrc = [
     "'self'",

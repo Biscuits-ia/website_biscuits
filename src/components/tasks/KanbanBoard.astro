@@ -14,8 +14,8 @@ interface Props {
 const { tasks = [], todoTasks = [], todoPrevHref, todoNextHref, todoPage = 1, todoTotalPages = 1, currentUserId = '' } = Astro.props;
 
 const statuses: Array<{ status: TaskStatus; label: string }> = [
-  { status: 'backlog', label: 'Carnet' },
   { status: 'todo', label: 'À faire' },
+  { status: 'backlog', label: 'Carnet' },
   { status: 'in_progress', label: 'En cours' },
   { status: 'in_review', label: 'En revue' },
   { status: 'testing', label: 'Tests' },

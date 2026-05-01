@@ -135,6 +135,17 @@
   min-height: 300px;
 }
 
+.taskhub-column[data-kanban-status='todo'] {
+  grid-column: 1 / -1;
+  max-height: none;
+  border-color: color-mix(in srgb, var(--ok) 45%, var(--border-mid));
+  background: linear-gradient(180deg, color-mix(in srgb, var(--ok-bg, #ecfdf5) 55%, var(--surface-raised)) 0%, var(--surface) 100%);
+}
+
+.taskhub-column[data-kanban-status='todo'] .taskhub-column-header {
+  border-bottom-color: color-mix(in srgb, var(--ok) 45%, var(--border-mid));
+}
+
 .taskhub-column-header {
   display: flex;
   justify-content: space-between;
@@ -188,6 +199,17 @@
   flex: 1;
 }
 
+.taskhub-column[data-kanban-status='todo'] .taskhub-todo-groups {
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+  gap: 0.9rem;
+}
+
+@media (max-width: 920px) {
+  .taskhub-column[data-kanban-status='todo'] .taskhub-todo-groups {
+    grid-template-columns: 1fr;
+  }
+}
+
 .taskhub-todo-group {
   border: var(--brutal-border-thin);
   background: color-mix(in srgb, var(--surface-raised) 88%, white);
@@ -236,7 +258,7 @@
 
 .taskhub-todo-group .taskhub-dropzone {
   min-height: 80px;
-  max-height: 300px;
+  max-height: 380px;
   padding-right: 0;
 }
 

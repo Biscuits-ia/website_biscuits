@@ -9,6 +9,9 @@ const { page: pageParam } = Astro.params;
 const currentPage = parseInt(pageParam ?? '1', 10);
 
 if (isNaN(currentPage) || currentPage < 1) {
+  if (pageParam && !/^\d+$/.test(pageParam)) {
+    return Astro.redirect(`/blog/article/${pageParam}`, 301);
+  }
   return Astro.redirect('/blog/1');
 }
 
@@ -181,7 +184,7 @@ const allArticlesForSearch = (await getCollection('blog'))
           <div class="featured-grid">
             {featuredArticles.map((article: CollectionEntry<'blog'>, index: number) => (
               <article class="featured-card" style={`animation-delay: ${index * 0.1}s`}>
-                <a href={`/blog/${article.id}`} class="card-link">
+                <a href={`/blog/article/${article.id}`} class="card-link">
                   {article.data.thumbnail && (
                     <div class="card-thumbnail">
                       <img src={article.data.thumbnail} alt={article.data.title} loading="lazy" />
@@ -259,7 +262,7 @@ const allArticlesForSearch = (await getCollection('blog'))
         <div class="articles-grid">
           {articles.map((article: CollectionEntry<'blog'>, index: number) => (
             <article class="article-card" style={`animation-delay: ${index * 0.05}s`}>
-              <a href={`/blog/${article.id}`} class="card-link">
+              <a href={`/blog/article/${article.id}`} class="card-link">
                 <div class="card-content">
                   {featuredArticles.some((f: CollectionEntry<'blog'>) => f.id === article.id) && (
                     <div class="inline-featured-badge">⭐ En vedette</div>
@@ -941,7 +944,7 @@ const allArticlesForSearch = (await getCollection('blog'))
     const tags = article.tags.map(t => `<span class="tag">#${escapeHtml(t)}</span>`).join('');
     return `
       <article class="article-card">
-        <a href="/blog/${escapeHtml(article.id)}" class="card-link">
+        <a href="/blog/article/${escapeHtml(article.id)}" class="card-link">
           <div class="card-content">
             <div class="card-meta">
               <time>${escapeHtml(article.pubDate)}</time>

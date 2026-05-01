@@ -424,13 +424,13 @@ const body = entry.body ?? '';
 
 /* Code blocks */
 .prose :global(pre) {
-  background: var(--color-bg-elevated) !important;
-  color: var(--color-text);
+  background: #1a202c !important;
+  color: #f8fafc !important;
   padding: 1.5rem;
   border-radius: var(--radius-lg);
   overflow-x: auto;
   margin: 2rem 0;
-  border: 2px solid var(--color-border);
+  border: 2px solid #2d3748;
   box-shadow: var(--shadow-xl);
   position: relative;
 }
@@ -438,11 +438,16 @@ const body = entry.body ?? '';
 .prose :global(pre code) {
   background: transparent;
   padding: 0;
-  color: inherit;
+  color: #f8fafc !important;
   font-size: 0.9rem;
   line-height: 1.7;
   border: none;
   font-weight: normal;
+}
+
+/* Ensure syntax-highlighted token spans remain readable on dark background. */
+.prose :global(pre code span) {
+  color: inherit !important;
 }
 
 /* Liens */

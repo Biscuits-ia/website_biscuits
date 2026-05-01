@@ -180,6 +180,75 @@
   scrollbar-color: var(--border-mid) transparent;
 }
 
+.taskhub-todo-groups {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.8rem;
+  min-height: 0;
+  flex: 1;
+}
+
+.taskhub-todo-group {
+  border: var(--brutal-border-thin);
+  background: color-mix(in srgb, var(--surface-raised) 88%, white);
+  padding: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  min-height: 130px;
+}
+
+.taskhub-todo-group.is-available {
+  border-color: color-mix(in srgb, var(--ok) 50%, var(--border-mid));
+}
+
+.taskhub-todo-group.is-assigned {
+  border-color: color-mix(in srgb, var(--info) 45%, var(--border-mid));
+}
+
+.taskhub-todo-group-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding-bottom: 0.35rem;
+  border-bottom: 1px dashed color-mix(in srgb, var(--border-mid) 70%, transparent);
+}
+
+.taskhub-todo-group-title {
+  margin: 0;
+  font-size: var(--text-xs);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+
+.taskhub-todo-group-count {
+  border: 1px solid var(--border-mid);
+  background: var(--bg);
+  font-size: 0.72rem;
+  line-height: 1;
+  padding: 0.2rem 0.42rem;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+}
+
+.taskhub-todo-group .taskhub-dropzone {
+  min-height: 80px;
+  max-height: 300px;
+  padding-right: 0;
+}
+
+.taskhub-todo-empty {
+  margin: 0;
+  padding: 0.45rem 0.5rem;
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  border: 1px dashed var(--border-mid);
+  background: color-mix(in srgb, var(--surface) 90%, white);
+}
+
 .taskhub-dropzone--active {
   background: var(--accent-light);
   box-shadow: inset 0 0 0 3px var(--accent-dark);

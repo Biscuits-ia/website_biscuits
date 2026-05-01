@@ -13,6 +13,8 @@ interface Props {
   currentUserId?: string;
 }
 const { status, label, tasks, prevHref, nextHref, page, totalPages, currentUserId = '' } = Astro.props;
+const todoAvailable = status === 'todo' ? tasks.filter((task) => !task.assignee_id) : [];
+const todoAssigned = status === 'todo' ? tasks.filter((task) => !!task.assignee_id) : [];
 ---
 
 <section class="taskhub-column" data-kanban-status={status}>
@@ -20,9 +22,39 @@ const { status, label, tasks, prevHref, nextHref, page, totalPages, currentUserI
     <h3 class="taskhub-column-title">{label}</h3>
     <span class="taskhub-column-count">{tasks.length}</span>
   </header>
-  <div class="taskhub-dropzone" data-dropzone={status}>
-    {tasks.map((task) => <TaskCard task={task} showActionLink={false} claimUserId={currentUserId} />)}
-  </div>
+  {status === 'todo' ? (
+    <div class="taskhub-todo-groups">
+      <section class="taskhub-todo-group is-available" aria-label="Tâches disponibles">
+        <header class="taskhub-todo-group-header">
+          <h4 class="taskhub-todo-group-title">Disponibles</h4>
+          <span class="taskhub-todo-group-count">{todoAvailable.length}</span>
+        </header>
+        <div class="taskhub-dropzone" data-dropzone={status}>
+          {todoAvailable.length > 0
+            ? todoAvailable.map((task) => <TaskCard task={task} showActionLink={false} claimUserId={currentUserId} />)
+            : <p class="taskhub-todo-empty">Aucune tâche disponible.</p>
+          }
+        </div>
+      </section>
+
+      <section class="taskhub-todo-group is-assigned" aria-label="Tâches déjà attribuées">
+        <header class="taskhub-todo-group-header">
+          <h4 class="taskhub-todo-group-title">Déjà attribuées</h4>
+          <span class="taskhub-todo-group-count">{todoAssigned.length}</span>
+        </header>
+        <div class="taskhub-dropzone" data-dropzone={status}>
+          {todoAssigned.length > 0
+            ? todoAssigned.map((task) => <TaskCard task={task} showActionLink={false} claimUserId={currentUserId} />)
+            : <p class="taskhub-todo-empty">Aucune tâche attribuée.</p>
+          }
+        </div>
+      </section>
+    </div>
+  ) : (
+    <div class="taskhub-dropzone" data-dropzone={status}>
+      {tasks.map((task) => <TaskCard task={task} showActionLink={false} claimUserId={currentUserId} />)}
+    </div>
+  )}
   {(prevHref || nextHref) && (
     <nav class="taskhub-col-pag" aria-label={`Pagination colonne ${label}`}>
       {prevHref

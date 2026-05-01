@@ -9,7 +9,7 @@ function json(data: unknown, status = 200) {
   });
 }
 
-export const GET: APIRoute = async (Astro) => {
+export const GET: APIRoute = async (Astro) => { 
   const auth = await requireAuth(Astro as any);
   if (auth instanceof Response) return auth;
 

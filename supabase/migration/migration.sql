@@ -261,7 +261,8 @@ $$;
 -- ─────────────────────────────────────────────────────────────────────────────
 -- 3. Vue : workshop_sessions_with_seats
 -- ─────────────────────────────────────────────────────────────────────────────
-CREATE OR REPLACE VIEW public.workshop_sessions_with_seats AS
+CREATE OR REPLACE VIEW public.workshop_sessions_with_seats
+WITH (security_invoker = true) AS
 SELECT
   ws.id,
   ws.starts_at,

@@ -1,7 +1,7 @@
 // src/middleware.ts
 import { defineMiddleware } from 'astro:middleware';
 import { rateLimit } from './lib/rateLimit';
-import { createSupabaseClient } from './lib/supabase';
+import { createSupabaseAdminClient, createSupabaseClient } from './lib/supabase';
 import crypto from 'node:crypto';
 
 function parseForwardedFor(value: string | null): string | null {
@@ -25,6 +25,82 @@ function getClientIp(context: Parameters<typeof defineMiddleware>[0] extends nev
   return normalized;
 }
 
+function readAccessTokenIssuedAtMs(accessToken: string | null | undefined): number | null {
+  if (!accessToken) return null;
+  const parts = accessToken.split('.');
+  if (parts.length < 2) return null;
+
+  try {
+    const payload = JSON.parse(Buffer.from(parts[1], 'base64url').toString('utf-8')) as { iat?: unknown };
+    if (typeof payload.iat !== 'number') return null;
+    return payload.iat * 1000;
+  } catch {
+    return null;
+  }
+}
+
+function checkRouteRateLimit(context: any, isDev: boolean, pathname: string): Response | null {
+  if (isDev) return null;
+  if (!pathname.startsWith('/api/') && !pathname.startsWith('/auth/')) return null;
+
+  const ip = getClientIp(context);
+  if (!ip) return null;
+
+  let limit = 20;
+  let windowMs = 60_000;
+
+  if (pathname.startsWith('/auth/')) {
+    if (
+      pathname === '/auth/inscription'
+      || pathname === '/auth/confirm'
+      || pathname === '/auth/callback'
+      || pathname === '/auth/verifier-token-inscription'
+    ) {
+      limit = 30;
+    } else if (pathname === '/auth/mot-de-passe-oublie') {
+      windowMs = 5 * 60_000;
+    } else {
+      limit = 12;
+    }
+  }
+
+  const key = `${ip}:${pathname}`;
+  return rateLimit(key, limit, windowMs);
+}
+
+async function mustInvalidateSession(supabase: ReturnType<typeof createSupabaseClient>): Promise<boolean> {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return false;
+
+    const { data: { session } } = await supabase.auth.getSession();
+    const accessTokenIssuedAtMs = readAccessTokenIssuedAtMs(session?.access_token);
+    if (accessTokenIssuedAtMs === null) return false;
+
+    const adminSupabase = createSupabaseAdminClient();
+    const { data: profile, error: profileError } = await adminSupabase
+      .from('profiles')
+      .select('last_logout_at')
+      .eq('id', user.id)
+      .maybeSingle();
+
+    if (profileError) {
+      const columnMissing = profileError.code === '42703';
+      if (!columnMissing) {
+        console.error('[middleware] profile fetch for session invalidation failed:', profileError.message);
+      }
+      return false;
+    }
+
+    if (!profile?.last_logout_at) return false;
+    const lastLogoutAtMs = Date.parse(profile.last_logout_at);
+    return Number.isFinite(lastLogoutAtMs) && accessTokenIssuedAtMs <= lastLogoutAtMs;
+  } catch {
+    // Token refresh or profile fetch failed: keep request flow and treat as non-invalidated here.
+    return false;
+  }
+}
+
 export const onRequest = defineMiddleware(async (context, next) => {
   const { url } = context;
   const isDev = import.meta.env.DEV;
@@ -35,38 +111,8 @@ export const onRequest = defineMiddleware(async (context, next) => {
     return next();
   }
 
-  // Rate-limit API/auth routes with a per-route key to avoid cross-endpoint throttling.
-  // Skip entirely in dev — the in-memory store persists across requests in the same Node process
-  // and would permanently block during normal development testing.
-  if (!isDev && (url.pathname.startsWith('/api/') || url.pathname.startsWith('/auth/'))) {
-    const ip = getClientIp(context);
-
-    let limit = 20;
-    let windowMs = 60_000;
-    if (url.pathname.startsWith('/auth/')) {
-      // Keep login/reset stricter, but allow signup/confirmation more retries.
-      if (
-        url.pathname === '/auth/inscription'
-        || url.pathname === '/auth/confirm'
-        || url.pathname === '/auth/callback'
-        || url.pathname === '/auth/verifier-token-inscription'
-      ) {
-        limit = 30;
-      } else if (url.pathname === '/auth/mot-de-passe-oublie') {
-        // User-facing reset request often retries due mail delays.
-        windowMs = 5 * 60_000;
-      } else {
-        limit = 12;
-      }
-    }
-
-    // If we cannot reliably identify a client IP, do not collapse all users under one key.
-    if (ip) {
-      const key = `${ip}:${url.pathname}`;
-      const blocked = rateLimit(key, limit, windowMs);
-      if (blocked) return blocked;
-    }
-  }
+  const blocked = checkRouteRateLimit(context, isDev, url.pathname);
+  if (blocked) return blocked;
 
   // Generate a per-request CSP nonce
   const nonce = crypto.randomBytes(16).toString('base64');
@@ -77,15 +123,28 @@ export const onRequest = defineMiddleware(async (context, next) => {
   // token in memory) is used in pages — not a new client with the old cookie.
   const supabase = createSupabaseClient(context);
 
-  // Attempt to get user and refresh token if needed.
-  // CRITICAL: Handle refresh errors gracefully — don't break the request,
-  // just let the user appear unauthenticated (they'll need to log in again).
-  try {
-    await supabase.auth.getUser();
-  } catch (err) {
-    // Token refresh failed (expired refresh token, invalid session, etc.)
-    // Silently ignore — the user will appear unauthenticated and need to re-login.
-    // Silently ignore — user will need to re-login.
+  const invalidatedSession = await mustInvalidateSession(supabase);
+
+  if (invalidatedSession) {
+    try {
+      await supabase.auth.signOut();
+    } catch {
+      // Ignore cookie cleanup errors and continue with forced logout response.
+    }
+
+    if (url.pathname.startsWith('/api/')) {
+      return new Response(
+        JSON.stringify({ error: 'Session invalidee. Merci de vous reconnecter.' }),
+        {
+          status: 401,
+          headers: { 'Content-Type': 'application/json' },
+        },
+      );
+    }
+
+    if (!url.pathname.startsWith('/auth/')) {
+      return context.redirect('/connexion?session=invalidee');
+    }
   }
 
   context.locals.supabase = supabase;

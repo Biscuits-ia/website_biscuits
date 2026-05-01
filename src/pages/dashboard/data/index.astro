@@ -120,7 +120,7 @@ const dashboardTemplates = [
 ---
 
 <DashboardLayout title="Data Dashboard" activePage="overview" authResult={auth} userName={userName}>
-  <section class="data-studio">
+  <section class="data-studio" data-activity-count={String(activityRows.length)} data-kpi-count={String(latestKpis.length)}>
     <header class="data-studio-header card">
       <div>
         <p class="eyebrow">DATA STUDIO</p>
@@ -178,8 +178,13 @@ const dashboardTemplates = [
           ))}
         </ul>
         <div class="action-row">
-          <button class="btn btn-primary" type="button">Ajouter une source</button>
-          <button class="btn btn-ghost" type="button">Tester la connexion</button>
+          <button id="btn-add-source" class="btn btn-primary" type="button">Ajouter une source</button>
+          <button id="btn-test-connection" class="btn btn-ghost" type="button">Tester la connexion</button>
+        </div>
+        <div id="source-wizard" class="inline-feedback" hidden>
+          <p><strong>Assistant connexion:</strong> utilisez Supabase en temps réel, import CSV ou API REST.</p>
+          <p>Prochaine étape recommandée: ouvrir Analytics avec filtre DATA pour valider les flux.</p>
+          <a class="btn btn-ghost" href="/dashboard/kpis?corps=DATA&days=7">Ouvrir Analytics DATA</a>
         </div>
       </article>
 
@@ -265,8 +270,8 @@ const dashboardTemplates = [
           ))}
         </div>
         <div class="action-row">
-          <button class="btn btn-primary" type="button">Nouveau dashboard</button>
-          <button class="btn btn-ghost" type="button">Partager un lien</button>
+          <button id="btn-new-dashboard" class="btn btn-primary" type="button">Nouveau dashboard</button>
+          <button id="btn-share-dashboard" class="btn btn-ghost" type="button">Partager un lien</button>
         </div>
       </article>
 
@@ -294,6 +299,9 @@ const dashboardTemplates = [
         <h2 class="card-title">Synthèse opérationnelle</h2>
         <span class="badge badge-neutral">instantané</span>
       </div>
+      <div id="studio-feedback" class="inline-feedback" aria-live="polite">
+        <p>Actions interactives prêtes.</p>
+      </div>
       <p>
         {bestKpi
           ? `Meilleure métrique: ${bestKpi.metric_name} (${bestKpi.attainment_pct?.toFixed(1)}%).`
@@ -308,28 +316,102 @@ const dashboardTemplates = [
   </section>
 </DashboardLayout>
 
-<script lang="ts">
-  const copyButtons = document.querySelectorAll<HTMLButtonElement>('.btn-copy');
+<script>
+  // @ts-nocheck
+  async function safeCopy(text) {
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch {
+      const area = document.createElement('textarea');
+      area.value = text;
+      area.setAttribute('readonly', 'true');
+      area.style.position = 'absolute';
+      area.style.left = '-9999px';
+      document.body.appendChild(area);
+      area.select();
+
+      const success = document.execCommand('copy');
+      document.body.removeChild(area);
+      return success;
+    }
+  }
+
+  const studioRoot = document.querySelector('.data-studio');
+  const feedback = document.querySelector('#studio-feedback');
+
+  const setFeedback = (message, type = 'info') => {
+    if (!feedback) return;
+    feedback.classList.remove('is-ok', 'is-warn');
+    if (type === 'ok') feedback.classList.add('is-ok');
+    if (type === 'warn') feedback.classList.add('is-warn');
+    feedback.innerHTML = `<p>${message}</p>`;
+  };
+
+  const copyButtons = document.querySelectorAll('.btn-copy');
   for (const button of copyButtons) {
     button.addEventListener('click', async () => {
       const sql = button.dataset.sql;
       if (!sql) return;
 
-      try {
-        await navigator.clipboard.writeText(sql);
+      const copied = await safeCopy(sql);
+      if (copied) {
         const previous = button.textContent;
         button.textContent = 'Copié';
+        setFeedback('Requête SQL copiée dans le presse-papiers.', 'ok');
         window.setTimeout(() => {
           button.textContent = previous;
         }, 1200);
-      } catch {
+      } else {
         button.textContent = 'Erreur copie';
+        setFeedback('Impossible de copier automatiquement. Vérifiez les permissions du navigateur.', 'warn');
       }
     });
   }
 
-  const aiButton = document.querySelector<HTMLButtonElement>('#run-ai-plan');
-  const output = document.querySelector<HTMLDivElement>('#ai-output');
+  const addSourceBtn = document.querySelector('#btn-add-source');
+  const testConnectionBtn = document.querySelector('#btn-test-connection');
+  const sourceWizard = document.querySelector('#source-wizard');
+  const newDashboardBtn = document.querySelector('#btn-new-dashboard');
+  const shareDashboardBtn = document.querySelector('#btn-share-dashboard');
+
+  addSourceBtn?.addEventListener('click', () => {
+    if (!sourceWizard) return;
+    sourceWizard.hidden = false;
+    setFeedback('Assistant de connexion affiché. Choisissez un mode de source.', 'ok');
+  });
+
+  testConnectionBtn?.addEventListener('click', () => {
+    const activityCount = Number(studioRoot?.dataset.activityCount ?? '0');
+    const kpiCount = Number(studioRoot?.dataset.kpiCount ?? '0');
+    const score = (activityCount > 0 ? 1 : 0) + (kpiCount > 0 ? 1 : 0);
+
+    if (score === 2) {
+      setFeedback('Connexion validée: flux activité et KPI disponibles.', 'ok');
+    } else if (score === 1) {
+      setFeedback('Connexion partielle: un flux est disponible, l’autre doit être vérifié.', 'warn');
+    } else {
+      setFeedback('Aucune donnée reçue. Vérifiez la source et les permissions Supabase.', 'warn');
+    }
+  });
+
+  newDashboardBtn?.addEventListener('click', () => {
+    window.location.href = '/dashboard/kpis?corps=DATA&days=30';
+  });
+
+  shareDashboardBtn?.addEventListener('click', async () => {
+    const shareUrl = `${window.location.origin}/dashboard/data`;
+    const copied = await safeCopy(shareUrl);
+
+    if (copied) {
+      setFeedback('Lien du dashboard copié.', 'ok');
+    } else {
+      setFeedback('Copie du lien refusée par le navigateur.', 'warn');
+    }
+  });
+
+  const aiButton = document.querySelector('#run-ai-plan');
+  const output = document.querySelector('#ai-output');
 
   if (aiButton && output) {
     aiButton.addEventListener('click', () => {
@@ -340,6 +422,7 @@ const dashboardTemplates = [
           <li>Priorité 3: publier un mini-dashboard "KPI à risque" pour l'équipe produit.</li>
         </ul>
       `;
+      setFeedback('Plan IA généré avec succès.', 'ok');
     });
   }
 </script>
@@ -517,6 +600,28 @@ const dashboardTemplates = [
   .ai-output ul {
     margin: 0;
     padding-left: 1rem;
+  }
+
+  .inline-feedback {
+    margin-top: 0.7rem;
+    border: var(--brutal-border-thin);
+    box-shadow: var(--shadow-sm);
+    background: var(--surface-raised);
+    padding: 0.6rem 0.7rem;
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+  }
+
+  .inline-feedback p {
+    margin: 0;
+  }
+
+  .inline-feedback.is-ok {
+    border-left: 6px solid var(--ok);
+  }
+
+  .inline-feedback.is-warn {
+    border-left: 6px solid var(--warn);
   }
 
   @media (max-width: 980px) {

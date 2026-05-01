@@ -531,6 +531,7 @@
 .taskhub-board-pill {
   display: inline-flex;
   align-items: center;
+  gap: 0.3rem;
   min-height: 28px;
   padding: 0.2rem 0.55rem;
   border: var(--brutal-border-thin);
@@ -539,6 +540,31 @@
   font-family: var(--font-mono);
   font-size: var(--text-xs);
 }
+
+/* Pill colorée par corps dans la toolbar */
+.taskhub-board-pill--corps {
+  padding-left: 0.45rem;
+}
+
+.taskhub-board-pill--corps strong {
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.taskhub-board-pill--corps em {
+  font-style: normal;
+  color: var(--text-muted);
+  font-size: 0.68rem;
+}
+
+/* ── Colonne todo par corps ─────────────────────────────────── */
+/* Chaque corps a son propre border-top color */
+.taskhub-column[data-kanban-status='todo'][data-corps='DEV']    { border-top-color: #264f98; }
+.taskhub-column[data-kanban-status='todo'][data-corps='DB']     { border-top-color: #4f2e8a; }
+.taskhub-column[data-kanban-status='todo'][data-corps='DESIGN'] { border-top-color: #9d4f0e; }
+.taskhub-column[data-kanban-status='todo'][data-corps='QA']     { border-top-color: #256d37; }
+.taskhub-column[data-kanban-status='todo'][data-corps='DATA']   { border-top-color: #0d6d66; }
+.taskhub-column[data-kanban-status='todo'][data-corps='PM']     { border-top-color: #8c2a2f; }
 
 /* ── KPI cards ──────────────────────────────────────────────── */
 .taskhub-kpi-grid {

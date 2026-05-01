@@ -43,7 +43,6 @@ const role: UserRole    = authResult.role;
 const isAdmin           = role === 'admin';
 const isModerator       = role === 'moderator';
 const isBenevole        = role === 'benevole';
-const isStaff           = isAdmin || isModerator;
 
 // Nom d'affichage : priorité à la prop (passée depuis la page parente),
 // sinon on prend le user de authResult
@@ -52,8 +51,6 @@ const displayName  = userName !== 'Utilisateur'
   : authResult.user.user_metadata?.full_name
     ?? authResult.user.email?.split('@')[0]
     ?? 'Utilisateur';
-
-const displayEmail = userEmail || authResult.user.email || '';
 
 // ── Navigation ────────────────────────────────────────────────────────────────
 
@@ -73,7 +70,7 @@ const adminNav: NavItem[] = [
   { id: 'tasks',           label: 'Task Hub',       icon: 'check',        badge: null, href: '/dashboard/tasks' },
   { id: 'task-hub',        label: 'Seed Task Hub',  icon: 'terminal',     badge: null  },
   { id: 'kanban',          label: 'Kanban',         icon: 'grid',         badge: null, href: '/dashboard/kanban' },
-  { id: 'kpis',            label: 'KPIs',           icon: 'bar-chart',    badge: null, href: '/dashboard/kpis' },
+  { id: 'kpis',            label: 'Analytics',      icon: 'bar-chart',    badge: null, href: '/dashboard/kpis' },
   { id: 'demandes',        label: 'Demandes',        icon: 'inbox',        badge: null  },
   { id: 'contacts',        label: 'Contacts',        icon: 'mail',         badge: null  },
   { id: 'candidatures',    label: 'Candidatures',    icon: 'user-plus',    badge: null  },

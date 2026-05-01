@@ -199,7 +199,7 @@
 
 /* ── Colonnes — largeur fixe ────────────────────────────────── */
 .taskhub-column {
-  flex: 0 0 272px;
+  flex: 0 0 320px;
   scroll-snap-align: start;
   border: var(--brutal-border);
   background: var(--surface);
@@ -208,10 +208,9 @@
   border-top-width: 3px;
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 240px);
-  min-height: 380px;
-  max-height: 780px;
-  /* Couleur par défaut du top border */
+  height: calc(100vh - 200px);
+  min-height: 480px;
+  max-height: 900px;
   border-top-color: var(--border-mid);
 }
 
@@ -226,8 +225,8 @@
 
 /* Colonne todo — même largeur que les autres, pas d'exception */
 .taskhub-column[data-kanban-status='todo'] {
-  flex: 0 0 272px;
-  max-height: calc(100vh - 240px);
+  flex: 0 0 320px;
+  max-height: calc(100vh - 200px);
   background: var(--surface);
 }
 
@@ -237,7 +236,7 @@
   justify-content: space-between;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.7rem 0.85rem 0.55rem;
+  padding: 0.9rem 1rem 0.65rem;
   border-bottom: 1px solid color-mix(in srgb, var(--border-mid) 55%, transparent);
   flex-shrink: 0;
 }
@@ -274,8 +273,8 @@
   overflow-x: hidden;
   display: flex;
   flex-direction: column;
-  gap: 0.6rem;
-  padding: 0.7rem 0.85rem;
+  gap: 0.85rem;
+  padding: 0.85rem 1rem;
   scrollbar-width: thin;
   scrollbar-color: var(--border-mid) transparent;
   transition: background var(--transition-fast);
@@ -298,19 +297,19 @@
 .taskhub-todo-groups {
   display: flex;
   flex-direction: column;
-  gap: 0.6rem;
+  gap: 0.85rem;
   flex: 1;
   overflow-y: auto;
-  padding: 0.7rem 0.85rem;
+  padding: 0.85rem 1rem;
 }
 
 .taskhub-todo-group {
   border: var(--brutal-border-thin);
   background: color-mix(in srgb, var(--surface-raised) 88%, white);
-  padding: 0.55rem;
+  padding: 0.75rem;
   display: flex;
   flex-direction: column;
-  gap: 0.45rem;
+  gap: 0.6rem;
 }
 
 .taskhub-todo-group.is-available {
@@ -351,7 +350,8 @@
 
 .taskhub-todo-group .taskhub-dropzone {
   padding: 0;
-  max-height: 300px;
+  gap: 0.75rem;
+  max-height: 380px;
 }
 
 .taskhub-todo-empty {
@@ -414,7 +414,7 @@
   background: var(--surface);
   border: var(--brutal-border-thin);
   box-shadow: var(--shadow-sm);
-  padding: 0.75rem;
+  padding: 1rem 1.05rem;
   transition: transform var(--transition-fast), box-shadow var(--transition-fast);
   cursor: grab;
 }
@@ -436,18 +436,18 @@
 }
 
 .taskhub-card-title {
-  font-size: var(--text-sm);
+  font-size: var(--text-base, 0.9rem);
   font-weight: 700;
   color: var(--text-primary);
-  line-height: 1.35;
+  line-height: 1.4;
+  margin-top: 0.25rem;
 }
 
 .taskhub-card-desc {
-  margin-top: 0.3rem;
+  margin-top: 0.45rem;
   color: var(--text-secondary);
-  font-size: var(--text-xs);
-  line-height: 1.5;
-  /* Densité réduite : 2 lignes par défaut (était 4) */
+  font-size: var(--text-sm);
+  line-height: 1.55;
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
@@ -455,10 +455,10 @@
 }
 
 .taskhub-chip-row {
-  margin-top: 0.55rem;
+  margin-top: 0.75rem;
   display: flex;
   flex-wrap: wrap;
-  gap: 0.3rem;
+  gap: 0.35rem;
 }
 
 .taskhub-ref {
@@ -466,6 +466,9 @@
   font-size: var(--text-xs);
   color: var(--text-muted);
   font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
 }
 
 /* ── Mode densité ───────────────────────────────────────────── */
@@ -752,8 +755,8 @@
   }
 
   .taskhub-column {
-    flex: 0 0 88vw;
-    height: calc(100vh - 280px);
+    flex: 0 0 92vw;
+    height: calc(100vh - 260px);
   }
 
   .taskhub-kpi-grid--tasks {

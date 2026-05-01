@@ -1,6 +1,6 @@
 ---
 import DashboardLayout from '@/layouts/DashboardLayout.astro';
-import { requireAdmin } from '@/lib/auth';
+import { requireDataAnalyst } from '@/lib/auth';
 import { createSupabaseAdminClient } from '@/lib/supabase';
 import type { CorpsType, PriorityLevel, TaskStatus, TaskTypeEnum } from '@/lib/types';
 import '@/styles/task-hub.css';
@@ -59,7 +59,7 @@ interface SnapshotRow {
 const validCorps: CorpsType[] = ['DEV', 'DB', 'DESIGN', 'QA', 'DATA', 'PM'];
 const validWindows = [7, 30, 90] as const;
 
-const auth = await requireAdmin(Astro);
+const auth = await requireDataAnalyst(Astro);
 if (auth instanceof Response) return auth;
 
 const corpsFilter = validCorps.includes(Astro.url.searchParams.get('corps') as CorpsType)

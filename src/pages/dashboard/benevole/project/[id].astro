@@ -25,7 +25,10 @@ const [
   adminSupabase
     .from('projects')
     .select(`
-      id, title, description, status, priority, deadline, created_at, leader_id
+      id, title, description, objective, expected_deliverables,
+      tech_stack, tools, repository_url, document_url,
+      communication_channel, estimated_hours,
+      start_date, status, priority, deadline, created_at, leader_id
     `)
     .eq('id', projectId)
     .single(),
@@ -46,6 +49,11 @@ if (tasksErr) console.error('[project/[id]] tasks query error:', tasksErr.messag
 // ── Types ─────────────────────────────────────────────────────────────────────
 interface Project {
   id: string; title: string; description: string | null;
+  objective: string | null; expected_deliverables: string | null;
+  tech_stack: string[]; tools: string[];
+  repository_url: string | null; document_url: string | null;
+  communication_channel: string | null; estimated_hours: number | null;
+  start_date: string | null;
   status: string; priority: string; deadline: string | null;
   created_at: string; leader_id: string | null;
 }
@@ -157,8 +165,63 @@ const memberOptionsJson = JSON.stringify(memberOptions);
         <span class="meta-item">👤 {leaderName}</span>
         {deadlineStr && <span class="meta-item">📅 {deadlineStr}</span>}
         <span class="meta-item">👥 {members.length} membre{members.length > 1 ? 's' : ''}</span>
-      </div>
+      {project.estimated_hours && <span class="meta-item">⏱ {project.estimated_hours}h estimées</span>}
+      {project.start_date && <span class="meta-item">🚀 Début : {new Date(project.start_date).toLocaleDateString('fr-FR')}</span>}
     </div>
+
+    {/* Objectif */}
+    {project.objective && (
+      <div class="project-detail-block">
+        <span class="project-detail-label">Objectif</span>
+        <p class="project-detail-text">{project.objective}</p>
+      </div>
+    )}
+
+    {/* Livrables attendus */}
+    {project.expected_deliverables && (
+      <div class="project-detail-block">
+        <span class="project-detail-label">Livrables attendus</span>
+        <p class="project-detail-text">{project.expected_deliverables}</p>
+      </div>
+    )}
+
+    {/* Tech stack + outils */}
+    {((project.tech_stack?.length ?? 0) > 0 || (project.tools?.length ?? 0) > 0) && (
+      <div class="project-tags-row">
+        {(project.tech_stack?.length ?? 0) > 0 && (
+          <div class="project-detail-block">
+            <span class="project-detail-label">Stack technique</span>
+            <div class="project-tag-list">
+              {project.tech_stack.map((t: string) => <span class="project-tag project-tag--tech">{t}</span>)}
+            </div>
+          </div>
+        )}
+        {(project.tools?.length ?? 0) > 0 && (
+          <div class="project-detail-block">
+            <span class="project-detail-label">Outils</span>
+            <div class="project-tag-list">
+              {project.tools.map((t: string) => <span class="project-tag project-tag--tool">{t}</span>)}
+            </div>
+          </div>
+        )}
+      </div>
+    )}
+
+    {/* Liens */}
+    {(project.repository_url || project.document_url || project.communication_channel) && (
+      <div class="project-links-row">
+        {project.repository_url && (
+          <a href={project.repository_url} target="_blank" rel="noopener noreferrer" class="project-link">🔗 Dépôt</a>
+        )}
+        {project.document_url && (
+          <a href={project.document_url} target="_blank" rel="noopener noreferrer" class="project-link">📄 Documentation</a>
+        )}
+        {project.communication_channel && (
+          <span class="project-link project-link--channel">💬 {project.communication_channel}</span>
+        )}
+      </div>
+    )}
+  </div>
     {canEdit && (
       <div class="project-actions">
         <button class="btn btn-ghost btn-sm" id="btn-edit-project">Modifier</button>
@@ -228,9 +291,47 @@ const memberOptionsJson = JSON.stringify(memberOptions);
               </select>
             </div>
           </div>
+          <div class="field-row">
+            <div class="field">
+              <label class="label" for="ep-start-date">Date de début</label>
+              <input type="date" id="ep-start-date" name="start_date" class="input" value={project.start_date ?? ''} />
+            </div>
+            <div class="field">
+              <label class="label" for="ep-deadline">Échéance</label>
+              <input type="date" id="ep-deadline" name="deadline" class="input" value={project.deadline ?? ''} />
+            </div>
+          </div>
           <div class="field">
-            <label class="label" for="ep-deadline">Échéance</label>
-            <input type="date" id="ep-deadline" name="deadline" class="input" value={project.deadline ?? ''} />
+            <label class="label" for="ep-estimated-hours">Heures estimées</label>
+            <input type="number" id="ep-estimated-hours" name="estimated_hours" class="input" value={project.estimated_hours ?? ''} min="0" max="9999" placeholder="ex: 120" />
+          </div>
+          <div class="field">
+            <label class="label" for="ep-objective">Objectif</label>
+            <textarea id="ep-objective" name="objective" class="input" rows="2" maxlength="600">{project.objective ?? ''}</textarea>
+          </div>
+          <div class="field">
+            <label class="label" for="ep-deliverables">Livrables attendus</label>
+            <textarea id="ep-deliverables" name="expected_deliverables" class="input" rows="2" maxlength="600">{project.expected_deliverables ?? ''}</textarea>
+          </div>
+          <div class="field">
+            <label class="label" for="ep-tech-stack">Stack technique <small>(séparés par virgule)</small></label>
+            <input type="text" id="ep-tech-stack" name="tech_stack" class="input" value={(project.tech_stack ?? []).join(', ')} placeholder="ex: Astro, TypeScript, Supabase" />
+          </div>
+          <div class="field">
+            <label class="label" for="ep-tools">Outils <small>(séparés par virgule)</small></label>
+            <input type="text" id="ep-tools" name="tools" class="input" value={(project.tools ?? []).join(', ')} placeholder="ex: GitHub, Figma, Notion" />
+          </div>
+          <div class="field">
+            <label class="label" for="ep-repo">URL du dépôt</label>
+            <input type="url" id="ep-repo" name="repository_url" class="input" value={project.repository_url ?? ''} placeholder="https://github.com/..." />
+          </div>
+          <div class="field">
+            <label class="label" for="ep-doc">URL de la documentation</label>
+            <input type="url" id="ep-doc" name="document_url" class="input" value={project.document_url ?? ''} placeholder="https://notion.so/..." />
+          </div>
+          <div class="field">
+            <label class="label" for="ep-channel">Canal de communication</label>
+            <input type="text" id="ep-channel" name="communication_channel" class="input" value={project.communication_channel ?? ''} placeholder="ex: #projet-crm sur Discord" />
           </div>
           <div class="modal-actions">
             <button type="button" class="btn btn-ghost" id="btn-close-edit-modal">Annuler</button>
@@ -332,6 +433,21 @@ const memberOptionsJson = JSON.stringify(memberOptions);
   .project-meta-row    { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
   .meta-item           { font-size: var(--text-xs); color: var(--text-muted); }
   .project-actions     { display: flex; gap: 8px; align-items: flex-start; flex-shrink: 0; }
+
+  /* Blocs de détails projet (objectif, livrables, stack, outils, liens) */
+  .project-detail-block  { display: flex; flex-direction: column; gap: 4px; margin-top: 10px; }
+  .project-detail-label  { font-size: var(--text-xs); font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--text-muted); }
+  .project-detail-text   { font-size: var(--text-sm); color: var(--text-secondary); white-space: pre-wrap; max-width: 680px; margin: 0; }
+  .project-tags-row      { display: flex; gap: var(--space-md); flex-wrap: wrap; margin-top: 10px; }
+  .project-tag-list      { display: flex; gap: 6px; flex-wrap: wrap; }
+  .project-tag           { font-size: 0.72rem; padding: 2px 8px; border: 1px solid; font-family: var(--font-mono); }
+  .project-tag--tech     { color: var(--info-fg, #1e40af); background: var(--info-bg, #dbeafe); border-color: var(--info, #3b82f6); }
+  .project-tag--tool     { color: var(--text-muted); background: var(--surface); border-color: var(--border-mid); }
+  .project-links-row     { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; align-items: center; }
+  .project-link          { font-size: var(--text-xs); color: var(--accent); text-decoration: none; border: 1px solid var(--accent); padding: 2px 8px; }
+  .project-link:hover    { background: var(--accent); color: var(--accent-fg, #fff); }
+  .project-link--channel { color: var(--text-secondary); border-color: var(--border-mid); cursor: default; }
+  .project-link--channel:hover { background: none; color: var(--text-secondary); }
 
   /* KPI tâches */
   .project-task-kpis {

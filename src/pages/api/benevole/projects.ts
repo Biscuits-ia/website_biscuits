@@ -115,7 +115,37 @@ function buildProjectUpdates(body: Record<string, unknown>): { updates: Record<s
   }
   if (['low', 'medium', 'high'].includes(body.priority as string))              updates.priority = body.priority;
   if (['active', 'on_hold', 'completed', 'archived'].includes(body.status as string)) updates.status = body.status;
-  if (typeof body.deadline === 'string') updates.deadline = body.deadline || null;
+  if (typeof body.deadline    === 'string') updates.deadline    = body.deadline    || null;
+  if (typeof body.start_date  === 'string') updates.start_date  = body.start_date  || null;
+  if (typeof body.objective   === 'string') {
+    const v = body.objective.trim();
+    if (v.length > 600) return { updates, error: "L'objectif ne doit pas dépasser 600 caractères." };
+    updates.objective = v || null;
+  }
+  if (typeof body.expected_deliverables === 'string') {
+    const v = body.expected_deliverables.trim();
+    if (v.length > 600) return { updates, error: 'Les livrables ne doivent pas dépasser 600 caractères.' };
+    updates.expected_deliverables = v || null;
+  }
+  if (typeof body.tech_stack === 'string') {
+    updates.tech_stack = body.tech_stack ? body.tech_stack.split(',').map((s: string) => s.trim()).filter(Boolean) : [];
+  } else if (Array.isArray(body.tech_stack)) {
+    updates.tech_stack = body.tech_stack;
+  }
+  if (typeof body.tools === 'string') {
+    updates.tools = body.tools ? body.tools.split(',').map((s: string) => s.trim()).filter(Boolean) : [];
+  } else if (Array.isArray(body.tools)) {
+    updates.tools = body.tools;
+  }
+  if (typeof body.repository_url       === 'string') updates.repository_url       = body.repository_url.trim()       || null;
+  if (typeof body.document_url         === 'string') updates.document_url         = body.document_url.trim()         || null;
+  if (typeof body.communication_channel === 'string') updates.communication_channel = body.communication_channel.trim() || null;
+  if (body.estimated_hours !== undefined && body.estimated_hours !== '') {
+    const h = Number(body.estimated_hours);
+    if (!Number.isNaN(h) && h >= 0) updates.estimated_hours = h;
+  } else if (body.estimated_hours === '') {
+    updates.estimated_hours = null;
+  }
   return { updates };
 }
 

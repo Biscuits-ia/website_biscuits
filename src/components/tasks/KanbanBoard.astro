@@ -10,9 +10,8 @@ interface Props {
   todoPage?: number;
   todoTotalPages?: number;
   currentUserId?: string;
-  viewStatus?: TaskStatus | '';
 }
-const { tasks = [], todoTasks = [], todoPrevHref, todoNextHref, todoPage = 1, todoTotalPages = 1, currentUserId = '', viewStatus = '' } = Astro.props;
+const { tasks = [], todoTasks = [], todoPrevHref, todoNextHref, todoPage = 1, todoTotalPages = 1, currentUserId = '' } = Astro.props;
 
 const statuses: Array<{ status: TaskStatus; label: string }> = [
   { status: 'todo', label: 'À faire' },
@@ -24,12 +23,10 @@ const statuses: Array<{ status: TaskStatus; label: string }> = [
   { status: 'done', label: 'Terminée' },
 ];
 
-const visibleStatuses = viewStatus
-  ? statuses.filter((s) => s.status === viewStatus)
-  : statuses;
+const visibleStatuses = statuses;
 ---
 
-<div class="taskhub-board" id="kanban-board" data-current-user-id={currentUserId} data-view-status={viewStatus}>
+<div class="taskhub-board" id="kanban-board" data-current-user-id={currentUserId}>
   {visibleStatuses.map((s) => s.status === 'todo'
     ? <KanbanColumn status={s.status} label={s.label} tasks={todoTasks} prevHref={todoPrevHref} nextHref={todoNextHref} page={todoPage} totalPages={todoTotalPages} currentUserId={currentUserId} />
     : <KanbanColumn status={s.status} label={s.label} tasks={tasks.filter((t) => t.status === s.status)} currentUserId={currentUserId} />

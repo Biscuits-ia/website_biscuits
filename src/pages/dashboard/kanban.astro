@@ -10,15 +10,6 @@ import '@/styles/task-hub.css';
 const validCorps: CorpsType[] = ['DEV', 'DB', 'DESIGN', 'QA', 'DATA', 'PM'];
 const validPriorities: PriorityLevel[] = ['P0', 'P1', 'P2', 'P3'];
 const validStatuses: TaskStatus[] = ['backlog', 'todo', 'in_progress', 'in_review', 'testing', 'blocked', 'done'];
-const statusTabs: Array<{ status: TaskStatus; label: string }> = [
-  { status: 'todo', label: 'À faire' },
-  { status: 'in_progress', label: 'En cours' },
-  { status: 'in_review', label: 'En revue' },
-  { status: 'testing', label: 'Tests' },
-  { status: 'blocked', label: 'Bloquée' },
-  { status: 'backlog', label: 'Carnet' },
-  { status: 'done', label: 'Terminée' },
-];
 
 const auth = await requireAuth(Astro);
 if (auth instanceof Response) return auth;
@@ -34,10 +25,6 @@ const priorityFilter = validPriorities.includes(Astro.url.searchParams.get('prio
 const statusFilter = validStatuses.includes(Astro.url.searchParams.get('status') as TaskStatus)
   ? (Astro.url.searchParams.get('status') as TaskStatus)
   : '';
-const statusPages: Array<{ status: TaskStatus | ''; label: string }> = [
-  { status: '', label: 'Tout' },
-  ...statusTabs,
-];
 const page = Math.max(1, Number(Astro.url.searchParams.get('page') ?? '1'));
 const pageSize = 21;
 const rangeFrom = (page - 1) * pageSize;
@@ -106,22 +93,6 @@ if (corpsFilter) queryParams.set('corps', corpsFilter);
 if (priorityFilter) queryParams.set('priority', priorityFilter);
 if (statusFilter) queryParams.set('status', statusFilter);
 
-const hrefForStatusTab = (status: TaskStatus | '') => {
-  const params = new URLSearchParams();
-  if (search) params.set('q', search);
-  if (corpsFilter) params.set('corps', corpsFilter);
-  if (priorityFilter) params.set('priority', priorityFilter);
-  if (status) params.set('status', status);
-  params.set('page', '1');
-  params.set('todo_page', '1');
-  return params.toString() ? `?${params.toString()}` : '/dashboard/kanban';
-};
-
-const currentStatusPage = statusPages.findIndex((s) => s.status === statusFilter);
-const statusPageIndex = currentStatusPage >= 0 ? currentStatusPage : 0;
-const statusPrevHref = statusPageIndex > 0 ? hrefForStatusTab(statusPages[statusPageIndex - 1].status) : null;
-const statusNextHref = statusPageIndex < statusPages.length - 1 ? hrefForStatusTab(statusPages[statusPageIndex + 1].status) : null;
-
 const hrefWithTodoPage = (p: number) => {
   const params = new URLSearchParams(queryParams);
   if (page > 1) params.set('page', String(page));
@@ -181,21 +152,7 @@ const resetHref = '/dashboard/kanban';
       </div>
     </div>
 
-    <nav class="taskhub-status-pager" aria-label="Pagination des statuts">
-      {statusPrevHref
-        ? <a href={statusPrevHref} class="taskhub-status-pager-btn">← Page précédente</a>
-        : <span class="taskhub-status-pager-btn is-disabled" aria-disabled="true">← Page précédente</span>
-      }
-      <span class="taskhub-status-pager-info">
-        Page {statusPageIndex + 1} / {statusPages.length} · {statusPages[statusPageIndex].label}
-      </span>
-      {statusNextHref
-        ? <a href={statusNextHref} class="taskhub-status-pager-btn">Page suivante →</a>
-        : <span class="taskhub-status-pager-btn is-disabled" aria-disabled="true">Page suivante →</span>
-      }
-    </nav>
-
-    <KanbanBoard tasks={tasks} todoTasks={todoTasks} todoPrevHref={todoPrevHref} todoNextHref={todoNextHref} todoPage={todoPage} todoTotalPages={todoTotalPages} currentUserId={auth.user.id} viewStatus={statusFilter} />
+    <KanbanBoard tasks={tasks} todoTasks={todoTasks} todoPrevHref={todoPrevHref} todoNextHref={todoNextHref} todoPage={todoPage} todoTotalPages={todoTotalPages} currentUserId={auth.user.id} />
 
   </section>
   <Toast />

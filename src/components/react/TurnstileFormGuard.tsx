@@ -7,6 +7,7 @@ interface TurnstileFormGuardProps {
 }
 
 const DEFAULT_INPUT_NAME = 'turnstileToken';
+const TURNSTILE_ENABLED = import.meta.env.PUBLIC_TURNSTILE_ENABLED !== 'false';
 
 export default function TurnstileFormGuard({
   scriptNonce,
@@ -23,6 +24,10 @@ export default function TurnstileFormGuard({
   tokenRef.current = token;
 
   useEffect(() => {
+    if (!TURNSTILE_ENABLED) {
+      return;
+    }
+
     const container = containerRef.current;
     const form = container?.closest('form');
 
@@ -46,25 +51,27 @@ export default function TurnstileFormGuard({
 
   return (
     <div ref={containerRef} data-turnstile-form-guard={widgetId}>
-      <TurnstileWidget
-        theme="auto"
-        size="flexible"
-        responseField
-        responseFieldName={inputName}
-        scriptNonce={scriptNonce}
-        onSuccess={(nextToken) => {
-          setToken(nextToken);
-          setErrorMessage('');
-        }}
-        onError={() => {
-          setToken('');
-          setErrorMessage('La vérification anti-bot a échoué. Réessayez.');
-        }}
-        onExpire={() => {
-          setToken('');
-          setErrorMessage('La vérification anti-bot a expiré. Merci de la relancer.');
-        }}
-      />
+      {TURNSTILE_ENABLED ? (
+        <TurnstileWidget
+          theme="auto"
+          size="flexible"
+          responseField
+          responseFieldName={inputName}
+          scriptNonce={scriptNonce}
+          onSuccess={(nextToken) => {
+            setToken(nextToken);
+            setErrorMessage('');
+          }}
+          onError={() => {
+            setToken('');
+            setErrorMessage('La vérification anti-bot a échoué. Réessayez.');
+          }}
+          onExpire={() => {
+            setToken('');
+            setErrorMessage('La vérification anti-bot a expiré. Merci de la relancer.');
+          }}
+        />
+      ) : null}
 
       {errorMessage ? (
         <p role="alert" className="turnstile-inline-error">

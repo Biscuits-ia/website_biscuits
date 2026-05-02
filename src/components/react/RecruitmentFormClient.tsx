@@ -32,6 +32,8 @@ const INITIAL_FORM_DATA: RecruitmentFormData = {
   motivation: '',
 };
 
+const TURNSTILE_ENABLED = import.meta.env.PUBLIC_TURNSTILE_ENABLED !== 'false';
+
 export default function RecruitmentFormClient({ scriptNonce }: Readonly<RecruitmentFormClientProps>) {
   const [formData, setFormData] = useState<RecruitmentFormData>(INITIAL_FORM_DATA);
   const [fieldErrors, setFieldErrors] = useState<Partial<Record<RecruitmentFieldId, string>>>({});
@@ -111,7 +113,7 @@ export default function RecruitmentFormClient({ scriptNonce }: Readonly<Recruitm
         return;
       }
 
-      if (!turnstileToken) {
+      if (TURNSTILE_ENABLED && !turnstileToken) {
         setServerError('Merci de valider la vérification anti-bot avant d\'envoyer le formulaire.');
         return;
       }
@@ -132,7 +134,7 @@ export default function RecruitmentFormClient({ scriptNonce }: Readonly<Recruitm
             motivation: formData.motivation.trim() || null,
             skills: formData.skills.trim() || null,
             availability: formData.availability || null,
-            turnstileToken,
+            turnstileToken: TURNSTILE_ENABLED ? turnstileToken : '',
           }),
         });
 
@@ -264,26 +266,28 @@ export default function RecruitmentFormClient({ scriptNonce }: Readonly<Recruitm
           <textarea id="motivation" name="motivation" className="field__input field__textarea" placeholder="Pourquoi souhaitez-vous vous engager bénévolement auprès de Biscuits IA ?" rows={5} value={formData.motivation} onChange={handleInputChange}></textarea>
         </div>
 
-        <TurnstileWidget
-          theme="auto"
-          size="flexible"
-          scriptNonce={scriptNonce}
-          onSuccess={(token) => {
-            setTurnstileToken(token);
-            setServerError('');
-          }}
-          onError={() => {
-            setTurnstileToken('');
-            setServerError('La vérification anti-bot a échoué. Réessayez.');
-          }}
-          onExpire={() => {
-            setTurnstileToken('');
-          }}
-        />
+        {TURNSTILE_ENABLED ? (
+          <TurnstileWidget
+            theme="auto"
+            size="flexible"
+            scriptNonce={scriptNonce}
+            onSuccess={(token) => {
+              setTurnstileToken(token);
+              setServerError('');
+            }}
+            onError={() => {
+              setTurnstileToken('');
+              setServerError('La vérification anti-bot a échoué. Réessayez.');
+            }}
+            onExpire={() => {
+              setTurnstileToken('');
+            }}
+          />
+        ) : null}
 
         <div className="form__footer">
           <p className="form__note"><span aria-hidden="true">*</span> Champs obligatoires</p>
-          <button className="btn btn--primary" type="submit" disabled={isSubmitting || turnstileToken.length === 0}>
+          <button className="btn btn--primary" type="submit" disabled={isSubmitting || (TURNSTILE_ENABLED && turnstileToken.length === 0)}>
             {isSubmitting ? 'Envoi en cours…' : 'Envoyer ma candidature →'}
           </button>
         </div>

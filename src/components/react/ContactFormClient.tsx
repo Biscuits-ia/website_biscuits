@@ -30,6 +30,8 @@ const INITIAL_FORM_DATA: ContactFormData = {
   honey: '',
 };
 
+const TURNSTILE_ENABLED = import.meta.env.PUBLIC_TURNSTILE_ENABLED !== 'false';
+
 export default function ContactFormClient({ scriptNonce }: Readonly<ContactFormClientProps>) {
   const [formData, setFormData] = useState<ContactFormData>(INITIAL_FORM_DATA);
   const [fieldErrors, setFieldErrors] = useState<Partial<Record<FieldId, string>>>({});
@@ -128,7 +130,7 @@ export default function ContactFormClient({ scriptNonce }: Readonly<ContactFormC
         return;
       }
 
-      if (!turnstileToken) {
+      if (TURNSTILE_ENABLED && !turnstileToken) {
         setGlobalError('Merci de valider la vérification anti-bot avant d\'envoyer le formulaire.');
         return;
       }
@@ -147,7 +149,7 @@ export default function ContactFormClient({ scriptNonce }: Readonly<ContactFormC
             email: formData.email.trim().toLowerCase(),
             subject: formData.subject.trim(),
             message: formData.message.trim(),
-            turnstileToken,
+            turnstileToken: TURNSTILE_ENABLED ? turnstileToken : '',
           }),
         });
 
@@ -256,26 +258,28 @@ export default function ContactFormClient({ scriptNonce }: Readonly<ContactFormC
 
         <input type="text" name="honey" tabIndex={-1} autoComplete="off" className="cf-honeypot" aria-hidden="true" value={formData.honey} onChange={handleInputChange} />
 
-        <TurnstileWidget
-          theme="auto"
-          size="flexible"
-          scriptNonce={scriptNonce}
-          onSuccess={(token) => {
-            setTurnstileToken(token);
-            setGlobalError('');
-          }}
-          onError={() => {
-            setTurnstileToken('');
-            setGlobalError('La vérification anti-bot a échoué. Réessayez.');
-          }}
-          onExpire={() => {
-            setTurnstileToken('');
-          }}
-        />
+        {TURNSTILE_ENABLED ? (
+          <TurnstileWidget
+            theme="auto"
+            size="flexible"
+            scriptNonce={scriptNonce}
+            onSuccess={(token) => {
+              setTurnstileToken(token);
+              setGlobalError('');
+            }}
+            onError={() => {
+              setTurnstileToken('');
+              setGlobalError('La vérification anti-bot a échoué. Réessayez.');
+            }}
+            onExpire={() => {
+              setTurnstileToken('');
+            }}
+          />
+        ) : null}
 
         <div className="cf-footer">
           <p className="cf-note"><span aria-hidden="true">*</span> Champs obligatoires</p>
-          <button type="submit" className="cf-btn" aria-busy={isSubmitting ? 'true' : 'false'} disabled={isSubmitting || turnstileToken.length === 0}>
+          <button type="submit" className="cf-btn" aria-busy={isSubmitting ? 'true' : 'false'} disabled={isSubmitting || (TURNSTILE_ENABLED && turnstileToken.length === 0)}>
             <span>{isSubmitting ? 'Envoi en cours…' : 'Envoyer ma demande'}</span>
             <span className="cf-spinner" aria-hidden="true" hidden={!isSubmitting}></span>
           </button>

@@ -10,6 +10,12 @@ function getTurnstileSecretKey(): string | undefined {
   return import.meta.env.TURNSTILE_SECRET_KEY || process.env.TURNSTILE_SECRET_KEY;
 }
 
+export function isTurnstileEnabled(): boolean {
+  const publicFlag = import.meta.env.PUBLIC_TURNSTILE_ENABLED;
+  if (publicFlag === 'false') return false;
+  return true;
+}
+
 export function getRequestIp(
   request: Request,
   fallbackIp?: string,
@@ -39,6 +45,10 @@ export async function verifyTurnstileToken(
   token: string,
   ip?: string,
 ): Promise<boolean> {
+  if (!isTurnstileEnabled()) {
+    return true;
+  }
+
   const normalizedToken = token.trim();
 
   if (!normalizedToken) {

@@ -2,7 +2,6 @@
 import { defineMiddleware } from 'astro:middleware';
 import { rateLimit } from './lib/rateLimit';
 import { createSupabaseAdminClient, createSupabaseClient } from './lib/supabase';
-import { isTurnstileEnabled } from './lib/turnstile';
 import crypto from 'node:crypto';
 
 function parseForwardedFor(value: string | null): string | null {
@@ -105,7 +104,6 @@ async function mustInvalidateSession(supabase: ReturnType<typeof createSupabaseC
 export const onRequest = defineMiddleware(async (context, next) => {
   const { url } = context;
   const isDev = import.meta.env.DEV;
-  const turnstileEnabled = isTurnstileEnabled();
 
   // Skip middleware for prerendered static routes (RSS feed, etc.)
   // The middleware cannot access request.headers on prerendered pages.
@@ -178,12 +176,6 @@ export const onRequest = defineMiddleware(async (context, next) => {
     'https://www.googletagmanager.com',
     'https://vercel.live',
   ];
-
-  if (turnstileEnabled) {
-    scriptSrc.push('https://challenges.cloudflare.com');
-    connectSrc.push('https://challenges.cloudflare.com');
-    frameSrc.push('https://challenges.cloudflare.com');
-  }
 
   if (isDev) {
     connectSrc.push('http://localhost:4321', 'ws://localhost:4321', 'http://127.0.0.1:4321', 'ws://127.0.0.1:4321');

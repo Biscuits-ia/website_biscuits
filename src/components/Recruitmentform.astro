@@ -1,7 +1,5 @@
 ---
 import RecruitmentFormClient from './react/RecruitmentFormClient';
-
-const nonce = Astro.locals.nonce;
 ---
 
-<RecruitmentFormClient client:load scriptNonce={nonce} />
+<RecruitmentFormClient client:load />

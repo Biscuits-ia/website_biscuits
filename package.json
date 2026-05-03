@@ -19,7 +19,6 @@
     "@astrojs/sitemap": "^3.7.2",
     "@astrojs/ts-plugin": "^1.10.7",
     "@astrojs/vercel": "^10.0.4",
-    "@marsidev/react-turnstile": "^1.5.0",
     "@supabase/ssr": "^0.10.2",
     "@supabase/supabase-js": "^2.103.0",
     "@tailwindcss/vite": "^4.1.18",

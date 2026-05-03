@@ -1,11 +1,6 @@
 import { useCallback, useState, type ChangeEvent, type SyntheticEvent } from 'react';
-import TurnstileWidget from './TurnstileWidget';
 import '@/styles/recruitment-form.css';
 import { EMAIL_RE, MAX_NAME } from '@/lib/validation';
-
-interface RecruitmentFormClientProps {
-  scriptNonce?: string;
-}
 
 interface RecruitmentFormData {
   first_name: string;
@@ -32,15 +27,12 @@ const INITIAL_FORM_DATA: RecruitmentFormData = {
   motivation: '',
 };
 
-const TURNSTILE_ENABLED = import.meta.env.PUBLIC_TURNSTILE_ENABLED !== 'false';
-
-export default function RecruitmentFormClient({ scriptNonce }: Readonly<RecruitmentFormClientProps>) {
+export default function RecruitmentFormClient() {
   const [formData, setFormData] = useState<RecruitmentFormData>(INITIAL_FORM_DATA);
   const [fieldErrors, setFieldErrors] = useState<Partial<Record<RecruitmentFieldId, string>>>({});
   const [serverError, setServerError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [confirmation, setConfirmation] = useState<{ fullName: string; email: string } | null>(null);
-  const [turnstileToken, setTurnstileToken] = useState('');
 
   const clearFieldError = useCallback((field: RecruitmentFieldId) => {
     setFieldErrors((current) => {
@@ -53,10 +45,6 @@ export default function RecruitmentFormClient({ scriptNonce }: Readonly<Recruitm
         [field]: undefined,
       };
     });
-  }, []);
-
-  const resetTurnstile = useCallback(() => {
-    setTurnstileToken('');
   }, []);
 
   const handleInputChange = useCallback(
@@ -113,11 +101,6 @@ export default function RecruitmentFormClient({ scriptNonce }: Readonly<Recruitm
         return;
       }
 
-      if (TURNSTILE_ENABLED && !turnstileToken) {
-        setServerError('Merci de valider la vérification anti-bot avant d\'envoyer le formulaire.');
-        return;
-      }
-
       setIsSubmitting(true);
 
       try {
@@ -134,7 +117,6 @@ export default function RecruitmentFormClient({ scriptNonce }: Readonly<Recruitm
             motivation: formData.motivation.trim() || null,
             skills: formData.skills.trim() || null,
             availability: formData.availability || null,
-            turnstileToken: TURNSTILE_ENABLED ? turnstileToken : '',
           }),
         });
 
@@ -149,7 +131,6 @@ export default function RecruitmentFormClient({ scriptNonce }: Readonly<Recruitm
           });
           setFormData(INITIAL_FORM_DATA);
           setFieldErrors({});
-          resetTurnstile();
           return;
         }
 
@@ -159,7 +140,6 @@ export default function RecruitmentFormClient({ scriptNonce }: Readonly<Recruitm
             last_name: payload.errors.last_name?.[0],
             email: payload.errors.email?.[0],
           });
-          resetTurnstile();
           return;
         }
 
@@ -168,17 +148,15 @@ export default function RecruitmentFormClient({ scriptNonce }: Readonly<Recruitm
             ? payload.message
             : `Erreur serveur (${response.status}). Veuillez réessayer.`,
         );
-        resetTurnstile();
-      } catch (error) {
+      } catch {
         setServerError(
           'Un problème est survenu. Vérifiez votre connexion internet.',
         );
-        resetTurnstile();
       } finally {
         setIsSubmitting(false);
       }
     },
-    [formData, resetTurnstile, turnstileToken, validate],
+    [formData, validate],
   );
 
   if (confirmation) {
@@ -197,7 +175,6 @@ export default function RecruitmentFormClient({ scriptNonce }: Readonly<Recruitm
             onClick={() => {
               setConfirmation(null);
               setServerError('');
-              resetTurnstile();
             }}
           >
             Soumettre une nouvelle candidature
@@ -266,28 +243,9 @@ export default function RecruitmentFormClient({ scriptNonce }: Readonly<Recruitm
           <textarea id="motivation" name="motivation" className="field__input field__textarea" placeholder="Pourquoi souhaitez-vous vous engager bénévolement auprès de Biscuits IA ?" rows={5} value={formData.motivation} onChange={handleInputChange}></textarea>
         </div>
 
-        {TURNSTILE_ENABLED ? (
-          <TurnstileWidget
-            theme="auto"
-            size="flexible"
-            scriptNonce={scriptNonce}
-            onSuccess={(token) => {
-              setTurnstileToken(token);
-              setServerError('');
-            }}
-            onError={() => {
-              setTurnstileToken('');
-              setServerError('La vérification anti-bot a échoué. Réessayez.');
-            }}
-            onExpire={() => {
-              setTurnstileToken('');
-            }}
-          />
-        ) : null}
-
         <div className="form__footer">
           <p className="form__note"><span aria-hidden="true">*</span> Champs obligatoires</p>
-          <button className="btn btn--primary" type="submit" disabled={isSubmitting || (TURNSTILE_ENABLED && turnstileToken.length === 0)}>
+          <button className="btn btn--primary" type="submit" disabled={isSubmitting}>
             {isSubmitting ? 'Envoi en cours…' : 'Envoyer ma candidature →'}
           </button>
         </div>

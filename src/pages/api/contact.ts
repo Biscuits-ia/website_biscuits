@@ -1,13 +1,11 @@
 import type { APIRoute } from 'astro';
 import { createSupabaseAdminClient } from '@/lib/supabase';
-import { getRequestIp, verifyTurnstileToken } from '@/lib/turnstile';
 import { EMAIL_RE, MAX_NAME, MAX_SUBJECT, MIN_MESSAGE, MAX_MESSAGE } from '@/lib/validation';
 
 type ContactBody = Record<string, unknown>;
 
 function parseContactBody(body: ContactBody) {
   return {
-    turnstileToken: typeof body.turnstileToken === 'string' ? body.turnstileToken : '',
     name: typeof body.name === 'string' ? body.name.trim() : '',
     email: typeof body.email === 'string' ? body.email.trim().toLowerCase() : '',
     subject: typeof body.subject === 'string' ? body.subject.trim() : '',
@@ -52,7 +50,7 @@ function validateContactFields(fields: {
   return errors;
 }
 
-export const POST: APIRoute = async ({ request, clientAddress }) => {
+export const POST: APIRoute = async ({ request }) => {
   let body: ContactBody;
   try {
     body = await request.json();
@@ -63,16 +61,7 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
     });
   }
 
-  const { turnstileToken, name, email, subject, message } = parseContactBody(body);
-  const ip = getRequestIp(request, clientAddress);
-  const isTokenValid = await verifyTurnstileToken(turnstileToken, ip);
-
-  if (!isTokenValid) {
-    return new Response(JSON.stringify({ message: 'Vérification Turnstile invalide ou expirée.' }), {
-      status: 403,
-      headers: { 'Content-Type': 'application/json' },
-    });
-  }
+  const { name, email, subject, message } = parseContactBody(body);
 
   const errors = validateContactFields({ name, email, subject, message });
 

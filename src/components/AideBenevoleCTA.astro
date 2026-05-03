@@ -1,13 +1,6 @@
 ---
 // Composant formulaire "Besoin d'aide ?" ultra simplifié + CTA bénévole
-const siteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
-const nonce = Astro.locals.nonce;
-const turnstileEnabled = import.meta.env.PUBLIC_TURNSTILE_ENABLED !== 'false';
 ---
-<!-- Script Cloudflare Turnstile (widget HTML natif) -->
-{turnstileEnabled ? (
-  <script is:inline nonce={nonce} src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
-) : null}
 
 <section class="aide-section" aria-labelledby="aide-title">
   <div class="aide-inner">
@@ -16,7 +9,7 @@ const turnstileEnabled = import.meta.env.PUBLIC_TURNSTILE_ENABLED !== 'false';
     <div class="aide-form-block">
       <h2 id="aide-title">Besoin d'aide ?</h2>
       <p>3 questions pour vous orienter vers la bonne solution.</p>
-      <form class="aide-form" id="form-aide" novalidate data-turnstile-enabled={turnstileEnabled ? 'true' : 'false'}>
+      <form class="aide-form" id="form-aide" novalidate>
         <div class="form-group">
           <label for="aide-qui">Qui êtes-vous ?</label>
           <select id="aide-qui" name="profil" required aria-required="true">
@@ -41,10 +34,6 @@ const turnstileEnabled = import.meta.env.PUBLIC_TURNSTILE_ENABLED !== 'false';
           <label for="aide-email">Votre email (pour vous répondre)</label>
           <input type="email" id="aide-email" name="email" placeholder="vous@exemple.fr" required aria-required="true" />
         </div>
-
-        {turnstileEnabled ? (
-          <div class="cf-turnstile" data-sitekey={siteKey} data-theme="auto"></div>
-        ) : null}
 
         <div id="aide-error" class="aide-msg aide-msg--error" hidden></div>
         <div id="aide-success" class="aide-msg aide-msg--success" hidden>
@@ -154,12 +143,6 @@ const turnstileEnabled = import.meta.env.PUBLIC_TURNSTILE_ENABLED !== 'false';
   outline: none;
 }
 
-/* Turnstile : empêcher le débordement sur mobile */
-.cf-turnstile {
-  max-width: 100%;
-  overflow: hidden;
-}
-
 .benevole-etapes {
   display: flex;
   flex-direction: column;
@@ -247,7 +230,6 @@ const turnstileEnabled = import.meta.env.PUBLIC_TURNSTILE_ENABLED !== 'false';
   const submitBtn = document.getElementById('aide-submit') as HTMLButtonElement | null;
   const errorBox = document.getElementById('aide-error') as HTMLElement | null;
   const successBox = document.getElementById('aide-success') as HTMLElement | null;
-  const turnstileEnabled = form?.dataset.turnstileEnabled === 'true';
 
   form?.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -267,17 +249,6 @@ const turnstileEnabled = import.meta.env.PUBLIC_TURNSTILE_ENABLED !== 'false';
       return;
     }
 
-    let turnstileToken = '';
-    if (turnstileEnabled) {
-      const turnstileInput = form.querySelector('[name="cf-turnstile-response"]') as HTMLInputElement | null;
-      turnstileToken = turnstileInput?.value ?? '';
-      if (!turnstileToken) {
-        errorBox.textContent = 'Veuillez valider le captcha avant d\'envoyer.';
-        errorBox.hidden = false;
-        return;
-      }
-    }
-
     submitBtn.disabled = true;
     submitBtn.textContent = 'Envoi en cours…';
 
@@ -289,7 +260,6 @@ const turnstileEnabled = import.meta.env.PUBLIC_TURNSTILE_ENABLED !== 'false';
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          turnstileToken,
           name: profilLabel,
           email,
           subject: `Demande d'aide – ${besoinLabel}`,
@@ -299,12 +269,6 @@ const turnstileEnabled = import.meta.env.PUBLIC_TURNSTILE_ENABLED !== 'false';
 
       if (res.ok) {
         form.reset();
-        if (turnstileEnabled) {
-          const widget = form.querySelector('.cf-turnstile') as HTMLElement | null;
-          if (widget && (window as any).turnstile) {
-            (window as any).turnstile.reset(widget);
-          }
-        }
         successBox.hidden = false;
         successBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       } else {

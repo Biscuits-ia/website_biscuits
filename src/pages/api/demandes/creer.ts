@@ -2,29 +2,12 @@
 import type { APIRoute } from 'astro';
 import { createSupabaseClient } from '@/lib/supabase';
 import { getFormString }        from '@/types/ateliers';
-import { getRequestIp, verifyTurnstileToken } from '@/lib/turnstile';
 
-async function validateTurnstile(request: Request, fallbackIp?: string): Promise<boolean> {
-  const form = await request.formData();
-  const turnstileToken = getFormString(form, 'turnstileToken') ?? '';
-  const ip = getRequestIp(request, fallbackIp);
-
-  return verifyTurnstileToken(turnstileToken, ip);
-}
-
-export const POST: APIRoute = async ({ request, cookies, redirect, clientAddress }) => {
+export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   const supabase = createSupabaseClient({ request, cookies });
 
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return redirect('/connexion');
-
-  const isTokenValid = await validateTurnstile(request.clone(), clientAddress);
-  if (!isTokenValid) {
-    return redirect(
-      '/dashboard/user/demandes?error=' +
-      encodeURIComponent('Vérification anti-bot invalide ou expirée.'),
-    );
-  }
 
   const form        = await request.formData();
   const subject     = getFormString(form, 'subject');

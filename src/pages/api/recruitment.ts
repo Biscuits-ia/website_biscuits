@@ -1,13 +1,11 @@
 import type { APIRoute } from 'astro';
 import { createSupabaseAdminClient } from '@/lib/supabase';
-import { getRequestIp, verifyTurnstileToken } from '@/lib/turnstile';
 import { EMAIL_RE, MAX_NAME } from '@/lib/validation';
 
 type RecruitmentBody = Record<string, unknown>;
 
 function parseRecruitmentBody(body: RecruitmentBody) {
   return {
-    turnstileToken: typeof body.turnstileToken === 'string' ? body.turnstileToken : '',
     first_name: typeof body.first_name === 'string' ? body.first_name.trim() : '',
     last_name: typeof body.last_name === 'string' ? body.last_name.trim() : '',
     email: typeof body.email === 'string' ? body.email.trim().toLowerCase() : '',
@@ -45,7 +43,7 @@ function validateRecruitmentFields(fields: {
   return errors;
 }
 
-export const POST: APIRoute = async ({ request, clientAddress }) => {
+export const POST: APIRoute = async ({ request }) => {
   let body: RecruitmentBody;
   try {
     body = await request.json();
@@ -57,7 +55,6 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
   }
 
   const {
-    turnstileToken,
     first_name,
     last_name,
     email,
@@ -65,15 +62,6 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
     availability,
     motivation,
   } = parseRecruitmentBody(body);
-  const ip = getRequestIp(request, clientAddress);
-  const isTokenValid = await verifyTurnstileToken(turnstileToken, ip);
-
-  if (!isTokenValid) {
-    return new Response(JSON.stringify({ message: 'Vérification Turnstile invalide ou expirée.' }), {
-      status: 403,
-      headers: { 'Content-Type': 'application/json' },
-    });
-  }
 
   const errors = validateRecruitmentFields({ first_name, last_name, email });
 

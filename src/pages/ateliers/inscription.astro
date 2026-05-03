@@ -2,13 +2,12 @@
 // src/pages/ateliers/inscription.astro
 // Page publique d'inscription aux ateliers.
 // Si l'utilisateur n'est pas connecté → bouton redirige vers /connexion.
-// Si connecté → formulaire d'inscription direct avec protection Turnstile.
+// Si connecté → formulaire d'inscription direct.
 
 import Layout from '@/layouts/Layout.astro';
 import { createSupabaseClient } from '@/lib/supabase';
 import type { WorkshopSessionWithSeats } from '@/types/ateliers';
 import { formatDateLong, formatTimeRange, formatPrice } from '@/types/ateliers';
-import TurnstileFormGuard from '@/components/react/TurnstileFormGuard';
 
 const supabase = createSupabaseClient({ request: Astro.request, cookies: Astro.cookies });
 
@@ -65,8 +64,6 @@ const rows: SessionRow[] = (sessionsRaw ?? []).map((s: WorkshopSessionWithSeats)
     priceLabel: formatPrice(s.price_cents, s.price_label),
   };
 });
-
-const nonce = Astro.locals.nonce;
 
 const saved = Astro.url.searchParams.get('saved') === '1';
 const errorMsg = Astro.url.searchParams.get('error') ?? '';
@@ -183,7 +180,6 @@ const redirectAfterLogin = encodeURIComponent('/ateliers/inscription');
                 ) : isRegistered ? (
                   <form method="POST" action="/api/ateliers/desinscrire">
                     <input type="hidden" name="session_id" value={s.id} />
-                    <TurnstileFormGuard client:load scriptNonce={nonce} inputName="turnstileToken" />
                     <button type="submit" class="btn btn-outline btn-danger">
                       Se désinscrire
                     </button>
@@ -193,7 +189,6 @@ const redirectAfterLogin = encodeURIComponent('/ateliers/inscription');
                 ) : (
                   <form method="POST" action="/api/ateliers/inscrire">
                     <input type="hidden" name="session_id" value={s.id} />
-                    <TurnstileFormGuard client:load scriptNonce={nonce} inputName="turnstileToken" />
                     <button type="submit" class="btn btn-primary">
                       S'inscrire à cette session
                     </button>

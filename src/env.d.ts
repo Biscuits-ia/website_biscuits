@@ -2,9 +2,6 @@
 
 declare module '*.css';
 interface ImportMetaEnv {
-  readonly PUBLIC_TURNSTILE_SITE_KEY: string;
-  readonly PUBLIC_TURNSTILE_ENABLED?: 'true' | 'false';
-  readonly TURNSTILE_SECRET_KEY: string;
   readonly SUPABASE_URL: string;
   readonly SUPABASE_ANON_KEY: string;
   readonly SUPABASE_SERVICE_ROLE_KEY: string;

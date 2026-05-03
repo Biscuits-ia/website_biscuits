@@ -202,16 +202,16 @@ export const onRequest = defineMiddleware(async (context, next) => {
   const contentType = response.headers.get('content-type') ?? '';
   if (contentType.includes('text/html')) {
     let html = await response.text();
-    // Add nonce to ALL inline <script> tags (those without a src= attribute).
-    // Handles variations like <script>, <script type="module">, <script type="module" crossorigin>, etc.
-    html = html.replaceAll(
-      /<script(\b[^>]*?)(?<!\bsrc\s*=\s*["'][^"']*["'])>/g,
-      (match, attrs: string) => {
-        // Skip tags that already have a nonce or have a src attribute
-        if (/\bsrc\s*=/.test(attrs) || /\bnonce\s*=/.test(attrs)) return match;
-        return `<script${attrs} nonce="${nonce}">`;
-      },
-    );
+    // Add a nonce to every inline <script> tag.
+    // Matching the full opening tag is more reliable than trying to exclude
+    // `src=` with lookbehinds because Astro can emit several script variants.
+    html = html.replaceAll(/<script\b([^>]*)>/g, (match, attrs: string) => {
+      if (/\bsrc\s*=/.test(attrs) || /\bnonce\s*=/.test(attrs)) {
+        return match;
+      }
+
+      return `<script${attrs} nonce="${nonce}">`;
+    });
     const headers = new Headers(response.headers);
     headers.set('Content-Security-Policy', csp);
     return new Response(html, { status: response.status, statusText: response.statusText, headers });

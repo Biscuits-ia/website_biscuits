@@ -1,7 +1,44 @@
-// src/lib/auth.ts
+// ── deleteUserFromSupabase : supprime un utilisateur via Supabase Auth Admin API ─────────────
+/**
+ * Supprime un utilisateur de Supabase Auth (table users) via l'API Admin.
+ * Nécessite la clé service_role (jamais côté client !).
+ */
+export async function deleteUserFromSupabase(userId: string): Promise<boolean> {
+  try {
+    const adminClient = createSupabaseAdminClient();
+    const { error } = await adminClient.auth.admin.deleteUser(userId);
+    if (error) {
+      console.error('[auth] deleteUserFromSupabase error:', error.message);
+      return false;
+    }
+    return true;
+  } catch (err) {
+    console.error('[auth] deleteUserFromSupabase exception:', err);
+    return false;
+  }
+}
+
 import { createSupabaseClient, createSupabaseAdminClient } from './supabase';
 import type { AstroGlobal } from 'astro';
 import type { SupabaseClient, User, Session } from '@supabase/supabase-js';
+
+// ── stopBeingBenevole : enlève le rôle bénévole à un utilisateur ─────────────
+/**
+ * Retire le rôle "benevole" à l'utilisateur (le passe à "user").
+ * Utilise le client admin pour bypass les RLS.
+ */
+export async function stopBeingBenevole(userId: string): Promise<boolean> {
+  const adminClient = createSupabaseAdminClient();
+  const { error } = await adminClient
+    .from('profiles')
+    .update({ role: 'user' })
+    .eq('id', userId);
+  if (error) {
+    console.error('[auth] stopBeingBenevole error:', error.message);
+    return false;
+  }
+  return true;
+}
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 

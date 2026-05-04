@@ -1,0 +1,98 @@
+---
+import DashboardLayout from '../../../layouts/DashboardLayout.astro';
+import { requireBenevole, deleteUserFromSupabase, stopBeingBenevole } from '../../../lib/auth';
+import { createSupabaseAdminClient } from '../../../lib/supabase';
+
+let actionMessage = '';
+let errorMessage = '';
+const authResult = await requireBenevole(Astro);
+if (authResult instanceof Response) {
+  return authResult;
+}
+const { user, role } = authResult;
+const isBenevole = role === 'benevole';
+
+// Gestion du changement de mot de passe
+if (Astro.request.method === 'POST') {
+  const formData = await Astro.request.formData();
+
+  if (formData.get('action') === 'change-password') {
+    const currentPassword = formData.get('currentPassword') as string;
+    const newPassword = formData.get('newPassword') as string;
+    const confirmPassword = formData.get('confirmPassword') as string;
+
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      errorMessage = 'Veuillez remplir tous les champs.';
+    } else if (newPassword !== confirmPassword) {
+      errorMessage = 'Les nouveaux mots de passe ne correspondent pas.';
+    } else if (newPassword.length < 6) {
+      errorMessage = 'Le nouveau mot de passe doit contenir au moins 6 caractères.';
+    } else {
+      const supabase = createSupabaseClient(Astro);
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword
+      });
+
+      if (error) {
+        errorMessage = 'Erreur lors du changement de mot de passe : ' + error.message;
+      } else {
+        actionMessage = 'Votre mot de passe a été modifié avec succès.';
+      }
+    }
+  } else if (formData.get('action') === 'stop-benevole') {
+    await stopBeingBenevole(user.id);
+    actionMessage = 'Vous n\'êtes plus bénévole.';
+  } else if (formData.get('action') === 'delete-account') {
+    await deleteUserFromSupabase(user.id);
+    actionMessage = 'Votre compte a été supprimé.';
+  }
+}
+---
+<DashboardLayout title="Paramètres du compte">
+  <h1>Paramètres du compte</h1>
+
+  {actionMessage && <p style="color: green; margin-bottom: 1rem;">{actionMessage}</p>}
+  {errorMessage && <p style="color: red; margin-bottom: 1rem;">{errorMessage}</p>}
+
+  <section style="margin-bottom: 2rem;">
+    <h2>Changer le mot de passe</h2>
+    <form method="POST" style="display: flex; flex-direction: column; gap: 1rem; max-width: 400px;" action="/dashboard/benevole/settings">
+      <input type="hidden" name="action" value="change-password" />
+
+      <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+        <label for="currentPassword">Mot de passe actuel</label>
+        <input type="password" id="currentPassword" name="currentPassword" required />
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+        <label for="newPassword">Nouveau mot de passe</label>
+        <input type="password" id="newPassword" name="newPassword" required />
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+        <label for="confirmPassword">Confirmer le nouveau mot de passe</label>
+        <input type="password" id="confirmPassword" name="confirmPassword" required />
+      </div>
+
+      <button type="submit" style="padding: 0.5rem 1rem; background: #0070f3; color: white; border: none; border-radius: 4px; cursor: pointer;">
+        Changer le mot de passe
+      </button>
+    </form>
+  </section>
+
+  <section>
+    <h2>Actions sur le compte</h2>
+    <form method="POST" style="display: flex; flex-direction: column; gap: 1rem;">
+      <input type="hidden" name="action" value="stop-benevole" />
+      {isBenevole ? (
+        <button type="submit">
+          Arrêter d'être bénévole
+        </button>
+      ) : (
+        <button type="submit" name="action" value="delete-account" style="color: red">
+          Supprimer mon compte
+        </button>
+      )}
+    </form>
+  </section>
+</DashboardLayout>

@@ -5,7 +5,7 @@ import { requireAuth } from '../../../lib/auth';
 const result = await requireAuth(Astro);
 if (result instanceof Response) return result;
 
-const { user, supabase } = result;
+const { user } = result;
 const userEmail    = user.email ?? '';
 const userName     = user.user_metadata?.full_name ?? userEmail.split('@')[0];
 const userPhone    = user.user_metadata?.phone ?? '';

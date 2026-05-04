@@ -14,6 +14,7 @@
   "dependencies": {
     "@astrojs/check": "^0.9.8",
     "@astrojs/mdx": "^5.0.3",
+    "@astrojs/node": "^10.0.6",
     "@astrojs/react": "^5.0.3",
     "@astrojs/rss": "^4.0.18",
     "@astrojs/sitemap": "^3.7.2",
@@ -27,6 +28,7 @@
     "astro": "6.1.8",
     "astro-icon": "^1.1.5",
     "astro-robots-txt": "^1.0.0",
+    "lucide-astro": "^0.462.0",
     "markdown-it": "^14.1.1",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
@@ -35,8 +37,7 @@
     "sharp": "^0.34.5",
     "tailwindcss": "^4.1.18",
     "typescript": "^5.9.3",
-    "zod": "^3.24.1",
-    "lucide-astro": "^0.462.0"
+    "zod": "^3.24.1"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

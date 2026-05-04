@@ -30,7 +30,7 @@ const { data: cats } = await supabase
   .eq('is_visible', true);
 
 const uniqueCategories: string[] = [
-  ...new Set((cats ?? []).map((r: any) => r.category).filter(Boolean))
+  ...new Set((cats ?? []).map((r: unknown) => r.category).filter(Boolean))
 ].sort();
 ---
 

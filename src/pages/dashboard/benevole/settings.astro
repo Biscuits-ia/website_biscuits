@@ -1,10 +1,10 @@
 ---
 import DashboardLayout from '../../../layouts/DashboardLayout.astro';
 import { requireBenevole, deleteUserFromSupabase, stopBeingBenevole } from '../../../lib/auth';
-import { createSupabaseAdminClient } from '../../../lib/supabase';
 
 let actionMessage = '';
 let errorMessage = '';
+let successMessage = '';
 const authResult = await requireBenevole(Astro);
 if (authResult instanceof Response) {
   return authResult;
@@ -28,15 +28,29 @@ if (Astro.request.method === 'POST') {
     } else if (newPassword.length < 6) {
       errorMessage = 'Le nouveau mot de passe doit contenir au moins 6 caractères.';
     } else {
-      const supabase = createSupabaseClient(Astro);
-      const { error } = await supabase.auth.updateUser({
-        password: newPassword
-      });
+      try {
+        // Utiliser une URL relative pour fonctionner en local et en prod
+        const response = await fetch('/api/change-password', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            currentPassword,
+            newPassword,
+            confirmPassword,
+          }),
+        });
 
-      if (error) {
-        errorMessage = 'Erreur lors du changement de mot de passe : ' + error.message;
-      } else {
-        actionMessage = 'Votre mot de passe a été modifié avec succès.';
+        const data = await response.json();
+
+        if (response.ok) {
+          successMessage = data.message;
+        } else {
+          errorMessage = data.message || 'Erreur lors du changement de mot de passe.';
+        }
+      } catch (err) {
+        errorMessage = 'Erreur de connexion. Veuillez réessayer.';
       }
     }
   } else if (formData.get('action') === 'stop-benevole') {
@@ -51,12 +65,13 @@ if (Astro.request.method === 'POST') {
 <DashboardLayout title="Paramètres du compte">
   <h1>Paramètres du compte</h1>
 
+  {successMessage && <p style="color: green; margin-bottom: 1rem;">{successMessage}</p>}
   {actionMessage && <p style="color: green; margin-bottom: 1rem;">{actionMessage}</p>}
   {errorMessage && <p style="color: red; margin-bottom: 1rem;">{errorMessage}</p>}
 
   <section style="margin-bottom: 2rem;">
     <h2>Changer le mot de passe</h2>
-    <form method="POST" style="display: flex; flex-direction: column; gap: 1rem; max-width: 400px;" action="/dashboard/benevole/settings">
+    <form method="POST" style="display: flex; flex-direction: column; gap: 1rem; max-width: 400px;">
       <input type="hidden" name="action" value="change-password" />
 
       <div style="display: flex; flex-direction: column; gap: 0.25rem;">

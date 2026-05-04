@@ -155,6 +155,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
   const scriptSrc = [
     "'self'",
     `'nonce-${nonce}'`,
+    "'sha256-3bzWVxQE32IZQKH9eh8KzyHuhXOlMrboDVVBRd0fWTU='",
     'https://www.googletagmanager.com',
     'https://www.google-analytics.com',
     'https://cdn.vercel-insights.com',

@@ -2,6 +2,7 @@
 import { defineMiddleware } from 'astro:middleware';
 import { rateLimit } from './lib/rateLimit';
 import { createSupabaseAdminClient, createSupabaseClient } from './lib/supabase';
+import { fetchRoleSecure, canAccessAnalytics } from './lib/auth';
 import crypto from 'node:crypto';
 
 function parseForwardedFor(value: string | null): string | null {
@@ -101,6 +102,17 @@ async function mustInvalidateSession(supabase: ReturnType<typeof createSupabaseC
   }
 }
 
+async function guardDataRoutes(
+  supabase: ReturnType<typeof createSupabaseClient>,
+  context: Parameters<typeof defineMiddleware>[0] extends never ? never : any,
+): Promise<Response | null> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return context.redirect('/connexion');
+  const role = await fetchRoleSecure(user.id);
+  if (!canAccessAnalytics(role)) return context.redirect('/404');
+  return null;
+}
+
 export const onRequest = defineMiddleware(async (context, next) => {
   const { url } = context;
   const isDev = import.meta.env.DEV;
@@ -148,6 +160,12 @@ export const onRequest = defineMiddleware(async (context, next) => {
   }
 
   context.locals.supabase = supabase;
+
+  // Protect /dashboard/data* — bénévoles are never allowed, only admin and data_analyst.
+  if (url.pathname.startsWith('/dashboard/data')) {
+    const blocked = await guardDataRoutes(supabase, context);
+    if (blocked) return blocked;
+  }
 
   const response = await next();
 

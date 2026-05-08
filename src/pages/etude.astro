@@ -1,0 +1,510 @@
+---
+import BaseLayout from '@/layouts/Layout.astro';
+import { createSupabaseAdminClient } from '@/lib/supabase';
+
+type QuestionKind = 'text' | 'textarea' | 'select' | 'checkbox' | 'number';
+
+type StudyQuestion = {
+  id: string;
+  label: string;
+  kind: QuestionKind;
+  is_required: boolean;
+  placeholder: string | null;
+  options: unknown;
+  position: number;
+};
+
+type StudyForm = {
+  id: string;
+  title: string;
+  description: string | null;
+  study_form_questions: StudyQuestion[];
+};
+
+const sent = Astro.url.searchParams.get('sent') === '1';
+const error = Astro.url.searchParams.get('error') ?? '';
+
+const supabase = createSupabaseAdminClient();
+const { data: formsRaw } = await supabase
+  .from('study_forms')
+  .select('id, title, description, study_form_questions(id, label, kind, is_required, placeholder, options, position)')
+  .eq('status', 'published')
+  .order('created_at', { ascending: false });
+
+const forms = ((formsRaw ?? []) as StudyForm[]).map((form) => {
+  const questions = (form.study_form_questions ?? [])
+    .slice()
+    .sort((a, b) => a.position - b.position);
+
+  return {
+    ...form,
+    study_form_questions: questions,
+  };
+});
+
+function normalizeOptions(rawOptions: unknown): string[] {
+  if (!Array.isArray(rawOptions)) return [];
+
+  return rawOptions
+    .map((value) => (typeof value === 'string' ? value.trim() : ''))
+    .filter(Boolean);
+}
+---
+
+<BaseLayout
+  title="Étude des besoins des associations | Biscuits IA"
+  description="Aidez-nous à comprendre les besoins et les manques des associations pour mieux les accompagner avec l'IA."
+>
+  <section class="etude-hero">
+    <div class="container">
+      <h1>Étude des besoins des associations</h1>
+      <p>
+        Nous menons une étude terrain pour comprendre ce qui vous manque cruellement,
+        vos blocages et vos priorités. Répondez à chaque question une par une.
+      </p>
+    </div>
+  </section>
+
+  <section class="etude-content">
+    <div class="container narrow">
+      {sent && <div class="flash flash-ok" role="alert">Merci, votre réponse a bien été enregistrée !</div>}
+      {error && <div class="flash flash-err" role="alert">{decodeURIComponent(error)}</div>}
+
+      {forms.length === 0 ? (
+        <div class="empty-box">
+          <h2>Aucun formulaire disponible</h2>
+          <p>Revenez bientôt, une nouvelle étude sera publiée prochainement.</p>
+        </div>
+      ) : (
+        forms.map((form) => {
+          const totalSteps = form.study_form_questions.length + 1; // step 0 = coordonnées
+
+          return (
+            <article class="study-card">
+              <header class="study-header">
+                <h2>{form.title}</h2>
+                {form.description && <p>{form.description}</p>}
+              </header>
+
+              <form
+                method="POST"
+                action="/api/etudes/soumettre"
+                class="study-form wizard-form"
+                data-total-steps={totalSteps}
+              >
+                <input type="hidden" name="form_id" value={form.id} />
+
+                {/* ── Étape 0 : coordonnées ── */}
+                <div class="wizard-step" data-step="0">
+                  <div class="step-header">
+                    <span class="step-label">Vos coordonnées</span>
+                    <div class="progress-bar" aria-hidden="true">
+                      <div class="progress-fill" style={`width:${Math.round(1 / totalSteps * 100)}%`}></div>
+                    </div>
+                    <span class="step-count">Étape 1 / {totalSteps}</span>
+                  </div>
+
+                  <div class="field-grid">
+                    <label class="field">
+                      <span>Nom de l'association *</span>
+                      <input name="association_name" type="text" required maxlength="160" placeholder="Ex : Les Voisins Solidaires" />
+                    </label>
+                    <label class="field">
+                      <span>Nom du contact</span>
+                      <input name="contact_name" type="text" maxlength="120" placeholder="Ex : Marie Dupont" />
+                    </label>
+                    <label class="field">
+                      <span>Email</span>
+                      <input name="email" type="email" maxlength="255" placeholder="Ex : contact@association.fr" />
+                    </label>
+                    <label class="field">
+                      <span>Téléphone</span>
+                      <input name="phone" type="tel" maxlength="50" placeholder="Ex : 06 00 00 00 00" />
+                    </label>
+                  </div>
+
+                  <div class="wizard-nav">
+                    <button type="button" class="btn-next">Commencer →</button>
+                  </div>
+                </div>
+
+                {/* ── Étapes 1..N : une question par étape ── */}
+                {form.study_form_questions.map((question, idx) => {
+                  const stepIndex = idx + 1;
+                  const isLast = stepIndex === totalSteps - 1;
+                  const progressPct = Math.round((stepIndex + 1) / totalSteps * 100);
+                  const options = normalizeOptions(question.options);
+                  const inputName = `q_${question.id}`;
+
+                  return (
+                    <div class="wizard-step" data-step={stepIndex}>
+                      <div class="step-header">
+                        <span class="step-label">Question {stepIndex} / {totalSteps - 1}</span>
+                        <div class="progress-bar" aria-hidden="true">
+                          <div class="progress-fill" style={`width:${progressPct}%`}></div>
+                        </div>
+                        <span class="step-count">Étape {stepIndex + 1} / {totalSteps}</span>
+                      </div>
+
+                      <div class="question-body">
+                        {question.kind === 'textarea' && (
+                          <label class="field">
+                            <span class="question-text">{question.label}{question.is_required ? ' *' : ''}</span>
+                            <textarea
+                              name={inputName}
+                              rows="6"
+                              maxlength="5000"
+                              required={question.is_required}
+                              placeholder={question.placeholder ?? 'Votre réponse…'}
+                            ></textarea>
+                          </label>
+                        )}
+
+                        {question.kind === 'select' && (
+                          <label class="field">
+                            <span class="question-text">{question.label}{question.is_required ? ' *' : ''}</span>
+                            <select name={inputName} required={question.is_required}>
+                              <option value="">Sélectionnez une option</option>
+                              {options.map((opt) => (
+                                <option value={opt}>{opt}</option>
+                              ))}
+                            </select>
+                          </label>
+                        )}
+
+                        {question.kind === 'checkbox' && (
+                          <label class="field field-checkbox">
+                            <input type="checkbox" name={inputName} value="oui" />
+                            <span class="question-text">{question.label}{question.is_required ? ' *' : ''}</span>
+                          </label>
+                        )}
+
+                        {(question.kind === 'text' || question.kind === 'number') && (
+                          <label class="field">
+                            <span class="question-text">{question.label}{question.is_required ? ' *' : ''}</span>
+                            <input
+                              name={inputName}
+                              type={question.kind === 'number' ? 'number' : 'text'}
+                              required={question.is_required}
+                              maxlength={question.kind === 'number' ? undefined : '5000'}
+                              placeholder={question.placeholder ?? 'Votre réponse…'}
+                            />
+                          </label>
+                        )}
+                      </div>
+
+                      <div class="wizard-nav">
+                        <button type="button" class="btn-prev">← Précédent</button>
+                        {isLast ? (
+                          <button type="submit" class="btn-submit">Envoyer ma contribution ✓</button>
+                        ) : (
+                          <button type="button" class="btn-next">Suivant →</button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </form>
+            </article>
+          );
+        })
+      )}
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .etude-hero {
+    background: linear-gradient(120deg, #f5f7ff 0%, #eaf8f4 100%);
+    padding: 5rem 1.5rem 3.5rem;
+    border-bottom: 1px solid #d9e3ee;
+  }
+
+  .etude-hero h1 {
+    margin: 0;
+    font-size: clamp(2rem, 5vw, 3rem);
+    line-height: 1.1;
+  }
+
+  .etude-hero p {
+    margin: 1rem 0 0;
+    font-size: 1.1rem;
+    max-width: 760px;
+    color: #334155;
+  }
+
+  .etude-content {
+    padding: 2rem 1.5rem 4rem;
+  }
+
+  .narrow {
+    max-width: 760px;
+    margin: 0 auto;
+  }
+
+  .study-card {
+    border: 2px solid #0f172a;
+    box-shadow: 5px 5px 0 #0f172a;
+    background: #fff;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .study-header h2 {
+    margin: 0;
+    font-size: 1.45rem;
+  }
+
+  .study-header p {
+    margin-top: 0.6rem;
+    color: #475569;
+  }
+
+  /* ── Wizard ── */
+  .wizard-form {
+    margin-top: 1.25rem;
+  }
+
+  .wizard-step {
+    display: none;
+    flex-direction: column;
+    gap: 1.25rem;
+    animation: stepIn 0.18s ease;
+  }
+
+  .wizard-step.active {
+    display: flex;
+  }
+
+  @keyframes stepIn {
+    from { opacity: 0; transform: translateX(12px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+
+  .step-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+
+  .step-label {
+    font-size: 0.78rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #64748b;
+    white-space: nowrap;
+  }
+
+  .progress-bar {
+    flex: 1;
+    height: 6px;
+    background: #e2e8f0;
+    border: 1px solid #cbd5e1;
+    border-radius: 3px;
+    overflow: hidden;
+    min-width: 60px;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: #0f172a;
+    border-radius: 3px;
+    transition: width 0.3s ease;
+  }
+
+  .step-count {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #94a3b8;
+    white-space: nowrap;
+  }
+
+  /* ── Question body ── */
+  .question-body {
+    padding: 0.5rem 0;
+  }
+
+  .question-text {
+    font-size: 1.1rem !important;
+    font-weight: 700 !important;
+    text-transform: none !important;
+    letter-spacing: 0 !important;
+    color: #0f172a !important;
+    line-height: 1.4;
+  }
+
+  /* ── Fields (shared) ── */
+  .field-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.9rem;
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+  }
+
+  .field > span {
+    font-size: 0.86rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #0f172a;
+  }
+
+  .field input,
+  .field textarea,
+  .field select {
+    width: 100%;
+    border: 2px solid #0f172a;
+    padding: 0.7rem 0.8rem;
+    font-size: 1rem;
+    background: #fff;
+  }
+
+  .field textarea {
+    resize: vertical;
+    min-height: 120px;
+  }
+
+  .field-checkbox {
+    border: 2px solid #0f172a;
+    background: #f8fafc;
+    padding: 0.8rem;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.65rem;
+  }
+
+  .field-checkbox input {
+    width: auto;
+  }
+
+  /* ── Navigation ── */
+  .wizard-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding-top: 0.25rem;
+  }
+
+  .wizard-nav button:first-child:last-child {
+    margin-left: auto;
+  }
+
+  .btn-prev,
+  .btn-next,
+  .btn-submit {
+    border: 2px solid #0f172a;
+    font-weight: 800;
+    padding: 0.7rem 1.2rem;
+    cursor: pointer;
+    font-size: 0.95rem;
+    transition: transform 0.1s, box-shadow 0.1s;
+  }
+
+  .btn-prev {
+    background: #fff;
+    color: #0f172a;
+    box-shadow: 3px 3px 0 #0f172a;
+  }
+
+  .btn-next,
+  .btn-submit {
+    background: #0f172a;
+    color: #fff;
+    box-shadow: 4px 4px 0 #64748b;
+  }
+
+  .btn-prev:hover,
+  .btn-next:hover,
+  .btn-submit:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 6px 6px 0 #0f172a;
+  }
+
+  /* ── Flash messages ── */
+  .flash {
+    padding: 0.85rem 1rem;
+    border: 2px solid;
+    font-weight: 700;
+    margin-bottom: 1rem;
+  }
+
+  .flash-ok {
+    border-color: #15803d;
+    background: #dcfce7;
+    color: #14532d;
+  }
+
+  .flash-err {
+    border-color: #b91c1c;
+    background: #fee2e2;
+    color: #7f1d1d;
+  }
+
+  .empty-box {
+    border: 2px dashed #94a3b8;
+    padding: 1.5rem;
+    text-align: center;
+    background: #f8fafc;
+  }
+
+  @media (max-width: 600px) {
+    .field-grid {
+      grid-template-columns: 1fr;
+    }
+    .step-header {
+      flex-wrap: wrap;
+    }
+  }
+</style>
+
+<script>
+  document.querySelectorAll<HTMLFormElement>('.wizard-form').forEach((form) => {
+    const steps = Array.from(form.querySelectorAll<HTMLElement>('.wizard-step'));
+    let current = 0;
+
+    function show(index: number) {
+      steps.forEach((s, i) => {
+        s.classList.toggle('active', i === index);
+      });
+      current = index;
+    }
+
+    // Activate first step
+    show(0);
+
+    form.addEventListener('click', (e) => {
+      const target = e.target as HTMLElement;
+
+      if (target.classList.contains('btn-next')) {
+        // Validate all required inputs in the current step
+        const fields = steps[current].querySelectorAll<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>('[required]');
+        let valid = true;
+        for (const field of fields) {
+          if (!field.reportValidity()) {
+            valid = false;
+            break;
+          }
+        }
+        if (!valid) return;
+
+        if (current < steps.length - 1) {
+          show(current + 1);
+          form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }
+
+      if (target.classList.contains('btn-prev') && current > 0) {
+        show(current - 1);
+        form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
+  });
+</script>

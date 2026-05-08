@@ -18,19 +18,6 @@ export interface Resource {
   updated_at:   string;
 }
 
-// ── Type guards ───────────────────────────────────────────────────────────────
-
-export function isResource(value: unknown): value is Resource {
-  return (
-    typeof value === 'object' &&
-    value !== null &&
-    'id'        in value && typeof (value as Resource).id        === 'string' &&
-    'title'     in value && typeof (value as Resource).title     === 'string' &&
-    'file_path' in value && typeof (value as Resource).file_path === 'string' &&
-    'file_type' in value && typeof (value as Resource).file_type === 'string'
-  );
-}
-
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 /** Formate la taille d'un fichier en unité lisible */

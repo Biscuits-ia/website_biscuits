@@ -112,10 +112,10 @@ const nonce = Astro.locals.nonce;
 </style>
 
 <script is:inline nonce={nonce}>
-  var msgEl     = document.getElementById('msg');
-  var btn       = document.getElementById('reset-btn');
-  var btnText   = document.getElementById('btn-text');
-  var btnLoader = document.getElementById('btn-loader');
+  const msgEl     = document.getElementById('msg');
+  const btn       = document.getElementById('reset-btn');
+  const btnText   = document.getElementById('btn-text');
+  const btnLoader = document.getElementById('btn-loader');
 
   function showMsg(text, type) {
     if (type === undefined) type = 'error';
@@ -131,7 +131,7 @@ const nonce = Astro.locals.nonce;
   }
 
   async function handleReset() {
-    var email = document.getElementById('email').value.trim();
+    const email = (document.getElementById('email') as HTMLInputElement).value.trim();
 
     msgEl.style.display = 'none';
     if (!email) return showMsg('Veuillez entrer votre adresse email.');
@@ -139,15 +139,15 @@ const nonce = Astro.locals.nonce;
 
     setLoading(true);
     try {
-      var formData = new FormData();
+      const formData = new FormData();
       formData.set('email', email);
 
-      var res = await fetch('/auth/mot-de-passe-oublie', {
+      const res = await fetch('/auth/mot-de-passe-oublie', {
         method: 'POST',
         body: formData,
       });
 
-      var data = await res.json();
+      const data = await res.json();
 
       if (!res.ok) {
         return showMsg(data.error || 'Une erreur est survenue.');

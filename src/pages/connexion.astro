@@ -176,7 +176,7 @@ const nonce = Astro.locals.nonce;
   }
 
   emailInput.addEventListener('input', function() {
-    var v = emailInput.value.trim();
+    const v = emailInput.value.trim();
     if (v && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) showMsg('Adresse email invalide.', 'warn');
     else hideMsg();
   });
@@ -188,9 +188,9 @@ const nonce = Astro.locals.nonce;
   });
 
   async function handleLogin() {
-    var email    = emailInput.value.trim();
-    var password = passInput.value;
-    var remember = document.getElementById('remember-me').checked;
+    const email    = emailInput.value.trim();
+    const password = passInput.value;
+    const remember = (document.getElementById('remember-me') as HTMLInputElement).checked;
 
     hideMsg();
     if (!email && !password) return showMsg('Veuillez remplir tous les champs.');
@@ -200,16 +200,16 @@ const nonce = Astro.locals.nonce;
 
     setLoading(true);
     try {
-      var formData = new FormData();
+      const formData = new FormData();
       formData.set('email', email);
       formData.set('password', password);
 
-      var res = await fetch('/auth/connexion', {
+      const res = await fetch('/auth/connexion', {
         method: 'POST',
         body: formData,
       });
 
-      var data = await res.json();
+      const data = await res.json();
 
       if (!res.ok) {
         return showMsg(data.error || 'Erreur de connexion.');
@@ -230,10 +230,10 @@ const nonce = Astro.locals.nonce;
 
   btn.addEventListener('click', handleLogin);
 
-  var remembered = localStorage.getItem('rememberedEmail');
+  const remembered = localStorage.getItem('rememberedEmail');
   if (remembered) {
     emailInput.value = remembered;
-    document.getElementById('remember-me').checked = true;
+    (document.getElementById('remember-me') as HTMLInputElement).checked = true;
   }
 
   [emailInput, passInput].forEach(function(el) {

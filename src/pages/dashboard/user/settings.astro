@@ -276,6 +276,93 @@ const error  = Astro.url.searchParams.get('error')  ?? '';
     </button>
   </div>
 
+  <script>
+    // Gestion du formulaire de mise à jour de profil
+    const profileForm = document.querySelector('form[action="/auth/update-profile"]');
+    console.log('Profile form found:', !!profileForm);
+    console.log('Profile form action:', profileForm?.action);
+    if (profileForm instanceof HTMLFormElement) {
+      profileForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const formData = new FormData(profileForm);
+        const btn = profileForm.querySelector('button[type="submit"]');
+        console.log('Button found:', !!btn);
+        if (!btn || btn instanceof HTMLButtonElement === false) return;
+        
+        const originalText = btn.textContent;
+        btn.disabled = true;
+        btn.textContent = 'Enregistrement...';
+        
+        try {
+          console.log('Sending request to /auth/update-profile');
+          const response = await fetch('/auth/update-profile', {
+            method: 'POST',
+            body: formData,
+          });
+          console.log('Response status:', response.status);
+          
+          const data = await response.json();
+          console.log('Response data:', data);
+          
+          if (!response.ok) {
+            throw new Error(data.error || 'Erreur lors de la mise à jour');
+          }
+          
+          // Rediriger avec le paramètre de succès
+          window.location.href = '/dashboard/user/settings?saved=1';
+        } catch (error: any) {
+          console.error('Error during update:', error);
+          // Rediriger avec le paramètre d'erreur
+          const errorMsg = encodeURIComponent(error.message || 'Erreur inconnue');
+          window.location.href = `/dashboard/user/settings?error=${errorMsg}`;
+        }
+      });
+    }
+    
+    // Gestion du formulaire de mise à jour de mot de passe
+    const passwordForm = document.querySelector('form[action="/auth/update-password"]');
+    console.log('Password form found:', !!passwordForm);
+    console.log('Password form action:', passwordForm?.action);
+    if (passwordForm instanceof HTMLFormElement) {
+      passwordForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const formData = new FormData(passwordForm);
+        const btn = passwordForm.querySelector('button[type="submit"]');
+        console.log('Button found:', !!btn);
+        if (!btn || btn instanceof HTMLButtonElement === false) return;
+        
+        const originalText = btn.textContent;
+        btn.disabled = true;
+        btn.textContent = 'Mise à jour...';
+        
+        try {
+          console.log('Sending request to /auth/update-password');
+          const response = await fetch('/auth/update-password', {
+            method: 'POST',
+            body: formData,
+          });
+          console.log('Response status:', response.status);
+          
+          const data = await response.json();
+          console.log('Response data:', data);
+          
+          if (!response.ok) {
+            throw new Error(data.error || 'Erreur lors de la mise à jour du mot de passe');
+          }
+          
+          // Rediriger avec le paramètre de succès
+          window.location.href = '/dashboard/user/settings?pw=1';
+        } catch (error: any) {
+          console.error('Error during password update:', error);
+          // Rediriger avec le paramètre d'erreur
+          const errorMsg = encodeURIComponent(error.message || 'Erreur inconnue');
+          window.location.href = `/dashboard/user/settings?error=${errorMsg}`;
+        }
+      });
+    }
+  </script>
 </DashboardLayout>
 
 <style>

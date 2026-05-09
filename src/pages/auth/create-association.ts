@@ -1,9 +1,9 @@
 import type { APIRoute } from 'astro';
-import { createSupabaseAdminClient } from '@/lib/supabase';
+import { createSupabaseClient } from '@/lib/supabase';
 
 export const POST: APIRoute = async ({ request, cookies }) => {
   try {
-    if (!import.meta.env.SUPABASE_URL || !import.meta.env.SUPABASE_SERVICE_ROLE_KEY) {
+    if (!import.meta.env.SUPABASE_URL || !import.meta.env.SUPABASE_ANON_KEY) {
       return new Response(
         JSON.stringify({ error: 'Configuration Supabase manquante.' }),
         { status: 500, headers: { 'Content-Type': 'application/json' } },
@@ -43,10 +43,10 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       );
     }
 
-    const adminClient = createSupabaseAdminClient();
+    const supabase = createSupabaseClient({ request, cookies });
 
     // Récupérer l'utilisateur connecté
-    const { data: { user }, error: userError } = await adminClient.auth.getUser();
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
 
     if (userError || !user) {
       return new Response(
@@ -56,7 +56,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     }
 
     // Vérifier si l'utilisateur a déjà une association
-    const { data: existingAssoc } = await adminClient
+    const { data: existingAssoc } = await supabase
       .from('associations')
       .select('id')
       .eq('id', user.id)
@@ -70,7 +70,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     }
 
     // Créer l'enregistrement dans la table associations
-    const { error: assocError } = await adminClient
+    const { error: assocError } = await supabase
       .from('associations')
       .insert({
         id: user.id,
@@ -93,7 +93,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     }
 
     // Créer la demande d'inscription
-    const { error: requestError } = await adminClient
+    const { error: requestError } = await supabase
       .from('association_requests')
       .insert({
         structure_name: structureName,

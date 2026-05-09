@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { createSupabaseClient } from '@/lib/supabase';
+import { createSupabaseClient, createSupabaseAdminClient } from '@/lib/supabase';
 
 export const POST: APIRoute = async ({ request, cookies }) => {
   try {
@@ -44,6 +44,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     }
 
     const supabase = createSupabaseClient({ request, cookies });
+    const adminClient = createSupabaseAdminClient();
 
     // Récupérer l'utilisateur connecté
     const { data: { user }, error: userError } = await supabase.auth.getUser();
@@ -56,7 +57,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     }
 
     // Vérifier si l'utilisateur a déjà une association
-    const { data: existingAssoc } = await supabase
+    const { data: existingAssoc } = await adminClient
       .from('associations')
       .select('id')
       .eq('id', user.id)
@@ -69,8 +70,8 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       );
     }
 
-    // Créer l'enregistrement dans la table associations
-    const { error: assocError } = await supabase
+    // Créer l'enregistrement dans la table associations (avec admin client pour bypass RLS)
+    const { error: assocError } = await adminClient
       .from('associations')
       .insert({
         id: user.id,
@@ -92,8 +93,8 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       );
     }
 
-    // Créer la demande d'inscription
-    const { error: requestError } = await supabase
+    // Créer la demande d'inscription (avec admin client pour bypass RLS)
+    const { error: requestError } = await adminClient
       .from('association_requests')
       .insert({
         structure_name: structureName,

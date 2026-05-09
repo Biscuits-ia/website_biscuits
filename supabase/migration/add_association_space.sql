@@ -28,7 +28,7 @@ ALTER TABLE public.profiles
 CREATE TABLE IF NOT EXISTS public.associations (
   id                uuid        PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
   structure_name    text        NOT NULL,
-  siret             text        NOT NULL UNIQUE,
+  siret             text        UNIQUE,
   rna_number        text        UNIQUE,
   address           text        NOT NULL,
   phone_number      text        NOT NULL,
@@ -133,15 +133,12 @@ CREATE POLICY "associations_self_read"
     )
   );
 
--- Insertion : admin seulement (via inscription approuvée)
-DROP POLICY IF EXISTS "associations_admin_insert" ON public.associations;
-CREATE POLICY "associations_admin_insert"
+-- Insertion : utilisateur connecté seulement (son propre profil)
+DROP POLICY IF EXISTS "associations_user_insert" ON public.associations;
+CREATE POLICY "associations_user_insert"
   ON public.associations FOR INSERT
   WITH CHECK (
-    EXISTS (
-      SELECT 1 FROM public.profiles
-      WHERE id = auth.uid() AND role IN ('admin', 'moderator')
-    )
+    id = auth.uid()
   );
 
 -- Mise à jour : association elle-même ou admin

@@ -58,6 +58,13 @@ const nonce = Astro.locals.nonce;
           Déjà un compte ?
           <a href="/connexion" class="auth-link-primary">Se connecter →</a>
         </p>
+
+        <div class="auth-divider" style="margin-top:24px;"><span>ou</span></div>
+
+        <p style="text-align:center; font-size:13px; color:#9A7E5A;">
+          Vous représentez une association ou TPE ?
+          <a href="/inscription-association" class="auth-link-green">Inscription association →</a>
+        </p>
       </div>
     </div>
   </div>
@@ -123,6 +130,8 @@ const nonce = Astro.locals.nonce;
   .auth-divider span { font-size:12px; color:#B8A88A; }
   .auth-link-primary { color:#C4623A; font-weight:500; margin-left:4px; transition:opacity .15s; }
   .auth-link-primary:hover { opacity:.75; }
+  .auth-link-green { color:#3D5A47; font-weight:500; margin-left:4px; transition:opacity .15s; }
+  .auth-link-green:hover { opacity:.75; }
   .auth-spinner { animation:spin .7s linear infinite; }
   @keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
 </style>

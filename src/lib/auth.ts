@@ -42,7 +42,7 @@ export async function stopBeingBenevole(userId: string): Promise<boolean> {
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
-export type UserRole = 'user' | 'moderator' | 'admin' | 'benevole' | 'data_analyst';
+export type UserRole = 'user' | 'moderator' | 'admin' | 'benevole' | 'data_analyst' | 'association';
 
 export interface AuthResult {
   user:     User;
@@ -58,7 +58,7 @@ export function canAccessAnalytics(role: UserRole | null | undefined): role is '
 // ── Type guard ────────────────────────────────────────────────────────────────
 
 function isUserRole(value: unknown): value is UserRole {
-  return value === 'user' || value === 'moderator' || value === 'admin' || value === 'benevole' || value === 'data_analyst';
+  return value === 'user' || value === 'moderator' || value === 'admin' || value === 'benevole' || value === 'data_analyst' || value === 'association';
 }
 
 // ── Helper interne : fetch du rôle via le service role (bypass RLS) ───────────
@@ -192,6 +192,32 @@ export async function requireBenevole(Astro: AstroGlobal): Promise<AuthResult | 
   const role = await fetchRoleSecure(user.id);
 
   if (role !== 'benevole' && role !== 'moderator' && role !== 'admin') {
+    return Astro.redirect('/dashboard/user');
+  }
+
+  const { data: { session } } = await supabase.auth.getSession();
+
+  return { user, session, supabase, role };
+}
+
+// ── requireAssociation ───────────────────────────────────────────────────────
+
+/**
+ * Vérifie que l'utilisateur est connecté ET a le rôle `association`, `admin` ou `moderator`.
+ * Retourne un AuthResult ou une Response de redirection.
+ */
+export async function requireAssociation(Astro: AstroGlobal): Promise<AuthResult | Response> {
+  const supabase = Astro.locals.supabase ?? createSupabaseClient(Astro);
+
+  const { data: { user }, error } = await supabase.auth.getUser();
+
+  if (error || !user) {
+    return Astro.redirect('/connexion');
+  }
+
+  const role = await fetchRoleSecure(user.id);
+
+  if (role !== 'association' && role !== 'admin' && role !== 'moderator') {
     return Astro.redirect('/dashboard/user');
   }
 

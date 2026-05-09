@@ -43,15 +43,21 @@ const role: UserRole    = authResult.role;
 const isAdmin           = role === 'admin';
 const isModerator       = role === 'moderator';
 const isBenevole        = role === 'benevole';
+const isAssociation     = role === 'association';
 const isDataAnalyst     = role === 'data_analyst';
 
 // Nom d'affichage : priorité à la prop (passée depuis la page parente),
 // sinon on prend le user de authResult
-const displayName  = userName !== 'Utilisateur'
+const displayName = userName !== 'Utilisateur'
   ? userName
-  : authResult.user.user_metadata?.full_name
-    ?? authResult.user.email?.split('@')[0]
-    ?? 'Utilisateur';
+  : isAssociation
+    ? authResult.user.user_metadata?.organization
+      ?? authResult.user.user_metadata?.full_name
+      ?? authResult.user.email?.split('@')[0]
+      ?? 'Structure'
+    : authResult.user.user_metadata?.full_name
+      ?? authResult.user.email?.split('@')[0]
+      ?? 'Utilisateur';
 
 // ── Navigation ────────────────────────────────────────────────────────────────
 
@@ -93,6 +99,14 @@ const benevoleNav: NavItem[] = [
   { id: 'settings',   label: 'Paramètres',       icon: 'settings' },
 ];
 
+const associationNav: NavItem[] = [
+  { id: 'overview',   label: "Vue d'ensemble",  icon: 'grid'     },
+  { id: 'projets',    label: 'Projets',          icon: 'folder'   },
+  { id: 'rendez-vous',label: 'Rendez-vous',     icon: 'calendar' },
+  { id: 'ressources', label: 'Ressources',       icon: 'flag'     },
+  { id: 'settings',   label: 'Paramètres',       icon: 'settings' },
+];
+
 const dataAnalystNav: NavItem[] = [
   { id: 'overview',   label: "Vue data",         icon: 'grid',      href: '/dashboard/data' },
   { id: 'analytics',  label: 'Analytics',          icon: 'bar-chart', href: '/dashboard/kpis' },
@@ -100,8 +114,8 @@ const dataAnalystNav: NavItem[] = [
   { id: 'settings',   label: 'Paramètres',        icon: 'settings',  href: '/dashboard/user/settings' },
 ];
 
-const nav = isAdmin ? adminNav : isDataAnalyst ? dataAnalystNav : isBenevole ? benevoleNav : userNav;
-const dashRole = isAdmin ? 'admin' : isDataAnalyst ? 'data' : isBenevole ? 'benevole' : 'user';
+const nav = isAdmin ? adminNav : isDataAnalyst ? dataAnalystNav : isBenevole ? benevoleNav : isAssociation ? associationNav : userNav;
+const dashRole = isAdmin ? 'admin' : isDataAnalyst ? 'data' : isBenevole ? 'benevole' : isAssociation ? 'association' : 'user';
 
 // ── Icônes SVG ────────────────────────────────────────────────────────────────
 
@@ -131,7 +145,7 @@ const initials = displayName.split(' ').map((n: string) => n[0]).join('').toUppe
 <head>
   <BaseHead
     fullTitle={`${title} — Biscuits`}
-    description={`Espace ${isAdmin ? 'administrateur' : isDataAnalyst ? 'data analyst' : isBenevole ? 'bénévole' : 'membre'} Biscuits IA`}
+    description={`Espace ${isAdmin ? 'administrateur' : isDataAnalyst ? 'data analyst' : isBenevole ? 'bénévole' : isAssociation ? 'association/TPE' : 'membre'} Biscuits IA`}
     fullCanonical={`${siteUrl}/dashboard/${dashRole}`}
     siteUrl={siteUrl}
     noindex={true}
@@ -147,7 +161,7 @@ const initials = displayName.split(' ').map((n: string) => n[0]).join('').toUppe
       <div class="sidebar-logo">
         <div class="sidebar-logo-text">
           <span class="sidebar-logo-name">Biscuits</span>
-          <span class="sidebar-logo-sub">{isAdmin ? 'admin' : isDataAnalyst ? 'espace data' : isBenevole ? 'espace bénévole' : 'espace membre'}</span>
+          <span class="sidebar-logo-sub">{isAdmin ? 'admin' : isDataAnalyst ? 'espace data' : isBenevole ? 'espace bénévole' : isAssociation ? 'espace association' : 'espace membre'}</span>
         </div>
       </div>
 
@@ -182,7 +196,7 @@ const initials = displayName.split(' ').map((n: string) => n[0]).join('').toUppe
           <div class="user-avatar">{initials}</div>
           <div class="user-info">
             <div class="user-name">{displayName}</div>
-            <div class="user-role">{isAdmin ? 'admin' : isDataAnalyst ? 'data analyst' : isModerator ? 'modérateur' : isBenevole ? 'bénévole' : 'membre'}</div>
+            <div class="user-role">{isAdmin ? 'admin' : isDataAnalyst ? 'data analyst' : isModerator ? 'modérateur' : isBenevole ? 'bénévole' : isAssociation ? 'association' : 'membre'}</div>
           </div>
         </div>
         <a href="/" class="btn btn-ghost btn-full btn-xs-text">

@@ -1,0 +1,312 @@
+---
+import AuthLayout from '../layouts/AuthLayout.astro';
+import { createSupabaseClient } from '../lib/supabase';
+const supabase = createSupabaseClient(Astro);
+const { data: { user } } = await supabase.auth.getUser();
+if (user) return Astro.redirect('/dashboard/user');
+const nonce = Astro.locals.nonce;
+---
+
+<AuthLayout title="Inscription Association/TPE" description="Créez un compte pour votre association ou TPE.">
+  <div style="min-height:100vh; display:flex; align-items:center; justify-content:center; padding:2rem 1rem; margin-top: 3rem;">
+    <div style="width:100%; max-width:500px;">
+
+      <div style="background:#FDFAF4; border:1.5px solid #DDD0B8; border-radius:16px; padding:36px;">
+        <h1 style="font-size:22px; font-weight:500; color:#2C2014; margin-bottom:6px;">Inscription Association/TPE</h1>
+        <p style="font-size:14px; color:#7A6040; line-height:1.6; margin-bottom:28px;">
+          Remplissez ce formulaire pour créer un compte dédié à votre structure.
+        </p>
+
+        <form id="association-form" class="flex flex-col gap-4">
+          <!-- Informations de la structure -->
+          <div>
+            <label for="structure_name" class="auth-label">Nom de la structure</label>
+            <input type="text" id="structure_name" placeholder="Nom de votre association ou TPE" autocomplete="organization" class="auth-input" required />
+          </div>
+
+          <div>
+            <label for="siret" class="auth-label">Numéro SIRET <span style="color:#9A7E5A; font-weight:400;">(optionnel)</span></label>
+            <input type="text" id="siret" placeholder="12345678901234" autocomplete="off" class="auth-input" pattern="[0-9]{14}" />
+            <p style="font-size:11px; color:#9A7E5A; margin-top:4px;">14 chiffres sans espace</p>
+          </div>
+
+          <div>
+            <label for="rna_number" class="auth-label">Numéro RNA <span style="color:#9A7E5A; font-weight:400;">(optionnel)</span></label>
+            <input type="text" id="rna_number" placeholder="W123456789" autocomplete="off" class="auth-input" />
+            <p style="font-size:11px; color:#9A7E5A; margin-top:4px;">Format: W suivi de 9 chiffres (ex: W123456789)</p>
+          </div>
+
+          <div>
+            <label for="address" class="auth-label">Adresse postale</label>
+            <input type="text" id="address" placeholder="123 rue Exemple, 75000 Paris" autocomplete="street-address" class="auth-input" required />
+          </div>
+
+          <div>
+            <label for="phone_number" class="auth-label">Numéro de téléphone</label>
+            <input type="tel" id="phone_number" placeholder="+33 6 00 00 00 00" autocomplete="tel" class="auth-input" required />
+          </div>
+
+          <div>
+            <label for="description" class="auth-label">Description de votre structure <span style="color:#9A7E5A; font-weight:400;">(optionnel)</span></label>
+            <textarea id="description" placeholder="Présentez brièvement votre association ou TPE..." class="auth-input" style="min-height:80px; resize:vertical; font-family:inherit;"></textarea>
+          </div>
+
+          <!-- Informations de connexion -->
+          <div style="margin-top:24px; padding-top:24px; border-top:1px solid #DDD0B8;">
+            <h2 style="font-size:16px; font-weight:500; color:#2C2014; margin-bottom:16px;">Créer un compte</h2>
+
+            <div>
+              <label for="email" class="auth-label">Adresse email de connexion</label>
+              <input type="email" id="email" placeholder="vous@exemple.com" autocomplete="email" class="auth-input" required />
+            </div>
+
+            <div style="margin-bottom:10px; margin-top:10px;">
+              <label for="password" class="auth-label">Mot de passe</label>
+              <input type="password" id="password" placeholder="••••••••" autocomplete="new-password" class="auth-input" required />
+            </div>
+
+            <div style="margin-bottom:24px;">
+              <label for="confirm" class="auth-label">Confirmer le mot de passe</label>
+              <input type="password" id="confirm" placeholder="••••••••" autocomplete="new-password" class="auth-input" required />
+            </div>
+          </div>
+
+          <button id="signup-btn" class="auth-btn-primary" type="button">
+            <span id="btn-text">S'inscrire</span>
+            <svg id="btn-loader" class="auth-spinner" style="display:none;" width="14" height="14"
+                 viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+              <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+            </svg>
+          </button>
+
+          <div id="msg" class="auth-msg" style="display:none;" role="alert"></div>
+        </form>
+
+        <div class="auth-divider"><span>ou</span></div>
+
+        <p style="text-align:center; font-size:13px; color:#9A7E5A;">
+          Déjà un compte ?
+          <a href="/connexion" class="auth-link-primary">Se connecter →</a>
+        </p>
+      </div>
+    </div>
+  </div>
+</AuthLayout>
+
+<style>
+  .auth-label {
+    display: block;
+    font-size: 11px;
+    font-family: 'Geist Mono', monospace;
+    color: #9A7E5A;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    margin-bottom: 7px;
+  }
+  .auth-input {
+    width: 100%;
+    padding: 11px 14px;
+    border: 1.5px solid #1f1d18;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #2C2014;
+    background: #F7F2E8;
+    font-family: 'Geist', sans-serif;
+    font-weight: 400;
+    box-sizing: border-box;
+    transition: border-color .15s, background .15s;
+  }
+  .auth-input:focus {
+    outline: none;
+    border-color: oklch(56.007% 0.1046 59.407);
+    background: #FDFAF4;
+    box-shadow: 0 0 0 3px rgba(196, 98, 58, .12);
+  }
+  .auth-input::placeholder { color: oklch(55.697% 0.02027 59.139); }
+  .auth-btn-primary {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 20px;
+    background: oklch(56.007% 0.1046 59.407);
+    color: oklch(93.534% 0.02803 62.211);
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+    border: none;
+    font-family: 'Geist', sans-serif;
+    transition: background .15s;
+  }
+  .auth-btn-primary:hover   { background: oklch(46.007% 0.1046 59.407); }
+  .auth-btn-primary:active  { background: oklch(36.007% 0.1046 59.407); }
+  .auth-btn-primary:disabled { opacity:.6; cursor:not-allowed; }
+  .auth-msg { margin-top:14px; padding:10px 14px; border-radius:8px; font-size:13px; text-align:center; line-height:1.5; }
+  .auth-msg.error   { background:#FAEAE4; border:1px solid #E8B9A6; color:#8B3820; }
+  .auth-msg.warn    { background:#FEF3E2; border:1px solid #E8CFA6; color:#7A4E0A; }
+  .auth-msg.success { background:#E8F0EA; border:1px solid #B5CDB9; color:#2E5A38; }
+  .auth-divider { display:flex; align-items:center; gap:12px; margin:20px 0; }
+  .auth-divider::before, .auth-divider::after { content:''; flex:1; height:1px; background:#DDD0B8; }
+  .auth-divider span { font-size:12px; color:#B8A88A; }
+  .auth-link-primary { color:#C4623A; font-weight:500; margin-left:4px; transition:opacity .15s; }
+  .auth-link-primary:hover { opacity:.75; }
+  .auth-spinner { animation:spin .7s linear infinite; }
+  @keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+</style>
+
+<script is:inline nonce={nonce}>
+  document.addEventListener('DOMContentLoaded', function() {
+    var form = document.getElementById('association-form');
+    var msgEl = document.getElementById('msg');
+    var btn = document.getElementById('signup-btn');
+    var btnText = document.getElementById('btn-text');
+    var btnLoader = document.getElementById('btn-loader');
+
+    function showMsg(text, type) {
+      if (type === undefined) type = 'error';
+      msgEl.textContent = text;
+      msgEl.className = 'auth-msg ' + type;
+      msgEl.style.display = 'block';
+    }
+
+    function hideMsg() { msgEl.style.display = 'none'; }
+
+    function setLoading(loading) {
+      btn.disabled = loading;
+      btnText.style.display = loading ? 'none' : 'block';
+      btnLoader.style.display = loading ? 'flex' : 'none';
+    }
+
+    btn.addEventListener('click', async function() {
+      hideMsg();
+      setLoading(true);
+
+      // Récupérer les données du formulaire
+      var structureName = document.getElementById('structure_name').value.trim();
+      var siret = document.getElementById('siret').value.trim();
+      var rnaNumber = document.getElementById('rna_number').value.trim();
+      var address = document.getElementById('address').value.trim();
+      var phoneNumber = document.getElementById('phone_number').value.trim();
+      var contactEmail = document.getElementById('contact_email').value.trim();
+      var description = document.getElementById('description').value.trim();
+      var email = document.getElementById('email').value.trim();
+      var password = document.getElementById('password').value;
+      var confirm = document.getElementById('confirm').value;
+
+      // Validation simple
+      if (!structureName || !address || !phoneNumber || !contactEmail || !email || !password) {
+        showMsg('Veuillez remplir tous les champs obligatoires.', 'error');
+        setLoading(false);
+        return;
+      }
+
+      // Valider le SIRET si fourni (14 chiffres)
+      if (siret && !/^\d{14}$/.test(siret)) {
+        showMsg('Le numéro SIRET doit contenir exactement 14 chiffres.', 'error');
+        setLoading(false);
+        return;
+      }
+
+      // Valider le RNA si fourni (W suivi de 9 chiffres)
+      if (rnaNumber && !/^W\d{9}$/.test(rnaNumber)) {
+        showMsg('Le numéro RNA doit avoir le format W suivi de 9 chiffres (ex: W123456789).', 'error');
+        setLoading(false);
+        return;
+      }
+
+      if (password !== confirm) {
+        showMsg('Les mots de passe ne correspondent pas.', 'error');
+        setLoading(false);
+        return;
+      }
+
+      if (password.length < 8) {
+        showMsg('Le mot de passe doit contenir au moins 8 caractères.', 'error');
+        setLoading(false);
+        return;
+      }
+
+      // Créer l'utilisateur dans Supabase
+      const { data, error } = await supabase.auth.signUp({
+        email: email,
+        password: password,
+        options: {
+          data: {
+            full_name: structureName,
+            phone: phoneNumber,
+            organization: structureName,
+            role: 'association'
+          },
+          emailRedirectTo: `${window.location.origin}/verifier-code-inscription`
+        }
+      });
+
+      if (error) {
+        console.error('Supabase error:', error);
+        if (error.message.includes('already registered')) {
+          showMsg('Cet email est déjà utilisé.', 'error');
+        } else {
+          showMsg('Erreur lors de la création du compte. ' + error.message, 'error');
+        }
+        setLoading(false);
+        return;
+      }
+
+      if (data.user) {
+        // Créer l'enregistrement dans la table associations
+        const { error: assocError } = await supabase
+          .from('associations')
+          .insert({
+            id: data.user.id,
+            structure_name: structureName,
+            siret: siret || null,
+            rna_number: rnaNumber || null,
+            address: address,
+            phone_number: phoneNumber,
+            contact_email: contactEmail,
+            description: description,
+            is_verified: false
+          });
+
+        if (assocError) {
+          console.error('Association insert error:', assocError);
+          // On ne supprime pas l'utilisateur car il est déjà créé
+          showMsg('Compte créé mais erreur lors de la création du profil association. Contactez-nous.', 'error');
+          setLoading(false);
+          return;
+        }
+
+        // Créer la demande d'inscription
+        const { error: requestError } = await supabase
+          .from('association_requests')
+          .insert({
+            structure_name: structureName,
+            siret: siret || null,
+            rna_number: rnaNumber || null,
+            address: address,
+            phone_number: phoneNumber,
+            contact_email: contactEmail,
+            description: description,
+            status: 'pending'
+          });
+
+        if (requestError) {
+          console.error('Request insert error:', requestError);
+        }
+
+        showMsg('✓ Compte créé avec succès ! Vérifiez votre email pour confirmer votre inscription.', 'success');
+        setLoading(false);
+        
+        // Rediriger vers la page de confirmation
+        setTimeout(function() {
+          window.location.href = '/verifier-code-inscription';
+        }, 2000);
+      } else {
+        showMsg('Erreur inconnue. Veuillez réessayer.', 'error');
+        setLoading(false);
+      }
+    });
+  });
+</script>

@@ -112,6 +112,49 @@ export interface CorpsConfig {
   kpis: Array<{ name: string; unit: string; target: number }>;
 }
 
+// ── Types pour les associations/TPE ───────────────────────────────────────────
+
+export interface AssociationProfile {
+  id: string;
+  structure_name: string;
+  siret: string;
+  rna_number: string | null;
+  address: string;
+  phone_number: string;
+  contact_email: string;
+  description: string | null;
+  is_verified: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface AssociationProject {
+  id: string;
+  association_id: string;
+  title: string;
+  description: string | null;
+  status: 'active' | 'on_hold' | 'completed' | 'archived';
+  priority: 'low' | 'medium' | 'high';
+  deadline: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface AssociationRequest {
+  id: string;
+  structure_name: string;
+  siret: string | null;
+  rna_number: string | null;
+  address: string;
+  phone_number: string;
+  contact_email: string;
+  description: string | null;
+  status: 'pending' | 'approved' | 'rejected';
+  admin_notes: string | null;
+  processed_at: string | null;
+  created_at: string;
+}
+
 export type Database = {
   public: {
     Tables: {
@@ -119,6 +162,9 @@ export type Database = {
       profiles: { Row: Profile; Insert: Partial<Profile>; Update: Partial<Profile> };
       sprints: { Row: Sprint; Insert: Partial<Sprint>; Update: Partial<Sprint> };
       kpi_snapshots: { Row: KpiSnapshot; Insert: Partial<KpiSnapshot>; Update: Partial<KpiSnapshot> };
+      associations: { Row: AssociationProfile; Insert: Partial<AssociationProfile>; Update: Partial<AssociationProfile> };
+      association_projects: { Row: AssociationProject; Insert: Partial<AssociationProject>; Update: Partial<AssociationProject> };
+      association_requests: { Row: AssociationRequest; Insert: Partial<AssociationRequest>; Update: Partial<AssociationRequest> };
     };
   };
 };

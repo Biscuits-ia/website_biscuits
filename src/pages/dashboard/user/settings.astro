@@ -110,6 +110,99 @@ const error  = Astro.url.searchParams.get('error')  ?? '';
       </form>
     </div>
 
+    <!-- Association/TPE -->
+    <div class="card flex-1">
+      <div class="card-header">
+        <span class="card-title">Association/TPE</span>
+      </div>
+      <p class="text-muted text-sm mb-4">
+        Configurez votre profil association ou TPE pour accéder aux fonctionnalités dédiées.
+      </p>
+
+      <form method="POST" action="/auth/create-association" class="flex flex-col gap-4">
+        <div class="field">
+          <label for="assoc_structure_name">Nom de la structure</label>
+          <input
+            type="text"
+            id="assoc_structure_name"
+            name="structure_name"
+            placeholder="Nom de votre association ou TPE"
+            class="border border-border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          />
+        </div>
+
+        <div class="field">
+          <label for="assoc_siret">Numéro SIRET <span class="text-muted font-normal">(optionnel)</span></label>
+          <input
+            type="text"
+            id="assoc_siret"
+            name="siret"
+            placeholder="14 chiffres"
+            class="border border-border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          />
+        </div>
+
+        <div class="field">
+          <label for="assoc_rna">Numéro RNA <span class="text-muted font-normal">(optionnel)</span></label>
+          <input
+            type="text"
+            id="assoc_rna"
+            name="rna_number"
+            placeholder="W123456789"
+            class="border border-border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          />
+        </div>
+
+        <div class="field">
+          <label for="assoc_address">Adresse postale</label>
+          <input
+            type="text"
+            id="assoc_address"
+            name="address"
+            placeholder="123 rue Exemple, 75000 Paris"
+            class="border border-border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          />
+        </div>
+
+        <div class="field">
+          <label for="assoc_phone">Numéro de téléphone</label>
+          <input
+            type="tel"
+            id="assoc_phone"
+            name="phone_number"
+            placeholder="+33 6 00 00 00 00"
+            class="border border-border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          />
+        </div>
+
+        <div class="field">
+          <label for="assoc_email">Email de contact</label>
+          <input
+            type="email"
+            id="assoc_email"
+            name="contact_email"
+            placeholder="contact@votre-structure.fr"
+            class="border border-border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          />
+        </div>
+
+        <div class="field">
+          <label for="assoc_description">Description <span class="text-muted font-normal">(optionnel)</span></label>
+          <textarea
+            id="assoc_description"
+            name="description"
+            placeholder="Présentez brièvement votre structure..."
+            class="border border-border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            style="min-height: 80px; resize: vertical;"
+          ></textarea>
+        </div>
+
+        <div>
+          <button type="submit" class="btn btn-primary">Créer mon profil association</button>
+        </div>
+      </form>
+    </div>
+
     <!-- Mot de passe -->
     <div class="card flex-1">
       <div class="card-header">

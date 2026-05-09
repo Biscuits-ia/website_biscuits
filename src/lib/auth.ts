@@ -40,6 +40,82 @@ export async function stopBeingBenevole(userId: string): Promise<boolean> {
   return true;
 }
 
+// ── createAssociation : crée un profil association pour un utilisateur ─────────────
+/**
+ * Crée un profil association pour l'utilisateur connecté.
+ * Utilise le client admin pour bypass les RLS.
+ */
+export async function createAssociation(
+  userId: string,
+  data: {
+    structure_name: string;
+    siret?: string | null;
+    rna_number?: string | null;
+    address: string;
+    phone_number: string;
+    contact_email: string;
+    description?: string | null;
+  }
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const adminClient = createSupabaseAdminClient();
+
+    // Vérifier si l'utilisateur a déjà une association
+    const { data: existingAssoc } = await adminClient
+      .from('associations')
+      .select('id')
+      .eq('id', userId)
+      .single();
+
+    if (existingAssoc) {
+      return { success: false, error: 'Vous avez déjà un profil association.' };
+    }
+
+    // Créer l'enregistrement dans la table associations
+    const { error: assocError } = await adminClient
+      .from('associations')
+      .insert({
+        id: userId,
+        structure_name: data.structure_name,
+        siret: data.siret || null,
+        rna_number: data.rna_number || null,
+        address: data.address,
+        phone_number: data.phone_number,
+        contact_email: data.contact_email,
+        description: data.description || null,
+        is_verified: false
+      });
+
+    if (assocError) {
+      console.error('[auth] createAssociation error:', assocError.message);
+      return { success: false, error: 'Erreur lors de la création du profil association.' };
+    }
+
+    // Créer la demande d'inscription
+    const { error: requestError } = await adminClient
+      .from('association_requests')
+      .insert({
+        structure_name: data.structure_name,
+        siret: data.siret || null,
+        rna_number: data.rna_number || null,
+        address: data.address,
+        phone_number: data.phone_number,
+        contact_email: data.contact_email,
+        description: data.description || null,
+        status: 'pending'
+      });
+
+    if (requestError) {
+      console.error('[auth] createAssociation request error:', requestError.message);
+    }
+
+    return { success: true };
+  } catch (err) {
+    console.error('[auth] createAssociation exception:', err);
+    return { success: false, error: 'Erreur serveur.' };
+  }
+}
+
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 export type UserRole = 'user' | 'moderator' | 'admin' | 'benevole' | 'data_analyst' | 'association';

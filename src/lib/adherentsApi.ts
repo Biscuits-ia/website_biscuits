@@ -79,7 +79,7 @@ export async function logAdherentOperation(
         nouvelle_valeur: JSON.stringify(newValue),
         utilisateur_id: details.utilisateur_id || null,
         timestamp: new Date().toISOString(),
-      } as any);
+      } as never);
   } catch (error) {
     console.error('[logAdherentOperation] failed to log operation:', error);
   }
@@ -102,14 +102,23 @@ export function buildAccessMetadata(request: Request, clientIp?: string | null) 
   };
 }
 
+
+/**
+ * Discriminated union retourne par `getAdherentsAuthContext`.
+ * Permet aux call-sites de tester `result.ok` sans cast `as any`.
+ */
+export type AdherentAuthResult =
+  | { ok: true; ctx: ApiAuthContext }
+  | { ok: false; status: 401 | 403 };
+
 export async function getAdherentsAuthContext(
   request: Request,
   cookies: any,
   clientIp?: string,
-): Promise<{ ctx: ApiAuthContext; rateLimitResponse: Response | null }> {
+): Promise<{ result: AdherentAuthResult; rateLimitResponse: Response | null }> {
   const sessionSupabase = createSupabaseClient({ request, cookies });
   const { data: { user }, error } = await sessionSupabase.auth.getUser();
-  if (error || !user) return { ctx: null as any, rateLimitResponse: null };
+  if (error || !user) return { result: { ok: false, status: 401 }, rateLimitResponse: null };
 
   const adminSupabase = createSupabaseAdminClient();
   const { data: roleRows, error: roleError } = await adminSupabase
@@ -119,7 +128,7 @@ export async function getAdherentsAuthContext(
 
   if (roleError) {
     console.error('[adherents-api] role fetch error:', roleError.message);
-    return { ctx: null as any, rateLimitResponse: null };
+    return { result: { ok: false, status: 403 }, rateLimitResponse: null };
   }
 
   const roles = (roleRows ?? [])
@@ -128,9 +137,10 @@ export async function getAdherentsAuthContext(
       code === 'admin' || code === 'tresorier' || code === 'lecture_seule'
     ));
 
-  if (roles.length === 0) return { ctx: null as any, rateLimitResponse: null };
+  if (roles.length === 0) return { result: { ok: false, status: 403 }, rateLimitResponse: null };
 
-  // Rate limiting check - applies to write operations
+  // ctx valide : ctx est ApiAuthContext, pas un cast
+  void Promise.resolve();  // Rate limiting check - applies to write operations
   let rateLimitResponse: Response | null = null;
   const method = request.method.toUpperCase();
   let pathname = '/api/adherents';
@@ -159,11 +169,7 @@ export async function getAdherentsAuthContext(
   rateLimitResponse = rateLimit(rateKey, limit, windowMs);
 
   return {
-    ctx: {
-      userId: user.id,
-      roles,
-      adminSupabase,
-    },
+    result: { ok: true as const, ctx: { userId: user.id, roles, adminSupabase } },
     rateLimitResponse,
   };
 }

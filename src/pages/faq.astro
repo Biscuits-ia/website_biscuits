@@ -1,29 +1,77 @@
 ---
+// src/pages/faq.astro
+// FAQ publique avec schema FAQPage (rich snippet Google). 100% statique,
+// prétendue `prerender = true` pour la mise en cache CDN.
+
+export const prerender = true;
+
 import BaseLayout from '@/layouts/Layout.astro';
+
+const faq = [
+  {
+    q: 'Qui peut rejoindre Biscuits IA ?',
+    a: "Associations, collectifs, bénévoles et petites structures qui veulent utiliser l'IA de façon utile et responsable. Pas de niveau technique requis, pas de barrière à l'entrée.",
+  },
+  {
+    q: 'Vos ressources sont-elles gratuites ?',
+    a: 'Oui. Guides, checklists PDF, ateliers : tout est accessible gratuitement ou à prix libre. Notre objectif est de faciliter l\'accès aux bons outils, sans barrière financière.',
+  },
+  {
+    q: 'Comment demander un accompagnement ?',
+    a: "Vous pouvez nous contacter via la page Contact ou prendre directement un rendez-vous en ligne. Nous répondons sous 48h ouvrées.",
+  },
+  {
+    q: 'Vos ateliers sont-ils en ligne ou en présentiel ?',
+    a: 'Les deux. Les sessions en ligne accueillent jusqu\'à 15 participants. Les ateliers en présentiel ont lieu à Poitiers et dans les villes partenaires, sur demande.',
+  },
+  {
+    q: 'Vous aidez uniquement les associations ?',
+    a: 'Non : nous accompagnons aussi les TPE, les collectivités et les collectifs. Notre cible commune : les structures à but non lucratif ou d\'intérêt général qui n\'ont pas les moyens de se payer un consultant IA.',
+  },
+  {
+    q: 'Comment fonctionne le service de médiation numérique ?',
+    a: "Si vous rencontrez un problème avec un prestataire numérique (hausse de prix abusive, lock-in, arnaque), nous documentons votre situation et contactons le prestataire pour tenter une résolution amiable. C'est gratuit.",
+  },
+  {
+    q: 'Vos outils sont-ils open source ?',
+    a: 'Oui. Tous les outils que nous développons ou recommandons sont publiés en open source. Vous pouvez les auditer, les adapter, les redéployer.',
+  },
+];
+
+const schema = {
+  type: 'FAQPage' as const,
+  data: {
+    questions: faq.map(({ q, a }) => ({ question: q, answer: a })),
+  },
+};
 ---
 
 <BaseLayout
   title="FAQ | Biscuits IA"
-  description="Questions frequentes sur Biscuits IA, nos ateliers, nos ressources et notre accompagnement."
+  description="Questions fréquentes sur Biscuits IA : ateliers, ressources, accompagnement, médiation numérique, open source."
+  schema={schema}
 >
   <section class="simple-page">
     <div class="container">
-      <h1>FAQ</h1>
-      <p>Retrouvez ici les reponses aux questions les plus frequentes.</p>
+      <header class="faq-header">
+        <h1>Questions fréquentes</h1>
+        <p class="faq-lead">
+          Tout ce que vous devez savoir sur Biscuits IA, nos ateliers, nos ressources et notre accompagnement. Une autre question ? <a href="/contact">Écrivez-nous</a>.
+        </p>
+      </header>
 
       <div class="faq-list">
-        <article>
-          <h2>Qui peut rejoindre Biscuits IA ?</h2>
-          <p>Associations, collectifs, benevoles et petites structures qui veulent utiliser l'IA de facon utile et responsable.</p>
-        </article>
-        <article>
-          <h2>Vos ressources sont-elles gratuites ?</h2>
-          <p>Oui. Notre objectif est de faciliter l'acces aux bons outils, sans barriere financiere.</p>
-        </article>
-        <article>
-          <h2>Comment demander un accompagnement ?</h2>
-          <p>Vous pouvez nous contacter via la page <a href="/contact">Contact</a> ou prendre un <a href="/rdv">rendez-vous</a>.</p>
-        </article>
+        {faq.map(({ q, a }) => (
+          <details class="faq-item">
+            <summary class="faq-question">
+              <span>{q}</span>
+              <svg class="faq-chevron" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </summary>
+            <p class="faq-answer">{a}</p>
+          </details>
+        ))}
       </div>
     </div>
   </section>
@@ -35,35 +83,80 @@ import BaseLayout from '@/layouts/Layout.astro';
   }
 
   .container {
-    width: min(1080px, 92vw);
+    width: min(900px, 92vw);
     margin: 0 auto;
+  }
+
+  .faq-header {
+    text-align: center;
+    margin-bottom: 3rem;
   }
 
   h1 {
     margin: 0 0 0.75rem;
     font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 900;
+    color: var(--color-text);
   }
+
+  .faq-lead {
+    color: var(--color-text-light);
+    font-size: 1.1rem;
+    margin: 0;
+  }
+
+  .faq-lead a { color: var(--color-primary); font-weight: 700; }
 
   .faq-list {
-    margin-top: 1.5rem;
-    display: grid;
-    gap: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
   }
 
-  .faq-list article {
+  .faq-item {
     background: var(--color-bg-elevated);
-    border: 1px solid var(--color-border-second);
+    border: 2px solid var(--color-border);
     border-radius: var(--radius-card);
-    padding: 1rem;
+    padding: 0.25rem 1rem;
   }
 
-  h2 {
-    margin: 0 0 0.5rem;
-    font-size: 1.2rem;
+  .faq-item[open] {
+    border-color: var(--color-primary);
+    box-shadow: var(--shadow-md);
   }
 
-  p {
-    margin: 0;
+  .faq-question {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem 0;
+    font-weight: 700;
+    font-size: 1.05rem;
+    color: var(--color-text);
+    cursor: pointer;
+    list-style: none;
+  }
+
+  .faq-question::-webkit-details-marker { display: none; }
+
+  .faq-chevron {
+    flex-shrink: 0;
+    color: var(--color-primary);
+    transition: transform 0.2s ease;
+  }
+
+  .faq-item[open] .faq-chevron {
+    transform: rotate(180deg);
+  }
+
+  .faq-answer {
+    margin: 0 0 1rem;
     color: var(--color-text-light);
+    line-height: 1.65;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .faq-chevron { transition: none; }
   }
 </style>

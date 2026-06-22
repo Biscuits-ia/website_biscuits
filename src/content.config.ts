@@ -8,10 +8,15 @@ const blog = defineCollection({
     pubDate: z.coerce.date(),
     description: z.string().optional(),
     author: z.string().optional(),
+    // Accepte un chemin d'asset local (résolu par Astro) ou une URL absolue.
+    // Les images locales sont transformées par <Image /> dans la page article.
     thumbnail: z.string().optional(),
     tags: z.array(z.string()).optional(),
     featured: z.boolean().optional().default(false),
     draft: z.boolean().optional().default(false),
+    // SEO additionnel
+    canonical: z.string().url().optional(),
+    ogImage: z.string().optional(),
   }),
 });
 

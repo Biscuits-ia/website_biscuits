@@ -1,4 +1,7 @@
 ---
+// Pagination du blog (page 2+). Page 1 = `/blog` (voir `index.astro`).
+// Routes : `/blog/2`, `/blog/3`, … avec `<h1>` et `WebPage` schema explicites.
+
 export const prerender = true;
 
 import Layout from '@/layouts/Layout.astro';
@@ -7,12 +10,8 @@ import type { GetStaticPaths } from 'astro';
 
 const PAGE_SIZE = 6;
 
-// `prerender = true` exige `getStaticPaths()` sur une route dynamique.
-// On énumère ici toutes les pages de pagination possibles au build-time,
-// calculées depuis le nombre d'articles (non-draft en prod) de la collection.
-// NOTE: la constante `PAGE_SIZE` est dupliquée dans `getStaticPaths` car Astro
-// compile cette fonction dans un module séparé (les `const` du frontmatter
-// ne sont pas visibles depuis le scope de `getStaticPaths`).
+// `prerender = true` exige `getStaticPaths()`. On génère ici toutes les pages
+// 2..lastPage au build-time. La page 1 reste gérée par `index.astro`.
 export const getStaticPaths = (async () => {
   const PAGE_SIZE = 6;
   const all = await getCollection('blog');
@@ -20,8 +19,9 @@ export const getStaticPaths = (async () => {
     ? all.filter((a) => !a.data.draft)
     : all;
   const lastPage = Math.max(1, Math.ceil(visible.length / PAGE_SIZE));
-  return Array.from({ length: lastPage }, (_, i) => ({
-    params: { page: String(i + 1) },
+  // Page 1 = index.astro. On génère ici les pages 2..lastPage.
+  return Array.from({ length: lastPage - 1 }, (_, i) => ({
+    params: { page: String(i + 2) },
   }));
 }) satisfies GetStaticPaths;
 
@@ -29,9 +29,6 @@ const { page: pageParam } = Astro.params;
 const currentPage = parseInt(pageParam ?? '1', 10);
 
 if (isNaN(currentPage) || currentPage < 1) {
-  if (pageParam && !/^\d+$/.test(pageParam)) {
-    return Astro.redirect(`/blog/article/${pageParam}`, 301);
-  }
   return Astro.redirect('/blog/1');
 }
 
@@ -52,978 +49,210 @@ if (currentPage > lastPage) {
 const start = (currentPage - 1) * PAGE_SIZE;
 const end = Math.min(start + PAGE_SIZE - 1, total - 1);
 
+const articles: CollectionEntry<'blog'>[] = sorted.slice(start, start + PAGE_SIZE);
+
 const page = {
-  data: sorted.slice(start, start + PAGE_SIZE) as CollectionEntry<'blog'>[],
   currentPage,
   lastPage,
   total,
   start,
   end,
   url: {
-    prev: currentPage > 1 ? `/blog/${currentPage - 1}` : undefined,
+    prev: currentPage > 1 ? (currentPage === 2 ? '/blog' : `/blog/${currentPage - 1}`) : undefined,
     next: currentPage < lastPage ? `/blog/${currentPage + 1}` : undefined,
   },
 };
-
-const articles: CollectionEntry<'blog'>[] = page.data;
-const isFirstPage = page.currentPage === 1;
-
-// Les 2 articles les plus récents sont toujours en vedette (page 1 seulement)
-const allArticlesForFirstPage = isFirstPage
-  ? (await getCollection('blog'))
-      .filter((a: CollectionEntry<'blog'>) => import.meta.env.PROD ? !a.data.draft : true)
-      .sort((a: CollectionEntry<'blog'>, b: CollectionEntry<'blog'>) =>
-        b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
-      )
-  : [];
-
-const featuredArticles = allArticlesForFirstPage.slice(0, 2);
-
-const allTags = isFirstPage
-  ? [...new Set(page.data.flatMap((a: CollectionEntry<'blog'>) => (a.data.tags as string[]) || []))] as string[]
-  : [];
-
-const totalArticles = page.total;
-
-// Données sérialisées pour la recherche côté client (tous les articles)
-const allArticlesForSearch = (await getCollection('blog'))
-  .filter((a: CollectionEntry<'blog'>) => import.meta.env.PROD ? !a.data.draft : true)
-  .sort((a: CollectionEntry<'blog'>, b: CollectionEntry<'blog'>) =>
-    b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
-  )
-  .map((a: CollectionEntry<'blog'>) => ({
-    id: a.id,
-    title: a.data.title,
-    description: (a.data.description ?? '') as string,
-    pubDate: a.data.pubDate.toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' }),
-    tags: ((a.data.tags ?? []) as string[]).slice(0, 3),
-  }));
 ---
 
 <Layout
-  title={`Biscuits du Dev | Articles DevOps, IA & Développement${page.currentPage > 1 ? ` — Page ${page.currentPage}` : ''}`}
-  description="Articles techniques sur le DevOps, l'Intelligence Artificielle et les bonnes pratiques de développement pour développeurs et équipes techniques."
+  title={`Blog - Page ${page.currentPage} | Biscuits IA`}
+  description={`Articles techniques sur le DevOps, l'Intelligence Artificielle et les bonnes pratiques de développement. Page ${page.currentPage} sur ${page.lastPage}.`}
   schema={{
     type: 'WebPage',
     data: {
-      author: 'Biscuits IA',
-      keywords: ['DevOps', 'IA', 'développement', 'tutoriels', 'bonnes pratiques']
+      name: `Biscuits du Dev - Blog - Page ${page.currentPage}`,
+      description: `Articles, guides et tutoriels pour associations et TPE. Page ${page.currentPage} sur ${page.lastPage}.`,
     }
   }}
 >
   <div class="blog-wrapper">
-    {isFirstPage && (
-      <header class="blog-hero">
-        <div class="hero-content">
-          <h1 class="hero-title">
-            Développe plus vite avec
-            <span class="gradient-text">Biscuits du Dev</span>
-          </h1>
-
-          <p class="hero-description">
-            Des articles, guides et tutoriels pour accompagner les associations et TPE dans leurs projets IA et numériques 🚀, dans une démarche d'intérêt général, solidaire et d'entraide.
-          </p>
-
-          <div class="stats-grid">
-            <div class="stat-card">
-              <div class="stat-icon">📚</div>
-              <div class="stat-info">
-                <div class="stat-number">{totalArticles}</div>
-                <div class="stat-label">Articles</div>
-              </div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-icon">📄</div>
-              <div class="stat-info">
-                <div class="stat-number">{page.lastPage}</div>
-                <div class="stat-label">Pages</div>
-              </div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-icon">⭐</div>
-              <div class="stat-info">
-                <div class="stat-number">{featuredArticles.length}</div>
-                <div class="stat-label">En vedette</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
-    )}
-
     <div class="blog-container">
-      <!-- Barre de recherche -->
-      <div class="search-wrapper">
-        <div class="search-box">
-          <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <circle cx="11" cy="11" r="8"></circle>
-            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-          </svg>
-          <input
-            type="search"
-            id="blog-search"
-            placeholder="Rechercher un article..."
-            autocomplete="off"
-            aria-label="Rechercher un article"
-          />
-          <button type="button" id="search-clear" class="search-clear" aria-label="Effacer la recherche" hidden>
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="18" y1="6" x2="6" y2="18"></line>
-              <line x1="6" y1="6" x2="18" y2="18"></line>
+
+      <header class="page-header">
+        <h1 class="page-title">Blog - Page {page.currentPage} sur {page.lastPage}</h1>
+        <p class="page-subtitle">
+          {page.start + 1}-{Math.min(page.end + 1, page.total)} sur {page.total} article{page.total > 1 ? 's' : ''}
+        </p>
+      </header>
+
+      <div class="articles-grid">
+        {articles.map((article: CollectionEntry<'blog'>, index: number) => (
+          <article class="article-card" style={`animation-delay: ${index * 0.05}s`}>
+            <a href={`/blog/${article.id}`} class="card-link">
+              <div class="card-content">
+                <div class="card-meta">
+                  <time datetime={article.data.pubDate.toISOString()}>
+                    {article.data.pubDate.toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' })}
+                  </time>
+                  {article.data.author && (
+                    <span class="author">{article.data.author}</span>
+                  )}
+                </div>
+                <h2 class="card-title">{article.data.title}</h2>
+                {article.data.description && (
+                  <p class="card-description">{article.data.description}</p>
+                )}
+                {article.data.tags && article.data.tags.length > 0 && (
+                  <div class="card-tags">
+                    {(article.data.tags as string[]).slice(0, 3).map((tag: string) => (
+                      <span class="tag">#{tag}</span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </a>
+          </article>
+        ))}
+      </div>
+
+      {page.lastPage > 1 && (
+        <nav class="pagination" aria-label="Navigation des pages">
+          <a
+            href={page.url.prev ?? '#'}
+            class={`pagination-btn${!page.url.prev ? ' disabled' : ''}`}
+            aria-disabled={!page.url.prev}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="19" y1="12" x2="5" y2="12"></line>
+              <polyline points="12 19 5 12 12 5"></polyline>
             </svg>
-          </button>
-        </div>
-      </div>
+            Précédent
+          </a>
 
-      <!-- Résultats de recherche (masqués par défaut) -->
-      <div id="search-results" hidden>
-        <p id="search-count" class="search-count"></p>
-        <div id="search-grid" class="articles-grid"></div>
-        <p id="search-empty" class="search-empty" hidden></p>
-      </div>
-
-      <!-- Contenu paginé normal -->
-      <div id="blog-main-content">
-      <!-- Articles en vedette (page 1 seulement) -->
-      {isFirstPage && featuredArticles.length > 0 && (
-        <section class="featured-section">
-          <div class="section-header">
-            <div class="section-title-wrapper">
-              <h2 class="section-title">
-                <div class="title-icon">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-                  </svg>
-                </div>
-                Articles en vedette
-              </h2>
-              <p class="section-subtitle">Les meilleurs articles sélectionnés pour toi</p>
-            </div>
-          </div>
-
-          <div class="featured-grid">
-            {featuredArticles.map((article: CollectionEntry<'blog'>, index: number) => (
-              <article class="featured-card" style={`animation-delay: ${index * 0.1}s`}>
-                <a href={`/blog/article/${article.id}`} class="card-link">
-                  {article.data.thumbnail && (
-                    <div class="card-thumbnail">
-                      <img src={article.data.thumbnail} alt={article.data.title} loading="lazy" />
-                      <div class="thumbnail-overlay"></div>
-                      <div class="featured-badge">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-                        </svg>
-                        En vedette
-                      </div>
-                    </div>
-                  )}
-                  <div class="card-content">
-                    <div class="card-meta">
-                      <time datetime={article.data.pubDate.toISOString()}>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                          <line x1="16" y1="2" x2="16" y2="6"></line>
-                          <line x1="8" y1="2" x2="8" y2="6"></line>
-                          <line x1="3" y1="10" x2="21" y2="10"></line>
-                        </svg>
-                        {article.data.pubDate.toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' })}
-                      </time>
-                      {article.data.author && (
-                        <span class="author">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                            <circle cx="12" cy="7" r="4"></circle>
-                          </svg>
-                          {article.data.author}
-                        </span>
-                      )}
-                    </div>
-                    <h3 class="card-title">{article.data.title}</h3>
-                    {article.data.description && (
-                      <p class="card-description">{article.data.description}</p>
-                    )}
-                    {article.data.tags && article.data.tags.length > 0 && (
-                      <div class="card-tags">
-                        {(article.data.tags as string[]).slice(0, 3).map((tag: string) => (
-                          <span class="tag">#{tag}</span>
-                        ))}
-                      </div>
-                    )}
-                    <div class="card-footer">
-                      <span class="read-more">
-                        Lire l'article
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                          <line x1="5" y1="12" x2="19" y2="12"></line>
-                          <polyline points="12 5 19 12 12 19"></polyline>
-                        </svg>
-                      </span>
-                    </div>
-                  </div>
-                </a>
-              </article>
-            ))}
-          </div>
-        </section>
-      )}
-
-      <!-- Tous les articles (paginés) -->
-      <section class="articles-section">
-        <div class="section-header">
-          <div class="section-title-wrapper">
-            <h2 class="section-title">
-              {isFirstPage ? 'Tous les articles' : `Page ${page.currentPage}`}
-            </h2>
-            <p class="section-subtitle">
-              {page.start + 1}–{Math.min(page.end + 1, page.total)} sur {page.total} article{page.total > 1 ? 's' : ''}
-            </p>
-          </div>
-        </div>
-
-        <div class="articles-grid">
-          {articles.map((article: CollectionEntry<'blog'>, index: number) => (
-            <article class="article-card" style={`animation-delay: ${index * 0.05}s`}>
-              <a href={`/blog/article/${article.id}`} class="card-link">
-                <div class="card-content">
-                  {featuredArticles.some((f: CollectionEntry<'blog'>) => f.id === article.id) && (
-                    <div class="inline-featured-badge">⭐ En vedette</div>
-                  )}
-                  <div class="card-meta">
-                    <time datetime={article.data.pubDate.toISOString()}>
-                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                        <line x1="16" y1="2" x2="16" y2="6"></line>
-                        <line x1="8" y1="2" x2="8" y2="6"></line>
-                        <line x1="3" y1="10" x2="21" y2="10"></line>
-                      </svg>
-                      {article.data.pubDate.toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' })}
-                    </time>
-                    {article.data.author && (
-                      <span class="author">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                          <circle cx="12" cy="7" r="4"></circle>
-                        </svg>
-                        {article.data.author}
-                      </span>
-                    )}
-                  </div>
-                  <h3 class="card-title">{article.data.title}</h3>
-                  {article.data.description && (
-                    <p class="card-description">{article.data.description}</p>
-                  )}
-                  {article.data.tags && article.data.tags.length > 0 && (
-                    <div class="card-tags">
-                      {(article.data.tags as string[]).slice(0, 3).map((tag: string) => (
-                        <span class="tag">#{tag}</span>
-                      ))}
-                    </div>
-                  )}
-                  <div class="card-footer">
-                    <span class="read-more">
-                      Lire l'article
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="5" y1="12" x2="19" y2="12"></line>
-                        <polyline points="12 5 19 12 12 19"></polyline>
-                      </svg>
-                    </span>
-                  </div>
-                </div>
+          <div class="pagination-pages">
+            {Array.from({ length: page.lastPage }, (_, i) => i + 1).map((pageNum) => (
+              <a
+                href={pageNum === 1 ? '/blog' : `/blog/${pageNum}`}
+                class={`pagination-page${pageNum === page.currentPage ? ' active' : ''}`}
+                aria-current={pageNum === page.currentPage ? 'page' : undefined}
+              >
+                {pageNum}
               </a>
-            </article>
-          ))}
-        </div>
-
-        <!-- Navigation de pagination -->
-        {page.lastPage > 1 && (
-          <nav class="pagination" aria-label="Navigation des pages">
-            <a
-              href={page.url.prev ?? '#'}
-              class={`pagination-btn${!page.url.prev ? ' disabled' : ''}`}
-              aria-disabled={!page.url.prev}
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="19" y1="12" x2="5" y2="12"></line>
-                <polyline points="12 19 5 12 12 5"></polyline>
-              </svg>
-              Précédent
-            </a>
-
-            <div class="pagination-pages">
-              {Array.from({ length: page.lastPage }, (_, i) => i + 1).map((pageNum) => (
-                <a
-                  href={`/blog/${pageNum}`}
-                  class={`pagination-page${pageNum === page.currentPage ? ' active' : ''}`}
-                  aria-current={pageNum === page.currentPage ? 'page' : undefined}
-                >
-                  {pageNum}
-                </a>
-              ))}
-            </div>
-
-            <a
-              href={page.url.next ?? '#'}
-              class={`pagination-btn${!page.url.next ? ' disabled' : ''}`}
-              aria-disabled={!page.url.next}
-            >
-              Suivant
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="5" y1="12" x2="19" y2="12"></line>
-                <polyline points="12 5 19 12 12 19"></polyline>
-              </svg>
-            </a>
-          </nav>
-        )}
-      </section>
-
-      <!-- Tags populaires (page 1 seulement) -->
-      {isFirstPage && allTags.length > 0 && (
-        <section class="tags-section">
-          <div class="section-header">
-            <h2 class="section-title-small">🏷️ Tags populaires</h2>
-          </div>
-          <div class="popular-tags">
-            {allTags.slice(0, 10).map((tag: string) => (
-              <p class="popular-tag">#{tag}</p>
             ))}
           </div>
-        </section>
+
+          <a
+            href={page.url.next ?? '#'}
+            class={`pagination-btn${!page.url.next ? ' disabled' : ''}`}
+            aria-disabled={!page.url.next}
+          >
+            Suivant
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+              <polyline points="12 5 19 12 12 19"></polyline>
+            </svg>
+          </a>
+        </nav>
       )}
-      </div><!-- /blog-main-content -->
     </div>
   </div>
 </Layout>
 
 <style>
-  .blog-wrapper {
-    min-height: 100vh;
-    background: var(--color-bg);
-  }
+  .blog-wrapper { min-height: 100vh; background: var(--color-bg); }
+  .blog-container { max-width: 1200px; margin: 0 auto; padding: 0 1rem 4rem; }
 
-  .blog-hero {
-    position: relative;
-    padding: 0rem 1rem 4rem;
-    overflow: hidden;
-  }
-
-  .hero-content {
-    position: relative;
-    z-index: 1;
-    max-width: 900px;
-    margin: 0 auto;
+  .page-header {
+    margin: 3rem 0 2rem;
     text-align: center;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    gap: 2rem;
   }
-
-  .hero-title {
-    font-size: clamp(2.5rem, 6vw, 4.5rem);
+  .page-title {
+    font-size: clamp(2rem, 5vw, 3rem);
     font-weight: 900;
     color: var(--color-text);
-    letter-spacing: -0.03em;
-    line-height: 1.1;
-    margin-bottom: 1.5rem;
+    margin: 0 0 0.5rem;
+    letter-spacing: -0.02em;
   }
-
-  .gradient-text {
-    display: inline-block;
-    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-first) 50%, var(--color-primary) 100%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    animation: gradient-shift 4s ease infinite;
-    background-size: 200% 200%;
-  }
-
-  @keyframes gradient-shift {
-    0%, 100% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-  }
-
-  .hero-description {
-    font-size: clamp(1rem, 2.5vw, 1.5rem);
+  .page-subtitle {
     color: var(--color-text-light);
-    max-width: 700px;
-    margin: 0 auto 3rem;
-    text-align: center;
     font-weight: 600;
+    margin: 0;
   }
 
-  .stats-grid {
+  .articles-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 1.5rem;
-    max-width: 700px;
-    margin: 0 auto;
   }
 
-  .stat-card {
-    background: var(--color-bg-alt);
-    border: 2px solid var(--color-border);
-    padding: 1.5rem;
-    border-radius: var(--radius-xl);
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    box-shadow: var(--shadow-lg);
-    transition: transform var(--transition-base), box-shadow var(--transition-base), border-color var(--transition-base);
-    position: relative;
-    overflow: hidden;
-  }
-
-  .stat-card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 3px;
-    background: linear-gradient(90deg, var(--color-primary), var(--color-first));
-    transform: scaleX(0);
-    transition: transform var(--transition-base);
-  }
-
-  .stat-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-xl); border-color: var(--color-primary); }
-  .stat-card:hover::before { transform: scaleX(1); }
-
-  .stat-icon { font-size: 2rem; flex-shrink: 0; filter: drop-shadow(0 0 8px var(--color-primary)); }
-  .stat-info { text-align: left; flex: 1; }
-  .stat-number {
-    font-size: 2rem;
-    font-weight: 900;
-    background: linear-gradient(135deg, var(--color-primary), var(--color-first));
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    line-height: 1;
-    margin-bottom: 0.25rem;
-  }
-  .stat-label { font-size: 0.875rem; color: var(--color-text-light); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
-
-  .blog-container { max-width: 1200px; margin: 0 auto; padding: 4rem 1rem; }
-  .section-header { margin-bottom: 3rem; }
-
-  .section-title-wrapper { text-align: center; }
-  .section-title {
-    font-size: 2.5rem;
-    font-weight: 900;
-    color: var(--color-text);
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 1rem;
-    margin-bottom: 0.75rem;
-  }
-  .title-icon {
-    display: flex; align-items: center; justify-content: center;
-    width: 48px; height: 48px;
-    background: var(--color-primary);
-    border-radius: var(--radius-lg);
-    border: 2px solid var(--color-border);
-    color: var(--color-gray-900);
-    box-shadow: var(--shadow-glow);
-  }
-  .section-subtitle { color: var(--color-text-light); font-size: 1.125rem; margin: 0; font-weight: 600; }
-  .section-title-small { font-size: 1.5rem; font-weight: 800; color: var(--color-text); margin-bottom: 1.5rem; text-align: center; }
-
-  /* Featured */
-  .featured-section { margin-bottom: 6rem; }
-  .featured-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(350px, 100%), 1fr)); gap: 2.5rem; }
-
-  .featured-card {
-    background: var(--color-bg-alt);
-    border: 2px solid var(--color-border);
-    border-radius: var(--radius-2xl);
-    overflow: hidden;
-    box-shadow: var(--shadow-xl);
-    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    animation: fade-in-up 0.6s ease forwards;
-    opacity: 0;
-    position: relative;
-  }
-  .featured-card::before {
-    content: '';
-    position: absolute; top: 0; left: 0; right: 0;
-    height: 4px;
-    background: linear-gradient(90deg, var(--color-first), var(--color-secondary));
-    transform: scaleX(0);
-    transition: transform 0.4s ease;
-    z-index: 1;
-  }
-  .featured-card:hover { transform: translateY(-12px); box-shadow: var(--shadow-2xl); border-color: var(--color-primary); }
-  .featured-card:hover::before { transform: scaleX(1); }
-
-  @keyframes fade-in-up {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  .card-link { text-decoration: none; color: inherit; display: block; height: 100%; }
-
-  .card-thumbnail { position: relative; width: 100%; height: 220px; overflow: hidden; background: var(--color-bg-elevated); }
-  .card-thumbnail img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s ease; display: block; }
-  .thumbnail-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.6), transparent); opacity: 0; transition: opacity 0.3s ease; pointer-events: none; }
-  .featured-card:hover .card-thumbnail img { transform: scale(1.1); }
-  .featured-card:hover .thumbnail-overlay { opacity: 1; }
-
-  .featured-badge {
-    position: absolute; top: 1rem; right: 1rem;
-    background: var(--color-first); color: var(--color-gray-900);
-    padding: 0.5rem 1rem;
-    border-radius: var(--radius-full);
-    border: 2px solid var(--color-border);
-    font-size: 0.875rem; font-weight: 700;
-    display: flex; align-items: center; gap: 0.5rem;
-    box-shadow: var(--shadow-glow);
-    z-index: 2; text-transform: uppercase; letter-spacing: 0.5px;
-  }
-
-  .inline-featured-badge {
-    display: inline-block;
-    background: var(--color-first);
-    color: var(--color-gray-900);
-    font-size: 0.75rem;
-    font-weight: 700;
-    padding: 0.25rem 0.75rem;
-    border-radius: var(--radius-full);
-    margin-bottom: 0.75rem;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-
-  .card-content { padding: 2rem; display: flex; flex-direction: column; }
-  .card-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1rem; font-size: 0.875rem; color: var(--color-text-light); font-weight: 600; }
-  .card-meta time, .card-meta .author { display: flex; align-items: center; gap: 0.375rem; }
-
-  .card-title {
-    font-size: 1.625rem; font-weight: 800; color: var(--color-text);
-    margin: 0 0 1rem; line-height: 1.3;
-    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
-  }
-  .card-description {
-    color: var(--color-text-light); line-height: 1.7; margin: 0 0 1.5rem;
-    display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
-    font-weight: 500;
-  }
-
-  .card-tags { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.5rem; }
-  .tag {
-    padding: 0.375rem 0.875rem;
-    background: var(--glass-bg); border: 1px solid var(--glass-border);
-    color: var(--color-text-light); border-radius: var(--radius-full);
-    font-size: 0.875rem; font-weight: 700;
-    transition: transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast);
-    backdrop-filter: var(--glass-blur); box-shadow: var(--shadow-sm);
-  }
-  .tag:hover { background: var(--color-primary); color: var(--color-gray-900); transform: translateY(-2px); box-shadow: var(--shadow-glow); }
-
-  .card-footer { display: flex; justify-content: flex-end; padding-top: 1rem; border-top: 2px solid var(--color-border); margin-top: auto; }
-  .read-more { display: inline-flex; align-items: center; gap: 0.5rem; color: var(--color-primary); font-weight: 800; font-size: 0.9375rem; transition: gap var(--transition-fast); }
-  .read-more svg { transition: transform var(--transition-base); }
-  .card-link:hover .read-more { gap: 0.75rem; }
-  .card-link:hover .read-more svg { transform: translateX(4px); }
-
-  /* Articles grid */
-  .articles-section { margin-top: 5rem; padding: 25px 15px 35px 15px; }
-  .articles-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(340px, 100%), 1fr)); gap: 2rem; }
   .article-card {
-    background: var(--color-bg-alt); border: 2px solid var(--color-border);
-    border-radius: var(--radius-xl); overflow: hidden;
+    background: var(--color-bg-alt);
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-md);
     transition: transform var(--transition-base), box-shadow var(--transition-base), border-color var(--transition-base);
-    box-shadow: var(--shadow-lg);
-    animation: fade-in-up 0.4s ease forwards; opacity: 0;
   }
-  .article-card:hover { transform: translateY(-6px); box-shadow: var(--shadow-xl); border-color: var(--color-primary); }
+  .article-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-xl);
+    border-color: var(--color-primary);
+  }
 
-  /* Pagination */
+  .card-link { color: inherit; text-decoration: none; display: block; }
+  .card-content { padding: 1.25rem; display: flex; flex-direction: column; gap: 0.75rem; }
+  .card-meta { display: flex; gap: 1rem; color: var(--color-text-light); font-size: 0.85rem; font-weight: 600; }
+  .card-title { font-size: 1.25rem; font-weight: 800; margin: 0; color: var(--color-text); line-height: 1.3; }
+  .card-description { margin: 0; color: var(--color-text-light); line-height: 1.55; }
+
+  .card-tags { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+  .tag {
+    display: inline-block;
+    padding: 0.15rem 0.5rem;
+    background: var(--color-bg-elevated);
+    border: 1.5px solid var(--color-border);
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--color-text-light);
+  }
+
   .pagination {
     display: flex;
-    align-items: center;
     justify-content: center;
-    gap: 1rem;
-    margin-top: 4rem;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 3rem;
     flex-wrap: wrap;
   }
 
   .pagination-btn {
     display: inline-flex;
     align-items: center;
-    gap: 0.5rem;
-    padding: 0.75rem 1.5rem;
+    gap: 0.4rem;
+    padding: 0.65rem 1rem;
     background: var(--color-bg-alt);
-    border: 2px solid var(--color-border);
-    border-radius: var(--radius-lg);
     color: var(--color-text);
     font-weight: 700;
-    font-size: 0.9375rem;
+    border: 2px solid var(--color-border);
     text-decoration: none;
-    transition: transform var(--transition-base), box-shadow var(--transition-base), border-color var(--transition-base), background-color var(--transition-base);
-    box-shadow: var(--shadow-md);
   }
+  .pagination-btn.disabled { opacity: 0.4; pointer-events: none; }
+  .pagination-btn:hover:not(.disabled) { border-color: var(--color-primary); color: var(--color-primary); }
 
-  .pagination-btn:not(.disabled):hover {
-    transform: translateY(-3px);
-    box-shadow: var(--shadow-lg);
-    border-color: var(--color-primary);
-    background: var(--color-bg-elevated);
-  }
-
-  .pagination-btn.disabled {
-    opacity: 0.35;
-    cursor: not-allowed;
-    pointer-events: none;
-  }
-
-  .pagination-pages {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
-
+  .pagination-pages { display: flex; gap: 0.25rem; }
   .pagination-page {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 44px;
-    height: 44px;
+    display: inline-grid;
+    place-items: center;
+    min-width: 2.25rem;
+    height: 2.25rem;
+    padding: 0 0.5rem;
     background: var(--color-bg-alt);
-    border: 2px solid var(--color-border);
-    border-radius: var(--radius-lg);
-    color: var(--color-text-light);
-    font-weight: 700;
-    font-size: 1rem;
-    text-decoration: none;
-    transition: transform var(--transition-base), box-shadow var(--transition-base), border-color var(--transition-base), background-color var(--transition-base), color var(--transition-base);
-    box-shadow: var(--shadow-sm);
-  }
-
-  .pagination-page:hover {
-    transform: translateY(-2px);
-    border-color: var(--color-primary);
-    color: var(--color-primary);
-    box-shadow: var(--shadow-glow);
-  }
-
-  .pagination-page.active {
-    background: var(--color-primary);
-    border-color: var(--color-primary);
-    color: var(--color-gray-900);
-    box-shadow: var(--shadow-glow);
-    transform: translateY(-2px);
-  }
-
-  /* Tags */
-  .tags-section { margin-top: 5rem; padding: 3rem; background: var(--color-bg-alt); border: 2px solid var(--color-border); border-radius: var(--radius-2xl); text-align: center; box-shadow: var(--shadow-lg); }
-  .popular-tags { display: flex; flex-wrap: wrap; justify-content: center; gap: 1rem; }
-  .popular-tag { padding: 0.75rem 1.5rem; background: var(--color-bg-elevated); color: var(--color-text-light); border-radius: var(--radius-full); font-size: 1rem; font-weight: 700; text-decoration: none; border: 2px solid var(--color-border); transition: transform var(--transition-base), box-shadow var(--transition-base), border-color var(--transition-base), background-color var(--transition-base); box-shadow: var(--shadow-md); }
-  .popular-tag:hover { background: var(--color-first); color: var(--color-gray-900); transform: translateY(-3px); box-shadow: var(--shadow-glow-hover); }
-
-  /* Responsive */
-  @media (max-width: 768px) {
-    .blog-hero { padding: 6rem 1rem 3rem; }
-    .hero-title { font-size: 2.5rem; }
-    .hero-description { font-size: 1rem; }
-    .stats-grid { grid-template-columns: 1fr; max-width: 350px; }
-    .featured-grid, .articles-grid { grid-template-columns: 1fr; }
-    .section-title { font-size: 1.875rem; flex-direction: column; }
-    .card-title { font-size: 1.375rem; }
-    .tags-section { padding: 2rem 1.5rem; }
-    .card-content { padding: 1.5rem; }
-    .card-thumbnail { height: 180px; }
-    .pagination { gap: 0.5rem; }
-    .pagination-btn { padding: 0.625rem 1rem; font-size: 0.875rem; }
-  }
-
-  @media (max-width: 480px) {
-    .hero-title { font-size: 2rem; }
-    .featured-grid, .articles-grid { gap: 1.5rem; }
-    .pagination-pages { gap: 0.25rem; }
-    .pagination-page { width: 38px; height: 38px; font-size: 0.875rem; }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .featured-card, .article-card, .stat-card, .tag, .popular-tag {
-      transition: none !important;
-      animation: none !important;
-    }
-    .featured-card:hover, .article-card:hover { transform: none !important; }
-  }
-
-  /* Recherche */
-  .search-wrapper {
-    margin: 2rem auto 2.5rem;
-    max-width: 600px;
-  }
-
-  .search-box {
-    position: relative;
-    display: flex;
-    align-items: center;
-  }
-
-  .search-icon {
-    position: absolute;
-    left: 1rem;
-    color: var(--color-text-light);
-    pointer-events: none;
-    flex-shrink: 0;
-  }
-
-  #blog-search {
-    width: 100%;
-    padding: 0.875rem 3rem 0.875rem 3rem;
-    border: 2px solid var(--color-border);
-    border-radius: var(--radius-full);
-    background: var(--color-bg-elevated);
     color: var(--color-text);
-    font-size: 1rem;
-    font-family: inherit;
-    transition: border-color var(--transition-base), box-shadow var(--transition-base);
-    outline: none;
-  }
-
-  #blog-search::placeholder {
-    color: var(--color-text-light);
-  }
-
-  #blog-search:focus {
-    border-color: var(--color-primary);
-    box-shadow: var(--shadow-glow);
-  }
-
-  /* Masquer l'icône X native du navigateur */
-  #blog-search::-webkit-search-cancel-button { display: none; }
-
-  .search-clear {
-    position: absolute;
-    right: 0.875rem;
-    background: none;
-    border: none;
-    color: var(--color-text-light);
-    cursor: pointer;
-    padding: 0.25rem;
-    border-radius: var(--radius-sm);
-    display: flex;
-    align-items: center;
-    transition: color var(--transition-base);
-  }
-
-  .search-clear:hover { color: var(--color-text); }
-
-  .search-count {
-    text-align: center;
-    color: var(--color-text-light);
-    font-size: 0.9375rem;
-    margin-bottom: 2rem;
-  }
-
-  .search-empty {
-    text-align: center;
-    color: var(--color-text-light);
-    font-size: 1rem;
-    padding: 3rem;
-  }
-</style>
-
-<style is:global>
-  #search-grid.articles-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(min(340px, 100%), 1fr));
-    gap: 2rem;
-  }
-
-  #search-grid .article-card {
-    background: var(--color-bg-alt);
     border: 2px solid var(--color-border);
-    border-radius: var(--radius-xl);
-    overflow: hidden;
-    box-shadow: var(--shadow-lg);
-    transition: transform var(--transition-base), box-shadow var(--transition-base), border-color var(--transition-base);
-  }
-
-  #search-grid .article-card:hover {
-    transform: translateY(-6px);
-    box-shadow: var(--shadow-xl);
-    border-color: var(--color-primary);
-  }
-
-  #search-grid .card-link {
-    text-decoration: none;
-    color: inherit;
-    display: block;
-    height: 100%;
-  }
-
-  #search-grid .card-content {
-    padding: 2rem;
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-  }
-
-  #search-grid .card-meta {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 1rem;
-    margin-bottom: 1rem;
-    font-size: 0.875rem;
-    color: var(--color-text-light);
-    font-weight: 600;
-  }
-
-  #search-grid .card-title {
-    font-size: 1.625rem;
-    font-weight: 800;
-    color: var(--color-text);
-    margin: 0 0 1rem;
-    line-height: 1.3;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
-
-  #search-grid .card-description {
-    color: var(--color-text-light);
-    line-height: 1.7;
-    margin: 0 0 1.5rem;
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    font-weight: 500;
-  }
-
-  #search-grid .card-tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    margin-bottom: 1.5rem;
-  }
-
-  #search-grid .tag {
-    padding: 0.375rem 0.875rem;
-    background: var(--glass-bg);
-    border: 1px solid var(--glass-border);
-    color: var(--color-text-light);
-    border-radius: var(--radius-full);
-    font-size: 0.875rem;
     font-weight: 700;
+    text-decoration: none;
   }
-
-  #search-grid .card-footer {
-    display: flex;
-    justify-content: flex-end;
-    padding-top: 1rem;
-    border-top: 2px solid var(--color-border);
-    margin-top: auto;
-  }
-
-  #search-grid .read-more {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    color: var(--color-primary);
-    font-weight: 800;
-    font-size: 0.9375rem;
-    transition: gap var(--transition-fast);
-  }
-
-  #search-grid .read-more svg {
-    transition: transform var(--transition-base);
-  }
-
-  #search-grid .card-link:hover .read-more { gap: 0.75rem; }
-  #search-grid .card-link:hover .read-more svg { transform: translateX(4px); }
-
-  @media (max-width: 768px) {
-    #search-grid.articles-grid { grid-template-columns: 1fr; }
-    #search-grid .card-content { padding: 1.5rem; }
-    #search-grid .card-title { font-size: 1.375rem; }
-  }
-
-  @media (max-width: 480px) {
-    #search-grid.articles-grid { gap: 1.5rem; }
-  }
+  .pagination-page:hover { border-color: var(--color-primary); color: var(--color-primary); }
+  .pagination-page.active { background: var(--color-primary); color: var(--color-bg); border-color: var(--color-primary); }
 </style>
-<script define:vars={{ allArticlesForSearch }}>
-  const input = document.getElementById('blog-search');
-  const clearBtn = document.getElementById('search-clear');
-  const searchResults = document.getElementById('search-results');
-  const searchGrid = document.getElementById('search-grid');
-  const searchCount = document.getElementById('search-count');
-  const searchEmpty = document.getElementById('search-empty');
-  const mainContent = document.getElementById('blog-main-content');
-
-  function escapeHtml(str) {
-    return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-  }
-
-  function renderCard(article) {
-    const tags = article.tags.map(t => `<span class="tag">#${escapeHtml(t)}</span>`).join('');
-    return `
-      <article class="article-card">
-        <a href="/blog/article/${escapeHtml(article.id)}" class="card-link">
-          <div class="card-content">
-            <div class="card-meta">
-              <time>${escapeHtml(article.pubDate)}</time>
-            </div>
-            <h3 class="card-title">${escapeHtml(article.title)}</h3>
-            ${article.description ? `<p class="card-description">${escapeHtml(article.description)}</p>` : ''}
-            ${tags ? `<div class="card-tags">${tags}</div>` : ''}
-            <div class="card-footer">
-              <span class="read-more">
-                Lire l'article
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <line x1="5" y1="12" x2="19" y2="12"></line>
-                  <polyline points="12 5 19 12 12 19"></polyline>
-                </svg>
-              </span>
-            </div>
-          </div>
-        </a>
-      </article>`;
-  }
-
-  function performSearch(query) {
-    const q = query.trim().toLowerCase();
-
-    if (!q) {
-      searchResults.hidden = true;
-      mainContent.hidden = false;
-      clearBtn.hidden = true;
-      return;
-    }
-
-    clearBtn.hidden = false;
-
-    const matches = allArticlesForSearch.filter(a =>
-      a.title.toLowerCase().includes(q) ||
-      a.description.toLowerCase().includes(q) ||
-      a.tags.some(t => t.toLowerCase().includes(q))
-    );
-
-    mainContent.hidden = true;
-    searchResults.hidden = false;
-
-    if (matches.length === 0) {
-      searchGrid.innerHTML = '';
-      searchCount.textContent = '';
-      searchEmpty.hidden = false;
-      searchEmpty.textContent = `Aucun article trouvé pour "${query}".`;
-    } else {
-      searchEmpty.hidden = true;
-      searchCount.textContent = `${matches.length} article${matches.length > 1 ? 's' : ''} trouvé${matches.length > 1 ? 's' : ''}`;
-      searchGrid.innerHTML = matches.map(renderCard).join('');
-    }
-  }
-
-  input.addEventListener('input', (e) => performSearch(e.target.value));
-
-  clearBtn.addEventListener('click', () => {
-    input.value = '';
-    performSearch('');
-    input.focus();
-  });
-</script>

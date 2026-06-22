@@ -7,10 +7,9 @@ import { Image } from 'astro:assets';
 import Layout from '@/layouts/BlogLayout.astro';
 import ReadingTime from '@/components/ReadingTime.astro';
 import TableOfContents from '@/components/TableOfContents.astro';
+import Breadcrumb from '@/components/Breadcrumb.astro';
 
-// `prerender = true` exige `getStaticPaths()` — on énumère ici tous les
-// slugs d'articles visibles au build-time. Le `rest` catch-all accepte
-// n'importe quel chemin sous /blog/*, mais on limite aux slugs réels.
+// prerender = true exige getStaticPaths().
 export const getStaticPaths = (async () => {
   const all = await getCollection('blog');
   const visible = import.meta.env.PROD
@@ -45,6 +44,20 @@ const isFeatured = sortedArticles.length > 0 && sortedArticles[0] && entry.id ==
 
 const { Content, headings } = await render(entry);
 const body = entry.body ?? '';
+
+// Related posts : 3 articles partageant au moins un tag, hors article courant.
+const relatedArticles = publishedArticles
+  .filter((a: CollectionEntry<'blog'>) => a.id !== entry.id)
+  .map((a: CollectionEntry<'blog'>) => {
+    const entryTags = ((entry.data.tags as string[]) || []) as string[];
+    const candidateTags = ((a.data.tags as string[]) || []) as string[];
+    const shared = candidateTags.filter((t) => entryTags.includes(t)).length;
+    return { entry: a, shared };
+  })
+  .filter((x) => x.shared > 0)
+  .sort((a, b) => b.shared - a.shared || b.entry.data.pubDate.getTime() - a.entry.data.pubDate.getTime())
+  .slice(0, 3)
+  .map((x) => x.entry);
 ---
 
 <Layout
@@ -55,13 +68,13 @@ const body = entry.body ?? '';
     <article class="article-content">
       <header class="article-header">
         <a href="/blog" class="back-link">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <line x1="19" y1="12" x2="5" y2="12"></line>
             <polyline points="12 19 5 12 12 5"></polyline>
           </svg>
           Retour au blog
         </a>
-        
+
         {isFeatured && (
           <div class="featured-badge">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
@@ -70,45 +83,31 @@ const body = entry.body ?? '';
             Article en vedette
           </div>
         )}
-                
+
         <h1 class="article-title">{entry.data.title}</h1>
-        
+
         {entry.data.description && (
           <p class="article-description">{entry.data.description}</p>
         )}
-        
+
         <div class="article-meta">
           <div class="meta-item">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-              <line x1="16" y1="2" x2="16" y2="6"></line>
-              <line x1="8" y1="2" x2="8" y2="6"></line>
-              <line x1="3" y1="10" x2="21" y2="10"></line>
-            </svg>
             <time datetime={entry.data.pubDate.toISOString()}>
-              {entry.data.pubDate.toLocaleDateString('fr-FR', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-              })}
+              {entry.data.pubDate.toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' })}
             </time>
           </div>
-          
+
           {entry.data.author && (
             <div class="meta-item">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                <circle cx="12" cy="7" r="4"></circle>
-              </svg>
-              {entry.data.author}
+              <span>{entry.data.author}</span>
             </div>
           )}
-          
+
           <div class="meta-item">
             <ReadingTime content={body} />
           </div>
         </div>
-        
+
         {entry.data.tags && entry.data.tags.length > 0 && (
           <div class="tags">
             {entry.data.tags.map((tag: string) => (
@@ -117,7 +116,7 @@ const body = entry.body ?? '';
           </div>
         )}
       </header>
-      
+
       {entry.data.thumbnail && (
         <div class="article-thumbnail">
           <Image
@@ -130,19 +129,37 @@ const body = entry.body ?? '';
           />
         </div>
       )}
-      
+
       <TableOfContents headings={headings} />
-      
-        <div class="prose">
+
+      <div class="prose">
         <Content />
       </div>
-      
+
+      {relatedArticles.length > 0 && (
+        <section class="related-posts" aria-labelledby="related-title">
+          <h2 id="related-title" class="related-title"> À lire aussi</h2>
+          <div class="related-grid">
+            {relatedArticles.map((rel: CollectionEntry<'blog'>) => (
+              <a href={/blog/} class="related-card">
+                <h3 class="related-card-title">{rel.data.title}</h3>
+                {rel.data.description && <p class="related-card-desc">{rel.data.description}</p>}
+                {rel.data.tags && rel.data.tags.length > 0 && (
+                  <div class="related-card-tags">
+                    {((rel.data.tags as string[]).slice(0, 2)).map((tag: string) => (
+                      <span class="tag">#{tag}</span>
+                    ))}
+                  </div>
+                )}
+                <span class="related-card-cta">Lire l'article â†’</span>
+              </a>
+            ))}
+          </div>
+        </section>
+      )}
+
       <footer class="article-footer">
         <a href="/blog" class="back-button">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="19" y1="12" x2="5" y2="12"></line>
-            <polyline points="12 19 5 12 12 5"></polyline>
-          </svg>
           Retour au blog
         </a>
       </footer>
@@ -151,7 +168,6 @@ const body = entry.body ?? '';
 </Layout>
 
 <style>
-  /* Article Wrapper - Base adaptative */
 .article-wrapper * {
   animation: none !important;
   transition: none !important;
@@ -166,18 +182,9 @@ const body = entry.body ?? '';
   transition: transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast) !important;
 }
 
-.article-wrapper {
-  min-height: 100vh;
-  background: var(--color-bg);
-}
+.article-wrapper { min-height: 100vh; background: var(--color-bg); }
+.article-content { max-width: 800px; margin: 0 auto; padding: 2rem 1rem 4rem; }
 
-.article-content {
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 2rem 1rem 4rem;
-}
-
-/* Header */
 .back-link {
   display: inline-flex;
   align-items: center;
@@ -187,26 +194,21 @@ const body = entry.body ?? '';
   text-decoration: none;
   font-size: 0.875rem;
   font-weight: 600;
-  transition: transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast);
   padding: 0.5rem 0;
 }
 
-.back-link:hover {
-  color: var(--color-primary);
-  transform: translateX(-4px);
-}
+.back-link:hover { color: var(--color-primary); transform: translateX(-4px); }
 
 .featured-badge {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  background: var(--color-first);  
+  background: var(--color-first);
   color: var(--color-gray-900);
   padding: 0.5rem 1rem;
   border-radius: var(--radius-full);
   border: 2px solid var(--color-border);
   font-size: 0.875rem;
-  margin-left: 1.5rem;
   font-weight: 700;
   margin-bottom: 1.5rem;
   box-shadow: var(--shadow-glow);
@@ -214,10 +216,7 @@ const body = entry.body ?? '';
   letter-spacing: 0.5px;
 }
 
-.article-header {
-  margin-top: 4.5rem;
-  margin-bottom: 3rem;
-}
+.article-header { margin-top: 4.5rem; margin-bottom: 3rem; }
 
 .article-title {
   font-size: clamp(2rem, 5vw, 3rem);
@@ -256,17 +255,7 @@ const body = entry.body ?? '';
   font-weight: 600;
 }
 
-.meta-item svg {
-  flex-shrink: 0;
-  color: var(--color-primary);
-}
-
-.tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-top: 1.5rem;
-}
+.tags { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1.5rem; }
 
 .tag {
   padding: 0.375rem 0.875rem;
@@ -275,17 +264,7 @@ const body = entry.body ?? '';
   border-radius: var(--radius-full);
   font-size: 0.875rem;
   font-weight: 600;
-  transition: transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast);
   border: 1px solid var(--glass-border);
-  backdrop-filter: var(--glass-blur);
-  box-shadow: var(--shadow-sm);
-}
-
-.tag:hover {
-  background: var(--color-primary);
-  color: var(--color-gray-900);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-glow);
 }
 
 .article-thumbnail {
@@ -296,36 +275,7 @@ const body = entry.body ?? '';
   border: 2px solid var(--color-border);
 }
 
-.article-thumbnail img {
-  width: 100%;
-  height: auto;
-  display: block;
-}
-
-/* Prose - Contenu principal */
-.prose {
-  font-size: 1.125rem;
-  line-height: 1.8;
-  color: var(--color-text);
-}
-
-.prose :global(h1),
-.prose :global(h2),
-.prose :global(h3),
-.prose :global(h4) {
-  scroll-margin-top: 2rem;
-  position: relative;
-  font-weight: 900;
-}
-
-.prose :global(h1) {
-  font-size: 2.25rem;
-  margin: 3rem 0 1.5rem;
-  color: var(--color-text);
-  letter-spacing: -0.02em;
-  padding-bottom: 0.5rem;
-  border-bottom: 3px solid var(--color-border);
-}
+.prose { font-size: 1.125rem; line-height: 1.8; color: var(--color-text); }
 
 .prose :global(h2) {
   font-size: 1.875rem;
@@ -333,17 +283,7 @@ const body = entry.body ?? '';
   color: var(--color-text);
   letter-spacing: -0.01em;
   padding-left: 1rem;
-}
-
-.prose :global(h2::before) {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 0.5rem;
-  width: 4px;
-  height: 1.5rem;
-  background: linear-gradient(to bottom, var(--color-primary), var(--color-primary-dark));
-  border-radius: var(--radius-sm);
+  font-weight: 900;
 }
 
 .prose :global(h3) {
@@ -353,46 +293,23 @@ const body = entry.body ?? '';
   color: var(--color-text);
 }
 
-.prose :global(h4) {
-  font-size: 1.25rem;
-  font-weight: 700;
-  margin: 1.5rem 0 0.75rem;
-  color: var(--color-text);
+.prose :global(p) { margin: 1.5rem 0; line-height: 1.8; color: var(--color-text); }
+
+.prose :global(a) {
+  color: var(--color-primary);
+  text-decoration: none;
+  font-weight: 600;
+  background-size: 0% 2px;
+  background-position: 0 100%;
+  background-repeat: no-repeat;
+  transition: background-size var(--transition-base);
 }
 
-.prose :global(p) {
-  margin: 1.5rem 0;
-  line-height: 1.8;
-  color: var(--color-text);
-}
-
-.prose :global(p:first-of-type) {
-  font-size: 1.2em;
-  color: var(--color-text);
-  font-weight: 500;
-}
-
-/* Listes */
-.prose :global(ul),
-.prose :global(ol) {
+.prose :global(ul), .prose :global(ol) {
   margin: 1.5rem 0;
   padding-left: 1.75rem;
 }
 
-.prose :global(li) {
-  margin: 0.75rem 0;
-  padding-left: 0.5rem;
-  color: var(--color-text);
-  font-weight: 500;
-}
-
-.prose :global(ul > li::marker),
-.prose :global(ol > li::marker) {
-  color: var(--color-primary);
-  font-weight: 800;
-}
-
-/* Blockquotes */
 .prose :global(blockquote) {
   margin: 2rem 0;
   padding: 1.5rem;
@@ -401,92 +318,29 @@ const body = entry.body ?? '';
   border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
   font-style: italic;
   color: var(--color-text);
-  position: relative;
-  box-shadow: var(--shadow-lg);
-  backdrop-filter: var(--glass-blur);
-  border: 2px solid var(--color-border);
-  border-left: 4px solid var(--color-primary);
 }
 
-.prose :global(blockquote::before) {
-  content: "";
-  position: absolute;
-  top: -0.5rem;
-  left: 1rem;
-  font-size: 4rem;
-  color: var(--color-primary);
-  opacity: 0.2;
-  font-family: Georgia, serif;
-  line-height: 1;
-}
-
-.prose :global(blockquote p) {
-  margin: 0;
-  color: inherit;
-}
-
-/* Code inline */
-.prose :global(code) {
-  background: var(--glass-bg);
-  color: var(--color-first);
-  border-radius: var(--radius-sm);
-  font-size: 0.9em;
-  font-family: 'Courier New', Consolas, Monaco, monospace;
-  font-weight: 600;
-  border: 1px solid var(--color-border);
-  padding: 0.2em 0.4em;
-}
-
-/* Code blocks */
 .prose :global(pre) {
-  background: var(--color-bg-elevated) !important;
+  background: var(--color-bg-elevated);
   color: var(--color-text);
   padding: 1.5rem;
   border-radius: var(--radius-lg);
   overflow-x: auto;
   margin: 2rem 0;
   border: 2px solid var(--color-border);
-  box-shadow: var(--shadow-xl);
-  position: relative;
 }
 
-.prose :global(pre code) {
-  background: transparent;
-  padding: 0;
-  color: inherit;
-  font-size: 0.9rem;
-  line-height: 1.7;
-  border: none;
-  font-weight: normal;
-}
-
-/* Liens */
-.prose :global(a) {
-  color: var(--color-primary);
-  text-decoration: none;
+.prose :global(code) {
+  background: var(--glass-bg);
+  color: var(--color-first);
+  border-radius: var(--radius-sm);
+  font-size: 0.9em;
+  font-family: monospace;
   font-weight: 600;
-  background: linear-gradient(to right, var(--color-primary), var(--color-primary-dark));
-  background-size: 0% 2px;
-  background-position: 0 100%;
-  background-repeat: no-repeat;
-  transition: background-size var(--transition-base);
-  position: relative;
+  border: 1px solid var(--color-border);
+  padding: 0.2em 0.4em;
 }
 
-.prose :global(a:hover) {
-  background-size: 100% 2px;
-  color: var(--color-primary-dark);
-}
-
-/* Séparateurs */
-.prose :global(hr) {
-  margin: 3rem 0;
-  border: none;
-  height: 2px;
-  background: linear-gradient(to right, transparent, var(--color-border), transparent);
-}
-
-/* Images */
 .prose :global(img) {
   max-width: 100%;
   height: auto;
@@ -494,59 +348,71 @@ const body = entry.body ?? '';
   margin: 2.5rem 0;
   box-shadow: var(--shadow-xl);
   border: 2px solid var(--color-border);
-  transition: transform var(--transition-base);
 }
 
-.prose :global(img:hover) {
-  transform: scale(1.02);
+.related-posts {
+  margin: 4rem auto 0;
+  padding-top: 2.5rem;
+  border-top: 2px solid var(--color-border);
+  max-width: 800px;
 }
 
-.prose :global(strong) {
+.related-title {
+  font-size: 1.5rem;
   font-weight: 800;
+  margin: 0 0 1.25rem;
   color: var(--color-text);
 }
 
-.prose :global(em) {
-  font-style: italic;
-  color: var(--color-text-light);
+.related-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
 }
 
-/* Tables */
-.prose :global(table) {
-  width: 100%;
-  margin: 2rem 0;
-  border-collapse: collapse;
+.related-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1rem 1.25rem;
   background: var(--color-bg-alt);
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-  box-shadow: var(--shadow-lg);
   border: 2px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  text-decoration: none;
+  color: inherit;
+  transition: transform var(--transition-base), border-color var(--transition-base), box-shadow var(--transition-base);
 }
 
-.prose :global(thead) {
-  background: var(--color-bg-elevated);
+.related-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-md);
 }
 
-.prose :global(th) {
-  padding: 1rem;
-  text-align: left;
+.related-card-title {
+  margin: 0;
+  font-size: 1rem;
   font-weight: 800;
   color: var(--color-text);
-  border-bottom: 2px solid var(--color-primary);
+  line-height: 1.3;
 }
 
-.prose :global(td) {
-  padding: 1rem;
-  border-bottom: 1px solid var(--color-border);
-  color: var(--color-text);
-  font-weight: 500;
+.related-card-desc {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--color-text-light);
+  line-height: 1.5;
 }
 
-.prose :global(tr:hover) {
-  background: var(--color-bg-elevated);
+.related-card-tags { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+.related-card .tag { font-size: 0.65rem; padding: 0.1rem 0.4rem; }
+.related-card-cta {
+  color: var(--color-primary);
+  font-weight: 700;
+  font-size: 0.85rem;
+  margin-top: auto;
 }
 
-/* Footer */
 .article-footer {
   margin-top: 5rem;
   padding-top: 3rem;
@@ -561,18 +427,11 @@ const body = entry.body ?? '';
   text-decoration: none;
   font-weight: 700;
   font-size: 1rem;
-  transition: transform var(--transition-base), box-shadow var(--transition-base), border-color var(--transition-base), background-color var(--transition-base) !important;
   padding: 1rem 1.5rem;
   border: 2px solid var(--color-border);
   border-radius: var(--radius-lg);
   background: var(--glass-bg);
-  backdrop-filter: var(--glass-blur);
   box-shadow: var(--shadow-md);
-}
-
-.back-button svg {
-  flex-shrink: 0;
-  transition: transform var(--transition-base);
 }
 
 .back-button:hover {
@@ -582,56 +441,19 @@ const body = entry.body ?? '';
   box-shadow: var(--shadow-glow);
 }
 
-.back-button:hover svg {
-  transform: translateX(-4px);
-}
-
-/* Responsive */
 @media (max-width: 768px) {
-  .article-content {
-    padding: 1.5rem 1rem 3rem;
-  }
-
-  .article-title {
-    font-size: 2rem;
-  }
-
-  .article-description {
-    font-size: 1.125rem;
-  }
-
-  .prose {
-    font-size: 1rem;
-  }
-
-  .prose :global(h1) {
-    font-size: 1.875rem;
-  }
-
-  .prose :global(h2) {
-    font-size: 1.5rem;
-    padding-left: 0.75rem;
-  }
-
-  .prose :global(h3) {
-    font-size: 1.25rem;
-  }
-
-  .back-button {
-    display: flex;
-    width: 100%;
-    justify-content: center;
-  }
+  .article-content { padding: 1.5rem 1rem 3rem; }
+  .article-title { font-size: 2rem; }
+  .prose { font-size: 1rem; }
+  .prose :global(h2) { font-size: 1.5rem; padding-left: 0.75rem; }
+  .prose :global(h3) { font-size: 1.25rem; }
+  .back-button { display: flex; width: 100%; justify-content: center; }
 }
 
-/* Réduction des mouvements */
 @media (prefers-reduced-motion: reduce) {
-  .article-wrapper *,
-  .back-link,
-  .tag,
-  .back-button {
+  .article-wrapper *, .back-link, .tag, .back-button {
     transition: none !important;
     animation: none !important;
   }
 }
-</style> 
+</style>

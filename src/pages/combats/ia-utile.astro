@@ -1,6 +1,9 @@
----
+---export const prerender = true;
+
+
 
 import BaseLayout from '@/layouts/Layout.astro';
+import Breadcrumb from '@/components/Breadcrumb.astro';
 ---
 
 <BaseLayout 
@@ -8,6 +11,7 @@ import BaseLayout from '@/layouts/Layout.astro';
   description="L'IA devrait résoudre de vrais problèmes, pas impressionner avec des démos qui ne servent à rien au quotidien."
 >
   <article class="combat-page">
+  <Breadcrumb />
     <div class="container">
       <header class="hero">
         <div class="hero-content">
@@ -28,15 +32,15 @@ import BaseLayout from '@/layouts/Layout.astro';
         </p>
         <p>
           On vous a parfois imposé un outil avant même de comprendre votre mission. C'est impressionnant techniquement, 
-          mais ça ne résout aucun de vos vrais soucis du quotidien, et surtout pas votre mission d'intérêt général et solidaire.
+          mais §a ne résout aucun de vos vrais soucis du quotidien, et surtout pas votre mission d'intérêt général et solidaire.
         </p>
         
         <div class="examples">
           <h3>Exemples concrets de gadgets vendus comme essentiels</h3>
           <ul>
-          <li>Un chatbot sur un site qui reçoit 10 visites par semaine et où les questions sont toujours les mêmes (une FAQ aurait suffi, et surtout cela ne correspond pas à votre besoin réel d'accompagnement et de solidarité)</li>
-          <li>Un outil de « veille automatique » qui génère 200 articles par jour que personne ne lit, alors que vous avez besoin de ressources ciblées pour votre action associative et votre mission d'intérêt général</li>
-          <li>Un assistant IA pour « optimiser la productivité » alors que le vrai problème était un manque de formation sur l'outil existant, et que votre priorité est votre mission associative et d'intérêt général</li>
+          <li>Un chatbot sur un site qui re§oit 10 visites par semaine et o¹ les questions sont toujours les mêmes (une FAQ aurait suffi, et surtout cela ne correspond pas à votre besoin réel d'accompagnement et de solidarité)</li>
+          <li>Un outil de Â« veille automatique Â» qui génère 200 articles par jour que personne ne lit, alors que vous avez besoin de ressources ciblées pour votre action associative et votre mission d'intérêt général</li>
+          <li>Un assistant IA pour Â« optimiser la productivité Â» alors que le vrai problème était un manque de formation sur l'outil existant, et que votre priorité est votre mission associative et d'intérêt général</li>
           <li>Un générateur de contenu qui produit des textes génériques qu'il faut entièrement réécrire, au lieu de vous aider à valoriser votre action concrète et votre impact social</li>
           </ul>
         </div>
@@ -50,21 +54,21 @@ import BaseLayout from '@/layouts/Layout.astro';
         </p>
         <p>
           Parfois, la réponse n'est pas de l'IA. C'est un meilleur tableur. C'est une formation. 
-          C'est une réorganisation de vos processus. Nous préférons vous dire « vous n'avez pas besoin de ça » 
+          C'est une réorganisation de vos processus. Nous préférons vous dire Â« vous n'avez pas besoin de §a Â» 
           plutôt que de vous vendre quelque chose d'inutile, surtout quand vos ressources sont limitées.
         </p>
         <p>
-          L'IA utile, c'est celle qui fait gagner du temps sur des tâches répétitives, pour que vous puissiez vous concentrer sur votre cœur de mission. 
+          L'IA utile, c'est celle qui fait gagner du temps sur des tâches répétitives, pour que vous puissiez vous concentrer sur votre cÅ“ur de mission. 
           C'est celle qui aide à prendre des décisions avec de meilleures informations, pour mieux servir votre public. 
-          C'est celle qui s'intègre dans votre façon de travailler sans tout chambouler, dans une logique d'entraide, de solidarité et d'intérêt général.
+          C'est celle qui s'intègre dans votre fa§on de travailler sans tout chambouler, dans une logique d'entraide, de solidarité et d'intérêt général.
         </p>
       </section>
 
       <section class="actions">
         <h2>Ce que nous faisons concrètement</h2>
         <ul>
-          <li>Nous commençons toujours par <strong>analyser vos besoins réels</strong> avant de proposer quoi que ce soit, en tenant compte de votre mission d'intérêt général et solidaire</li>
-          <li>Nous mesurons l'utilité d'un outil en <strong>temps gagné</strong> ou en <strong>amélioration concrète</strong>, pas en « wow effect », surtout quand chaque heure compte pour votre action et votre mission d'intérêt général</li>
+          <li>Nous commen§ons toujours par <strong>analyser vos besoins réels</strong> avant de proposer quoi que ce soit, en tenant compte de votre mission d'intérêt général et solidaire</li>
+          <li>Nous mesurons l'utilité d'un outil en <strong>temps gagné</strong> ou en <strong>amélioration concrète</strong>, pas en Â« wow effect Â», surtout quand chaque heure compte pour votre action et votre mission d'intérêt général</li>
           <li>Nous privilégions des <strong>solutions simples</strong> qui font bien une chose plutôt que des usines à gaz, pour rester dans des budgets accessibles et solidaires</li>
           <li>Nous testons avec vous sur un <strong>cas d'usage limité</strong> avant de déployer à grande échelle, pour éviter les gaspillages et préserver vos ressources</li>
           <li>Nous vous orientons vers des <strong>alternatives non-IA</strong> quand elles sont plus adaptées à votre réalité associative, TPE ou d'intérêt général</li>
@@ -96,7 +100,7 @@ import BaseLayout from '@/layouts/Layout.astro';
           vous allez vous méfier de toutes les propositions suivantes, même celles qui pourraient vraiment vous aider dans votre démarche associative, solidaire et d'intérêt général.
         </p>
         <p>
-          Enfin, c'est une question de sobriété et de responsabilité. L'IA a un coût énergétique. 
+          Enfin, c'est une question de sobriété et de responsabilité. L'IA a un co»t énergétique. 
           L'utiliser pour des gadgets, c'est gaspiller de l'énergie pour rien, alors que cette énergie pourrait servir des projets à impact social, d'intérêt général et solidaire.
         </p>
       </section>
@@ -230,7 +234,7 @@ import BaseLayout from '@/layouts/Layout.astro';
   .actions ul li::before,
   .examples ul li::before,
   .examples-sharing ul li::before {
-    content: "→";
+    content: "â†’";
     position: absolute;
     left: 0;
     color: #4a5568;

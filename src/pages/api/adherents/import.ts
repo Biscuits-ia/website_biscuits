@@ -55,9 +55,10 @@ function csvToRows(csvText: string): CsvRow[] {
 }
 
 export const POST: APIRoute = async ({ request, cookies, clientAddress }) => {
-  const { ctx, rateLimitResponse } = await getAdherentsAuthContext(request, cookies, clientAddress);
-  if (!ctx) return jsonError('Non autorise.', 401);
+  const { result, rateLimitResponse } = await getAdherentsAuthContext(request, cookies, clientAddress);
+  if (!result.ok) return jsonError('Non autorise.', result.status);
   if (rateLimitResponse) return rateLimitResponse;
+  const ctx = result.ctx;
   if (!hasAnyRole(ctx.roles, ['admin', 'tresorier'])) {
     return jsonError('Acces refuse.', 403);
   }

@@ -40,8 +40,7 @@ interface Task {
   profiles: ProfileRef[] | ProfileRef | null;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const tasks = (tasksRaw ?? []) as any as Task[];
+const tasks = (tasksRaw ?? []) as unknown as Task[];
 
 const statusLabel: Record<string, string> = {
   todo: 'À faire', in_progress: 'En cours', review: 'Révision', done: 'Terminé',
@@ -60,7 +59,7 @@ for (const t of tasks) {
 }
 ---
 
-<DashboardLayout title="Mes tâches" role="benevole" activePage="tasks" userName={userName} userEmail={user.email ?? ''} authResult={result}>
+<DashboardLayout title="Mes tâches" activePage="tasks" userName={userName} userEmail={user.email ?? ''} authResult={result}>
   <div class="page-header mb-6">
     <div>
       <h1 class="page-title">Mes tâches</h1>

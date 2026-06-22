@@ -26,6 +26,14 @@ if (filter) query = query.ilike('event', `%${filter}%`);
 
 const { data: logs, count } = await query;
 const totalPages = Math.ceil((count ?? 0) / perPage);
+
+interface ActivityLogRow {
+  id:         string;
+  event:      string;
+  created_at: string;
+  metadata:   { ip?: string; agent?: string } | null;
+}
+
 ---
 
 <DashboardLayout title="Activité" activePage="activity" userName={userName} userEmail={userEmail} authResult={result}>
@@ -58,7 +66,7 @@ const totalPages = Math.ceil((count ?? 0) / perPage);
   <div class="card p-0">
     {logs && logs.length > 0 ? (
       <div class="timeline px-6">
-        {logs.map((item: any) => {
+        {logs.map((item: ActivityLogRow) => {
           const date     = new Date(item.created_at);
           const evtType  = item.event?.toLowerCase() ?? '';
           const dotClass = evtType.includes('error')  ? 'err'

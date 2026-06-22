@@ -1,0 +1,136 @@
+---
+import { Icon } from 'astro-icon/components';
+---
+
+<section class="privacy-section">
+  <div class="container">
+    <div class="header">
+      <h2>Protection des données</h2>
+      <p>Notre engagement éthique pour protéger vos données et lutter contre les dérives numériques.</p>
+    </div>
+
+    <div class="features">
+      <div class="feature-card">
+        <div class="icon-wrapper">
+            
+          <Icon name="mdi:security" />
+        </div>
+        <h3>Respect du RGPD</h3>
+        <p>Nous traitons les données conformément au RGPD de l'UE, avec des garanties appropriées et une minimisation des données.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="icon-wrapper">
+          <Icon name="mdi:database" />
+        </div>
+        <h3>Données non conservées</h3>
+        <p>Nos partenaires ne conservent pas les données envoyées via nos services. Aucune information n'est stockée de leur côté.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="icon-wrapper">          
+          <Icon name="mdi:delete" />
+        </div>
+        <h3>Suppression à votre convenance</h3>
+        <p>Vous pouvez supprimer vos données à tout moment, directement depuis les paramètres de votre compte.</p>
+      </div>
+    </div>
+
+    <div class="cta-wrapper">
+      <a href="/legal/confidentialite" class="cta-button">En savoir plus</a>
+    </div>
+  </div>
+</section>
+
+<style scoped>
+  .privacy-section {
+    padding: 60px 20px;
+  }
+
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .header {
+    text-align: center;
+    margin-bottom: 60px; 
+  }
+
+  .header h2 {
+    font-size: var(--font-size-5xl);
+    color: var(--color-gray-100);
+    margin-bottom: 12px;
+    font-weight: var(--font-weight-extrabold);
+  }
+
+  .header p {
+    font-size: var(--font-size-xl);
+    color: var(--color-gray-100);
+    font-weight: 400;
+  }
+
+  .features {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 30px;
+    margin-bottom: 50px;
+  }
+
+  .feature-card {
+    background: var(--color-secondary);
+    padding: 40px 30px;
+    text-align: center;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .icon-wrapper {
+    width: 80px;
+    height: 80px;
+    background: var(--color-accent-honey);
+    margin: 0 auto 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .icon-wrapper svg {
+    width: 40px;
+    height: 40px;
+    fill: var(--color-gray-900);
+  }
+
+  .feature-card h3 {
+    font-size: 1.3rem;
+    color: var(--color-gray-800);
+    margin-bottom: 20px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .feature-card p {
+    font-size: 1rem;
+    color: var(--color-gray-900);
+    line-height: 1.6;
+  }
+
+  .cta-wrapper {
+    text-align: center;
+  }
+
+
+  @media (max-width: 768px) {
+    .header h2 {
+      font-size: 2rem;
+    }
+
+    .header p {
+      font-size: 1.2rem;
+    }
+
+    .features {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

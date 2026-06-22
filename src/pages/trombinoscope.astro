@@ -1,8 +1,9 @@
 ---
 import Layout from '@/layouts/Layout.astro';
+import Breadcrumb from '@/components/Breadcrumb.astro';
 import { createSupabaseAdminClient } from '@/lib/supabase';
 
-export const prerender = false;
+export const prerender = true;
 
 const { data: membres, error } = await createSupabaseAdminClient()
   .from('benevoles')
@@ -13,6 +14,26 @@ const { data: membres, error } = await createSupabaseAdminClient()
 const bureau  = membres?.filter((m) => m.role === 'membre_bureau') ?? [];
 const ca      = membres?.filter((m) => m.role === 'membre_ca')     ?? [];
 const benevoles = membres?.filter((m) => m.role === 'benevole')    ?? [];
+
+// Schema Person pour chaque membre (renforce l'entite NGO dans le graph).
+const siteUrl = import.meta.env.SITE || 'https://biscuits-ia.com';
+const trombinoscopeSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'ItemList',
+  itemListElement: (membres ?? []).map((m, i) => ({
+    '@type': 'ListItem',
+    position: i + 1,
+    item: {
+      '@type': 'Person',
+      name: m.prenom + ' ' + m.nom,
+      jobTitle: m.role,
+      memberOf: { '@id': siteUrl + '/#organization' },
+      image: photoUrl(m.photo_url),
+      url: m.lien || undefined,
+      knowsAbout: m.competences || [],
+    },
+  })),
+};
 
 const SUPABASE_URL = import.meta.env.SUPABASE_URL ?? '';
 
@@ -29,8 +50,10 @@ function photoUrl(url: string | null): string {
   title="Notre équipe | Biscuits IA"
   description="Découvrez les bénévoles, membres du CA et du bureau qui font vivre l'association Biscuits IA au quotidien."
   canonical="/trombinoscope"
+  noindex={true}
 >
-  <section class="trombi-hero">
+  <Breadcrumb />
+<section class="trombi-hero">
     <div class="container">
       <h1>Notre équipe</h1>
       <p class="lead">
@@ -190,6 +213,7 @@ function photoUrl(url: string | null): string {
       <a href="/rejoignez-nous" class="btn-cta">Devenir bénévole</a>
     </div>
   </section>
+<script type="application/ld+json" is:inline set:html={JSON.stringify(trombinoscopeSchema)} />
 </Layout>
 
 <style>

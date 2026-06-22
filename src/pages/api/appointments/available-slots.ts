@@ -1,13 +1,14 @@
 import type { APIRoute } from 'astro';
 import { createSupabaseClient } from '@/lib/supabase';
+import { toHHmm } from '@/lib/dateHelpers';
 
 /**
  * GET /api/appointments/available-slots?date=YYYY-MM-DD
  *
- * Renvoie les créneaux (`appointment_slots`) réellement disponibles pour une date :
- *   1. Sélectionne les slots dont `is_available = true` et `start_time` ∈ [date 00:00, date 23:59] UTC.
- *   2. Exclut ceux qui ont déjà un `volunteer_appointments` actif (`pending` ou `confirmed`).
- *   3. Mappe vers `HH:mm` (en UTC pour rester aligné sur le `start_time` stocké en timestamptz).
+ * Renvoie les crneaux (`appointment_slots`) rellement disponibles pour une date :
+ *   1. Slectionne les slots dont `is_available = true` et `start_time` ? [date 00:00, date 23:59] UTC.
+ *   2. Exclut ceux qui ont dj un `volunteer_appointments` actif (`pending` ou `confirmed`).
+ *   3. Mappe vers `HH:mm` (en UTC pour rester align sur le `start_time` stock en timestamptz).
  */
 export const GET: APIRoute = async ({ url, request, cookies }) => {
   try {
@@ -17,17 +18,17 @@ export const GET: APIRoute = async ({ url, request, cookies }) => {
     const timezone = url.searchParams.get('timezone') || 'Europe/Paris';
 
     if (!dateParam) {
-      return jsonError('Paramètre "date" requis (format: YYYY-MM-DD)', 400);
+      return jsonError('Paramtre "date" requis (format: YYYY-MM-DD)', 400);
     }
     if (!/^\d{4}-\d{2}-\d{2}$/.test(dateParam)) {
       return jsonError('Format de date invalide (utiliser YYYY-MM-DD)', 400);
     }
 
-    // Bornes de la journée en UTC
+    // Bornes de la journe en UTC
     const dayStart = `${dateParam}T00:00:00Z`;
     const dayEnd = `${dateParam}T23:59:59.999Z`;
 
-    // 1. Tous les slots dispos de la journée
+    // 1. Tous les slots dispos de la journe
     const { data: slots, error: slotsErr } = await supabase
       .from('appointment_slots')
       .select('id, start_time, end_time')
@@ -38,14 +39,14 @@ export const GET: APIRoute = async ({ url, request, cookies }) => {
 
     if (slotsErr) {
       console.error('[available-slots] error fetching slots:', slotsErr);
-      return jsonError('Erreur lors de la récupération des créneaux', 500);
+      return jsonError('Erreur lors de la rcupration des crneaux', 500);
     }
 
     if (!slots || slots.length === 0) {
       return jsonSlots(dateParam, timezone, []);
     }
 
-    // 2. Slots déjà réservés par un RDV actif (pending|confirmed)
+    // 2. Slots dj rservs par un RDV actif (pending|confirmed)
     const slotIds = slots.map((s) => s.id);
     const { data: taken, error: takenErr } = await supabase
       .from('volunteer_appointments')
@@ -55,12 +56,12 @@ export const GET: APIRoute = async ({ url, request, cookies }) => {
 
     if (takenErr) {
       console.error('[available-slots] error fetching taken slots:', takenErr);
-      return jsonError('Erreur lors de la récupération des créneaux', 500);
+      return jsonError('Erreur lors de la rcupration des crneaux', 500);
     }
 
     const takenIds = new Set((taken ?? []).map((t) => t.slot_id).filter(Boolean));
 
-    // 3. Formate en HH:mm (UTC, cohérent avec le timestamptz BDD)
+    // 3. Formate en HH:mm (UTC, cohrent avec le timestamptz BDD)
     const availableSlots = slots
       .filter((s) => !takenIds.has(s.id))
       .map((s) => ({
@@ -77,13 +78,6 @@ export const GET: APIRoute = async ({ url, request, cookies }) => {
     return jsonError('Erreur interne du serveur', 500);
   }
 };
-
-function toHHmm(iso: string): string {
-  const d = new Date(iso);
-  const hh = String(d.getUTCHours()).padStart(2, '0');
-  const mm = String(d.getUTCMinutes()).padStart(2, '0');
-  return `${hh}:${mm}`;
-}
 
 function jsonSlots(date: string, timezone: string, slots: Array<Record<string, unknown>>) {
   return new Response(
@@ -103,3 +97,4 @@ function jsonError(message: string, status: number) {
     headers: { 'Content-Type': 'application/json' },
   });
 }
+

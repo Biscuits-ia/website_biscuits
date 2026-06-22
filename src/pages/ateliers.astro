@@ -1,12 +1,15 @@
 ---
 import BaseLayout from '@/layouts/Layout.astro';
 import { createSupabaseAdminClient } from '@/lib/supabase';
+import Breadcrumb from '@/components/Breadcrumb.astro';
 
-export const prerender = false;
+export const prerender = true;
 
-const { data: workshops, error } = await createSupabaseAdminClient()
+const { data: workshops, error } = await createSupabaseAdminClient(Astro)
   .from('workshops')
   .select('id, title, description, category, level, price_cents, price_label, is_free')
+  // RLS policies sur workshops permettent la lecture anon des lignes publies.
+  // Si la policy choue, fallback gracieux : on affiche un empty-state.
   .order('price_cents', { ascending: true });
 
 // Map level label → CSS class suffix and emoji icon
@@ -29,15 +32,18 @@ function levelIcon(level: string | null, category: string | null): string {
 ---
 
 <BaseLayout
-  title="Ateliers | Biscuits IA"
+  title="Ateliers IA | Biscuits IA"
   description="Découvrez nos ateliers pour apprendre à utiliser l'intelligence artificielle dans vos projets associatifs ou TPE."
+  noindex={true}
+  schema={{ type: 'Service', data: { serviceType: 'Formation IA', name: 'Ateliers Biscuits IA', description: 'Ateliers pratiques pour apprendre l\u2019IA accessible aux associations et TPE.' } }}
 >
+  <Breadcrumb />
   <section class="hero-workshops">
     <div class="container">
       <div class="hero-content">
-        <h1>Apprendre ensemble, sans prise de tête</h1>
+        <h1>Apprendre ensemble, sans prise de tete</h1>
         <p class="hero-subtitle">
-          Des ateliers ouverts à toutes et tous — bénévoles, équipes, curieux — pour apprivoiser l'IA à votre rythme, dans la bonne humeur.
+          Des ateliers ouverts a toutes et tous — benevoles, equipes, curieux — pour apprivoiser l'IA a votre rythme, dans la bonne humeur.
         </p>
       </div>
     </div>
@@ -47,12 +53,12 @@ function levelIcon(level: string | null, category: string | null): string {
     <div class="container">
       <div class="section-header">
         <h2>Nos Ateliers</h2>
-        <p>Des moments d'échange pour apprendre et expérimenter ensemble — à son rythme, sans jugement</p>
+        <p>Des moments d'echange pour apprendre et experimenter ensemble — a son rythme, sans jugement</p>
       </div>
       
       {error && (
         <p class="workshops-error" role="alert">
-          Impossible de charger les ateliers pour le moment. Réessayez plus tard.
+          Impossible de charger les ateliers pour le moment. Reessayez plus tard.
         </p>
       )}
 
@@ -96,22 +102,22 @@ function levelIcon(level: string | null, category: string | null): string {
         <div class="benefit-item">
           <div class="benefit-icon">💡</div>
           <h3>Pratique avant tout</h3>
-          <p>Des exercices concrets adaptés aux besoins des structures associatives et TPE</p>
+          <p>Des exercices concrets adaptes aux besoins des structures associatives et TPE</p>
         </div>
         <div class="benefit-item">
           <div class="benefit-icon">👥</div>
           <h3>En petit groupe</h3>
-          <p>15 participants max par sessions pour un accompagnement personnalisé</p>
+          <p>15 participants max par sessions pour un accompagnement personnalise</p>
         </div>
         <div class="benefit-item">
           <div class="benefit-icon">🎯</div>
-          <h3>Sans prérequis</h3>
-          <p>Accessible à tous les bénévoles et professionnels, quel que soit votre niveau technique</p>
+          <h3>Sans prerequis</h3>
+          <p>Accessible a tous les benevoles et professionnels, quel que soit votre niveau technique</p>
         </div>
         <div class="benefit-item">
           <div class="benefit-icon">🎭</div>
-          <h3>Souveraineté Numérique</h3>
-          <p>Prenez le contrôle de vos données et ne dépendez pas de services coûteux et inefficace</p>
+          <h3>Souverainete Numerique</h3>
+          <p>Prenez le contrôle de vos donnees et ne dependez pas de services coûteux et inefficace</p>
         </div>
       </div>
     </div>
@@ -121,7 +127,7 @@ function levelIcon(level: string | null, category: string | null): string {
     <div class="container">
       <div class="cta-content">
         <h2>Rejoindre un atelier</h2>
-        <p>Les places sont limitées à 15 participants pour que chacun puisse poser ses questions et avancer à son rythme.</p>
+        <p>Les places sont limitees a 15 participants pour que chacun puisse poser ses questions et avancer a son rythme.</p>
         <div class="cta-buttons">
           <a href="/ateliers/inscription" class="btn-primary">
             Je m'inscris

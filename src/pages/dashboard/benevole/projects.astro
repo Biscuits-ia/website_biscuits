@@ -135,7 +135,7 @@ const priorityLabel: Record<string, string> = {
 };
 ---
 
-<DashboardLayout title="Projets" role="benevole" activePage="projects" userName={userName} userEmail={user.email ?? ''} authResult={result}>
+<DashboardLayout title="Projets" activePage="projects" userName={userName} userEmail={user.email ?? ''} authResult={result}>
   {loadError && (
     <div class="card mb-4">
       <p class="empty-state" style="color: var(--err-fg)">{loadError}</p>

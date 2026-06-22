@@ -2,6 +2,11 @@
 import { createServerClient, parseCookieHeader } from '@supabase/ssr';
 import { createClient } from '@supabase/supabase-js';
 
+/**
+ * Client SSR principal.
+ * Lit les cookies de session, crit les nouveaux via Astro.cookies.
+ * Utilis par toutes les routes Astro et API en SSR.
+ */
 export function createSupabaseClient(context: { request: Request; cookies: any }) {
   return createServerClient(
     import.meta.env.SUPABASE_URL,
@@ -23,10 +28,10 @@ export function createSupabaseClient(context: { request: Request; cookies: any }
               secure: import.meta.env.PROD,
               sameSite: 'lax',
               path: '/',
-              // SECURITY: pas de `domain` → cookie limité à l'hôte exact.
+              // SECURITY: pas de `domain` ? cookie limit  l'hte exact.
               // Avant : `domain: '.biscuits-ia.com'` partageait le cookie
-              // d'auth avec TOUS les sous-domaines → si un sous-domaine
-              // était compromis, hijack de session possible. Cf. AUDIT §3.
+              // d'auth avec TOUS les sous-domaines ? si un sous-domaine
+              // tait compromis, hijack de session possible. Cf. AUDIT 3.
             });
           }
         },
@@ -41,8 +46,8 @@ export function createSupabaseClient(context: { request: Request; cookies: any }
 }
 
 /**
- * Client Supabase avec service_role — bypass RLS.
- * Uniquement côté serveur (routes API, lib/auth.ts).
+ * Client Supabase avec service_role  bypass RLS.
+ * Uniquement ct serveur (routes API, lib/auth.ts).
  * Ne jamais exposer ce client au client browser.
  */
 export function createSupabaseAdminClient() {
@@ -52,66 +57,15 @@ export function createSupabaseAdminClient() {
   if (!url || !svcKey) {
     throw new Error(
       '[supabase] SUPABASE_URL ou SUPABASE_SERVICE_ROLE_KEY manquant dans .env\n' +
-      'Récupère la clé dans Supabase → Project Settings → API → service_role secret.',
+      'Rcupre la cl dans Supabase ? Project Settings ? API ? service_role secret.',
     );
   }
 
   return createClient(url, svcKey, {
     auth: {
-      // Désactive la persistance de session — ce client est stateless côté serveur
+      // Dsactive la persistance de session  ce client est stateless ct serveur
       persistSession: false,
       autoRefreshToken: false,
     },
   });
-}
-
-// Helpers module tâches (compatibles stack actuelle)
-function resolvePublicSupabaseUrl(): string {
-  return import.meta.env.PUBLIC_SUPABASE_URL || import.meta.env.SUPABASE_URL;
-}
-
-function resolvePublicSupabaseAnonKey(): string {
-  return import.meta.env.PUBLIC_SUPABASE_ANON_KEY || import.meta.env.SUPABASE_ANON_KEY;
-}
-
-export function createServerSupabaseClient(context: { request: Request; cookies: any }) {
-  return createServerClient(
-    resolvePublicSupabaseUrl(),
-    resolvePublicSupabaseAnonKey(),
-    {
-      cookies: {
-        getAll() {
-          return parseCookieHeader(context.request.headers.get('Cookie') ?? '')
-            .filter((cookie) => cookie.name)
-            .map((cookie) => ({ name: cookie.name, value: cookie.value ?? '' }));
-        },
-        setAll(cookiesToSet) {
-          for (const { name, value, options } of cookiesToSet) {
-            context.cookies.set(name, value, {
-              ...options,
-              httpOnly: true,
-              secure: import.meta.env.PROD,
-              sameSite: 'lax',
-              path: '/',
-            });
-          }
-        },
-      },
-      auth: {
-        autoRefreshToken: false,
-        detectSessionInUrl: false,
-      },
-    },
-  );
-}
-
-let browserClient: ReturnType<typeof createClient> | null = null;
-
-export function createBrowserSupabaseClient() {
-  browserClient ??= createClient(
-    resolvePublicSupabaseUrl(),
-    resolvePublicSupabaseAnonKey(),
-    { auth: { persistSession: true, autoRefreshToken: true } },
-  );
-  return browserClient;
 }

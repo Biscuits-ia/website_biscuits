@@ -43,7 +43,7 @@ const groups = [
 ];
 ---
 
-<DashboardLayout title="Équipe" role="benevole" activePage="equipe" userName={userName} userEmail={user.email ?? ''} authResult={result}>
+<DashboardLayout title="Équipe" activePage="equipe" userName={userName} userEmail={user.email ?? ''} authResult={result}>
   <div class="mb-6">
     <h1 class="page-title">Notre équipe</h1>
     <p class="description">{benevoles.length} membre{benevoles.length > 1 ? 's' : ''} actif{benevoles.length > 1 ? 's' : ''}</p>

@@ -1,0 +1,150 @@
+---
+export const prerender = true;
+
+import Layout from '@/layouts/Layout.astro';
+
+const combats = [
+  {
+    slug: 'ia-accessible',
+    title: "Rendre l'IA accessible aux petites structures",
+    lead: "Briser la fracture numérique : pour que chaque association puisse s'approprier les technologies de demain sans barrière financière.",
+    icon: '🎯',
+  },
+  {
+    slug: 'ia-utile',
+    title: "L'IA au service de l'humain, pas du marketing",
+    lead: "L'IA devrait résoudre de vrais problèmes, pas impressionner avec des démos qui ne servent à rien au quotidien.",
+    icon: '⚡',
+  },
+  {
+    slug: 'plateformes-ouvertes',
+    title: 'Souveraineté numérique : reprendre les clés de vos outils',
+    lead: "Encourager les solutions ouvertes et maîtrisables pour éviter que les petites structures ne deviennent prisonnières de leurs outils.",
+    icon: '🔓',
+  },
+  {
+    slug: 'partage-connaissance',
+    title: 'Libérer les savoirs : vers une autonomie numérique partagée',
+    lead: "Documenter ce que nous faisons, accompagner nos partenaires et partager nos méthodes en accès libre pour que le savoir profite à tous.",
+    icon: '📚',
+  },
+  {
+    slug: 'derives-numeriques',
+    title: 'Défense citoyenne : médiation contre les abus numériques',
+    lead: "Un service gratuit pour signaler et tenter de résoudre les problèmes avec des acteurs numériques peu scrupuleux.",
+    icon: '🛡️',
+  },
+];
+
+const schema = {
+  type: 'WebPage' as const,
+  data: {
+    name: 'Nos combats - Biscuits IA',
+    description: "Cinq combats pour une IA accessible, utile, ouverte, partagée et citoyenne.",
+  },
+};
+---
+
+<Layout
+  title="Nos combats | IA accessible, éthique et solidaire - Biscuits IA"
+  description="Cinq combats pour une IA accessible, utile, ouverte, partagée et citoyenne : fracture numérique, souveraineté, médiation, autonomie partagée."
+  schema={schema}
+>
+  <section class="combats-hero">
+    <div class="container">
+      <h1>Nos combats</h1>
+      <p class="lead">
+        Une IA vraiment utile pour les petites structures passe par cinq combats concrets. Découvrez nos positions, nos actions et les leviers que nous activons chaque jour.
+      </p>
+    </div>
+  </section>
+
+  <section class="combats-grid-section">
+    <div class="container">
+      <div class="combats-grid">
+        {combats.map((c) => (
+          <a href={`/combats/${c.slug}`} class="combat-card">
+            <span class="combat-icon" aria-hidden="true">{c.icon}</span>
+            <h2>{c.title}</h2>
+            <p>{c.lead}</p>
+            <span class="combat-link">Lire notre position →</span>
+          </a>
+        ))}
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .combats-hero {
+    padding: 6rem 1rem 2rem;
+    text-align: center;
+    background: linear-gradient(180deg, var(--color-bg) 0%, var(--color-bg-elevated) 100%);
+  }
+  .combats-hero h1 {
+    font-size: clamp(2.2rem, 5vw, 3.2rem);
+    font-weight: 900;
+    margin: 0 0 1rem;
+    color: var(--color-text);
+  }
+  .combats-hero .lead {
+    font-size: clamp(1.05rem, 2vw, 1.3rem);
+    color: var(--color-text-light);
+    max-width: 720px;
+    margin: 0 auto;
+    line-height: 1.6;
+  }
+  .combats-grid-section {
+    padding: 3rem 1rem 5rem;
+  }
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+  .combats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+  }
+  .combat-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1.75rem;
+    background: var(--color-bg-elevated);
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    text-decoration: none;
+    color: inherit;
+    box-shadow: var(--shadow-md);
+    transition: transform var(--transition-base), box-shadow var(--transition-base), border-color var(--transition-base);
+  }
+  .combat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-xl);
+    border-color: var(--color-primary);
+  }
+  .combat-icon {
+    font-size: 2.25rem;
+    line-height: 1;
+  }
+  .combat-card h2 {
+    font-size: 1.2rem;
+    font-weight: 800;
+    margin: 0;
+    color: var(--color-text);
+    line-height: 1.3;
+  }
+  .combat-card p {
+    margin: 0;
+    color: var(--color-text-light);
+    line-height: 1.55;
+    font-size: 0.95rem;
+  }
+  .combat-link {
+    margin-top: auto;
+    color: var(--color-primary);
+    font-weight: 700;
+    font-size: 0.9rem;
+  }
+</style>

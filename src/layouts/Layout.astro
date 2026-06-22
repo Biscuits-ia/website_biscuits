@@ -56,7 +56,7 @@ const criticalCSS = `
 ---
 
 <!DOCTYPE html>
-<html lang="fr" dir="ltr">
+<html lang="fr-FR" dir="ltr">
 <head>
   <BaseHead
     fullTitle={fullTitle}
@@ -83,6 +83,9 @@ const criticalCSS = `
   </main>
 
   <Footer />
+
+  <!-- Service Worker (PWA, activé uniquement après opt-in analytics + consentement cookies) -->
+  <script is:inline defer src="/sw-register.js"></script>
 
   <!-- Composants non-critiques chargés après le contenu (améliore TBT) -->
   <CookieConsent client:idle />

@@ -21,7 +21,7 @@ let query = adminDb
   .select('*')
   .order('ordre', { ascending: true });
 
-if (filter) query = (query as any).eq('role', filter);
+if (filter) query = query.eq('role', filter);
 
 const { data: membresRaw } = await query;
 

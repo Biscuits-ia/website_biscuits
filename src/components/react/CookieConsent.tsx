@@ -60,22 +60,28 @@ export default function CookieConsent({
       localStorage.setItem('cookie-consent-version', consentData.version);
 
       globalThis.dispatchEvent(
-        new CustomEvent('cookieConsentUpdated', { detail: consentData })
+        new CustomEvent('cookieConsentUpdated', { detail: consentData }),
       );
 
-      if (prefs.analytics && globalThis.window !== undefined) {
-        if (typeof (globalThis as any).loadGTMIfConsented === 'function') {
-          (globalThis as any).loadGTMIfConsented();
+      // Charge ou dcharge les scripts selon le consentement.
+      // (RGPD : un refus explicite doit retirer les scripts dj chargs.)
+      if (prefs.analytics && typeof globalThis.window !== 'undefined') {
+        if (typeof globalThis.loadGTMIfConsented === 'function') {
+          globalThis.loadGTMIfConsented();
         }
         if (!isScriptLoaded('analytics')) {
           loadAnalytics();
         }
+      } else {
+        document
+          .querySelectorAll('script[data-consent="analytics"]')
+          .forEach((s) => s.remove());
       }
 
       setShowBanner(false);
       setShowSettings(false);
     },
-    [consentVersion, isScriptLoaded, loadAnalytics]
+    [consentVersion, isScriptLoaded, loadAnalytics],
   );
 
   const acceptAll = useCallback(() => {
@@ -101,7 +107,7 @@ export default function CookieConsent({
       setShowSettings(false);
     };
 
-    (globalThis as any).showCookieBanner = showBannerFromOutside;
+    (globalThis as unknown as { showCookieBanner?: () => void }).showCookieBanner = showBannerFromOutside;
 
     const showBannerHandler = () => {
       setShowBanner(true);
@@ -139,13 +145,13 @@ export default function CookieConsent({
         loadAnalytics();
       }
     } catch (e) {
-      console.error('Erreur lors du chargement des préférences:', e);
+      console.error('Erreur lors du chargement des prfrences:', e);
       setShowBanner(true);
     }
 
     return () => {
       globalThis.removeEventListener('showCookieBanner', showBannerHandler);
-      delete (globalThis as any).showCookieBanner;
+      delete (globalThis as unknown as { showCookieBanner?: () => void }).showCookieBanner;
     };
   }, [consentVersion, cleanupExpiredConsent, loadAnalytics]);
 
@@ -157,44 +163,16 @@ export default function CookieConsent({
         {showSettings ? (
           <div>
             <div className="cookie-settings-header">
-              <h3>Préférences des cookies</h3>
-              <button
-                onClick={() => setShowSettings(false)}
-                className="cookie-close"
-                aria-label="Retour"
-              >
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  aria-hidden="true"
-                >
-                  <line
-                    x1="18"
-                    y1="6"
-                    x2="6"
-                    y2="18"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                  />
-                  <line
-                    x1="6"
-                    y1="6"
-                    x2="18"
-                    y2="18"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                  />
-                </svg>
-              </button>
+              <h3>Prfrences des cookies</h3>
+              <p>Choisissez ce que vous autorisez. Vous pouvez modifier  tout moment.</p>
             </div>
 
             <div className="cookie-preferences">
               <div className="cookie-pref-item">
                 <div className="cookie-pref-text">
-                  <p className="cookie-pref-title">Cookies nécessaires</p>
+                  <p className="cookie-pref-title">Cookies ncessaires</p>
                   <p className="cookie-pref-desc">
-                    Requis pour le fonctionnement du site (toujours activés)
+                    Requis pour le fonctionnement du site (toujours activs)
                   </p>
                 </div>
                 <div className="cookie-toggle cookie-toggle-active">
@@ -206,7 +184,7 @@ export default function CookieConsent({
                 <div className="cookie-pref-text">
                   <p className="cookie-pref-title">Cookies analytiques</p>
                   <p className="cookie-pref-desc">
-                    Nous aident à comprendre comment vous utilisez le site
+                    Nous aident  comprendre comment vous utilisez le site
                   </p>
                 </div>
                 <button
@@ -240,11 +218,11 @@ export default function CookieConsent({
           <div>
             <div className="cookie-header">
               <div className="cookie-text">
-                <h3 id="cookie-banner-title">🍪 Cookies</h3>
+                <h3 id="cookie-banner-title">?? Cookies</h3>
                 <p id="cookie-banner-description">
-                  Nous utilisons des cookies pour améliorer votre expérience. Les
-                  cookies nécessaires sont requis pour le fonctionnement du site.
-                  Vous pouvez personnaliser vos préférences à tout moment.{' '}
+                  Nous utilisons des cookies pour amliorer votre exprience. Les
+                  cookies ncessaires sont requis pour le fonctionnement du site.
+                  Vous pouvez personnaliser vos prfrences  tout moment.{' '}
                   <a
                     href="/legal/cookies"
                     style={{ color: 'inherit', textDecoration: 'underline' }}
@@ -253,7 +231,7 @@ export default function CookieConsent({
                   </a>
                 </p>
                 <span className="cookie-example">
-                  Exemple: session, sécurité, préférences
+                  Exemple: session, scurit, prfrences
                 </span>
               </div>
               <button

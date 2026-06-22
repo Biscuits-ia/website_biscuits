@@ -1,13 +1,17 @@
----
+---export const prerender = true;
+
+
 
 import BaseLayout from '@/layouts/Layout.astro';
+import Breadcrumb from '@/components/Breadcrumb.astro';
 ---
 
 <BaseLayout 
   title="Souveraineté Numérique : Reprendre les clés de vos outils | Biscuits IA"
-  description="Nous encourageons les solutions ouvertes et maîtrisables pour éviter que les petites structures ne deviennent prisonnières de leurs outils."
+  description="Nous encourageons les solutions ouvertes et ma®trisables pour éviter que les petites structures ne deviennent prisonnières de leurs outils."
 >
   <article class="combat-page">
+  <Breadcrumb />
     <div class="container">
       <header class="hero">
         <div class="hero-content">
@@ -19,12 +23,12 @@ import BaseLayout from '@/layouts/Layout.astro';
       <section class="problem">
         <h2>Le problème</h2>
         <p>
-          Vous commencez avec un outil gratuit ou peu coûteux. Vous y entrez vos contacts, vos documents, vos processus. 
+          Vous commencez avec un outil gratuit ou peu co»teux. Vous y entrez vos contacts, vos documents, vos processus. 
           Après quelques mois, tout votre fonctionnement repose dessus. Et là, les prix augmentent. Ou les conditions changent. 
           Ou le service ferme. Et vous êtes coincés, surtout quand votre budget est limité et que votre mission d'intérêt général, associative et solidaire en pâtissent.
         </p>
         <p>
-          C'est le piège du « lock-in » : vous ne pouvez plus partir sans tout reconstruire de zéro. 
+          C'est le piège du Â« lock-in Â» : vous ne pouvez plus partir sans tout reconstruire de zéro. 
           Vos données sont dans un format propriétaire. Vos automatisations ne fonctionnent que sur cette plateforme. 
           Impossible de migrer facilement, surtout quand vous n'avez pas les ressources pour tout refaire et que cela compromet votre action associative, votre mission d'intérêt général et votre communauté.
         </p>
@@ -32,8 +36,8 @@ import BaseLayout from '@/layouts/Layout.astro';
         <div class="examples">
           <h3>Cas vécus</h3>
           <ul>
-          <li>Une association qui a vu son abonnement passer de 30 € à 150 € par mois après 2 ans d'utilisation, avec 3 000 contacts déjà enregistrés, alors que son budget est limité et que ces fonds pourraient servir à son action associative, à sa mission d'intérêt général et à sa communauté</li>
-          <li>Une TPE dont l'outil de gestion a été racheté et qui a dû tout refaire car les nouvelles conditions étaient inacceptables, au détriment de son développement, de son impact économique et de son autonomie</li>
+          <li>Une association qui a vu son abonnement passer de 30 â‚¬ à 150 â‚¬ par mois après 2 ans d'utilisation, avec 3 000 contacts déjà enregistrés, alors que son budget est limité et que ces fonds pourraient servir à son action associative, à sa mission d'intérêt général et à sa communauté</li>
+          <li>Une TPE dont l'outil de gestion a été racheté et qui a d» tout refaire car les nouvelles conditions étaient inacceptables, au détriment de son développement, de son impact économique et de son autonomie</li>
           <li>Un collectif qui a perdu l'accès à ses archives quand un service a fermé sans préavis, compromettant ainsi son action collective, son engagement d'intérêt général et son impact social</li>
           <li>Une collectivités qui paie des fonctionnalités dont elle n'a pas besoin car impossible de garder seulement ce qui l'intéresse, alors que ces fonds pourraient servir à des projets d'intérêt général, de solidarité et d'entraide</li>
           </ul>
@@ -43,7 +47,7 @@ import BaseLayout from '@/layouts/Layout.astro';
       <section class="position">
         <h2>Notre position</h2>
         <p>
-          Nous privilégions les solutions qui vous laissent maîtres de vos données et de votre organisation, surtout pour les structures à but non lucratif, d'intérêt général et solidaires. 
+          Nous privilégions les solutions qui vous laissent ma®tres de vos données et de votre organisation, surtout pour les structures à but non lucratif, d'intérêt général et solidaires. 
           Cela ne veut pas dire tout faire soi-même, mais choisir des outils qui permettent de partir si besoin, sans compromettre votre mission associative, votre action d'intérêt général et votre autonomie.
         </p>
         <p>
@@ -64,7 +68,7 @@ import BaseLayout from '@/layouts/Layout.astro';
           <li>Nous utilisons des <strong>formats standards</strong> (CSV, JSON, Markdown) pour que vos données restent lisibles partout, surtout quand elles servent une mission d'intérêt général, associative et solidaire</li>
           <li>Nous documentons les <strong>alternatives aux outils fermés</strong> les plus courants, en privilégiant les solutions accessibles, solidaires et d'intérêt général</li>
           <li>Nous créons des <strong>ponts entre services</strong> pour que vous ne soyez pas limités à un seul écosystème, favorisant ainsi la solidarité, l'entraide et l'autonomie</li>
-          <li>Nous évaluons la <strong>portabilité des solutions</strong> avant de les recommander, pour éviter les dépendances coûteuses et préserver votre mission associative et d'intérêt général</li>
+          <li>Nous évaluons la <strong>portabilité des solutions</strong> avant de les recommander, pour éviter les dépendances co»teuses et préserver votre mission associative et d'intérêt général</li>
         </ul>
       </section>
 
@@ -76,7 +80,7 @@ import BaseLayout from '@/layouts/Layout.astro';
         </p>
         <p>
           C'est aussi une question de pérennité, de solidarité et d'entraide. Une petite structure qui existe depuis 20 ans peut se retrouver bloquée 
-          parce qu'un outil sur lequel elle comptait disparaît ou change de modèle économique, au détriment de son action associative et de son engagement d'intérêt général.
+          parce qu'un outil sur lequel elle comptait dispara®t ou change de modèle économique, au détriment de son action associative et de son engagement d'intérêt général.
         </p>
         <p>
           Enfin, c'est une question de souveraineté, de responsabilité et de solidarité. Vos données vous appartiennent, surtout quand elles servent une mission d'intérêt général, associative et solidaire. Vous devriez pouvoir les récupérer, 
@@ -206,7 +210,7 @@ import BaseLayout from '@/layouts/Layout.astro';
 
   .actions ul li::before,
   .examples ul li::before {
-    content: "→";
+    content: "â†’";
     position: absolute;
     left: 0;
     color: #4a5568;

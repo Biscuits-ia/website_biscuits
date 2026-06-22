@@ -1,6 +1,9 @@
----
+---export const prerender = true;
+
+
 
 import BaseLayout from '@/layouts/Layout.astro';
+import Breadcrumb from '@/components/Breadcrumb.astro';
 ---
 
 <BaseLayout 
@@ -8,6 +11,7 @@ import BaseLayout from '@/layouts/Layout.astro';
   description="Nous aidons associations, collectivités et TPE à signaler et résoudre les problèmes avec des prestataires numériques peu scrupuleux grâce à un service de médiation gratuit."
 >
   <article class="combat-page">
+  <Breadcrumb />
     <div class="container">
       <header class="hero">
         <div class="hero-content">
@@ -29,7 +33,7 @@ import BaseLayout from '@/layouts/Layout.astro';
       <section class="position">
         <h2>Notre position</h2>
         <p>
-          Nous pensons que les structures méritent d’être protégées et accompagnées, surtout lorsqu'elles agissent dans une logique d'intérêt général, solidaire, d'entraide et de partage des connaissances. 
+          Nous pensons que les structures méritent dâ€™être protégées et accompagnées, surtout lorsqu'elles agissent dans une logique d'intérêt général, solidaire, d'entraide et de partage des connaissances. 
           Plutôt que de promettre la solution miracle, nous proposons un **service de médiation gratuit** pour aider à clarifier les malentendus et orienter vers des solutions justes, solidaires, d'intérêt général et de partage.
         </p>
         <p>
@@ -44,17 +48,17 @@ import BaseLayout from '@/layouts/Layout.astro';
           <li>Nous contactons le prestataire pour tenter de clarifier la situation, en privilégiant le dialogue, la solidarité, l'intérêt général, le partage des connaissances et la justice</li>
           <li>Nous fournissons des <strong>conseils et ressources</strong> pour savoir comment agir en toute sécurité, surtout pour les structures associatives, d'intérêt général, solidaires et dans une logique de partage des connaissances</li>
           <li>Nous documentons les cas récurrents pour informer et protéger la communauté, afin de renforcer la confiance dans le numérique, le service d'intérêt général, la solidarité et le partage des connaissances</li>
-          <li>Nous orientons vers des solutions alternatives gratuites ou peu coûteuses quand c’est possible, pour rester dans des budgets accessibles, solidaires, équitables et dans une logique de partage des connaissances</li>
+          <li>Nous orientons vers des solutions alternatives gratuites ou peu co»teuses quand câ€™est possible, pour rester dans des budgets accessibles, solidaires, équitables et dans une logique de partage des connaissances</li>
         </ul>
       </section>
 
       <section class="impact">
         <h2>Pourquoi c'est important</h2>
         <p>
-          Chaque euro mal dépensé peut mettre un projet en danger ou limiter les actions de l’association ou de la TPE, alors que ces structures ont souvent des missions d'intérêt général à remplir, à servir leur communauté et à renforcer leur impact social.
+          Chaque euro mal dépensé peut mettre un projet en danger ou limiter les actions de lâ€™association ou de la TPE, alors que ces structures ont souvent des missions d'intérêt général à remplir, à servir leur communauté et à renforcer leur impact social.
         </p>
         <p>
-          En proposant un service de médiation, nous renforçons la confiance dans le numérique et permettons aux structures de continuer à avancer sans être bloquées par des prestataires peu scrupuleux, dans une logique de solidarité, d'intérêt général, d'entraide et de justice sociale.
+          En proposant un service de médiation, nous renfor§ons la confiance dans le numérique et permettons aux structures de continuer à avancer sans être bloquées par des prestataires peu scrupuleux, dans une logique de solidarité, d'intérêt général, d'entraide et de justice sociale.
         </p>
       </section>
 
@@ -164,7 +168,7 @@ import BaseLayout from '@/layouts/Layout.astro';
 
   .actions ul li::before,
   .examples ul li::before {
-    content: "→";
+    content: "â†’";
     position: absolute;
     left: 0;
     color: var(--color-gray-100);

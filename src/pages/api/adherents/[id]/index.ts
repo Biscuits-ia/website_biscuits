@@ -12,9 +12,10 @@ import {
 export const prerender = false;
 
 export const GET: APIRoute = async ({ request, cookies, params, clientAddress }) => {
-  const { ctx, rateLimitResponse } = await getAdherentsAuthContext(request, cookies, clientAddress);
-  if (!ctx) return jsonError('Non autorise.', 401);
+  const { result, rateLimitResponse } = await getAdherentsAuthContext(request, cookies, clientAddress);
+  if (!result.ok) return jsonError('Non autorise.', result.status);
   if (rateLimitResponse) return rateLimitResponse;
+  const ctx = result.ctx;
   if (!hasAnyRole(ctx.roles, ['admin', 'tresorier', 'lecture_seule'])) {
     return jsonError('Acces refuse.', 403);
   }
@@ -38,9 +39,10 @@ export const GET: APIRoute = async ({ request, cookies, params, clientAddress })
 };
 
 export const PUT: APIRoute = async ({ request, cookies, params, clientAddress }) => {
-  const { ctx, rateLimitResponse } = await getAdherentsAuthContext(request, cookies, clientAddress);
-  if (!ctx) return jsonError('Non autorise.', 401);
+  const { result, rateLimitResponse } = await getAdherentsAuthContext(request, cookies, clientAddress);
+  if (!result.ok) return jsonError('Non autorise.', result.status);
   if (rateLimitResponse) return rateLimitResponse;
+  const ctx = result.ctx;
   if (!hasAnyRole(ctx.roles, ['admin', 'tresorier'])) {
     return jsonError('Acces refuse.', 403);
   }
@@ -96,9 +98,10 @@ export const PUT: APIRoute = async ({ request, cookies, params, clientAddress })
 };
 
 export const DELETE: APIRoute = async ({ request, cookies, params, clientAddress }) => {
-  const { ctx, rateLimitResponse } = await getAdherentsAuthContext(request, cookies, clientAddress);
-  if (!ctx) return jsonError('Non autorise.', 401);
+  const { result, rateLimitResponse } = await getAdherentsAuthContext(request, cookies, clientAddress);
+  if (!result.ok) return jsonError('Non autorise.', result.status);
   if (rateLimitResponse) return rateLimitResponse;
+  const ctx = result.ctx;
   if (!hasAnyRole(ctx.roles, ['admin', 'tresorier'])) {
     return jsonError('Acces refuse.', 403);
   }

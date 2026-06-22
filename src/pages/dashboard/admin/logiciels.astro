@@ -18,7 +18,7 @@ const { data: softwares } = await supabase
   .order('name', { ascending: true });
 ---
 
-<DashboardLayout title="Logiciels" role="admin" activePage="logiciels" userName={userName} authResult={result}>
+<DashboardLayout title="Logiciels" activePage="logiciels" userName={userName} authResult={result}>
 
   <div style="margin-bottom: 28px; display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap;">
     <div>

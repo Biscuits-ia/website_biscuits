@@ -2,8 +2,21 @@
 import { defineMiddleware } from 'astro:middleware';
 import { rateLimit } from './lib/rateLimit';
 import { createSupabaseAdminClient, createSupabaseClient } from './lib/supabase';
-import { fetchRoleSecure } from './lib/auth';
 import crypto from 'node:crypto';
+
+// TTL du cache `lastLogoutAt` : on evite un round-trip Supabase e chaque requete
+// authentifiee (cf. AUDIT-FRESH.md e3.2). 30 s est suffisant e un logout explicite
+// ne necessite pas une invalidation infra-milliseconde.
+const LOGOUT_CACHE_TTL_MS = 30_000;
+
+interface LogoutCacheEntry {
+  lastLogoutAtMs: number | null;
+  expiresAt: number;
+}
+
+// Module-level cache, partitionne par user.id. Vercel serverless partage ce cache
+// entre toutes les requetes du meme warm container (cold start = cache miss).
+const logoutCache = new Map<string, LogoutCacheEntry>();
 
 function parseForwardedFor(value: string | null): string | null {
   if (!value) return null;
@@ -12,10 +25,11 @@ function parseForwardedFor(value: string | null): string | null {
   return first;
 }
 
-function getClientIp(context: Parameters<typeof defineMiddleware>[0] extends never ? never : any): string | null {
-  const fromCf = context.request.headers.get('cf-connecting-ip');
-  const fromRealIp = context.request.headers.get('x-real-ip');
-  const fromForwarded = parseForwardedFor(context.request.headers.get('x-forwarded-for'));
+function getClientIp(context: { request: Request; clientAddress?: string }): string | null {
+  const headers = context.request.headers;
+  const fromCf = headers.get('cf-connecting-ip');
+  const fromRealIp = headers.get('x-real-ip');
+  const fromForwarded = parseForwardedFor(headers.get('x-forwarded-for'));
   const fromAstro = typeof context.clientAddress === 'string' ? context.clientAddress : null;
 
   const ip = fromCf ?? fromRealIp ?? fromForwarded ?? fromAstro;
@@ -40,7 +54,11 @@ function readAccessTokenIssuedAtMs(accessToken: string | null | undefined): numb
   }
 }
 
-function checkRouteRateLimit(context: any, isDev: boolean, pathname: string): Response | null {
+function checkRouteRateLimit(
+  context: { request: Request; clientAddress?: string },
+  isDev: boolean,
+  pathname: string,
+): Response | null {
   if (isDev) return null;
   if (!pathname.startsWith('/api/') && !pathname.startsWith('/auth/')) return null;
 
@@ -69,49 +87,71 @@ function checkRouteRateLimit(context: any, isDev: boolean, pathname: string): Re
   return rateLimit(key, limit, windowMs);
 }
 
+/**
+ * Lit `profiles.last_logout_at` avec cache memoire (30 s).
+ * Renvoie `null` si l'utilisateur n'a jamais logout explicitement.
+ * Renvoie `0` si `last_logout_at` n'existe pas en BDD (colonne manquante).
+ */
+async function readLastLogoutAtMs(userId: string): Promise<number | null> {
+  const cached = logoutCache.get(userId);
+  if (cached && cached.expiresAt > Date.now()) {
+    return cached.lastLogoutAtMs;
+  }
+
+  let value: number | null;
+  try {
+    const adminSupabase = createSupabaseAdminClient();
+    const { data, error } = await adminSupabase
+      .from('profiles')
+      .select('last_logout_at')
+      .eq('id', userId)
+      .maybeSingle();
+
+    if (error) {
+      if (error.code === '42703') {
+        // Colonne absente e considere comme "pas de logout enregistre".
+        value = 0;
+      } else {
+        console.error('[middleware] profile fetch for session invalidation failed:', error.message);
+        return null;
+      }
+    } else if (!data?.last_logout_at) {
+      value = 0;
+    } else {
+      const ms = Date.parse(data.last_logout_at);
+      value = Number.isFinite(ms) ? ms : null;
+    }
+  } catch (err) {
+    console.error('[middleware] readLastLogoutAtMs exception:', err);
+    return null;
+  }
+
+  logoutCache.set(userId, {
+    lastLogoutAtMs: value,
+    expiresAt: Date.now() + LOGOUT_CACHE_TTL_MS,
+  });
+  return value;
+}
+
 async function mustInvalidateSession(supabase: ReturnType<typeof createSupabaseClient>): Promise<boolean> {
   try {
     // 1. SECURITY: verify the JWT signature against Supabase FIRST.
-    //    getUser() makes a server-side roundtrip to Supabase Auth; if the
-    //    cookie's JWT is forged, unsigned, or revoked, this call fails and
-    //    we never trust the local payload claims. The previous implementation
-    //    read `iat` from the raw base64 payload without verifying the
-    //    signature, allowing an attacker who knew a user's id to forge a
-    //    cookie with an arbitrary `iat` and bypass this check.
+    //    getUser() fait un round-trip serveur vers Supabase Auth; si le cookie
+    //    est forge / non signe / revoque, l'appel echoue et on ne fait confiance
+    //    e aucune claim du payload local.
     const { data: { user }, error: userError } = await supabase.auth.getUser();
     if (userError || !user) return false;
 
-    // 2. The JWT is now server-verified. Reading the iat from the
-    //    unverified base64 payload is safe because we know Supabase
-    //    issued this exact token.
+    // 2. JWT serveur-verifie. Lecture du `iat` depuis le payload base64 safe.
     const { data: { session } } = await supabase.auth.getSession();
     const accessTokenIssuedAtMs = readAccessTokenIssuedAtMs(session?.access_token);
     if (accessTokenIssuedAtMs === null) return false;
 
-    // 3. Compare iat to last_logout_at in the profile (DB = source of
-    //    truth for explicit logout). If iat <= last_logout_at, the
-    //    access token was issued at or before the user's last logout and
-    //    must be invalidated.
-    const adminSupabase = createSupabaseAdminClient();
-    const { data: profile, error: profileError } = await adminSupabase
-      .from('profiles')
-      .select('last_logout_at')
-      .eq('id', user.id)
-      .maybeSingle();
-
-    if (profileError) {
-      const columnMissing = profileError.code === '42703';
-      if (!columnMissing) {
-        console.error('[middleware] profile fetch for session invalidation failed:', profileError.message);
-      }
-      return false;
-    }
-
-    if (!profile?.last_logout_at) return false;
-    const lastLogoutAtMs = Date.parse(profile.last_logout_at);
-    return Number.isFinite(lastLogoutAtMs) && accessTokenIssuedAtMs <= lastLogoutAtMs;
+    // 3. Comparaison `iat` vs `last_logout_at` (DB = source de verite du logout explicite).
+    const lastLogoutAtMs = await readLastLogoutAtMs(user.id);
+    if (lastLogoutAtMs === null || lastLogoutAtMs === 0) return false;
+    return accessTokenIssuedAtMs <= lastLogoutAtMs;
   } catch {
-    // Token refresh or profile fetch failed: keep request flow and treat as non-invalidated here.
     return false;
   }
 }
@@ -120,8 +160,6 @@ export const onRequest = defineMiddleware(async (context, next) => {
   const { url } = context;
   const isDev = import.meta.env.DEV;
 
-  // Skip middleware for prerendered static routes (RSS feed, etc.)
-  // The middleware cannot access request.headers on prerendered pages.
   if (url.pathname === '/rss.xml') {
     return next();
   }
@@ -129,13 +167,9 @@ export const onRequest = defineMiddleware(async (context, next) => {
   const blocked = checkRouteRateLimit(context, isDev, url.pathname);
   if (blocked) return blocked;
 
-  // Generate a per-request CSP nonce
   const nonce = crypto.randomBytes(16).toString('base64');
   context.locals.nonce = nonce;
 
-  // Create Supabase client and store in locals for reuse by requireAuth() and pages.
-  // This ensures that if the token is refreshed here, the same client (with the new
-  // token in memory) is used in pages — not a new client with the old cookie.
   const supabase = createSupabaseClient(context);
 
   const invalidatedSession = await mustInvalidateSession(supabase);
@@ -144,16 +178,13 @@ export const onRequest = defineMiddleware(async (context, next) => {
     try {
       await supabase.auth.signOut();
     } catch {
-      // Ignore cookie cleanup errors and continue with forced logout response.
+      // Ignore cookie cleanup errors.
     }
 
     if (url.pathname.startsWith('/api/')) {
       return new Response(
         JSON.stringify({ error: 'Session invalidee. Merci de vous reconnecter.' }),
-        {
-          status: 401,
-          headers: { 'Content-Type': 'application/json' },
-        },
+        { status: 401, headers: { 'Content-Type': 'application/json' } },
       );
     }
 
@@ -166,7 +197,6 @@ export const onRequest = defineMiddleware(async (context, next) => {
 
   const response = await next();
 
-  // Set CSP header with nonce (replaces static vercel.json CSP)
   const scriptSrc = [
     "'self'",
     `'nonce-${nonce}'`,
@@ -211,21 +241,13 @@ export const onRequest = defineMiddleware(async (context, next) => {
     "form-action 'self'",
   ].join('; ');
 
-  // Inject nonce into Astro-generated inline module scripts.
-  // Astro's SSR renderer outputs `<script type="module">content</script>` for
-  // inlined scripts (no imports that create separate chunks). These lack a nonce
-  // attribute, so they are blocked by the CSP. We patch the HTML response here.
   const contentType = response.headers.get('content-type') ?? '';
   if (contentType.includes('text/html')) {
     let html = await response.text();
-    // Add a nonce to every inline <script> tag.
-    // Matching the full opening tag is more reliable than trying to exclude
-    // `src=` with lookbehinds because Astro can emit several script variants.
     html = html.replaceAll(/<script\b([^>]*)>/g, (match, attrs: string) => {
       if (/\bsrc\s*=/.test(attrs) || /\bnonce\s*=/.test(attrs)) {
         return match;
       }
-
       return `<script${attrs} nonce="${nonce}">`;
     });
     const headers = new Headers(response.headers);

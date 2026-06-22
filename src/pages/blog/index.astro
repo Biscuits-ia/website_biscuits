@@ -1,3 +1,337 @@
 ---
-return Astro.redirect('/blog/1', 301);
+// Page d'index du blog : hero + 2 articles mis en avant + grille paginée.
+// Page 1 = `/blog`. Pages 2+ = `/blog/[page]`.
+
+export const prerender = true;
+
+import Layout from '@/layouts/Layout.astro';
+import { getCollection, type CollectionEntry } from 'astro:content';
+
+const PAGE_SIZE = 6;
+
+const allArticles = await getCollection('blog');
+const sorted = allArticles
+  .filter((a: CollectionEntry<'blog'>) => import.meta.env.PROD ? !a.data.draft : true)
+  .sort((a: CollectionEntry<'blog'>, b: CollectionEntry<'blog'>) =>
+    b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
+  );
+
+const total = sorted.length;
+const lastPage = Math.max(1, Math.ceil(total / PAGE_SIZE));
+
+const featuredArticles = sorted.slice(0, 2);
+
+const allTags = [...new Set(sorted.flatMap((a: CollectionEntry<'blog'>) => (a.data.tags as string[]) || []))] as string[];
+
+const articles: CollectionEntry<'blog'>[] = sorted.slice(0, PAGE_SIZE);
+
+const allArticlesForSearch = sorted.map((a: CollectionEntry<'blog'>) => ({
+  id: a.id,
+  title: a.data.title,
+  description: (a.data.description ?? '') as string,
+  pubDate: a.data.pubDate.toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' }),
+  tags: ((a.data.tags ?? []) as string[]).slice(0, 3),
+}));
 ---
+
+<Layout
+  title="Biscuits du Dev | Articles DevOps, IA & Développement"
+  description="Articles techniques sur le DevOps, l'Intelligence Artificielle et les bonnes pratiques de développement pour développeurs et équipes techniques."
+  schema={{
+    type: 'WebPage',
+    data: {
+      name: 'Biscuits du Dev - Blog',
+      description: 'Articles, guides et tutoriels pour accompagner les associations et TPE dans leurs projets IA et numériques.',
+    }
+  }}
+>
+  <div class="blog-wrapper">
+    <header class="blog-hero">
+      <div class="hero-content">
+        <h1 class="hero-title">
+          Développe plus vite avec
+          <span class="gradient-text">Biscuits du Dev</span>
+        </h1>
+
+        <p class="hero-description">
+          Des articles, guides et tutoriels pour accompagner les associations et TPE dans leurs projets IA et numériques, dans une démarche d'intérêt général, solidaire et d'entraide.
+        </p>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon" aria-hidden="true">📚</div>
+            <div class="stat-info">
+              <div class="stat-number">{total}</div>
+              <div class="stat-label">Articles</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon" aria-hidden="true">📄</div>
+            <div class="stat-info">
+              <div class="stat-number">{lastPage}</div>
+              <div class="stat-label">Pages</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon" aria-hidden="true">⭐</div>
+            <div class="stat-info">
+              <div class="stat-number">{featuredArticles.length}</div>
+              <div class="stat-label">En vedette</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="blog-container">
+      <div class="search-wrapper">
+        <div class="search-box">
+          <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input type="search" id="blog-search" placeholder="Rechercher un article..." autocomplete="off" aria-label="Rechercher un article" />
+          <button type="button" id="search-clear" class="search-clear" aria-label="Effacer la recherche" hidden>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <div id="search-results" hidden>
+        <p id="search-count" class="search-count"></p>
+        <div id="search-grid" class="articles-grid"></div>
+        <p id="search-empty" class="search-empty" hidden></p>
+      </div>
+
+      <div id="blog-main-content">
+        {featuredArticles.length > 0 && (
+          <section class="featured-section">
+            <div class="section-header">
+              <div class="section-title-wrapper">
+                <h2 class="section-title">
+                  <span class="title-icon" aria-hidden="true">⭐</span>
+                  Articles en vedette
+                </h2>
+                <p class="section-subtitle">Les meilleurs articles sélectionnés pour toi</p>
+              </div>
+            </div>
+
+            <div class="featured-grid">
+              {featuredArticles.map((article: CollectionEntry<'blog'>, index: number) => (
+                <article class="featured-card" style={`animation-delay: ${index * 0.1}s`}>
+                  <a href={`/blog/${article.id}`} class="card-link">
+                    {article.data.thumbnail && (
+                      <div class="card-thumbnail">
+                        <img src={article.data.thumbnail} alt={article.data.title} loading="lazy" width="600" height="338" />
+                        <div class="thumbnail-overlay"></div>
+                        <div class="featured-badge">⭐ En vedette</div>
+                      </div>
+                    )}
+                    <div class="card-content">
+                      <div class="card-meta">
+                        <time datetime={article.data.pubDate.toISOString()}>
+                          {article.data.pubDate.toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' })}
+                        </time>
+                        {article.data.author && <span class="author">{article.data.author}</span>}
+                      </div>
+                      <h3 class="card-title">{article.data.title}</h3>
+                      {article.data.description && <p class="card-description">{article.data.description}</p>}
+                      {article.data.tags && article.data.tags.length > 0 && (
+                        <div class="card-tags">
+                          {(article.data.tags as string[]).slice(0, 3).map((tag: string) => (
+                            <span class="tag">#{tag}</span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </a>
+                </article>
+              ))}
+            </div>
+          </section>
+        )}
+
+        <section class="articles-section">
+          <div class="section-header">
+            <div class="section-title-wrapper">
+              <h2 class="section-title">Tous les articles</h2>
+              <p class="section-subtitle">
+                {Math.min(PAGE_SIZE, total)} sur {total} article{total > 1 ? 's' : ''}
+              </p>
+            </div>
+          </div>
+
+          <div class="articles-grid">
+            {articles.map((article: CollectionEntry<'blog'>, index: number) => (
+              <article class="article-card" style={`animation-delay: ${index * 0.05}s`}>
+                <a href={`/blog/${article.id}`} class="card-link">
+                  <div class="card-content">
+                    {featuredArticles.some((f: CollectionEntry<'blog'>) => f.id === article.id) && (
+                      <div class="inline-featured-badge">⭐ En vedette</div>
+                    )}
+                    <div class="card-meta">
+                      <time datetime={article.data.pubDate.toISOString()}>
+                        {article.data.pubDate.toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' })}
+                      </time>
+                      {article.data.author && <span class="author">{article.data.author}</span>}
+                    </div>
+                    <h3 class="card-title">{article.data.title}</h3>
+                    {article.data.description && <p class="card-description">{article.data.description}</p>}
+                    {article.data.tags && article.data.tags.length > 0 && (
+                      <div class="card-tags">
+                        {(article.data.tags as string[]).slice(0, 3).map((tag: string) => (
+                          <span class="tag">#{tag}</span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </a>
+              </article>
+            ))}
+          </div>
+
+          {lastPage > 1 && (
+            <nav class="pagination" aria-label="Navigation des pages">
+              <a href="/blog/2" class="pagination-btn">
+                Page suivante →
+              </a>
+            </nav>
+          )}
+        </section>
+
+        {allTags.length > 0 && (
+          <section class="tags-section">
+            <div class="section-header">
+              <h2 class="section-title-small">🏷️ Tags populaires</h2>
+            </div>
+            <div class="popular-tags">
+              {allTags.slice(0, 10).map((tag: string) => (
+                <p class="popular-tag">#{tag}</p>
+              ))}
+            </div>
+          </section>
+        )}
+      </div>
+    </div>
+  </div>
+
+  <script type="application/json" id="blog-search-data" set:html={JSON.stringify(allArticlesForSearch)} is:inline></script>
+
+  <script is:inline>
+    (() => {
+      const dataEl = document.getElementById('blog-search-data');
+      if (!dataEl) return;
+      const data = JSON.parse(dataEl.textContent || '[]');
+      const input = document.getElementById('blog-search');
+      const clearBtn = document.getElementById('search-clear');
+      const results = document.getElementById('search-results');
+      const main = document.getElementById('blog-main-content');
+      const grid = document.getElementById('search-grid');
+      const count = document.getElementById('search-count');
+      const empty = document.getElementById('search-empty');
+
+      function escapeHtml(s) {
+        return s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+      }
+
+      function render(matches) {
+        if (!grid) return;
+        grid.innerHTML = matches.map((a) => '<article class="article-card"><a href="/blog/' + encodeURIComponent(a.id) + '" class="card-link"><div class="card-content"><div class="card-meta"><time>' + escapeHtml(a.pubDate) + '</time></div><h3 class="card-title">' + escapeHtml(a.title) + '</h3><p class="card-description">' + escapeHtml(a.description) + '</p>' + (a.tags && a.tags.length ? '<div class="card-tags">' + a.tags.map((t) => '<span class="tag">#' + escapeHtml(t) + '</span>').join('') + '</div>' : '') + '</div></a></article>').join('');
+      }
+
+      function run(q) {
+        if (!q) {
+          if (results) results.setAttribute('hidden', '');
+          if (main) main.style.display = '';
+          if (clearBtn) clearBtn.setAttribute('hidden', '');
+          return;
+        }
+        const needle = q.toLowerCase().trim();
+        const matches = data.filter((a) =>
+          a.title.toLowerCase().includes(needle) ||
+          (a.description || '').toLowerCase().includes(needle) ||
+          (a.tags || []).some((t) => t.toLowerCase().includes(needle))
+        );
+        if (main) main.style.display = 'none';
+        if (results) results.removeAttribute('hidden');
+        if (clearBtn) clearBtn.removeAttribute('hidden');
+        if (count) count.textContent = matches.length + ' résultat' + (matches.length > 1 ? 's' : '') + ' pour "' + q + '"';
+        if (matches.length === 0) {
+          if (grid) grid.innerHTML = '';
+          if (empty) empty.removeAttribute('hidden');
+        } else {
+          if (empty) empty.setAttribute('hidden', '');
+          render(matches);
+        }
+      }
+
+      if (input) input.addEventListener('input', (e) => run(e.target.value || ''));
+      if (clearBtn) clearBtn.addEventListener('click', () => { input.value = ''; run(''); });
+    })();
+  </script>
+</Layout>
+
+<style>
+  .blog-wrapper { min-height: 100vh; background: var(--color-bg); }
+  .blog-hero { padding: 2rem 1rem 3rem; }
+  .hero-content { max-width: 900px; margin: 0 auto; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 2rem; }
+  .hero-title { font-size: clamp(2.5rem, 6vw, 4.5rem); font-weight: 900; color: var(--color-text); letter-spacing: -0.03em; line-height: 1.1; margin: 0; }
+  .gradient-text { display: inline-block; background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-first) 50%, var(--color-primary) 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; background-size: 200% 200%; animation: gradient-shift 4s ease infinite; }
+  @keyframes gradient-shift { 0%,100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+  .hero-description { font-size: clamp(1rem, 2.5vw, 1.5rem); color: var(--color-text-light); max-width: 700px; margin: 0; font-weight: 600; }
+  .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1.5rem; max-width: 700px; width: 100%; }
+  .stat-card { background: var(--color-bg-alt); border: 2px solid var(--color-border); padding: 1.5rem; border-radius: var(--radius-xl); display: flex; align-items: center; gap: 1rem; box-shadow: var(--shadow-lg); position: relative; overflow: hidden; }
+  .stat-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--color-primary), var(--color-first)); }
+  .stat-icon { font-size: 2rem; flex-shrink: 0; }
+  .stat-info { text-align: left; flex: 1; }
+  .stat-number { font-size: 2rem; font-weight: 900; line-height: 1; margin-bottom: 0.25rem; }
+  .stat-label { font-size: 0.85rem; color: var(--color-text-light); font-weight: 600; }
+
+  .blog-container { max-width: 1200px; margin: 0 auto; padding: 0 1rem 4rem; }
+  .search-wrapper { margin: 0 0 2rem; }
+  .search-box { display: flex; align-items: center; gap: 0.75rem; background: var(--color-bg-alt); border: 2px solid var(--color-border); border-radius: var(--radius-xl); padding: 0.75rem 1rem; }
+  .search-box:focus-within { border-color: var(--color-primary); }
+  .search-icon { flex-shrink: 0; color: var(--color-text-light); }
+  .search-box input { flex: 1; background: transparent; border: 0; outline: 0; color: var(--color-text); font-size: 1rem; font-family: inherit; }
+  .search-clear { background: transparent; border: 0; padding: 0.25rem; cursor: pointer; color: var(--color-text-light); }
+  .search-count { color: var(--color-text-light); margin-bottom: 1rem; font-weight: 600; }
+  .search-empty { color: var(--color-text-light); font-style: italic; }
+
+  .featured-section, .articles-section, .tags-section { margin: 3rem 0; }
+  .section-header { margin-bottom: 2rem; }
+  .section-title-wrapper { display: flex; flex-direction: column; gap: 0.5rem; }
+  .section-title { display: flex; align-items: center; gap: 0.75rem; font-size: clamp(1.5rem, 3vw, 2rem); font-weight: 800; margin: 0; color: var(--color-text); }
+  .title-icon { color: var(--color-primary); }
+  .section-subtitle { color: var(--color-text-light); font-weight: 500; margin: 0; }
+
+  .featured-grid, .articles-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; }
+  .featured-card, .article-card { background: var(--color-bg-alt); border: 2px solid var(--color-border); border-radius: var(--radius-xl); overflow: hidden; box-shadow: var(--shadow-md); transition: transform var(--transition-base), box-shadow var(--transition-base), border-color var(--transition-base); }
+  .featured-card:hover, .article-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-xl); border-color: var(--color-primary); }
+  .card-link { color: inherit; text-decoration: none; display: block; }
+  .card-thumbnail { position: relative; aspect-ratio: 16/9; overflow: hidden; background: var(--color-bg-elevated); }
+  .card-thumbnail img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .thumbnail-overlay { position: absolute; inset: 0; background: linear-gradient(180deg, transparent 60%, rgba(0,0,0,0.35)); }
+  .featured-badge { position: absolute; top: 0.75rem; left: 0.75rem; display: inline-flex; align-items: center; gap: 0.25rem; background: var(--color-primary); color: var(--color-bg); padding: 0.35rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; }
+  .card-content { padding: 1.25rem; display: flex; flex-direction: column; gap: 0.75rem; }
+  .card-meta { display: flex; gap: 1rem; color: var(--color-text-light); font-size: 0.85rem; font-weight: 600; flex-wrap: wrap; }
+  .card-title { font-size: 1.25rem; font-weight: 800; margin: 0; color: var(--color-text); line-height: 1.3; }
+  .card-description { margin: 0; color: var(--color-text-light); line-height: 1.55; }
+  .card-tags { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+  .tag { display: inline-block; padding: 0.15rem 0.5rem; background: var(--color-bg-elevated); border: 1.5px solid var(--color-border); font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-text-light); }
+  .card-footer { margin-top: auto; }
+  .read-more { display: inline-flex; align-items: center; gap: 0.4rem; color: var(--color-primary); font-weight: 700; }
+  .inline-featured-badge { display: inline-block; align-self: flex-start; padding: 0.15rem 0.5rem; background: var(--color-first); color: var(--color-bg); font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.25rem; }
+
+  .pagination { display: flex; justify-content: flex-end; margin-top: 2rem; }
+  .pagination-btn { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.25rem; background: var(--color-primary); color: var(--color-bg); font-weight: 800; text-decoration: none; border: 2px solid var(--color-border); box-shadow: var(--shadow-md); transition: transform var(--transition-base), box-shadow var(--transition-base); }
+  .pagination-btn:hover { transform: translate(-2px, -2px); box-shadow: var(--shadow-lg); }
+
+  .section-title-small { font-size: 1.25rem; font-weight: 800; margin: 0 0 1rem; color: var(--color-text); }
+  .popular-tags { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  .popular-tag { margin: 0; padding: 0.35rem 0.75rem; background: var(--color-bg-alt); border: 1.5px solid var(--color-border); font-size: 0.85rem; font-weight: 700; }
+
+  @media (prefers-reduced-motion: reduce) { .gradient-text { animation: none; } }
+</style>

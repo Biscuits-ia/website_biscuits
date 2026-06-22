@@ -1,0 +1,127 @@
+---
+// Fil d'Ariane accessible + BreadcrumbList schema (Google).
+// Génère automatiquement la chaîne depuis Astro.url.pathname.
+// Les libellés de segments sont surchargés via `labels` si besoin.
+
+export interface Props {
+  labels?: Record<string, string>;
+  /** Affiche le fil d'Ariane en mode compact (sans `Accueil` racine). */
+  compact?: boolean;
+}
+
+const { labels = {}, compact = false } = Astro.props;
+
+const pathParts = Astro.url.pathname.split('/').filter(Boolean);
+
+const defaultLabels: Record<string, string> = {
+  blog: 'Blog',
+  article: 'Articles',
+  ateliers: 'Ateliers',
+  inscription: 'Inscription',
+  combats: 'Nos combats',
+  'ia-accessible': 'IA accessible',
+  'ia-utile': 'IA utile',
+  'plateformes-ouvertes': 'Plateformes ouvertes',
+  'partage-connaissance': 'Partage des savoirs',
+  'derives-numeriques': 'Défense citoyenne',
+  ressources: 'Ressources',
+  services: 'Services',
+  contact: 'Contact',
+  faq: 'FAQ',
+  legal: 'Mentions légales',
+  mentions: 'Mentions',
+  confidentialite: 'Confidentialité',
+  cookies: 'Cookies',
+  'politique-de-confidentialite': 'Politique de confidentialité',
+  'nos-missions': 'Nos missions',
+  'pourquoi-biscuits-ia': 'Pourquoi Biscuits IA',
+  'projects-collaboratif': 'Projets collaboratifs',
+  'rejoignez-nous': 'Nous rejoindre',
+  trombinoscope: 'Notre équipe',
+  'charte-ethique': 'Charte éthique',
+  utilisateurs: 'Utilisateurs',
+  ...labels,
+};
+
+const crumbs = compact ? [] : [{ label: 'Accueil', href: '/' }];
+let acc = '';
+for (const part of pathParts) {
+  acc += `/${part}`;
+  const label = defaultLabels[part] ?? part.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+  crumbs.push({ label, href: acc });
+}
+
+// Retire le dernier crumb (page courante) sauf s'il y en a plus de 2.
+const lastIsCurrent = crumbs.length > 1 ? crumbs.pop() : null;
+
+const schema = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: crumbs.map((c, i) => ({
+    '@type': 'ListItem',
+    position: i + 1,
+    name: c.label,
+    item: `${Astro.site ?? 'https://biscuits-ia.com'}${c.href}`,
+  })),
+};
+---
+
+{crumbs.length > 1 && (
+  <>
+    <nav class="breadcrumb" aria-label="Fil d'Ariane">
+      <ol>
+        {crumbs.map((c, i) => (
+          <li>
+            {i < crumbs.length - 1 ? (
+              <a href={c.href}>{c.label}</a>
+            ) : (
+              <span aria-current="page">{c.label}</span>
+            )}
+            <span class="sep" aria-hidden="true">›</span>
+          </li>
+        ))}
+      </ol>
+    </nav>
+    <script type="application/ld+json" set:html={JSON.stringify(schema)} is:inline />
+  </>
+)}
+
+<style>
+  .breadcrumb {
+    max-width: var(--container-xl, 1200px);
+    margin: 0 auto;
+    padding: 1rem 1rem 0;
+    font-size: 0.875rem;
+    color: var(--color-text-light);
+  }
+  .breadcrumb ol {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem;
+    margin: 0;
+    padding: 0;
+  }
+  .breadcrumb li {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+  .breadcrumb a {
+    color: var(--color-primary);
+    text-decoration: none;
+    font-weight: 600;
+  }
+  .breadcrumb a:hover {
+    text-decoration: underline;
+  }
+  .breadcrumb span[aria-current] {
+    color: var(--color-text);
+    font-weight: 600;
+  }
+  .sep {
+    color: var(--color-border);
+    margin-left: 0.15rem;
+  }
+</style>

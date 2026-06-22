@@ -4,9 +4,10 @@ import { getAdherentsAuthContext, hasAnyRole, jsonError, jsonOk, parsePagination
 export const prerender = false;
 
 export const GET: APIRoute = async ({ request, cookies, url, clientAddress }) => {
-  const { ctx, rateLimitResponse } = await getAdherentsAuthContext(request, cookies, clientAddress);
-  if (!ctx) return jsonError('Non autorise.', 401);
+  const { result, rateLimitResponse } = await getAdherentsAuthContext(request, cookies, clientAddress);
+  if (!result.ok) return jsonError('Non autorise.', result.status);
   if (rateLimitResponse) return rateLimitResponse;
+  const ctx = result.ctx;
   if (!hasAnyRole(ctx.roles, ['admin', 'tresorier', 'lecture_seule'])) {
     return jsonError('Acces refuse.', 403);
   }

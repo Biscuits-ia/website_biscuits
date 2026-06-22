@@ -38,9 +38,9 @@ const {
 <slot />
 
 <!--
-  Preconnect GTM : ne se déclenche qu'APRÈS consentement analytics.
+  Preconnect GTM : ne se déclenche qu'APRÆS consentement analytics.
   Sans opt-in, aucun préchauffage TCP/TLS vers Google n'est émis
-  (RGPD / CNIL délibération n°2020-091).
+  (RGPD / CNIL délibération nÂ°2020-091).
   Le handshake est ajouté dynamiquement par le loader ci-dessous.
 -->
 {isProd && (
@@ -98,7 +98,10 @@ const {
 )}
 
 <!-- Favicons optimisés (format moderne) -->
-<link rel="icon" type="image/svg+xml" href="/favicon.ico" />
+<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+<link rel="alternate icon" href="/favicon.ico" sizes="32x32" />
+<link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
+<link rel="manifest" href="/site.webmanifest" />
 <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
 
 <meta http-equiv="X-Content-Type-Options" content="nosniff" />
@@ -131,7 +134,7 @@ const {
       } catch (e) {}
     };
 
-    // Écouter les mises à jour de consentement
+    // →couter les mises à jour de consentement
     window.addEventListener('cookieConsentUpdated', (e) => {
       if (e.detail.analytics) window.loadGTMIfConsented();
     });

@@ -1301,16 +1301,42 @@ const memberOptionsJson = JSON.stringify(memberOptions);
         lastMsgTime = messages[messages.length - 1].created_at;
       }
       container.scrollTop = container.scrollHeight;
-      setInterval(async () => {
-        const newMsgs = await loadChatMessages(lastMsgTime);
-        if (!newMsgs.length) return;
-        const wasAtBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 60;
-        const placeholder = container.querySelector('.chat-placeholder');
-        if (placeholder) placeholder.remove();
-        container.insertAdjacentHTML('beforeend', newMsgs.map(renderChatMsg).join(''));
-        lastMsgTime = newMsgs[newMsgs.length - 1].created_at;
-        if (wasAtBottom) container.scrollTop = container.scrollHeight;
-      }, 4000);
+
+      // Migration polling -> Supabase Realtime. Latence < 500ms, charge nulle
+      // tant que personne ne parle. La table project_messages doit être activée
+      // pour Realtime dans Supabase (cf. supabase/config.toml `[realtime]`).
+      // Fallback polling 30s uniquement si window.supabase est indispo
+      // (vieux nav, CSP stricte désactivant WS).
+      const supabaseRealtime = (window as { supabase?: { channel: Function } }).supabase;
+      if (supabaseRealtime) {
+        supabaseRealtime
+          .channel(`project-${projectId}`)
+          .on(
+            'postgres_changes',
+            { event: 'INSERT', schema: 'public', table: 'project_messages', filter: `project_id=eq.${projectId}` },
+            (payload: { new: { created_at: string; [k: string]: unknown } }) => {
+              const placeholder = container.querySelector('.chat-placeholder');
+              if (placeholder) placeholder.remove();
+              container.insertAdjacentHTML('beforeend', renderChatMsg(payload.new));
+              lastMsgTime = payload.new.created_at;
+              if (container.scrollHeight - container.scrollTop - container.clientHeight < 60) {
+                container.scrollTop = container.scrollHeight;
+              }
+            },
+          )
+          .subscribe();
+      } else {
+        // Fallback polling 30s si client Realtime indispo.
+        setInterval(async () => {
+          const newMsgs = await loadChatMessages(lastMsgTime);
+          if (!newMsgs.length) return;
+          const placeholder = container.querySelector('.chat-placeholder');
+          if (placeholder) placeholder.remove();
+          container.insertAdjacentHTML('beforeend', newMsgs.map(renderChatMsg).join(''));
+          lastMsgTime = newMsgs[newMsgs.length - 1]?.created_at ?? lastMsgTime;
+          container.scrollTop = container.scrollHeight;
+        }, 30000);
+      }
     }
 
     document.getElementById('chat-form')?.addEventListener('submit', async (e) => {

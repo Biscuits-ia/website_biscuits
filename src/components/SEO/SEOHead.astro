@@ -10,7 +10,6 @@ export interface Props {
   publishedTime?: string;
   modifiedTime?: string;
   tags?: string[];
-  keywords?: string[];
 }
 
 const {
@@ -24,22 +23,21 @@ const {
   publishedTime,
   modifiedTime,
   tags = [],
-  keywords = []
 } = Astro.props;
 
 const siteUrl = import.meta.env.SITE || 'https://biscuits-ia.com';
-const fullOgImage = ogImage.startsWith('http') 
-  ? ogImage 
+const fullOgImage = ogImage.startsWith('http')
+  ? ogImage
   : `${siteUrl}${ogImage}`;
 
 // Optimisation longueur description (SEO 2026)
-const seoDescription = description.length > 155 
-  ? description.substring(0, 152) + '...' 
+const seoDescription = description.length > 155
+  ? description.substring(0, 152) + '...'
   : description;
 
 // Optimisation longueur titre (SEO 2026)
-const seoTitle = title.length > 60 
-  ? title.substring(0, 57) + '...' 
+const seoTitle = title.length > 60
+  ? title.substring(0, 57) + '...'
   : title;
 ---
 
@@ -123,19 +121,13 @@ const seoTitle = title.length > 60
 <meta name="msapplication-TileColor" content="#faca6f" />
 
 <!-- ============================================
-     LANGUAGE & LOCALIZATION (SEO International)
-     ============================================ -->
-<link rel="alternate" hreflang="fr" href={canonical} />
-<link rel="alternate" hreflang="fr-FR" href={canonical} />
-<link rel="alternate" hreflang="x-default" href={canonical} />
-
-<!-- ============================================
      VERIFICATION & OWNERSHIP (Webmaster Tools)
+     Renseignez ces codes après obtention sur les consoles :
+     - Google Search Console : https://search.google.com/search-console
+     - Bing Webmaster Tools  : https://www.bing.com/webmasters
      ============================================ -->
-<!-- Ajouter vos codes de vérification ici une fois obtenus :
-<meta name="google-site-verification" content="VOTRE_CODE" />
+<meta name="google-site-verification" content="G-C0JDQG5D6Y" />
 <meta name="msvalidate.01" content="VOTRE_CODE" />
--->
 
 <!-- ============================================
      PERFORMANCE HINTS (Core Web Vitals)
@@ -143,7 +135,7 @@ const seoTitle = title.length > 60
 <meta name="format-detection" content="telephone=no" />
 <link rel="dns-prefetch" href="https://www.google-analytics.com" />
 <link rel="preconnect" href="https://www.google-analytics.com" crossorigin="" />
- 
+
 <!-- ============================================
      CONTENT RATING & AUDIENCE
      ============================================ -->
@@ -152,10 +144,6 @@ const seoTitle = title.length > 60
 <meta name="distribution" content="global" />
 
 <!-- ============================================
-     ADDITIONAL SEO SIGNALS (2026)
+     RSS Feed
      ============================================ -->
-<meta name="url" content={canonical} />
-<meta name="pagename" content={seoTitle} />
-
-<!-- RSS Feed -->
 <link rel="alternate" type="application/rss+xml" title="Biscuits IA - RSS Feed" href={`${siteUrl}/rss.xml`} />

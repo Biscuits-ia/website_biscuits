@@ -2,17 +2,17 @@
 // src/components/UserAppointmentBooking.astro
 //
 // Vue user de prise de RDV :
-//   - "Mes réservations" (mes RDV, badge statut + badge temporel)
-//   - "Créneaux disponibles" groupés par jour (<details> repliables, F2)
+//   - "Mes reservations" (mes RDV, badge statut + badge temporel)
+//   - "Creneaux disponibles" groupes par jour (<details> repliables, F2)
 //
-// Utilise window.showConfirm() et window.showToast() montés globalement
+// Utilise window.showConfirm() et window.showToast() montes globalement
 // dans DashboardLayout.astro.
 ---
 
 <div class="appointments-container">
   <div class="header">
     <h1>Prendre un rendez-vous</h1>
-    <p>Réservez un créneau disponible</p>
+    <p>Reservez un creneau disponible</p>
   </div>
 
   <div id="error-container"></div>
@@ -20,7 +20,7 @@
   <div id="my-appointments" style="margin-bottom: 30px;"></div>
 
   <div id="available-slots">
-    <h2>Créneaux disponibles</h2>
+    <h2>Creneaux disponibles</h2>
     <div class="loading">⏳ Chargement...</div>
   </div>
 </div>
@@ -65,7 +65,7 @@
       action: 'TEMPLATE',
       text: 'Rendez-vous Biscuits IA',
       dates: `${fmt(start)}/${fmt(end)}`,
-      details: "Rendez-vous avec l'équipe Biscuits IA.",
+      details: "Rendez-vous avec l'equipe Biscuits IA.",
     });
     return `https://calendar.google.com/calendar/render?${params.toString()}`;
   }
@@ -81,6 +81,9 @@
     };
   }
 
+  // NOTE: duplication inline de getTemporalState() de src/lib/dateHelpers.ts.
+  // Gard inline car ce script s'excute dans le navigateur sans bundler.
+  // Maintenir en sync avec src/lib/dateHelpers.ts lors d'volutions.
   function temporalState(startIso: string, endIso: string): 'past' | 'in_progress' | 'upcoming' {
     const now = Date.now();
     const end = Date.parse(endIso);
@@ -92,14 +95,14 @@
 
   function temporalBadgeHtml(slot: Slot): string {
     const ts = temporalState(slot.start_time, slot.end_time);
-    const label = ts === 'past' ? 'Passé' : ts === 'in_progress' ? 'En cours' : 'À venir';
+    const label = ts === 'past' ? 'Passe' : ts === 'in_progress' ? 'En cours' : 'À venir';
     return `<span class="temporal-badge temporal-${ts}">${label}</span>`;
   }
 
   async function loadData() {
     try {
       const slotsRes = await fetch('/api/appointment-slots', { credentials: 'include' });
-      if (!slotsRes.ok) throw new Error('Erreur lors du chargement des créneaux');
+      if (!slotsRes.ok) throw new Error('Erreur lors du chargement des creneaux');
       const slotsRaw = await slotsRes.json();
       const allSlots: Slot[] = Array.isArray(slotsRaw) ? slotsRaw : [];
 
@@ -107,7 +110,7 @@
       const availableSlots = allSlots.filter((s) => s.is_available && new Date(s.start_time) > now);
 
       const appRes = await fetch('/api/user-appointments', { credentials: 'include' });
-      if (!appRes.ok) throw new Error('Erreur lors du chargement des réservations');
+      if (!appRes.ok) throw new Error('Erreur lors du chargement des reservations');
       const myAppointmentsRaw = await appRes.json();
       const myAppointments: Appointment[] = Array.isArray(myAppointmentsRaw) ? myAppointmentsRaw : [];
 
@@ -133,7 +136,7 @@
     }
 
     const html = `
-      <h2>📅 Mes réservations</h2>
+      <h2>📅 Mes reservations</h2>
       <div class="my-appointments">
         ${appointments.map((app) => {
           if (!app.appointment_slots) return '';
@@ -146,7 +149,7 @@
                 <div class="appointment-time">${escapeHtml(slot.time)}${tsBadge}</div>
                 <div class="appointment-status">
                   <span class="badge ${app.status === 'confirmed' ? 'badge-confirmed' : app.status === 'cancelled' ? 'badge-cancelled' : 'badge-pending'}">
-                    ${app.status === 'confirmed' ? '✓ Confirmée' : app.status === 'cancelled' ? '✗ Annulée' : '⏳ En attente de confirmation'}
+                    ${app.status === 'confirmed' ? '✓ Confirmee' : app.status === 'cancelled' ? '✗ Annulee' : '⏳ En attente de confirmation'}
                   </span>
                 </div>
               </div>
@@ -172,14 +175,14 @@
 
   // ── F2 : Regroupement par jour avec <details> ──────────────────────────────
   // On groupe les slots par date locale (jour calendaire). Aujourd'hui et demain
-  // sont dépliés par défaut, le reste est replié.
+  // sont deplies par defaut, le reste est replie.
   function renderAvailableSlots(slots: Slot[], bookedSlotIds: Set<string>) {
     if (!availableSlotsDiv) return;
 
     if (slots.length === 0) {
       availableSlotsDiv.innerHTML = `
-        <h2>Créneaux disponibles</h2>
-        <div class="no-slots">Aucun créneau disponible pour le moment</div>
+        <h2>Creneaux disponibles</h2>
+        <div class="no-slots">Aucun creneau disponible pour le moment</div>
       `;
       return;
     }
@@ -197,7 +200,7 @@
     // Tri chronologique
     const sortedKeys = [...byDate.keys()].sort();
 
-    // Date du jour et demain (clés) pour l'ouverture par défaut
+    // Date du jour et demain (cles) pour l'ouverture par defaut
     const today = new Date();
     const todayKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
     const tomorrow = new Date(today);
@@ -205,7 +208,7 @@
     const tomorrowKey = `${tomorrow.getFullYear()}-${String(tomorrow.getMonth() + 1).padStart(2, '0')}-${String(tomorrow.getDate()).padStart(2, '0')}`;
 
     const html = `
-      <h2>Créneaux disponibles</h2>
+      <h2>Creneaux disponibles</h2>
       <div class="day-groups">
         ${sortedKeys.map((key) => {
           const daySlots = byDate.get(key)!;
@@ -218,7 +221,7 @@
             <details class="day-group" ${isOpen ? 'open' : ''}>
               <summary class="day-group-summary">
                 <span class="day-group-label">${escapeHtml(dateLabel)}</span>
-                <span class="day-group-count">${daySlots.length} créneau${daySlots.length > 1 ? 'x' : ''}</span>
+                <span class="day-group-count">${daySlots.length} creneau${daySlots.length > 1 ? 'x' : ''}</span>
               </summary>
               <div class="day-group-slots">
                 ${daySlots.map((slot) => {
@@ -233,7 +236,7 @@
                         class="btn btn-book"
                         data-id="${slot.id}"
                         ${isBooked ? 'disabled' : ''}
-                      >${isBooked ? '✓ Réservé' : 'Réserver'}</button>
+                      >${isBooked ? '✓ Reserve' : 'Reserver'}</button>
                     </div>
                   `;
                 }).join('')}
@@ -256,13 +259,13 @@
 
   async function cancelAppointment(id: string) {
     if (!window.showConfirm) {
-      // Modale absente (layout sans ConfirmDialog) — sécurité.
+      // Modale absente (layout sans ConfirmDialog) — securite.
       return;
     }
     const ok = await window.showConfirm({
-      title: 'Annuler la réservation',
-      message: 'Annuler cette réservation ? Vous pourrez en reprendre une autre si des créneaux restent disponibles.',
-      confirmLabel: 'Annuler la réservation',
+      title: 'Annuler la reservation',
+      message: 'Annuler cette reservation ? Vous pourrez en reprendre une autre si des creneaux restent disponibles.',
+      confirmLabel: 'Annuler la reservation',
       cancelLabel: 'Garder',
       danger: true,
     });
@@ -275,7 +278,7 @@
       });
       if (!res.ok) throw new Error('Erreur lors de l\'annulation');
       showError('');
-      toast('✓ Réservation annulée', 'success');
+      toast('✓ Reservation annulee', 'success');
       await loadData();
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Erreur inconnue';
@@ -294,10 +297,10 @@
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || 'Erreur lors de la réservation');
+        throw new Error(data.error || 'Erreur lors de la reservation');
       }
       showError('');
-      toast('✓ Réservation enregistrée', 'success');
+      toast('✓ Reservation enregistree', 'success');
       await loadData();
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Erreur inconnue';

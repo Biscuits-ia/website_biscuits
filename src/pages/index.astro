@@ -1,19 +1,27 @@
 ---
+// Page d'accueil : hero + features + derniers articles du blog (maillage interne)
 export const prerender = true;
 
 import BaseLayout from '@/layouts/Layout.astro';
 import Hero from '@/components/Hero.astro';
 import AnimatedFeatureGrid from '@/components/AnimatedFeaturesGrid.astro';
-import Confidentialite from '@/components/Confidentialité.astro';
+import Confidentialite from '@/components/Confidentialite.astro';
 import Communaute from '@/components/Communaute.astro';
 import AideBenevoleCTA from '@/components/AideBenevoleCTA.astro';
 import NewsletterSocial from '@/components/NewsletterSocial.astro';
+import LatestArticles from '@/components/LatestArticles.astro';
+import { getCollection } from 'astro:content';
 
+const latestArticles = (await getCollection('blog', ({ data }) =>
+  import.meta.env.PROD ? !data.draft : true
+))
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
+  .slice(0, 3);
 ---
 
 <BaseLayout
   title="Biscuits IA | Agir pour une Intelligence Artificielle éthique et solidaire"
-  description="Accompagnement pédagogique et outils responsables pour mettre l'IA au service de l'humain et de l'intérêt général"
+  description="Association Loi 1901 d'intérêt général. Ateliers IA, accompagnement personnalisé et ressources libres pour associations, collectivités et petites structures."
 >
 
   <Hero />
@@ -21,5 +29,6 @@ import NewsletterSocial from '@/components/NewsletterSocial.astro';
   <Confidentialite />
   <Communaute />
   <AideBenevoleCTA />
+  <LatestArticles articles={latestArticles} />
   <NewsletterSocial />
 </BaseLayout>

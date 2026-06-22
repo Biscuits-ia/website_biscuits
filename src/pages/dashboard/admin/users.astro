@@ -101,7 +101,7 @@ const pageLabel     = `${page} / ${totalPages}`;
 const countLabel    = `${count ?? 0} compte${(count ?? 0) !== 1 ? 's' : ''} enregistré${(count ?? 0) !== 1 ? 's' : ''}`;
 ---
 
-<DashboardLayout title="Gestion des utilisateurs" role="admin" activePage="users" userName={userName} authResult={result}>
+<DashboardLayout title="Gestion des utilisateurs" activePage="users" userName={userName} authResult={result}>
 
   <div class="page-header">
     <div>

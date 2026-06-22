@@ -1,4 +1,4 @@
-// @ts-check
+﻿// @ts-check
 import { defineConfig } from 'astro/config';
 
 
@@ -16,44 +16,85 @@ import react from '@astrojs/react';
 export default defineConfig({
   site: 'https://biscuits-ia.com',
 
-  integrations: [sitemap({
-    changefreq: 'weekly',
-    priority: 0.7,
-    filter: (page) => {
-      const excludePaths = ['/admin', '/api', '/connexion', '/inscription', '/dashboard'];
-      return !excludePaths.some(path => page.includes(path));
-    },
-    
-    customPages: ['https://biscuits-ia.com/'],
-    i18n: {
-      defaultLocale: 'fr',
-      locales: {
-        fr: 'fr-FR',
+  integrations: [
+    sitemap({
+      changefreq: 'weekly',
+      priority: 0.7,
+      filter: (page) => {
+        const excludePaths = [
+          '/admin',
+          '/api',
+          '/auth',
+          '/connexion',
+          '/inscription',
+          '/mot-de-passe-oublie',
+          '/reinitialisation-mot-de-passe',
+          '/dashboard',
+          '/trombinoscope',
+          '/utilisateurs',
+          '/verifier-code-inscription',
+          '/verifier-code-reinitialisation',
+        ];
+        return !excludePaths.some((path) => page.includes(path));
       },
-    },
-    
-    entryLimit: 50000,
-  }), robotsTxt({
-     sitemap: [
-       'https://biscuits-ia.com/sitemap-index.xml',
-       'https://biscuits-ia.com/sitemap-0.xml',
-     ],
-     policy: [
-       {
-         userAgent: '*',
-         allow: '/',
-         crawlDelay: 1,
-       },
-       
-       {
-         userAgent: 'Googlebot',
-         allow: '/',
-         disallow: ['/admin', '/api'],
-         crawlDelay: 0.5,
-       },
-     ],
-   }), icon(), mdx(), react()],
-
+      i18n: {
+        defaultLocale: 'fr',
+        locales: {
+          fr: 'fr-FR',
+        },
+      },
+      entryLimit: 50000,
+    }),
+    robotsTxt({
+      sitemap: [
+        'https://biscuits-ia.com/sitemap-index.xml',
+        'https://biscuits-ia.com/sitemap-0.xml',
+      ],
+      policy: [
+        {
+          userAgent: '*',
+          allow: '/',
+          disallow: [
+            '/admin',
+            '/api',
+            '/auth',
+            '/dashboard',
+            '/connexion',
+            '/inscription',
+            '/mot-de-passe-oublie',
+            '/reinitialisation-mot-de-passe',
+            '/utilisateurs',
+            '/trombinoscope',
+            '/verifier-code-inscription',
+            '/verifier-code-reinitialisation',
+          ],
+          crawlDelay: 1,
+        },
+        {
+          userAgent: 'Googlebot',
+          allow: '/',
+          disallow: [
+            '/admin',
+            '/api',
+            '/auth',
+            '/dashboard',
+            '/connexion',
+            '/inscription',
+            '/mot-de-passe-oublie',
+            '/reinitialisation-mot-de-passe',
+            '/utilisateurs',
+            '/trombinoscope',
+            '/verifier-code-inscription',
+            '/verifier-code-reinitialisation',
+          ],
+          crawlDelay: 0.5,
+        },
+      ],
+    }),
+    icon(),
+    mdx(),
+    react(),
+  ],
 
   vite: {
     plugins: [tailwindcss()],
@@ -66,9 +107,9 @@ export default defineConfig({
   output: 'server',
   build: {
     assets: '_astro',
-    inlineStylesheets: 'auto',
+    inlineStylesheets: 'always',
   },
-  
 
   adapter: vercel(),
 });
+

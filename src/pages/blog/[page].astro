@@ -1,9 +1,29 @@
 ---
+export const prerender = true;
 
 import Layout from '@/layouts/Layout.astro';
 import { getCollection, type CollectionEntry } from 'astro:content';
+import type { GetStaticPaths } from 'astro';
 
 const PAGE_SIZE = 6;
+
+// `prerender = true` exige `getStaticPaths()` sur une route dynamique.
+// On énumère ici toutes les pages de pagination possibles au build-time,
+// calculées depuis le nombre d'articles (non-draft en prod) de la collection.
+// NOTE: la constante `PAGE_SIZE` est dupliquée dans `getStaticPaths` car Astro
+// compile cette fonction dans un module séparé (les `const` du frontmatter
+// ne sont pas visibles depuis le scope de `getStaticPaths`).
+export const getStaticPaths = (async () => {
+  const PAGE_SIZE = 6;
+  const all = await getCollection('blog');
+  const visible = import.meta.env.PROD
+    ? all.filter((a) => !a.data.draft)
+    : all;
+  const lastPage = Math.max(1, Math.ceil(visible.length / PAGE_SIZE));
+  return Array.from({ length: lastPage }, (_, i) => ({
+    params: { page: String(i + 1) },
+  }));
+}) satisfies GetStaticPaths;
 
 const { page: pageParam } = Astro.params;
 const currentPage = parseInt(pageParam ?? '1', 10);

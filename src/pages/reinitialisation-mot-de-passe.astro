@@ -124,6 +124,14 @@ const nonce = Astro.locals.nonce;
 </style>
 
 <script is:inline nonce={nonce}>
+  // Helpers validation — source de vérité : src/lib/validation.ts
+  var MIN_PASSWORD_LENGTH = 8;
+  function validatePasswordClient(value) {
+    if (typeof value !== 'string' || value.length === 0) return 'Le mot de passe est requis.';
+    if (value.length < MIN_PASSWORD_LENGTH) return 'Le mot de passe doit contenir au moins ' + MIN_PASSWORD_LENGTH + ' caractères.';
+    return null;
+  }
+
   var passInput    = document.getElementById('password');
   var confirmInput = document.getElementById('confirm');
   var msgEl        = document.getElementById('msg');
@@ -197,10 +205,8 @@ const nonce = Astro.locals.nonce;
       showMsg('Veuillez remplir tous les champs.');
       return;
     }
-    if (password.length < 8) {
-      showMsg('Au moins 8 caractères requis.');
-      return;
-    }
+    var passErr = validatePasswordClient(password);
+    if (passErr) { showMsg(passErr); return; }
     if (password !== confirm) {
       showMsg('Les mots de passe ne correspondent pas.');
       return;

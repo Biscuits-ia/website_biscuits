@@ -2,6 +2,7 @@
 // src/pages/dashboard/admin/demandes.astro
 import DashboardLayout from '../../../layouts/DashboardLayout.astro';
 import { requireAdmin } from '../../../lib/auth';
+import { createSupabaseAdminClient } from '@/lib/supabase';
 
 const result = await requireAdmin(Astro);
 if (result instanceof Response) return result;
@@ -15,14 +16,26 @@ const filter = Astro.url.searchParams.get('status') ?? '';
 
 let query = supabase
   .from('requests')
-  .select('*, auth_users:user_id(email, raw_user_meta_data)')
+  .select('id, user_id, subject, description, status, admin_reply, created_at, updated_at')
   .order('created_at', { ascending: false });
 
 if (filter) query = query.eq('status', filter);
 
-// Supabase ne permet pas de joindre auth.users directement via le client
-// On récupère les demandes + on enrichit si besoin via service role
-const { data: requests } = await query;
+// PostgREST ne peut pas joindre `auth.users` — on enrichit via `profiles` côté serveur
+const { data: requestsRaw } = await query;
+const requests = requestsRaw ?? [];
+
+// Lookup profiles des users concernés
+const adminSupabase = createSupabaseAdminClient();
+const userIds = [...new Set(requests.map((r: { user_id: string }) => r.user_id).filter(Boolean))];
+const profileMap: Record<string, { full_name: string | null; email: string | null }> = {};
+if (userIds.length > 0) {
+  const { data: profilesRaw } = await adminSupabase
+    .from('profiles')
+    .select('id, full_name, email')
+    .in('id', userIds);
+  for (const p of profilesRaw ?? []) profileMap[p.id] = p;
+}
 
 const { count: pending }     = await supabase.from('requests').select('*', { count: 'exact', head: true }).eq('status', 'pending');
 const { count: in_progress } = await supabase.from('requests').select('*', { count: 'exact', head: true }).eq('status', 'in_progress');
@@ -88,10 +101,12 @@ const statusBadge: Record<string, string> = {
 
   <!-- Liste des demandes -->
   <div style="display: flex; flex-direction: column; gap: 16px;">
-    {requests && requests.length > 0 ? requests.map((req: any) => {
+    {requests.length > 0 ? requests.map((req: any) => {
       const date      = new Date(req.created_at);
       const badgeClass = statusBadge[req.status] ?? 'badge-neutral';
       const label      = statusLabel[req.status] ?? req.status;
+      const profile    = profileMap[req.user_id];
+      const requester  = profile?.full_name ?? profile?.email ?? `Utilisateur ${req.user_id.slice(0, 8)}…`;
 
       return (
         <div class="card request-admin-card">
@@ -101,7 +116,7 @@ const statusBadge: Record<string, string> = {
               <div style="font-size: 1.05rem; font-weight: 700; color: var(--text-primary);">{req.subject}</div>
               <div style="font-size: var(--text-xs); font-family: var(--font-mono); color: var(--text-muted); margin-top: 3px;">
                 {date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
-                · user_id: {req.user_id.slice(0, 8)}…
+                · par <span style="color: var(--text-secondary);">{requester}</span>
               </div>
             </div>
             <span class={`badge ${badgeClass}`}>{label}</span>
@@ -116,7 +131,7 @@ const statusBadge: Record<string, string> = {
             </div>
           )}
 
-          <!-- Formulaire de réponse / changement statut -->
+          {/* Formulaire de réponse / changement statut */}
           <form method="POST" action="/api/admin/demandes/repondre" style="display: flex; flex-direction: column; gap: 12px; padding-top: 14px; border-top: var(--brutal-border-thin);">
             <input type="hidden" name="request_id" value={req.id} />
 
@@ -141,24 +156,25 @@ const statusBadge: Record<string, string> = {
               >{req.admin_reply ?? ''}</textarea>
             </div>
 
-            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <div style="display: flex; gap: 8px; flex-wrap: wrap; justify-content: space-between; align-items: center;">
               <button type="submit" class="btn btn-primary" style="font-size: 0.85rem;">
                 Sauvegarder
               </button>
-              <form method="POST" action="/api/admin/demandes/supprimer" style="display: inline;">
-                <input type="hidden" name="request_id" value={req.id} />
-                <button
-                  type="submit"
-                  class="btn btn-danger"
-                  style="font-size: 0.85rem;"
-                  onclick="return confirm('Supprimer définitivement cette demande ?')"
-                >
-                  Supprimer
-                </button>
-              </form>
             </div>
           </form>
 
+          {/* Bouton supprimer — form indépendant (HTML n'autorise pas les forms imbriqués) */}
+          <form method="POST" action="/api/admin/demandes/supprimer" style="display: flex; justify-content: flex-end;">
+            <input type="hidden" name="request_id" value={req.id} />
+            <button
+              type="submit"
+              class="btn btn-danger btn-sm"
+              style="font-size: 0.78rem;"
+              onclick="return confirm('Supprimer définitivement cette demande ?')"
+            >
+              Supprimer
+            </button>
+          </form>
         </div>
       );
     }) : (

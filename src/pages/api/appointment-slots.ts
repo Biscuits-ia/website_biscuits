@@ -56,10 +56,47 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       );
     }
 
+    // Validation cohérence temporelle
+    const startMs = Date.parse(start_time);
+    const endMs = Date.parse(end_time);
+    if (Number.isNaN(startMs) || Number.isNaN(endMs) || startMs >= endMs) {
+      return new Response(
+        JSON.stringify({ error: 'Plage horaire invalide (start_time < end_time requis)' }),
+        { status: 400, headers: JSON_HEADERS },
+      );
+    }
+
     const adminDb = createSupabaseAdminClient();
+
+    // Anti-overlap serveur : aucun slot existant ne doit chevaucher la plage.
+    // Logique : overlap ssi existing.start < new.end  ET  existing.end > new.start.
+    // On bypass RLS via adminDb pour voir tous les slots, y compris ceux marqués indisponibles.
+    const { data: overlap, error: overlapErr } = await adminDb
+      .from('appointment_slots')
+      .select('id, start_time, end_time')
+      .lt('start_time', end_time)
+      .gt('end_time', start_time)
+      .limit(1)
+      .maybeSingle();
+
+    if (overlapErr) {
+      console.error('[appointment-slots POST] overlap check error:', overlapErr);
+      return new Response(JSON.stringify({ error: 'Erreur lors de la vérification des chevauchements' }), {
+        status: 500,
+        headers: JSON_HEADERS,
+      });
+    }
+
+    if (overlap) {
+      return new Response(
+        JSON.stringify({ error: 'Ce créneau chevauche un créneau existant.' }),
+        { status: 409, headers: JSON_HEADERS },
+      );
+    }
+
     const { data, error } = await adminDb
       .from('appointment_slots')
-      .insert([{ start_time, end_time, is_available: true }])
+      .insert({ start_time, end_time, is_available: true })
       .select()
       .single();
 

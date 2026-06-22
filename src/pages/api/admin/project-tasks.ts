@@ -106,7 +106,7 @@ function buildTaskInsert(body: Record<string, unknown>, userId: string): { paylo
 }
 
 export const POST: APIRoute = async (Astro) => {
-  const auth = await requireAdmin(Astro as any);
+  const auth = await requireAdmin(Astro);
   if (auth instanceof Response) return auth;
 
   const adminSupabase = createSupabaseAdminClient();
@@ -136,7 +136,7 @@ export const POST: APIRoute = async (Astro) => {
 };
 
 export const PATCH: APIRoute = async (Astro) => {
-  const auth = await requireAdmin(Astro as any);
+  const auth = await requireAdmin(Astro);
   if (auth instanceof Response) return auth;
 
   const adminSupabase = createSupabaseAdminClient();
@@ -168,7 +168,7 @@ export const PATCH: APIRoute = async (Astro) => {
 };
 
 export const DELETE: APIRoute = async (Astro) => {
-  const auth = await requireAdmin(Astro as any);
+  const auth = await requireAdmin(Astro);
   if (auth instanceof Response) return auth;
 
   const adminSupabase = createSupabaseAdminClient();

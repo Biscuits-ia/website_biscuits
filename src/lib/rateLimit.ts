@@ -24,27 +24,23 @@ function cleanup() {
 }
 
 /**
- * Check whether a request should be rate-limited.
- *
- * @param ip      Client IP (from request headers or Astro.clientAddress)
- * @param limit   Maximum requests allowed in the window
- * @param windowMs  Time window in milliseconds (default 60 000 = 1 min)
- * @returns `null` if allowed, or a `Response` (429) if rate-limited.
+ * Low-level primitive. Keys by the value passed in.
+ * Prefer `rateLimitRoute` in route handlers so the key is namespaced.
  */
 export function rateLimit(
-  ip: string,
+  key: string,
   limit: number = 20,
   windowMs: number = 60_000,
 ): Response | null {
   cleanup();
 
   const now = Date.now();
-  const key = ip;
+  const fullKey = key;
 
-  const entry = store.get(key);
+  const entry = store.get(fullKey);
 
   if (!entry || now > entry.resetAt) {
-    store.set(key, { count: 1, resetAt: now + windowMs });
+    store.set(fullKey, { count: 1, resetAt: now + windowMs });
     return null;
   }
 
@@ -65,4 +61,21 @@ export function rateLimit(
   }
 
   return null;
+}
+
+/**
+ * Rate-limit scoped to a single route + IP.
+ * Use inside an `APIRoute` handler with a specific quota.
+ *
+ * @example
+ *   const blocked = rateLimitRoute(ip, '/api/contact', 5, 10 * 60_000);
+ *   if (blocked) return blocked;
+ */
+export function rateLimitRoute(
+  ip: string,
+  route: string,
+  limit: number,
+  windowMs: number,
+): Response | null {
+  return rateLimit(`${route}:${ip}`, limit, windowMs);
 }

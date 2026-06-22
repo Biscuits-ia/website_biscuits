@@ -5,7 +5,6 @@ const auth = await requireAuth(Astro);
 if (auth instanceof Response) return auth;
 
 if (auth.role === 'admin') return Astro.redirect('/dashboard/admin');
-if (auth.role === 'data_analyst') return Astro.redirect('/dashboard/data');
 if (auth.role === 'benevole' || auth.role === 'moderator') return Astro.redirect('/dashboard/benevole');
 if (auth.role === 'association') return Astro.redirect('/dashboard/association');
 return Astro.redirect('/dashboard/user');

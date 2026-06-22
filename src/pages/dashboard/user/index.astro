@@ -47,7 +47,7 @@ const recentDemandes: DemandeRow[] = (recentDemandesRaw ?? []).map((d: any): Dem
 }));
 ---
 
-<DashboardLayout title="Vue d'ensemble" role="user" activePage="overview" userName={userName} userEmail={userEmail} authResult={result}>
+<DashboardLayout title="Vue d'ensemble" activePage="overview" userName={userName} userEmail={userEmail} authResult={result}>
   <!-- Bienvenue -->
   <div class="mb-7">
     <h1 class="text-lg font-normal tracking-tight text-primary">

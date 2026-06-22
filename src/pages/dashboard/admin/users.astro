@@ -30,20 +30,23 @@ const { data: usersRaw, count } = await query;
 
 // ── Types stricts ─────────────────────────────────────────────────────────────
 
-type UserRole = 'admin' | 'moderator' | 'user';
+// Aligné sur la CHECK constraint profiles.role :
+// 'user','admin','moderator','benevole','association'
+type UserRole = 'admin' | 'moderator' | 'user' | 'benevole' | 'association';
 
 interface ProfileRow {
   id:               string;
   email:            string;
   full_name:        string | null;
-  role:             UserRole;
+  role:             string;            // brut depuis la BDD (peut contenir benevole/association)
   created_at:       string;
   last_sign_in_at:  string | null;
   reports_count:    number | null;
 }
 
 function isUserRole(value: unknown): value is UserRole {
-  return value === 'admin' || value === 'moderator' || value === 'user';
+  return value === 'admin' || value === 'moderator' || value === 'user'
+      || value === 'benevole' || value === 'association';
 }
 
 const users = (usersRaw ?? []) as ProfileRow[];
@@ -57,18 +60,28 @@ interface UserRow {
   reportsStr:  string;
 }
 
-function roleBadgeClass(r: UserRole): string {
-  if (r === 'admin')     return 'badge-err';
-  if (r === 'moderator') return 'badge-warn';
-  return 'badge-neutral';
-}
+const roleBadgeByRole: Record<string, string> = {
+  admin:      'badge-err',
+  moderator:  'badge-warn',
+  benevole:   'badge-info',
+  association:'badge-info',
+  user:       'badge-neutral',
+};
+
+const roleLabelByRole: Record<string, string> = {
+  admin:      'Admin',
+  moderator:  'Modérateur',
+  benevole:   'Bénévole',
+  association:'Association',
+  user:       'Utilisateur',
+};
 
 const userRows: UserRow[] = users.map((u: ProfileRow): UserRow => {
   const role = isUserRole(u.role) ? u.role : 'user';
   return {
     u,
-    roleBadge:   roleBadgeClass(role),
-    roleLabel:   role,
+    roleBadge:   roleBadgeByRole[role] ?? 'badge-neutral',
+    roleLabel:   roleLabelByRole[role] ?? role,
     createdStr:  new Date(u.created_at).toLocaleDateString('fr-FR'),
     lastSignStr: u.last_sign_in_at
       ? new Date(u.last_sign_in_at).toLocaleDateString('fr-FR')
@@ -108,9 +121,11 @@ const countLabel    = `${count ?? 0} compte${(count ?? 0) !== 1 ? 's' : ''} enre
     />
     <select name="role" class="filter-input" onchange="this.form.submit()">
       <option value="">Tous les rôles</option>
-      <option value="user"      selected={role === 'user'}>Utilisateur</option>
-      <option value="moderator" selected={role === 'moderator'}>Modérateur</option>
-      <option value="admin"     selected={role === 'admin'}>Admin</option>
+      <option value="user"       selected={role === 'user'}>Utilisateur</option>
+      <option value="benevole"   selected={role === 'benevole'}>Bénévole</option>
+      <option value="association" selected={role === 'association'}>Association</option>
+      <option value="moderator"  selected={role === 'moderator'}>Modérateur</option>
+      <option value="admin"      selected={role === 'admin'}>Admin</option>
     </select>
     <button type="submit" class="btn btn-primary btn-sm">Filtrer</button>
     {hasFilters && (

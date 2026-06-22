@@ -943,5 +943,24 @@ GRANT EXECUTE ON FUNCTION public.increment_downloads(uuid)                  TO a
 GRANT EXECUTE ON FUNCTION public.log_level_counts()                         TO authenticated;
 
 -- ─────────────────────────────────────────────────────────────────────────────
+-- RDV : index perf + partial unique anti-double-booking
+--   1. idx_vol_app_slot_status : accélère le filtre (slot_id, status) sur les
+--      requêtes `available-slots` qui croisent appointment_slots × appointments.
+--   2. uniq_active_appointment_per_slot : un seul RDV actif (pending|confirmed)
+--      par slot. Les RDV annulés (cancelled) sont autorisés en multi-occupance
+--      (cas légitime d'historique).
+--   Niveau BDD : ferme la race condition que les checks applicatifs ne peuvent
+--   pas garantir (deux POST concurrents qui passent les deux `maybeSingle`
+--   avant qu'un des deux INSERT ne commit).
+-- ─────────────────────────────────────────────────────────────────────────────
+CREATE INDEX IF NOT EXISTS idx_vol_app_slot_status
+  ON public.volunteer_appointments (slot_id, status)
+  WHERE status IN ('pending', 'confirmed');
+
+CREATE UNIQUE INDEX IF NOT EXISTS uniq_active_appointment_per_slot
+  ON public.volunteer_appointments (slot_id)
+  WHERE status IN ('pending', 'confirmed') AND slot_id IS NOT NULL;
+
+-- ─────────────────────────────────────────────────────────────────────────────
 -- FIN
 -- ─────────────────────────────────────────────────────────────────────────────

@@ -1,10 +1,25 @@
 ---
+export const prerender = true;
 
 import { getCollection, getEntry, render, type CollectionEntry } from 'astro:content';
+import type { GetStaticPaths } from 'astro';
 import { Image } from 'astro:assets';
 import Layout from '@/layouts/BlogLayout.astro';
 import ReadingTime from '@/components/ReadingTime.astro';
 import TableOfContents from '@/components/TableOfContents.astro';
+
+// `prerender = true` exige `getStaticPaths()` — on énumère ici tous les
+// slugs d'articles visibles au build-time. Le `rest` catch-all accepte
+// n'importe quel chemin sous /blog/*, mais on limite aux slugs réels.
+export const getStaticPaths = (async () => {
+  const all = await getCollection('blog');
+  const visible = import.meta.env.PROD
+    ? all.filter((a) => !a.data.draft)
+    : all;
+  return visible.map((entry) => ({
+    params: { slug: entry.id },
+  }));
+}) satisfies GetStaticPaths;
 
 const { slug } = Astro.params;
 if (!slug) {

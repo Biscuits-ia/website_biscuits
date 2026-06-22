@@ -30,11 +30,15 @@ const { data: cats } = await supabase
   .eq('is_visible', true);
 
 const uniqueCategories: string[] = [
-  ...new Set((cats ?? []).map((r: unknown) => r.category).filter(Boolean))
+  ...new Set(
+    ((cats ?? []) as Array<{ category: string | null }>)
+      .map((r) => r.category)
+      .filter((c): c is string => Boolean(c))
+  )
 ].sort();
 ---
 
-<DashboardLayout title="Logiciels" role="user" activePage="logiciels" userName={userName} userEmail={userEmail} authResult={result}>
+<DashboardLayout title="Logiciels" activePage="logiciels" userName={userName} userEmail={userEmail} authResult={result}>
 
   <div class="mb-7">
     <h1>Logiciels recommandés</h1>

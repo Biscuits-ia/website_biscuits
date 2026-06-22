@@ -4,7 +4,8 @@ import { getAdherentsAuthContext, hasAnyRole, jsonError, jsonOk, normalizeString
 export const prerender = false;
 
 export const GET: APIRoute = async ({ request, cookies }) => {
-  const ctx = await getAdherentsAuthContext(request, cookies);
+  const { ctx, rateLimitResponse } = await getAdherentsAuthContext(request, cookies);
+  if (rateLimitResponse) return rateLimitResponse;
   if (!ctx) return jsonError('Non autorise.', 401);
   if (!hasAnyRole(ctx.roles, ['admin', 'tresorier', 'lecture_seule'])) {
     return jsonError('Acces refuse.', 403);
@@ -24,7 +25,8 @@ export const GET: APIRoute = async ({ request, cookies }) => {
 };
 
 export const POST: APIRoute = async ({ request, cookies }) => {
-  const ctx = await getAdherentsAuthContext(request, cookies);
+  const { ctx, rateLimitResponse } = await getAdherentsAuthContext(request, cookies);
+  if (rateLimitResponse) return rateLimitResponse;
   if (!ctx) return jsonError('Non autorise.', 401);
   if (!hasAnyRole(ctx.roles, ['admin', 'tresorier'])) {
     return jsonError('Acces refuse.', 403);

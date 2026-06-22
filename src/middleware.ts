@@ -2,7 +2,7 @@
 import { defineMiddleware } from 'astro:middleware';
 import { rateLimit } from './lib/rateLimit';
 import { createSupabaseAdminClient, createSupabaseClient } from './lib/supabase';
-import { fetchRoleSecure, canAccessAnalytics } from './lib/auth';
+import { fetchRoleSecure } from './lib/auth';
 import crypto from 'node:crypto';
 
 function parseForwardedFor(value: string | null): string | null {
@@ -71,13 +71,27 @@ function checkRouteRateLimit(context: any, isDev: boolean, pathname: string): Re
 
 async function mustInvalidateSession(supabase: ReturnType<typeof createSupabaseClient>): Promise<boolean> {
   try {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return false;
+    // 1. SECURITY: verify the JWT signature against Supabase FIRST.
+    //    getUser() makes a server-side roundtrip to Supabase Auth; if the
+    //    cookie's JWT is forged, unsigned, or revoked, this call fails and
+    //    we never trust the local payload claims. The previous implementation
+    //    read `iat` from the raw base64 payload without verifying the
+    //    signature, allowing an attacker who knew a user's id to forge a
+    //    cookie with an arbitrary `iat` and bypass this check.
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (userError || !user) return false;
 
+    // 2. The JWT is now server-verified. Reading the iat from the
+    //    unverified base64 payload is safe because we know Supabase
+    //    issued this exact token.
     const { data: { session } } = await supabase.auth.getSession();
     const accessTokenIssuedAtMs = readAccessTokenIssuedAtMs(session?.access_token);
     if (accessTokenIssuedAtMs === null) return false;
 
+    // 3. Compare iat to last_logout_at in the profile (DB = source of
+    //    truth for explicit logout). If iat <= last_logout_at, the
+    //    access token was issued at or before the user's last logout and
+    //    must be invalidated.
     const adminSupabase = createSupabaseAdminClient();
     const { data: profile, error: profileError } = await adminSupabase
       .from('profiles')
@@ -100,17 +114,6 @@ async function mustInvalidateSession(supabase: ReturnType<typeof createSupabaseC
     // Token refresh or profile fetch failed: keep request flow and treat as non-invalidated here.
     return false;
   }
-}
-
-async function guardDataRoutes(
-  supabase: ReturnType<typeof createSupabaseClient>,
-  context: Parameters<typeof defineMiddleware>[0] extends never ? never : any,
-): Promise<Response | null> {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return context.redirect('/connexion');
-  const role = await fetchRoleSecure(user.id);
-  if (!canAccessAnalytics(role)) return context.redirect('/404');
-  return null;
 }
 
 export const onRequest = defineMiddleware(async (context, next) => {
@@ -160,12 +163,6 @@ export const onRequest = defineMiddleware(async (context, next) => {
   }
 
   context.locals.supabase = supabase;
-
-  // Protect /dashboard/data* — bénévoles are never allowed, only admin and data_analyst.
-  if (url.pathname.startsWith('/dashboard/data')) {
-    const blocked = await guardDataRoutes(supabase, context);
-    if (blocked) return blocked;
-  }
 
   const response = await next();
 

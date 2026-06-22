@@ -1,5 +1,13 @@
 ---
 // src/components/AdminAppointmentsDashboard.astro
+//
+// Vue admin des réservations avec toggle Tableau / Calendrier (F1).
+// La vue calendrier monte <AdminAppointmentsCalendar /> en client:load.
+// La vue tableau garde la liste plate (rendu côté client via <script>).
+// Modale de confirmation : window.showConfirm() (monté globalement dans DashboardLayout).
+// Toast : window.showToast() (monté globalement dans DashboardLayout).
+
+import AdminAppointmentsCalendar from './react/AdminAppointmentsCalendar.tsx';
 ---
 
 <div class="dashboard-container">
@@ -8,47 +16,204 @@
     <p>Vue des réservations effectuées par les utilisateurs</p>
   </div>
 
+  <nav class="view-toggle" role="tablist" aria-label="Mode d'affichage">
+    <button type="button" class="view-toggle-btn is-active" role="tab" aria-selected="true" data-view="table">
+      📋 Tableau
+    </button>
+    <button type="button" class="view-toggle-btn" role="tab" aria-selected="false" data-view="calendar">
+      🗓 Calendrier
+    </button>
+  </nav>
+
   <div id="error-container"></div>
 
-  <div id="content">
-    <div class="loading">⏳ Chargement...</div>
+  <!-- Vue tableau -->
+  <div id="view-table" class="view-pane">
+    <div id="content">
+      <div class="loading">⏳ Chargement...</div>
+    </div>
+  </div>
+
+  <!-- Vue calendrier -->
+  <div id="view-calendar" class="view-pane" hidden>
+    <AdminAppointmentsCalendar client:load />
   </div>
 </div>
 
-<script>
-  const errorContainer = document.getElementById('error-container') as HTMLElement;
-  const contentDiv = document.getElementById('content') as HTMLElement;
+<style>
+  .dashboard-container {
+    padding: 30px;
+    background-color: #f9fafb;
+    border-radius: 10px;
+  }
+  .header { margin-bottom: 24px; }
+  .header h1 { font-size: 28px; font-weight: bold; margin: 0 0 8px 0; }
+  .header p { color: #6b7280; margin: 0; }
 
-  function showError(msg: string, duration = 5000) {
-    errorContainer.innerHTML = `<div class="error-alert">❌ ${msg}</div>`;
-    if (duration) setTimeout(() => (errorContainer.innerHTML = ''), duration);
+  .view-toggle {
+    display: inline-flex;
+    gap: 0;
+    margin-bottom: 20px;
+    background: #fff;
+    border: 2px solid #000;
+    border-radius: 8px;
+    padding: 2px;
+    box-shadow: 2px 2px 0 #000;
+  }
+  .view-toggle-btn {
+    background: transparent;
+    color: #2C2014;
+    border: none;
+    padding: 8px 16px;
+    font-family: 'Geist', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background 0.12s, color 0.12s;
+  }
+  .view-toggle-btn:hover { background: #F7F2E8; }
+  .view-toggle-btn.is-active {
+    background: oklch(53.958% 0.10717 58.243);
+    color: #FDFAF4;
+  }
+
+  .view-pane { display: block; }
+  .view-pane[hidden] { display: none; }
+
+  #error-container { min-height: 20px; }
+  .error-alert {
+    background-color: #fee2e2; color: #991b1b;
+    padding: 12px 16px; border-radius: 6px;
+    margin-bottom: 20px; font-size: 14px;
+  }
+  .loading { padding: 40px; text-align: center; color: #6b7280; }
+  .no-appointments {
+    background-color: white; border: 1px solid #e5e7eb;
+    border-radius: 8px; padding: 40px; text-align: center; color: #6b7280;
+  }
+
+  .appointments-table {
+    width: 100%; background-color: white; border-radius: 8px;
+    border: 1px solid #e5e7eb; border-collapse: collapse; overflow: hidden;
+  }
+  .appointments-table thead { background-color: #f9fafb; }
+  .appointments-table thead tr { border-bottom: 2px solid #e5e7eb; }
+  .appointments-table th { padding: 12px 16px; text-align: left; font-weight: 600; font-size: 14px; }
+  .appointments-table td { padding: 12px 16px; font-size: 14px; border-bottom: 1px solid #e5e7eb; }
+  .appointments-table tbody tr.even { background-color: #f9fafb; }
+  .appointments-table tbody tr.odd  { background-color: white; }
+  .monospace { font-family: monospace; }
+
+  .badge {
+    padding: 4px 12px; border-radius: 4px; font-size: 12px;
+    font-weight: 600; display: inline-block;
+  }
+  .badge-success { background-color: #d1fae5; color: #065f46; }
+  .badge-pending { background-color: #fef3c7; color: #92400e; }
+  .badge-danger  { background-color: #fee2e2; color: #991b1b; }
+  .temporal-badge {
+    display: inline-block; margin-left: 6px; padding: 2px 8px;
+    border-radius: 99px; font-size: 10px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.05em;
+    font-family: 'Geist Mono', monospace; vertical-align: middle;
+  }
+  .temporal-upcoming    { background: #DBEAFE; color: #1E40AF; }
+  .temporal-in_progress { background: #FEF3C7; color: #92400E; }
+  .temporal-past        { background: #E5E7EB; color: #6B7280; opacity: 0.55; }
+
+  .actions { display: flex; gap: 16px; align-items: center; }
+  .actions-col { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; }
+  .text-muted { color: #9ca3af; }
+
+  .btn-confirm, .btn-reject {
+    padding: 8px 16px; border-radius: 4px; font-size: 13px;
+    font-weight: 700; cursor: pointer; transition: all 0.15s ease; white-space: nowrap;
+  }
+  .btn-confirm {
+    background-color: #000; color: #fff; border: 2px solid #000; box-shadow: 3px 3px 0 #065f46;
+  }
+  .btn-confirm:hover { background-color: #065f46; border-color: #065f46; transform: translate(-1px, -1px); box-shadow: 4px 4px 0 #000; }
+  .btn-reject {
+    background-color: #fff; color: #991b1b; border: 2px solid #991b1b; box-shadow: 3px 3px 0 #991b1b;
+  }
+  .btn-reject:hover { background-color: #991b1b; color: #fff; transform: translate(-1px, -1px); box-shadow: 4px 4px 0 #000; }
+  .btn-gcal-admin {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 8px 14px; text-decoration: none; border: 2px solid #bbbdbf;
+    border-radius: 4px; font-size: 13px; font-weight: 700;
+    color: #1a73e8; background: #fff; white-space: nowrap; transition: all 0.15s;
+  }
+  .btn-gcal-admin:hover { background-color: #e8f0fe; transform: translate(-1px, -1px); box-shadow: 4px 4px 0 #1a73e8; }
+</style>
+
+<script>
+  // ── Toggle de vue Tableau / Calendrier ───────────────────────────────────────
+  const viewButtons = document.querySelectorAll<HTMLButtonElement>('.view-toggle-btn');
+  const viewTable   = document.getElementById('view-table') as HTMLElement | null;
+  const viewCal     = document.getElementById('view-calendar') as HTMLElement | null;
+
+  viewButtons.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const view = btn.dataset.view;
+      viewButtons.forEach((b) => {
+        const active = b === btn;
+        b.classList.toggle('is-active', active);
+        b.setAttribute('aria-selected', String(active));
+      });
+      if (viewTable) viewTable.hidden = view !== 'table';
+      if (viewCal)   viewCal.hidden   = view !== 'calendar';
+    });
+  });
+
+  // ── Vue tableau : chargement + actions ───────────────────────────────────────
+  const errorContainer = document.getElementById('error-container') as HTMLElement;
+  const contentDiv     = document.getElementById('content') as HTMLElement;
+
+  function showError(msg: string) {
+    errorContainer.innerHTML = msg ? `<div class="error-alert">❌ ${msg}</div>` : '';
+  }
+  function toast(msg: string, type: 'success' | 'error' | 'info' = 'info') {
+    if (typeof window.showToast === 'function') window.showToast(msg, type);
   }
 
   async function loadAppointments() {
     try {
-      const response = await fetch('/api/admin/appointments', {
-        credentials: 'include',
-      });
-
+      const response = await fetch('/api/admin/appointments', { credentials: 'include' });
       if (!response.ok) {
         const errText = await response.text();
         throw new Error(`Erreur ${response.status}: ${errText}`);
       }
-
       const data = await response.json();
       renderAppointments(data);
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Erreur inconnue';
-      showError(msg, 0);
-      contentDiv.innerHTML =
-        '<div style="color: #dc2626; padding: 20px; text-align: center;">Erreur de chargement</div>';
+      showError(msg);
+      contentDiv.innerHTML = '<div style="color: #dc2626; padding: 20px; text-align: center;">Erreur de chargement</div>';
     }
   }
 
-  function renderAppointments(appointments: any[]) {
+  interface RenderedAppt {
+    id: string;
+    status: 'pending' | 'confirmed' | 'cancelled';
+    created_at: string;
+    candidate_email: string | null;
+    user_profile: { full_name: string | null; email: string | null } | null;
+    appointment_slots: { start_time: string; end_time: string } | null;
+  }
+
+  function temporalState(startIso: string, endIso: string): 'past' | 'in_progress' | 'upcoming' {
+    const now = Date.now();
+    const end = Date.parse(endIso);
+    if (!Number.isNaN(end) && now >= end) return 'past';
+    const start = Date.parse(startIso);
+    if (!Number.isNaN(start) && now >= start) return 'in_progress';
+    return 'upcoming';
+  }
+
+  function renderAppointments(appointments: RenderedAppt[]) {
     if (appointments.length === 0) {
-      contentDiv.innerHTML =
-        '<div class="no-appointments">Aucune réservation pour le moment</div>';
+      contentDiv.innerHTML = '<div class="no-appointments">Aucune réservation pour le moment</div>';
       return;
     }
 
@@ -65,67 +230,79 @@
           </tr>
         </thead>
         <tbody>
-          ${appointments
-            .map(
-              (appt: { appointment_slots: any; status: string; user_profile: { full_name: any; email: any; }; candidate_email: any; created_at: string | number | Date; id: any; }, idx: number) => {
-                const slot = appt.appointment_slots;
-                const slotStart = slot ? new Date(slot.start_time) : null;
-                const slotEnd = slot ? new Date(slot.end_time) : null;
-                const slotLabel = slotStart && slotEnd
-                  ? `${slotStart.toLocaleDateString('fr-FR')} ${slotStart.getHours().toString().padStart(2, '0')}:${slotStart.getMinutes().toString().padStart(2, '0')} - ${slotEnd.getHours().toString().padStart(2, '0')}:${slotEnd.getMinutes().toString().padStart(2, '0')}`
-                  : '<em>Créneau supprimé</em>';
-                const isPending = appt.status === 'pending';
-                const isConfirmed = appt.status === 'confirmed';
-                const userName = appt.user_profile?.full_name || appt.user_profile?.email || appt.candidate_email || '-';
-                const userEmail = appt.user_profile?.email || appt.candidate_email || '-';
-                return `
-            <tr class="${idx % 2 === 0 ? 'even' : 'odd'} status-${appt.status}">
-              <td>${userName}</td>
-              <td>${userEmail}</td>
-              <td class="monospace">${slotLabel}</td>
-              <td>
-                <span class="badge ${appt.status === 'confirmed' ? 'badge-success' : appt.status === 'cancelled' ? 'badge-danger' : 'badge-pending'}">
-                  ${appt.status === 'confirmed' ? '✓ Confirmé' : appt.status === 'cancelled' ? '✗ Annulé' : '⏳ En attente'}
-                </span>
-              </td>
-              <td>${new Date(appt.created_at).toLocaleDateString('fr-FR')}</td>
-              <td class="actions">
-${isPending ? `
-                  <div class="actions-col">
-                    <button class="btn-confirm" data-id="${appt.id}">✓ Confirmer</button>
-                    <button class="btn-reject" data-id="${appt.id}">✗ Rejeter</button>
-                  </div>
-                ` : isConfirmed ? `
-                  <div class="actions-col">
-                    <a href="${buildAdminGoogleCalUrl(appt)}" target="_blank" rel="noopener noreferrer" class="btn-gcal-admin">📅 Agenda</a>
-                    <button class="btn-reject" data-id="${appt.id}">✗ Annuler</button>
-                  </div>
-                ` : `<span class="text-muted">—</span>`}
-              </td>
-            </tr>
-          `;
-              }
-            )
-            .join('')}
+          ${appointments.map((appt, idx) => {
+            const slot = appt.appointment_slots;
+            let slotLabel = '<em>Créneau supprimé</em>';
+            let temporalBadge = '';
+            if (slot) {
+              const start = new Date(slot.start_time);
+              const end   = new Date(slot.end_time);
+              const pad   = (n: number) => n.toString().padStart(2, '0');
+              slotLabel = `${start.toLocaleDateString('fr-FR')} ${pad(start.getHours())}:${pad(start.getMinutes())} - ${pad(end.getHours())}:${pad(end.getMinutes())}`;
+              const ts = temporalState(slot.start_time, slot.end_time);
+              const tsLabel = ts === 'past' ? 'Passé' : ts === 'in_progress' ? 'En cours' : 'À venir';
+              temporalBadge = `<span class="temporal-badge temporal-${ts}">${tsLabel}</span>`;
+            }
+            const userName  = appt.user_profile?.full_name || appt.user_profile?.email || appt.candidate_email || '-';
+            const userEmail = appt.user_profile?.email || appt.candidate_email || '-';
+            const isPending   = appt.status === 'pending';
+            const isConfirmed = appt.status === 'confirmed';
+            return `
+              <tr class="${idx % 2 === 0 ? 'even' : 'odd'} status-${appt.status}">
+                <td>${escapeHtml(String(userName))}</td>
+                <td>${escapeHtml(String(userEmail))}</td>
+                <td class="monospace">${slotLabel}${temporalBadge}</td>
+                <td>
+                  <span class="badge ${appt.status === 'confirmed' ? 'badge-success' : appt.status === 'cancelled' ? 'badge-danger' : 'badge-pending'}">
+                    ${appt.status === 'confirmed' ? '✓ Confirmé' : appt.status === 'cancelled' ? '✗ Annulé' : '⏳ En attente'}
+                  </span>
+                </td>
+                <td>${new Date(appt.created_at).toLocaleDateString('fr-FR')}</td>
+                <td class="actions">
+                  ${isPending ? `
+                    <div class="actions-col">
+                      <button class="btn-confirm" data-id="${appt.id}">✓ Confirmer</button>
+                      <button class="btn-reject" data-id="${appt.id}">✗ Rejeter</button>
+                    </div>
+                  ` : isConfirmed ? `
+                    <div class="actions-col">
+                      <a href="${buildAdminGoogleCalUrl(appt)}" target="_blank" rel="noopener noreferrer" class="btn-gcal-admin">📅 Agenda</a>
+                      <button class="btn-reject" data-id="${appt.id}">✗ Annuler</button>
+                    </div>
+                  ` : `<span class="text-muted">—</span>`}
+                </td>
+              </tr>
+            `;
+          }).join('')}
         </tbody>
       </table>
     `;
-
     contentDiv.innerHTML = html;
 
-    // Ajouter les event listeners
-    document.querySelectorAll('.btn-confirm').forEach((btn) => {
-      btn.addEventListener('click', () => updateAppointmentStatus((btn as HTMLElement).dataset.id, 'confirmed'));
+    document.querySelectorAll<HTMLButtonElement>('.btn-confirm').forEach((btn) => {
+      btn.addEventListener('click', () => updateAppointmentStatus(btn.dataset.id!, 'confirmed'));
     });
-
-    document.querySelectorAll('.btn-reject').forEach((btn) => {
-      btn.addEventListener('click', () => updateAppointmentStatus((btn as HTMLElement).dataset.id, 'cancelled'));
+    document.querySelectorAll<HTMLButtonElement>('.btn-reject').forEach((btn) => {
+      btn.addEventListener('click', () => updateAppointmentStatus(btn.dataset.id!, 'cancelled'));
     });
   }
 
-  async function updateAppointmentStatus(id: any, status: string) {
-    const action = status === 'confirmed' ? 'confirmer' : 'rejeter';
-    if (!confirm(`Êtes-vous sûr de vouloir ${action} cette réservation ?`)) return;
+  async function updateAppointmentStatus(id: string, status: 'confirmed' | 'cancelled') {
+    const actionLabel = status === 'confirmed' ? 'confirmer' : (status === 'cancelled' && id.startsWith('p')) ? 'rejeter' : 'annuler';
+    const danger = status === 'cancelled';
+    const verb   = status === 'confirmed' ? 'Confirmer' : 'Annuler';
+
+    if (!window.showConfirm) {
+      // La modale n'est pas montée (layout sans ConfirmDialog) — fallback no-op.
+      return;
+    }
+    const ok = await window.showConfirm({
+      title: `${verb} la réservation`,
+      message: `Êtes-vous sûr de vouloir ${actionLabel} cette réservation ?`,
+      confirmLabel: verb,
+      danger,
+    });
+    if (!ok) return;
 
     try {
       const response = await fetch(`/api/admin/appointments/${id}`, {
@@ -134,21 +311,22 @@ ${isPending ? `
         credentials: 'include',
         body: JSON.stringify({ status }),
       });
-
       if (!response.ok) throw new Error(`Erreur ${response.status}`);
-
-      showError('', 0);
+      showError('');
+      toast(status === 'confirmed' ? '✓ Réservation confirmée' : '✓ Réservation annulée', 'success');
       await loadAppointments();
     } catch (err) {
-      showError(err instanceof Error ? err.message : 'Erreur inconnue', 0);
+      const msg = err instanceof Error ? err.message : 'Erreur inconnue';
+      showError(msg);
+      toast(msg, 'error');
     }
   }
 
-  function buildAdminGoogleCalUrl(appt: any): string {
+  function buildAdminGoogleCalUrl(appt: RenderedAppt): string {
     const slot = appt.appointment_slots;
     if (!slot) return '#';
     const start = new Date(slot.start_time);
-    const end = new Date(slot.end_time);
+    const end   = new Date(slot.end_time);
     const pad = (n: number) => n.toString().padStart(2, '0');
     const fmt = (d: Date) =>
       `${d.getUTCFullYear()}${pad(d.getUTCMonth() + 1)}${pad(d.getUTCDate())}T${pad(d.getUTCHours())}${pad(d.getUTCMinutes())}00Z`;
@@ -162,203 +340,9 @@ ${isPending ? `
     return `https://calendar.google.com/calendar/render?${params.toString()}`;
   }
 
-  // Charger les rendez-vous au démarrage
+  function escapeHtml(s: string): string {
+    return s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!));
+  }
+
   loadAppointments();
 </script>
-
-<style>
-  .dashboard-container {
-    padding: 30px;
-    background-color: #f9fafb;
-    border-radius: 10px;
-  }
-
-  .header {
-    margin-bottom: 30px;
-  }
-
-  .header h1 {
-    font-size: 28px;
-    font-weight: bold;
-    margin: 0 0 8px 0;
-  }
-
-  .header p {
-    color: #6b7280;
-    margin: 0;
-  }
-
-  #error-container {
-    min-height: 20px;
-  }
-
-  .error-alert {
-    background-color: #fee2e2;
-    color: #991b1b;
-    padding: 12px 16px;
-    border-radius: 6px;
-    margin-bottom: 20px;
-    font-size: 14px;
-  }
-
-  .loading {
-    padding: 40px;
-    text-align: center;
-    color: #6b7280;
-  }
-
-  .no-appointments {
-    background-color: white;
-    border: 1px solid #e5e7eb;
-    border-radius: 8px;
-    padding: 40px;
-    text-align: center;
-    color: #6b7280;
-  }
-
-  .appointments-table {
-    width: 100%;
-    background-color: white;
-    border-radius: 8px;
-    border: 1px solid #e5e7eb;
-    border-collapse: collapse;
-    overflow: hidden;
-  }
-
-  .appointments-table thead {
-    background-color: #f9fafb;
-  }
-
-  .appointments-table thead tr {
-    border-bottom: 2px solid #e5e7eb;
-  }
-
-  .appointments-table th {
-    padding: 12px 16px;
-    text-align: left;
-    font-weight: 600;
-    font-size: 14px;
-  }
-
-  .appointments-table td {
-    padding: 12px 16px;
-    font-size: 14px;
-    border-bottom: 1px solid #e5e7eb;
-  }
-
-  .appointments-table tbody tr.even {
-    background-color: #f9fafb;
-  }
-
-  .appointments-table tbody tr.odd {
-    background-color: white;
-  }
-
-  .monospace {
-    font-family: monospace;
-  }
-
-  .badge {
-    padding: 4px 12px;
-    border-radius: 4px;
-    font-size: 12px;
-    font-weight: 600;
-    display: inline-block;
-    border: none;
-    outline: none;
-    box-shadow: none;
-  }
-
-  .badge-success {
-    background-color: #d1fae5;
-    color: #065f46;
-  }
-
-  .badge-pending {
-    background-color: #fef3c7;
-    color: #92400e;
-  }
-
-  .badge-danger {
-    background-color: #fee2e2;
-    color: #991b1b;
-  }
-
-  .actions {
-    display: flex;
-    gap: 16px;
-    align-items: center;
-  }
-
-  .actions-col {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    align-items: flex-start;
-  }
-
-  .text-muted {
-    color: #9ca3af;
-  }
-
-  .btn-confirm,
-  .btn-reject {
-    padding: 8px 16px;
-    border-radius: 4px;
-    font-size: 13px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.15s ease;
-    white-space: nowrap;
-  }
-
-  .btn-confirm {
-    background-color: #000;
-    color: #fff;
-    border: 2px solid #000;
-    box-shadow: 3px 3px 0 #065f46;
-  }
-
-  .btn-confirm:hover {
-    background-color: #065f46;
-    border-color: #065f46;
-    transform: translate(-1px, -1px);
-    box-shadow: 4px 4px 0 #000;
-  }
-
-  .btn-reject {
-    background-color: #fff;
-    color: #991b1b;
-    border: 2px solid #991b1b;
-    box-shadow: 3px 3px 0 #991b1b;
-  }
-
-  .btn-reject:hover {
-    background-color: #991b1b;
-    color: #fff;
-    transform: translate(-1px, -1px);
-    box-shadow: 4px 4px 0 #000;
-  }
-
-  .btn-gcal-admin {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    padding: 8px 14px;
-    text-decoration: none;
-    border: 2px solid #bbbdbf;
-    border-radius: 4px;
-    font-size: 13px;
-    font-weight: 700;
-    color: #1a73e8;
-    background: #fff;
-    white-space: nowrap;
-    transition: all 0.15s;
-  }
-
-  .btn-gcal-admin:hover {
-    background-color: #e8f0fe;
-    transform: translate(-1px, -1px);
-    box-shadow: 4px 4px 0 #1a73e8;
-  }
-</style>

@@ -1,6 +1,5 @@
 import type { APIRoute } from 'astro';
 import { createSupabaseClient } from '@/lib/supabase';
-import { randomBytes } from 'crypto';
 
 /**
  * GET /api/appointments/
@@ -61,7 +60,7 @@ export const GET: APIRoute = async ({ request, cookies }) => {
 /**
  * POST /api/appointments/
  * Crée un nouveau rendez-vous (admin only)
- * Body: { candidate_email?: string, admin_notes?: string }
+ * Body: { slot_id: string, candidate_email?: string, notes?: string }
  */
 export const POST: APIRoute = async ({ request, cookies }) => {
   try {
@@ -71,10 +70,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     const { data: { user }, error: authError } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      return new Response(
-        JSON.stringify({ error: 'Unauthorized' }),
-        { status: 401, headers: { 'Content-Type': 'application/json' } }
-      );
+      return jsonError('Unauthorized', 401);
     }
 
     const { data: profile } = await supabase
@@ -84,54 +80,48 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       .single();
 
     if (profile?.role !== 'admin') {
-      return new Response(
-        JSON.stringify({ error: 'Forbidden' }),
-        { status: 403, headers: { 'Content-Type': 'application/json' } }
-      );
+      return jsonError('Forbidden', 403);
     }
 
-    const body = await request.json() as { candidate_email?: string; admin_notes?: string };
+    const body = (await request.json()) as {
+      slot_id?: string;
+      candidate_email?: string;
+      notes?: string;
+    };
 
-    // Générer un token sécurisé
-    const token = randomBytes(32).toString('hex');
-    const now = new Date();
-    const expiresAt = new Date(now.getTime() + 48 * 60 * 60 * 1000); // +48h
+    if (!body.slot_id) {
+      return jsonError('slot_id requis', 400);
+    }
 
     const { data, error } = await supabase
       .from('volunteer_appointments')
-      .insert([
-        {
-          token,
-          candidate_email: body.candidate_email || null,
-          status: 'pending',
-          expires_at: expiresAt.toISOString(),
-          admin_notes: body.admin_notes || null,
-        },
-      ])
-      .select();
+      .insert({
+        slot_id: body.slot_id,
+        candidate_email: body.candidate_email || null,
+        status: 'pending',
+        notes: body.notes || null,
+      })
+      .select()
+      .single();
 
     if (error) {
-      return new Response(
-        JSON.stringify({ error: error.message }),
-        { status: 500, headers: { 'Content-Type': 'application/json' } }
-      );
+      console.error('[appointments POST] error:', error);
+      return jsonError(error.message, 500);
     }
 
-    // Retourner le token et l'URL d'accès
-    const appointmentUrl = `${new URL(request.url).origin}/rdv/${token}`;
-
-    return new Response(
-      JSON.stringify({
-        ...data[0],
-        appointment_url: appointmentUrl,
-      }),
-      { status: 201, headers: { 'Content-Type': 'application/json' } }
-    );
+    return new Response(JSON.stringify(data), {
+      status: 201,
+      headers: { 'Content-Type': 'application/json' },
+    });
   } catch (err) {
-    console.error('Error creating appointment:', err);
-    return new Response(
-      JSON.stringify({ error: 'Internal server error' }),
-      { status: 500, headers: { 'Content-Type': 'application/json' } }
-    );
+    console.error('[appointments POST] unexpected error:', err);
+    return jsonError('Erreur interne du serveur', 500);
   }
 };
+
+function jsonError(message: string, status: number) {
+  return new Response(JSON.stringify({ error: message }), {
+    status,
+    headers: { 'Content-Type': 'application/json' },
+  });
+}

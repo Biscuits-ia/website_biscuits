@@ -17,7 +17,7 @@ function jsonOk(data: unknown, status = 200) {
 }
 
 export const POST: APIRoute = async (Astro) => {
-  const auth = await requireAdmin(Astro as any);
+  const auth = await requireAdmin(Astro);
   if (auth instanceof Response) return auth;
 
   const adminSupabase = createSupabaseAdminClient();
@@ -50,7 +50,7 @@ export const POST: APIRoute = async (Astro) => {
 };
 
 export const DELETE: APIRoute = async (Astro) => {
-  const auth = await requireAdmin(Astro as any);
+  const auth = await requireAdmin(Astro);
   if (auth instanceof Response) return auth;
 
   const adminSupabase = createSupabaseAdminClient();

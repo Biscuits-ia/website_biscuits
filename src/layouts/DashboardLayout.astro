@@ -4,6 +4,8 @@ import '../styles/dashboard.css';
 import { requireAuth } from '../lib/auth';
 import type { UserRole, AuthResult } from '../lib/auth';
 import BaseHead from '@/components/BaseHead.astro';
+import Toast from '@/components/ui/Toast.astro';
+import ConfirmDialog from '@/components/ui/ConfirmDialog.astro';
 
 const siteUrl = import.meta.env.SITE || 'https://biscuits-ia.com';
 const isProd = import.meta.env.PROD;
@@ -44,7 +46,6 @@ const isAdmin           = role === 'admin';
 const isModerator       = role === 'moderator';
 const isBenevole        = role === 'benevole';
 const isAssociation     = role === 'association';
-const isDataAnalyst     = role === 'data_analyst';
 
 // Nom d'affichage : priorité à la prop (passée depuis la page parente),
 // sinon on prend le user de authResult
@@ -74,17 +75,13 @@ const userNav: NavItem[] = [
 const adminNav: NavItem[] = [
   { id: 'users',           label: 'Utilisateurs',   icon: 'users',        badge: null  },
   { id: 'projects',        label: 'Projets',        icon: 'folder',       badge: null  },
-  { id: 'tasks',           label: 'Task Hub',       icon: 'check',        badge: null, href: '/dashboard/tasks' },
-  { id: 'task-hub',        label: 'Seed Task Hub',  icon: 'terminal',     badge: null  },
-  { id: 'kanban',          label: 'Kanban',         icon: 'grid',         badge: null, href: '/dashboard/kanban' },
-  { id: 'kpis',            label: 'Analytics',      icon: 'bar-chart',    badge: null, href: '/dashboard/kpis' },
   { id: 'demandes',        label: 'Demandes',        icon: 'inbox',        badge: null  },
   { id: 'contacts',        label: 'Contacts',        icon: 'mail',         badge: null  },
   { id: 'candidatures',    label: 'Candidatures',    icon: 'user-plus',    badge: null  },
   { id: 'appointments',    label: 'Rendez-vous',     icon: 'calendar',     badge: null  },
-  { id: 'creneaux',        label: 'Configuration',   icon: 'settings',     badge: null  },
   { id: 'ateliers',        label: 'Ateliers',        icon: 'calendar',     badge: null  },
   { id: 'resources',       label: 'Ressources',      icon: 'flag',         badge: null  },
+  { id: 'logiciels',       label: 'Logiciels',       icon: 'package',      badge: null  },
   { id: 'trombinoscope',   label: 'Équipe',          icon: 'users',        badge: null  },
   { id: 'logs',            label: 'Logs système',    icon: 'terminal',     badge: 'LIVE'},
 ];
@@ -93,7 +90,6 @@ const benevoleNav: NavItem[] = [
   { id: 'overview',   label: "Vue d'ensemble",  icon: 'grid'     },
   { id: 'projects',   label: 'Projets',          icon: 'folder'   },
   { id: 'tasks',      label: 'Mes tâches',       icon: 'check'    },
-  { id: 'kanban',     label: 'Kanban global',    icon: 'grid',    href: '/dashboard/kanban' },
   { id: 'calendar',   label: 'Calendrier',       icon: 'calendar' },
   { id: 'equipe',     label: 'Équipe',           icon: 'users'    },
   { id: 'settings',   label: 'Paramètres',       icon: 'settings' },
@@ -107,15 +103,8 @@ const associationNav: NavItem[] = [
   { id: 'settings',   label: 'Paramètres',       icon: 'settings' },
 ];
 
-const dataAnalystNav: NavItem[] = [
-  { id: 'overview',   label: "Vue data",         icon: 'grid',      href: '/dashboard/data' },
-  { id: 'analytics',  label: 'Analytics',          icon: 'bar-chart', href: '/dashboard/kpis' },
-  { id: 'resources',  label: 'Ressources',        icon: 'flag',      href: '/dashboard/user/resources' },
-  { id: 'settings',   label: 'Paramètres',        icon: 'settings',  href: '/dashboard/user/settings' },
-];
-
-const nav = isAdmin ? adminNav : isDataAnalyst ? dataAnalystNav : isBenevole ? benevoleNav : isAssociation ? associationNav : userNav;
-const dashRole = isAdmin ? 'admin' : isDataAnalyst ? 'data' : isBenevole ? 'benevole' : isAssociation ? 'association' : 'user';
+const nav = isAdmin ? adminNav : isBenevole ? benevoleNav : isAssociation ? associationNav : userNav;
+const dashRole = isAdmin ? 'admin' : isBenevole ? 'benevole' : isAssociation ? 'association' : 'user';
 
 // ── Icônes SVG ────────────────────────────────────────────────────────────────
 
@@ -135,6 +124,7 @@ const icons: Record<string, string> = {
   'trending-up':`<svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="1,12 5.5,7 9,9.5 15,3"/><polyline points="11,3 15,3 15,7"/></svg>`,
   terminal:     `<svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="2.5" width="14" height="11" rx="1.5"/><polyline points="4,6.5 7,9 4,11.5"/><line x1="8.5" y1="11.5" x2="12" y2="11.5"/></svg>`,
   bell:         `<svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 1.5a4.5 4.5 0 00-4.5 4.5v3l-1.5 2h12l-1.5-2V6A4.5 4.5 0 008 1.5z"/><path d="M6.5 13a1.5 1.5 0 003 0"/></svg>`,
+  package:      `<svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1.5 4.5l6-3 6 3v7l-6 3-6-3v-7z"/><path d="M1.5 4.5L7.5 7.5 13.5 4.5"/><line x1="7.5" y1="7.5" x2="7.5" y2="14.5"/></svg>`,
 };
 
 const initials = displayName.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2);
@@ -145,7 +135,7 @@ const initials = displayName.split(' ').map((n: string) => n[0]).join('').toUppe
 <head>
   <BaseHead
     fullTitle={`${title} — Biscuits`}
-    description={`Espace ${isAdmin ? 'administrateur' : isDataAnalyst ? 'data analyst' : isBenevole ? 'bénévole' : isAssociation ? 'association/TPE' : 'membre'} Biscuits IA`}
+    description={`Espace ${isAdmin ? 'administrateur' : isBenevole ? 'bénévole' : isAssociation ? 'association/TPE' : 'membre'} Biscuits IA`}
     fullCanonical={`${siteUrl}/dashboard/${dashRole}`}
     siteUrl={siteUrl}
     noindex={true}
@@ -161,7 +151,7 @@ const initials = displayName.split(' ').map((n: string) => n[0]).join('').toUppe
       <div class="sidebar-logo">
         <div class="sidebar-logo-text">
           <span class="sidebar-logo-name">Biscuits</span>
-          <span class="sidebar-logo-sub">{isAdmin ? 'admin' : isDataAnalyst ? 'espace data' : isBenevole ? 'espace bénévole' : isAssociation ? 'espace association' : 'espace membre'}</span>
+          <span class="sidebar-logo-sub">{isAdmin ? 'admin' : isBenevole ? 'espace bénévole' : isAssociation ? 'espace association' : 'espace membre'}</span>
         </div>
       </div>
 
@@ -196,7 +186,7 @@ const initials = displayName.split(' ').map((n: string) => n[0]).join('').toUppe
           <div class="user-avatar">{initials}</div>
           <div class="user-info">
             <div class="user-name">{displayName}</div>
-            <div class="user-role">{isAdmin ? 'admin' : isDataAnalyst ? 'data analyst' : isModerator ? 'modérateur' : isBenevole ? 'bénévole' : isAssociation ? 'association' : 'membre'}</div>
+            <div class="user-role">{isAdmin ? 'admin' : isModerator ? 'modérateur' : isBenevole ? 'bénévole' : isAssociation ? 'association' : 'membre'}</div>
           </div>
         </div>
         <a href="/" class="btn btn-ghost btn-full btn-xs-text">
@@ -222,9 +212,6 @@ const initials = displayName.split(' ').map((n: string) => n[0]).join('').toUppe
           )}
           {isModerator && !isAdmin && (
             <span class="badge badge-info badge-admin">🛡 Modérateur</span>
-          )}
-          {isDataAnalyst && !isAdmin && (
-            <span class="badge badge-info badge-admin">📊 Data analyst</span>
           )}
           <!-- Cloche de notifications (tous les rôles connectés) -->
           <div class="notif-bell" id="notif-bell-wrapper" style="position:relative">
@@ -254,6 +241,10 @@ const initials = displayName.split(' ').map((n: string) => n[0]).join('').toUppe
     </main>
 
   </div>
+
+  <!-- Notifications + modale de confirmation (global) -->
+  <Toast />
+  <ConfirmDialog />
 </body>
 </html>
 

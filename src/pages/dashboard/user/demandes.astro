@@ -2,9 +2,8 @@
 // src/pages/dashboard/user/demandes.astro
 import DashboardLayout from '../../../layouts/DashboardLayout.astro';
 import { requireAuth } from '../../../lib/auth';
-import type { AstroGlobal } from 'astro';
 
-const result = await requireAuth(Astro as unknown as AstroGlobal);
+const result = await requireAuth(Astro);
 if (result instanceof Response) return result;
 
 const { user, supabase } = result;
@@ -34,7 +33,7 @@ const statusBadge: Record<string, string> = {
 };
 ---
 
-<DashboardLayout title="Mes demandes" role="user" activePage="demandes" userName={userName} userEmail={userEmail} authResult={result}>
+<DashboardLayout title="Mes demandes" activePage="demandes" userName={userName} userEmail={userEmail} authResult={result}>
 
   <div class="mb-7 flex items-start justify-between gap-4 flex-wrap">
     <div>

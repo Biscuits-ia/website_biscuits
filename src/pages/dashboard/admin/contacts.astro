@@ -152,56 +152,60 @@ const typedContacts: Contact[] = (contacts ?? []) as Contact[];
           )}
 
           <!-- Zone d'action -->
-          <form method="POST" action="/api/admin/contacts/update" class="action-form">
-            <input type="hidden" name="contact_id" value={id} />
+          <div class="action-form">
+            <form method="POST" action="/api/admin/contacts/update">
+              <input type="hidden" name="contact_id" value={id} />
 
-            <div class="action-row">
-              <!-- Statut -->
-              <div class="select-wrap">
-                <label class="select-label">Statut</label>
-                <select name="status" class="status-select">
-                  <option value="new"      selected={status === 'new'}>🔵 Nouveau</option>
-                  <option value="read"     selected={status === 'read'}>👁 Lu</option>
-                  <option value="replied"  selected={status === 'replied'}>✅ Répondu</option>
-                  <option value="archived" selected={status === 'archived'}>📦 Archivé</option>
-                </select>
+              <div class="action-row">
+                <!-- Statut -->
+                <div class="select-wrap">
+                  <label class="select-label">Statut</label>
+                  <select name="status" class="status-select">
+                    <option value="new"      selected={status === 'new'}>🔵 Nouveau</option>
+                    <option value="read"     selected={status === 'read'}>👁 Lu</option>
+                    <option value="replied"  selected={status === 'replied'}>✅ Répondu</option>
+                    <option value="archived" selected={status === 'archived'}>📦 Archivé</option>
+                  </select>
+                </div>
+
+                <!-- Notes internes -->
+                <div class="notes-wrap">
+                  <label class="select-label">Notes internes</label>
+                  <textarea
+                    name="admin_notes"
+                    rows="2"
+                    placeholder="Notes internes (non visibles par l'expéditeur)…"
+                    class="notes-textarea"
+                  >{adminNotes ?? ''}</textarea>
+                </div>
               </div>
 
-              <!-- Notes internes -->
-              <div class="notes-wrap">
-                <label class="select-label">Notes internes</label>
-                <textarea
-                  name="admin_notes"
-                  rows="2"
-                  placeholder="Notes internes (non visibles par l'expéditeur)…"
-                  class="notes-textarea"
-                >{adminNotes ?? ''}</textarea>
-              </div>
-            </div>
-
-            <!-- Boutons d'action -->
-            <div class="action-btns">
-              <button type="submit" class="action-btn btn-save">
-                💾 Sauvegarder
-              </button>
-              <a
-                href={`mailto:${email}?subject=Re: ${encodeURIComponent(subject)}`}
-                class="action-btn btn-reply"
-              >
-                ✉ Répondre
-              </a>
-              <form method="POST" action="/api/admin/contacts/delete" style="display: contents;">
-                <input type="hidden" name="contact_id" value={id} />
-                <button
-                  type="submit"
-                  class="action-btn btn-delete"
-                  onclick="return confirm('Supprimer définitivement ce message ?')"
-                >
-                  🗑 Supprimer
+              <!-- Boutons d'action -->
+              <div class="action-btns">
+                <button type="submit" class="action-btn btn-save">
+                  💾 Sauvegarder
                 </button>
-              </form>
-            </div>
-          </form>
+                <a
+                  href={`mailto:${email}?subject=Re: ${encodeURIComponent(subject)}`}
+                  class="action-btn btn-reply"
+                >
+                  ✉ Répondre
+                </a>
+              </div>
+            </form>
+
+            {/* Suppression : form indépendant (HTML n'autorise pas les forms imbriqués) */}
+            <form method="POST" action="/api/admin/contacts/delete" class="delete-form">
+              <input type="hidden" name="contact_id" value={id} />
+              <button
+                type="submit"
+                class="action-btn btn-delete"
+                onclick="return confirm('Supprimer définitivement ce message ?')"
+              >
+                🗑 Supprimer
+              </button>
+            </form>
+          </div>
 
         </div>
       );

@@ -1,6 +1,7 @@
 import type { APIRoute } from 'astro';
 import { createSupabaseClient } from '@/lib/supabase';
 import { createSupabaseAdminClient } from '@/lib/supabase';
+import { validatePassword } from '@/lib/validation';
 
 type ChangePasswordBody = {
   currentPassword: string;
@@ -36,8 +37,9 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     });
   }
 
-  if (newPassword.length < 6) {
-    return new Response(JSON.stringify({ message: 'Le nouveau mot de passe doit contenir au moins 6 caractères.' }), {
+  const passwordError = validatePassword(newPassword);
+  if (passwordError) {
+    return new Response(JSON.stringify({ message: passwordError }), {
       status: 400,
       headers: { 'Content-Type': 'application/json' },
     });
@@ -68,9 +70,11 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     });
   }
 
-  // Changer le mot de passe avec l'API Admin
+  // Changer le mot de passe avec l'API Admin.
+  // NOTE: depuis @supabase/supabase-js 2.103, `auth.admin.updateUser` a été
+  // renommé en `auth.admin.updateUserById` (le premier est supprimé).
   const adminClient = createSupabaseAdminClient();
-  const { error } = await adminClient.auth.admin.updateUser(user.id, {
+  const { error } = await adminClient.auth.admin.updateUserById(user.id, {
     password: newPassword,
   });
 

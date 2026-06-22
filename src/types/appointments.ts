@@ -1,26 +1,40 @@
+// src/types/appointments.ts
+// Source de vérité = schéma BDD réel (tables appointment_slots, volunteer_appointments).
+// Pas d'invention : tout champ listé ici doit exister dans la BDD.
+
+export type AppointmentStatus = 'pending' | 'confirmed' | 'cancelled';
+
+export interface AppointmentSlot {
+  id: string;
+  start_time: string; // ISO 8601 timestamptz
+  end_time: string; // ISO 8601 timestamptz
+  is_available: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface VolunteerAppointment {
   id: string;
-  token: string;
+  slot_id: string | null;
+  user_id: string | null;
   candidate_email: string | null;
-  status: 'pending' | 'booked' | 'expired' | 'cancelled';
-  selected_date: string | null; // ISO 8601 timestamp
-  selected_timezone: string;
+  status: AppointmentStatus;
+  notes: string | null;
   created_at: string;
-  expires_at: string;
   updated_at: string;
-  admin_notes: string | null;
+  // Relations jointes (optionnelles selon la requête)
+  appointment_slots?: AppointmentSlot | null;
+  user_profile?: { full_name: string | null; email: string | null } | null;
 }
 
 export interface CreateAppointmentInput {
-  candidate_email?: string;
-  admin_notes?: string;
+  slot_id: string;
+  notes?: string;
 }
 
 export interface UpdateAppointmentInput {
-  selected_date?: string;
-  selected_timezone?: string;
-  status?: string;
-  admin_notes?: string;
+  status?: AppointmentStatus;
+  notes?: string;
 }
 
 export interface AvailableSlot {

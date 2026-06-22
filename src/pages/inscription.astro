@@ -130,6 +130,22 @@ const nonce = Astro.locals.nonce;
 </style>
 
 <script is:inline nonce={nonce}>
+  // Helpers validation — source de vérité : src/lib/validation.ts
+  var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  var MIN_PASSWORD_LENGTH = 8;
+  var MAX_PASSWORD_LENGTH = 128;
+  function validateEmailClient(value) {
+    if (typeof value !== 'string' || !value.trim()) return 'L’adresse email est requise.';
+    if (!EMAIL_RE.test(value.trim())) return 'Adresse email invalide.';
+    return null;
+  }
+  function validatePasswordClient(value) {
+    if (typeof value !== 'string' || value.length === 0) return 'Le mot de passe est requis.';
+    if (value.length < MIN_PASSWORD_LENGTH) return 'Le mot de passe doit contenir au moins ' + MIN_PASSWORD_LENGTH + ' caractères.';
+    if (value.length > MAX_PASSWORD_LENGTH) return 'Le mot de passe ne peut pas dépasser ' + MAX_PASSWORD_LENGTH + ' caractères.';
+    return null;
+  }
+
   var passInput  = document.getElementById('password');
   var msgEl      = document.getElementById('msg');
   var btn        = document.getElementById('signup-btn');
@@ -181,8 +197,10 @@ const nonce = Astro.locals.nonce;
 
     hideMsg();
     if (!email || !password || !confirm) return showMsg('Veuillez remplir tous les champs.');
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return showMsg('Adresse email invalide.');
-    if (password.length < 8) return showMsg('Le mot de passe doit contenir au moins 8 caractères.');
+    var emailErr = validateEmailClient(email);
+    if (emailErr) return showMsg(emailErr);
+    var passErr = validatePasswordClient(password);
+    if (passErr) return showMsg(passErr);
     if (password !== confirm) return showMsg('Les mots de passe ne correspondent pas.');
 
     setLoading(true);

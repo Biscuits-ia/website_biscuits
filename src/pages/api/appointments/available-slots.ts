@@ -1,27 +1,13 @@
 import type { APIRoute } from 'astro';
 import { createSupabaseClient } from '@/lib/supabase';
 
-export interface AvailableSlotsRequest {
-  date: string; // YYYY-MM-DD
-  timezone?: string;
-  duration_minutes?: number;
-  start_hour?: number;
-  end_hour?: number;
-}
-
-export interface TimeSlot {
-  time: string; // HH:mm
-  available: boolean;
-}
-
 /**
- * GET /api/appointments/available-slots?date=YYYY-MM-DD&timezone=Europe/Paris
- * Retourne les créneaux disponibles pour une date donnée
+ * GET /api/appointments/available-slots?date=YYYY-MM-DD
  *
- * Configuration par défaut:
- * - Créneau: 9h - 18h
- * - Durée: 60 minutes
- * - Interval: 30 minutes
+ * Renvoie les créneaux (`appointment_slots`) réellement disponibles pour une date :
+ *   1. Sélectionne les slots dont `is_available = true` et `start_time` ∈ [date 00:00, date 23:59] UTC.
+ *   2. Exclut ceux qui ont déjà un `volunteer_appointments` actif (`pending` ou `confirmed`).
+ *   3. Mappe vers `HH:mm` (en UTC pour rester aligné sur le `start_time` stocké en timestamptz).
  */
 export const GET: APIRoute = async ({ url, request, cookies }) => {
   try {
@@ -29,88 +15,91 @@ export const GET: APIRoute = async ({ url, request, cookies }) => {
 
     const dateParam = url.searchParams.get('date');
     const timezone = url.searchParams.get('timezone') || 'Europe/Paris';
-    const durationMinutes = parseInt(url.searchParams.get('duration_minutes') || '60');
-    const startHour = parseInt(url.searchParams.get('start_hour') || '9');
-    const endHour = parseInt(url.searchParams.get('end_hour') || '18');
 
     if (!dateParam) {
-      return new Response(
-        JSON.stringify({ error: 'Paramètre "date" requis (format: YYYY-MM-DD)' }),
-        { status: 400, headers: { 'Content-Type': 'application/json' } }
-      );
+      return jsonError('Paramètre "date" requis (format: YYYY-MM-DD)', 400);
     }
-
-    // Valider le format de la date
     if (!/^\d{4}-\d{2}-\d{2}$/.test(dateParam)) {
-      return new Response(
-        JSON.stringify({ error: 'Format de date invalide (utiliser YYYY-MM-DD)' }),
-        { status: 400, headers: { 'Content-Type': 'application/json' } }
-      );
+      return jsonError('Format de date invalide (utiliser YYYY-MM-DD)', 400);
     }
 
-    // Récupérer tous les rendez-vous confirmés pour cette date
-    const dateStart = `${dateParam}T00:00:00Z`;
-    const dateEnd = `${dateParam}T23:59:59Z`;
+    // Bornes de la journée en UTC
+    const dayStart = `${dateParam}T00:00:00Z`;
+    const dayEnd = `${dateParam}T23:59:59.999Z`;
 
-    const { data: bookedSlots, error } = await supabase
+    // 1. Tous les slots dispos de la journée
+    const { data: slots, error: slotsErr } = await supabase
+      .from('appointment_slots')
+      .select('id, start_time, end_time')
+      .eq('is_available', true)
+      .gte('start_time', dayStart)
+      .lte('start_time', dayEnd)
+      .order('start_time', { ascending: true });
+
+    if (slotsErr) {
+      console.error('[available-slots] error fetching slots:', slotsErr);
+      return jsonError('Erreur lors de la récupération des créneaux', 500);
+    }
+
+    if (!slots || slots.length === 0) {
+      return jsonSlots(dateParam, timezone, []);
+    }
+
+    // 2. Slots déjà réservés par un RDV actif (pending|confirmed)
+    const slotIds = slots.map((s) => s.id);
+    const { data: taken, error: takenErr } = await supabase
       .from('volunteer_appointments')
-      .select('selected_date')
-      .eq('status', 'booked')
-      .gte('selected_date', dateStart)
-      .lte('selected_date', dateEnd);
+      .select('slot_id')
+      .in('status', ['pending', 'confirmed'])
+      .in('slot_id', slotIds);
 
-    if (error && error.code !== 'PGRST116') {
-      // PGRST116 = no rows found (normal)
-      console.error('Error fetching booked slots:', error);
-      return new Response(
-        JSON.stringify({ error: 'Erreur lors de la récupération des créneaux' }),
-        { status: 500, headers: { 'Content-Type': 'application/json' } }
-      );
+    if (takenErr) {
+      console.error('[available-slots] error fetching taken slots:', takenErr);
+      return jsonError('Erreur lors de la récupération des créneaux', 500);
     }
 
-    // Convertir les rendez-vous confirmés en timestamps
-    const bookedTimes = new Set(
-      (bookedSlots || []).map((slot) => {
-        if (!slot.selected_date) return null;
-        const date = new Date(slot.selected_date);
-        return date.getTime();
-      })
-    );
-    bookedTimes.delete(null);
+    const takenIds = new Set((taken ?? []).map((t) => t.slot_id).filter(Boolean));
 
-    // Générer les créneaux disponibles
-    const slots: TimeSlot[] = [];
+    // 3. Formate en HH:mm (UTC, cohérent avec le timestamptz BDD)
+    const availableSlots = slots
+      .filter((s) => !takenIds.has(s.id))
+      .map((s) => ({
+        id: s.id,
+        time: toHHmm(s.start_time),
+        start_time: s.start_time,
+        end_time: s.end_time,
+        available: true as const,
+      }));
 
-    for (let hour = startHour; hour < endHour; hour++) {
-      for (let minute = 0; minute < 60; minute += 30) {
-        const timeStr = `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
-        const slotDateTime = new Date(`${dateParam}T${timeStr}:00.000Z`);
-        const slotTime = slotDateTime.getTime();
-
-        // Vérifier si ce créneau est réservé
-        const isBooked = bookedTimes.has(slotTime);
-
-        slots.push({
-          time: timeStr,
-          available: !isBooked,
-        });
-      }
-    }
-
-    return new Response(
-      JSON.stringify({
-        date: dateParam,
-        timezone,
-        slots,
-        available_count: slots.filter((s) => s.available).length,
-      }),
-      { status: 200, headers: { 'Content-Type': 'application/json' } }
-    );
+    return jsonSlots(dateParam, timezone, availableSlots);
   } catch (err) {
-    console.error('Error fetching available slots:', err);
-    return new Response(
-      JSON.stringify({ error: 'Internal server error' }),
-      { status: 500, headers: { 'Content-Type': 'application/json' } }
-    );
+    console.error('[available-slots] unexpected error:', err);
+    return jsonError('Erreur interne du serveur', 500);
   }
 };
+
+function toHHmm(iso: string): string {
+  const d = new Date(iso);
+  const hh = String(d.getUTCHours()).padStart(2, '0');
+  const mm = String(d.getUTCMinutes()).padStart(2, '0');
+  return `${hh}:${mm}`;
+}
+
+function jsonSlots(date: string, timezone: string, slots: Array<Record<string, unknown>>) {
+  return new Response(
+    JSON.stringify({
+      date,
+      timezone,
+      slots,
+      available_count: slots.length,
+    }),
+    { status: 200, headers: { 'Content-Type': 'application/json' } },
+  );
+}
+
+function jsonError(message: string, status: number) {
+  return new Response(JSON.stringify({ error: message }), {
+    status,
+    headers: { 'Content-Type': 'application/json' },
+  });
+}

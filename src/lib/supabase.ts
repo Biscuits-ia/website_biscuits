@@ -1,7 +1,6 @@
 // src/lib/supabase.ts
 import { createServerClient, parseCookieHeader } from '@supabase/ssr';
 import { createClient } from '@supabase/supabase-js';
-import type { AppSupabaseClient, Database } from './types';
 
 export function createSupabaseClient(context: { request: Request; cookies: any }) {
   return createServerClient(
@@ -24,8 +23,10 @@ export function createSupabaseClient(context: { request: Request; cookies: any }
               secure: import.meta.env.PROD,
               sameSite: 'lax',
               path: '/',
-              // Ensure cookies persist across subdomains if needed
-              domain: import.meta.env.PROD ? '.biscuits-ia.com' : undefined,
+              // SECURITY: pas de `domain` → cookie limité à l'hôte exact.
+              // Avant : `domain: '.biscuits-ia.com'` partageait le cookie
+              // d'auth avec TOUS les sous-domaines → si un sous-domaine
+              // était compromis, hijack de session possible. Cf. AUDIT §3.
             });
           }
         },
@@ -73,8 +74,8 @@ function resolvePublicSupabaseAnonKey(): string {
   return import.meta.env.PUBLIC_SUPABASE_ANON_KEY || import.meta.env.SUPABASE_ANON_KEY;
 }
 
-export function createServerSupabaseClient(context: { request: Request; cookies: any }): AppSupabaseClient {
-  return createServerClient<Database>(
+export function createServerSupabaseClient(context: { request: Request; cookies: any }) {
+  return createServerClient(
     resolvePublicSupabaseUrl(),
     resolvePublicSupabaseAnonKey(),
     {
@@ -101,13 +102,13 @@ export function createServerSupabaseClient(context: { request: Request; cookies:
         detectSessionInUrl: false,
       },
     },
-  ) as AppSupabaseClient;
+  );
 }
 
-let browserClient: AppSupabaseClient | null = null;
+let browserClient: ReturnType<typeof createClient> | null = null;
 
-export function createBrowserSupabaseClient(): AppSupabaseClient {
-  browserClient ??= createClient<Database>(
+export function createBrowserSupabaseClient() {
+  browserClient ??= createClient(
     resolvePublicSupabaseUrl(),
     resolvePublicSupabaseAnonKey(),
     { auth: { persistSession: true, autoRefreshToken: true } },

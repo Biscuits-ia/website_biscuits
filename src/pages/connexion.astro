@@ -154,12 +154,13 @@ const nonce = Astro.locals.nonce;
 </style>
 
 <script is:inline nonce={nonce}>
-  const emailInput = document.getElementById('email');
-  const passInput  = document.getElementById('password');
-  const msgEl      = document.getElementById('msg');
-  const btn        = document.getElementById('login-btn');
-  const btnText    = document.getElementById('btn-text');
-  const btnLoader  = document.getElementById('btn-loader');
+  const emailInput  = document.getElementById('email');
+  const passInput   = document.getElementById('password');
+  const rememberEl  = document.getElementById('remember-me');
+  const msgEl       = document.getElementById('msg');
+  const btn         = document.getElementById('login-btn');
+  const btnText     = document.getElementById('btn-text');
+  const btnLoader   = document.getElementById('btn-loader');
 
   function showMsg(text, type) {
     if (type === undefined) type = 'error';
@@ -190,7 +191,7 @@ const nonce = Astro.locals.nonce;
   async function handleLogin() {
     const email    = emailInput.value.trim();
     const password = passInput.value;
-    const remember = (document.getElementById('remember-me') as HTMLInputElement).checked;
+    const remember = rememberEl instanceof HTMLInputElement ? rememberEl.checked : false;
 
     hideMsg();
     if (!email && !password) return showMsg('Veuillez remplir tous les champs.');
@@ -233,7 +234,7 @@ const nonce = Astro.locals.nonce;
   const remembered = localStorage.getItem('rememberedEmail');
   if (remembered) {
     emailInput.value = remembered;
-    (document.getElementById('remember-me') as HTMLInputElement).checked = true;
+    if (rememberEl instanceof HTMLInputElement) rememberEl.checked = true;
   }
 
   [emailInput, passInput].forEach(function(el) {

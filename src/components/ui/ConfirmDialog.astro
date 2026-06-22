@@ -1,0 +1,146 @@
+---
+// src/components/ui/ConfirmDialog.astro
+// Modale de confirmation réutilisable basée sur <dialog> HTML5 natif.
+// Expose `window.showConfirm({...}) → Promise<boolean>`.
+//
+// Avantages vs window.confirm() natif :
+//   - stylable (le natif est moche et bloquant côté UX)
+//   - fonctionne sur mobile (le natif est cassé sur iOS Safari)
+//   - accessibilité ARIA + focus trap + ESC gérés gratuitement par le navigateur
+//
+// À monter UNE fois globalement dans le layout (DashboardLayout.astro).
+---
+
+<dialog id="confirm-dialog" class="confirm-dialog" aria-labelledby="confirm-dialog-title">
+  <form method="dialog" class="confirm-form">
+    <h3 id="confirm-dialog-title" class="confirm-title"></h3>
+    <p class="confirm-message"></p>
+    <div class="confirm-actions">
+      <button type="button" class="btn btn-ghost confirm-cancel" value="cancel"></button>
+      <button type="button" class="btn btn-primary confirm-ok" value="ok"></button>
+    </div>
+  </form>
+</dialog>
+
+<style>
+  .confirm-dialog {
+    border: 2px solid #000;
+    border-radius: 8px;
+    padding: 0;
+    background: #FDFAF4;
+    color: #2C2014;
+    max-width: 420px;
+    width: 90vw;
+    box-shadow: 6px 6px 0 #000;
+  }
+  .confirm-dialog::backdrop {
+    background: rgba(44, 32, 20, 0.55);
+  }
+  .confirm-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 24px;
+  }
+  .confirm-title {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 700;
+    font-family: 'Geist', sans-serif;
+  }
+  .confirm-message {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.5;
+    color: #372c1f;
+  }
+  .confirm-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+  }
+  .confirm-actions .btn {
+    font-family: 'Geist', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    border: 2px solid #000;
+    transition: transform 0.05s ease;
+  }
+  .confirm-actions .btn:hover { transform: translate(-1px, -1px); }
+  .confirm-actions .btn:active { transform: translate(0, 0); }
+  .confirm-actions .btn-ghost {
+    background: #fff;
+    color: #2C2014;
+  }
+  .confirm-actions .btn-primary {
+    background: oklch(53.958% 0.10717 58.243);
+    color: #FDFAF4;
+  }
+  .confirm-actions .btn-danger {
+    background: #E24B4A;
+    color: #fff;
+  }
+</style>
+
+<script is:inline>
+  (() => {
+    const dlg       = document.getElementById('confirm-dialog');
+    if (!dlg || dlg.dataset.bound === '1') return;
+    dlg.dataset.bound = '1';
+
+    const titleEl   = dlg.querySelector('.confirm-title');
+    const msgEl     = dlg.querySelector('.confirm-message');
+    const okBtn     = dlg.querySelector('.confirm-ok');
+    const cancelBtn = dlg.querySelector('.confirm-cancel');
+
+    /**
+     * Affiche la modale et retourne une Promise résolue par true (confirmer)
+     * ou false (annuler / ESC / clic backdrop).
+     *
+     * @param {object} opts
+     * @param {string} opts.title         Titre (obligatoire)
+     * @param {string} opts.message       Message (obligatoire)
+     * @param {string} [opts.confirmLabel='Confirmer']
+     * @param {string} [opts.cancelLabel='Annuler']
+     * @param {boolean} [opts.danger=false]  Style "danger" pour le bouton OK
+     * @returns {Promise<boolean>}
+     */
+    window.showConfirm = function(opts) {
+      return new Promise((resolve) => {
+        const o = opts || {};
+        titleEl.textContent   = o.title || '';
+        msgEl.textContent     = o.message || '';
+        okBtn.textContent     = o.confirmLabel || 'Confirmer';
+        cancelBtn.textContent = o.cancelLabel || 'Annuler';
+        okBtn.classList.toggle('btn-danger', !!o.danger);
+        okBtn.classList.toggle('btn-primary', !o.danger);
+
+        let settled = false;
+        const cleanup = (val) => {
+          if (settled) return;
+          settled = true;
+          okBtn.removeEventListener('click', onOk);
+          cancelBtn.removeEventListener('click', onCancel);
+          dlg.removeEventListener('close', onClose);
+          dlg.close();
+          resolve(val);
+        };
+        const onOk     = () => cleanup(true);
+        const onCancel = () => cleanup(false);
+        // Si l'utilisateur ferme via ESC ou via form method="dialog",
+        // l'event 'close' se déclenche. À ce moment, dialog.returnValue
+        // contient la value du bouton cliqué ('' si ESC).
+        const onClose  = () => cleanup(dlg.returnValue === 'ok');
+
+        okBtn.addEventListener('click', onOk);
+        cancelBtn.addEventListener('click', onCancel);
+        dlg.addEventListener('close', onClose, { once: true });
+
+        dlg.showModal();
+      });
+    };
+  })();
+</script>

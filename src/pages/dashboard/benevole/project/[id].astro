@@ -33,8 +33,8 @@ const [
     .eq('id', projectId)
     .single(),
   adminSupabase
-    .from('tasks')
-    .select('id, reference, title, description, status, priority, due_date, reporter_id, assignee_id, corps, task_type')
+    .from('project_tasks')
+    .select('id, title, description, status, priority, deadline, created_by, assignee_id')
     .eq('project_id', projectId)
     .order('updated_at', { ascending: false }),
   adminSupabase
@@ -58,10 +58,14 @@ interface Project {
   created_at: string; leader_id: string | null;
 }
 interface Task {
-  id: string; title: string; description: string | null;
-  status: string; priority: string; due_date: string | null;
-  reference: string | null; reporter_id: string; assignee_id: string | null;
-  corps: string | null; task_type: string | null;
+  id: string;
+  title: string;
+  description: string | null;
+  status: 'todo' | 'in_progress' | 'review' | 'done';
+  priority: 'low' | 'medium' | 'high';
+  deadline: string | null;
+  created_by: string;
+  assignee_id: string | null;
 }
 interface Member { user_id: string; }
 
@@ -98,27 +102,17 @@ const columns = [
 const tasksByStatus: Record<string, Task[]> = {};
 for (const col of columns) tasksByStatus[col.key] = [];
 for (const t of tasks) {
-  const colKey = toProjectStatus(t.status);
+  // project_tasks.status est déjà aligné sur les 4 colonnes kanban
+  const colKey = columns.some((c) => c.key === t.status) ? t.status : 'todo';
   tasksByStatus[colKey].push(t);
 }
 
 const priorityClass: Record<string, string> = {
-  P0: 'err', P1: 'err', P2: 'info', P3: 'neutral',
   low: 'neutral', medium: 'info', high: 'err',
 };
 const priorityLabel: Record<string, string> = {
-  P0: 'Critique', P1: 'Haute', P2: 'Normale', P3: 'Basse',
   low: 'Faible', medium: 'Moyenne', high: 'Haute',
 };
-
-// Mapping statuts Task Hub → colonnes projet (4 colonnes)
-// backlog/todo → todo | in_progress → in_progress | in_review/testing → review | blocked → todo | done → done
-function toProjectStatus(s: string): string {
-  if (s === 'in_progress') return 'in_progress';
-  if (s === 'in_review' || s === 'testing') return 'review';
-  if (s === 'done') return 'done';
-  return 'todo'; // backlog, todo, blocked
-}
 const statusLabel:   Record<string, string> = {
   active: 'Actif', on_hold: 'En pause', completed: 'Terminé', archived: 'Archivé',
 };
@@ -264,6 +258,75 @@ const memberOptionsJson = JSON.stringify(memberOptions);
     </div>
   </div>
 
+  <!-- Kanban -->
+  <div class="kanban" id="kanban-board">
+    {columns.map((col) => (
+      <div class={`kanban-col kanban-col--${col.cls}`} data-status={col.key}>
+        <div class="kanban-col-header">
+          <span class="kanban-col-label">{col.label}</span>
+          <span class="kanban-col-count">{(tasksByStatus[col.key] ?? []).length}</span>
+        </div>
+        <div class="kanban-cards" data-status={col.key}>
+          {(tasksByStatus[col.key] ?? []).map((t) => {
+            const assignee = t.assignee_id ? (profileMap[t.assignee_id] ?? null) : null;
+            const assigneeName = assignee?.full_name ?? assignee?.email ?? null;
+            const isMine = t.assignee_id === userId;
+            const isCreator = t.created_by === userId;
+            const canDelete = isCreator || isStaff;
+            return (
+              <div
+                class={`task-card${isMine ? ' task-card--mine' : ''}`}
+                draggable="true"
+                tabindex="0"
+                data-task-id={t.id}
+                data-status={t.status}
+                data-title={t.title}
+                data-description={t.description ?? ''}
+                data-priority={t.priority}
+                data-deadline={t.deadline ?? ''}
+                data-assignee-name={assigneeName ?? ''}
+              >
+                <div class="task-card-title">{t.title}</div>
+                {t.description && <div class="task-card-desc">{t.description}</div>}
+                <div class="task-card-footer">
+                  <span class={`badge badge-${priorityClass[t.priority] ?? 'neutral'}`}>
+                    {priorityLabel[t.priority] ?? t.priority}
+                  </span>
+                  {t.deadline && (
+                    <span class="task-deadline">📅 {new Date(t.deadline).toLocaleDateString('fr-FR')}</span>
+                  )}
+                  {assigneeName ? (
+                    <span class="task-assignee">👤 {assigneeName}</span>
+                  ) : (
+                    <span class="task-assignee task-assignee--free">Libre</span>
+                  )}
+                  <span class="task-comments-count" data-task-id={t.id}>💬 …</span>
+                </div>
+                <div class="task-card-actions">
+                  {!t.assignee_id && (isMember || isStaff) && (
+                    <button class="btn-claim-task" data-id={t.id}>✋ Je prends</button>
+                  )}
+                  {t.assignee_id === userId && (
+                    <button class="btn-unclaim-task" data-id={t.id}>Libérer</button>
+                  )}
+                  {canDelete && (
+                    <button class="btn-icon btn-delete-task" data-id={t.id} aria-label="Supprimer">🗑</button>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+          {canEdit && (tasksByStatus[col.key] ?? []).length === 0 && (
+            <button class="btn-add-col-task" data-target-status={col.key}>+ Tâche</button>
+          )}
+          {canEdit && (tasksByStatus[col.key] ?? []).length > 0 && (
+            <button class="btn-add-col-task" data-target-status={col.key}>+ Tâche</button>
+          )}
+        </div>
+      </div>
+    ))}
+  </div>
+
   <!-- Modal : Modifier projet -->
   {canEdit && (
     <dialog id="modal-edit-project" class="modal">
@@ -342,6 +405,54 @@ const memberOptionsJson = JSON.stringify(memberOptions);
           <div class="modal-actions">
             <button type="button" class="btn btn-ghost" id="btn-close-edit-modal">Annuler</button>
             <button type="submit" class="btn btn-primary">Enregistrer</button>
+          </div>
+        </form>
+      </div>
+    </dialog>
+  )}
+
+  <!-- Modal : Créer tâche (rapide depuis le Kanban) -->
+  {canEdit && (
+    <dialog id="modal-add-task" class="modal">
+      <div class="modal-box">
+        <h2 class="modal-title">Nouvelle tâche</h2>
+        <form id="form-add-task" class="form-stack">
+          <input type="hidden" id="at-project-id" value={projectId} />
+          <input type="hidden" id="at-status" value="todo" />
+          <div class="field">
+            <label class="label" for="at-title">Titre *</label>
+            <input type="text" id="at-title" name="title" required class="input" maxlength="200" />
+          </div>
+          <div class="field">
+            <label class="label" for="at-desc">Description</label>
+            <textarea id="at-desc" name="description" class="input" rows="3" maxlength="1000"></textarea>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label class="label" for="at-priority">Priorité</label>
+              <select id="at-priority" name="priority" class="input">
+                <option value="low">Faible</option>
+                <option value="medium" selected>Moyenne</option>
+                <option value="high">Haute</option>
+              </select>
+            </div>
+            <div class="field">
+              <label class="label" for="at-deadline">Échéance</label>
+              <input type="date" id="at-deadline" name="deadline" class="input" />
+            </div>
+          </div>
+          <div class="field">
+            <label class="label" for="at-assignee">Assigné à</label>
+            <select id="at-assignee" name="assignee_id" class="input">
+              <option value="">— Libre —</option>
+              {memberOptions.map((m) => (
+                <option value={m.id}>{m.name}</option>
+              ))}
+            </select>
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="btn btn-ghost" id="btn-close-add-task">Annuler</button>
+            <button type="submit" class="btn btn-primary">Créer</button>
           </div>
         </form>
       </div>
@@ -762,6 +873,73 @@ const memberOptionsJson = JSON.stringify(memberOptions);
       if (res.ok) window.location.reload();
       else alert('Erreur lors de la libération.');
     });
+  });
+
+  /* ── Créer tâche (modale) ─────────────────────────────────────────────────── */
+  const modalAddTask = document.getElementById('modal-add-task');
+  const atStatusInput = document.getElementById('at-status');
+  const formAddTask = document.getElementById('form-add-task');
+
+  function openAddTaskModal(defaultStatus = 'todo') {
+    if (!(modalAddTask instanceof HTMLDialogElement)) return;
+    if (atStatusInput instanceof HTMLInputElement) atStatusInput.value = defaultStatus;
+    const titleInput = document.getElementById('at-title');
+    if (titleInput instanceof HTMLInputElement) {
+      titleInput.value = '';
+      modalAddTask.showModal();
+      titleInput.focus();
+    } else {
+      modalAddTask.showModal();
+    }
+  }
+
+  document.getElementById('btn-add-task')?.addEventListener('click', () => openAddTaskModal('todo'));
+  document.querySelectorAll('.btn-add-col-task').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const status = btn.getAttribute('data-target-status') ?? 'todo';
+      openAddTaskModal(status);
+    });
+  });
+  document.getElementById('btn-close-add-task')?.addEventListener('click', () => {
+    if (modalAddTask instanceof HTMLDialogElement) modalAddTask.close();
+  });
+
+  formAddTask?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!(formAddTask instanceof HTMLFormElement)) return;
+    const fd = new FormData(formAddTask);
+    const body = {
+      project_id:  fd.get('project_id') ?? projectId,
+      title:       String(fd.get('title') ?? '').trim(),
+      description: String(fd.get('description') ?? '').trim() || null,
+      priority:    String(fd.get('priority') ?? 'medium'),
+      status:      String(fd.get('status') ?? 'todo'),
+      deadline:    String(fd.get('deadline') ?? '') || null,
+      assignee_id: String(fd.get('assignee_id') ?? '') || null,
+    };
+    if (!body.title) {
+      alert('Le titre est requis.');
+      return;
+    }
+    const submitBtn = formAddTask.querySelector('button[type="submit"]');
+    if (submitBtn instanceof HTMLButtonElement) submitBtn.disabled = true;
+    try {
+      const res = await fetch('/api/benevole/tasks', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      if (res.ok) {
+        window.location.reload();
+      } else {
+        const err = await res.json().catch(() => ({}));
+        alert('Erreur : ' + (err.error ?? 'Impossible de créer la tâche.'));
+        if (submitBtn instanceof HTMLButtonElement) submitBtn.disabled = false;
+      }
+    } catch {
+      if (submitBtn instanceof HTMLButtonElement) submitBtn.disabled = false;
+      alert('Erreur réseau.');
+    }
   });
 
   /* ── Supprimer tâche ──────────────────────────────────────────────────────── */

@@ -19,8 +19,15 @@ export async function deleteUserFromSupabase(userId: string): Promise<boolean> {
 }
 
 import { createSupabaseClient, createSupabaseAdminClient } from './supabase';
-import type { AstroGlobal } from 'astro';
+import type { AstroGlobal, APIContext } from 'astro';
 import type { SupabaseClient, User, Session } from '@supabase/supabase-js';
+
+// `AstroGlobal` (contexte d'une page .astro) et `APIContext` (contexte d'une
+// route API) exposent la même surface utilisée par les guards ci-dessous
+// (`locals`, `request`, `cookies`, `redirect`). En acceptant l'union des deux,
+// on supprime le besoin de caster en `as any` / `as unknown as AstroGlobal`
+// dans les 18+ call-sites.
+type AuthContext = AstroGlobal | APIContext;
 
 // ── stopBeingBenevole : enlève le rôle bénévole à un utilisateur ─────────────
 /**
@@ -118,7 +125,7 @@ export async function createAssociation(
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
-export type UserRole = 'user' | 'moderator' | 'admin' | 'benevole' | 'data_analyst' | 'association';
+export type UserRole = 'user' | 'moderator' | 'admin' | 'benevole' | 'association';
 
 export interface AuthResult {
   user:     User;
@@ -127,14 +134,10 @@ export interface AuthResult {
   role:     UserRole;
 }
 
-export function canAccessAnalytics(role: UserRole | null | undefined): role is 'admin' | 'data_analyst' {
-  return role === 'admin' || role === 'data_analyst';
-}
-
 // ── Type guard ────────────────────────────────────────────────────────────────
 
 function isUserRole(value: unknown): value is UserRole {
-  return value === 'user' || value === 'moderator' || value === 'admin' || value === 'benevole' || value === 'data_analyst' || value === 'association';
+  return value === 'user' || value === 'moderator' || value === 'admin' || value === 'benevole' || value === 'association';
 }
 
 // ── Helper interne : fetch du rôle via le service role (bypass RLS) ───────────
@@ -172,7 +175,7 @@ export async function fetchRoleSecure(userId: string): Promise<UserRole | null> 
  *   locale du token) — résistant au token forgé.
  * - Le rôle est lu via le client service_role, insensible aux RLS policies.
  */
-export async function requireAuth(Astro: AstroGlobal): Promise<AuthResult | Response> {
+export async function requireAuth(Astro: AuthContext): Promise<AuthResult | Response> {
   // Réutiliser le client stocké par le middleware (même instance = même session
   // en mémoire, avec le token rafraîchi si nécessaire), sinon en créer un.
   const supabase = Astro.locals.supabase ?? createSupabaseClient(Astro);
@@ -202,7 +205,7 @@ export async function requireAuth(Astro: AstroGlobal): Promise<AuthResult | Resp
  * - Pas de lecture du rôle depuis le JWT (claims) : un JWT avec un claim
  *   `role: admin` forgé ne passe pas, seule la BDD fait foi.
  */
-export async function requireAdmin(Astro: AstroGlobal): Promise<AuthResult | Response> {
+export async function requireAdmin(Astro: AuthContext): Promise<AuthResult | Response> {
   const supabase = Astro.locals.supabase ?? createSupabaseClient(Astro);
 
   const { data: { user }, error } = await supabase.auth.getUser();
@@ -230,7 +233,7 @@ export async function requireAdmin(Astro: AstroGlobal): Promise<AuthResult | Res
 /**
  * Vérifie que l'utilisateur est connecté ET a le rôle `moderator` ou `admin`.
  */
-export async function requireModerator(Astro: AstroGlobal): Promise<AuthResult | Response> {
+export async function requireModerator(Astro: AuthContext): Promise<AuthResult | Response> {
   const supabase = Astro.locals.supabase ?? createSupabaseClient(Astro);
 
   const { data: { user }, error } = await supabase.auth.getUser();
@@ -256,7 +259,7 @@ export async function requireModerator(Astro: AstroGlobal): Promise<AuthResult |
  * Vérifie que l'utilisateur est connecté ET a le rôle `benevole`, `moderator` ou `admin`.
  * Retourne un AuthResult ou une Response de redirection.
  */
-export async function requireBenevole(Astro: AstroGlobal): Promise<AuthResult | Response> {
+export async function requireBenevole(Astro: AuthContext): Promise<AuthResult | Response> {
   const supabase = Astro.locals.supabase ?? createSupabaseClient(Astro);
 
   const { data: { user }, error } = await supabase.auth.getUser();
@@ -282,7 +285,7 @@ export async function requireBenevole(Astro: AstroGlobal): Promise<AuthResult | 
  * Vérifie que l'utilisateur est connecté ET a le rôle `association`, `admin` ou `moderator`.
  * Retourne un AuthResult ou une Response de redirection.
  */
-export async function requireAssociation(Astro: AstroGlobal): Promise<AuthResult | Response> {
+export async function requireAssociation(Astro: AuthContext): Promise<AuthResult | Response> {
   const supabase = Astro.locals.supabase ?? createSupabaseClient(Astro);
 
   const { data: { user }, error } = await supabase.auth.getUser();
@@ -302,28 +305,49 @@ export async function requireAssociation(Astro: AstroGlobal): Promise<AuthResult
   return { user, session, supabase, role };
 }
 
-// ── requireDataAnalyst ───────────────────────────────────────────────────────
+// ── requireAppointmentOwner ───────────────────────────────────────────────────
+
+import type { VolunteerAppointment } from '@/types/appointments';
 
 /**
- * Vérifie que l'utilisateur est connecté ET a le rôle `data_analyst` ou `admin`.
- * Retourne un AuthResult ou une Response de redirection.
+ * Vérifie que `apptId` existe et que le caller est autorisé à le manipuler :
+ *   - admin / moderator → tous les RDV ;
+ *   - user             → uniquement les RDV dont il est `user_id`.
+ *
+ * Retourne un discriminated union :
+ *   - { ok: true,  appointment } → autorisé, ligne chargée ;
+ *   - { ok: false, status: 404 } → RDV introuvable ;
+ *   - { ok: false, status: 403 } → RDV trouvé mais caller non propriétaire.
+ *
+ * Pattern identique aux autres guards (`requireAuth`, `requireAdmin`).
  */
-export async function requireDataAnalyst(Astro: AstroGlobal): Promise<AuthResult | Response> {
-  const supabase = Astro.locals.supabase ?? createSupabaseClient(Astro);
+export async function requireAppointmentOwner(
+  supabase: SupabaseClient,
+  apptId: string,
+  userId: string,
+  isAdminOrModerator: boolean,
+): Promise<
+  | { ok: true; appointment: VolunteerAppointment }
+  | { ok: false; status: 404 | 403 }
+> {
+  const { data, error } = await supabase
+    .from('volunteer_appointments')
+    .select('*')
+    .eq('id', apptId)
+    .maybeSingle();
 
-  const { data: { user }, error } = await supabase.auth.getUser();
-
-  if (error || !user) {
-    return Astro.redirect('/connexion');
+  if (error) {
+    console.error('[requireAppointmentOwner] select error:', error.message);
+    return { ok: false, status: 404 };
   }
 
-  const role = await fetchRoleSecure(user.id);
-
-  if (!canAccessAnalytics(role)) {
-    return Astro.redirect('/dashboard/user');
+  if (!data) {
+    return { ok: false, status: 404 };
   }
 
-  const { data: { session } } = await supabase.auth.getSession();
+  if (!isAdminOrModerator && data.user_id !== userId) {
+    return { ok: false, status: 403 };
+  }
 
-  return { user, session, supabase, role };
+  return { ok: true, appointment: data as VolunteerAppointment };
 }

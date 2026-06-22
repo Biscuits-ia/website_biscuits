@@ -1,5 +1,6 @@
 import type { APIRoute } from 'astro';
 import { createSupabaseClient } from '@/lib/supabase';
+import { EMAIL_RE, MAX_EMAIL, MAX_NAME } from '@/lib/validation';
 
 export const POST: APIRoute = async ({ request, cookies }) => {
   try {
@@ -29,9 +30,24 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     }
 
     // Valider l'email si fourni
-    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    if (email) {
+      if (email.length > MAX_EMAIL) {
+        return new Response(
+          JSON.stringify({ error: `L'email ne peut pas dépasser ${MAX_EMAIL} caractères.` }),
+          { status: 400, headers: { 'Content-Type': 'application/json' } },
+        );
+      }
+      if (!EMAIL_RE.test(email)) {
+        return new Response(
+          JSON.stringify({ error: 'Adresse email invalide.' }),
+          { status: 400, headers: { 'Content-Type': 'application/json' } },
+        );
+      }
+    }
+
+    if (full_name && full_name.length > MAX_NAME) {
       return new Response(
-        JSON.stringify({ error: 'Adresse email invalide.' }),
+        JSON.stringify({ error: `Le nom ne peut pas dépasser ${MAX_NAME} caractères.` }),
         { status: 400, headers: { 'Content-Type': 'application/json' } },
       );
     }
@@ -55,11 +71,13 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     let emailError = null;
     if (email && email !== user.email) {
       // Vérifier si l'email est déjà utilisé
+      // NOTE: postgrest-js >= 1.x : `.eq()` ne prend que 2 args (column, value).
+      // Pour exclure l'utilisateur courant on utilise `.neq('id', user.id)`.
       const { data: existingUser } = await supabase
         .from('users')
         .select('id')
         .eq('email', email)
-        .eq('id', '!=', user.id)
+        .neq('id', user.id)
         .maybeSingle();
 
       if (existingUser) {

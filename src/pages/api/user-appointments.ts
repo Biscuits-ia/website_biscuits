@@ -68,14 +68,14 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       );
     }
 
-    // Vérifier que l'utilisateur n'a pas déjà réservé ce créneau
+    // Vérifier que l'utilisateur n'a pas déjà réservé ce créneau (pending OU confirmed)
     const { data: existing } = await supabase
       .from('volunteer_appointments')
-      .select('*')
+      .select('id, status')
       .eq('slot_id', slot_id)
       .eq('user_id', user.id)
-      .eq('status', 'confirmed')
-      .single();
+      .in('status', ['pending', 'confirmed'])
+      .maybeSingle();
 
     if (existing) {
       return new Response(
@@ -84,28 +84,55 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       );
     }
 
-    // Créer la réservation
-    const { data: appointment, error: appointmentError } = await supabase
+    // Anti-double-booking serveur : aucun autre user n'a un RDV actif sur ce slot
+    const { data: conflict } = await supabase
       .from('volunteer_appointments')
-      .insert([
-        {
+      .select('id')
+      .eq('slot_id', slot_id)
+      .in('status', ['pending', 'confirmed'])
+      .neq('user_id', user.id)
+      .maybeSingle();
+
+    if (conflict) {
+      return new Response(
+        JSON.stringify({ error: 'Ce créneau vient d\'être réservé par quelqu\'un d\'autre.' }),
+        { status: 409 }
+      );
+    }
+
+    // Créer la réservation. Le partial unique index `uniq_active_appointment_per_slot`
+    // (cf. migration.sql) protège contre la race condition si deux POST concurrents
+    // passent les deux checks ci-dessus en même temps : on récupère alors un code 23505.
+    try {
+      const { data: appointment, error: appointmentError } = await supabase
+        .from('volunteer_appointments')
+        .insert({
           slot_id,
           user_id: user.id,
           status: 'pending',
-          notes: body.notes || null,
-        },
-      ])
-      .select()
-      .single();
+          notes: typeof body.notes === 'string' && body.notes.trim() ? body.notes.trim() : null,
+        })
+        .select()
+        .single();
 
-    if (appointmentError) throw appointmentError;
+      if (appointmentError) throw appointmentError;
 
-    return new Response(JSON.stringify(appointment), {
-      status: 201,
-      headers: { 'Content-Type': 'application/json' },
-    });
+      return new Response(JSON.stringify(appointment), {
+        status: 201,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    } catch (err: unknown) {
+      // Erreur Postgres "unique_violation" = 23505 (race post-checks)
+      if (typeof err === 'object' && err !== null && 'code' in err && (err as { code?: string }).code === '23505') {
+        return new Response(
+          JSON.stringify({ error: 'Ce créneau vient d\'être réservé par quelqu\'un d\'autre.' }),
+          { status: 409, headers: { 'Content-Type': 'application/json' } }
+        );
+      }
+      throw err;
+    }
   } catch (err) {
-    console.error('Erreur:', err);
+    console.error('[user-appointments POST] error:', err);
     return new Response(JSON.stringify({ error: 'Erreur' }), { status: 500 });
   }
 };

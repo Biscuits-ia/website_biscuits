@@ -1,5 +1,6 @@
 import type { APIRoute } from 'astro';
 import { createSupabaseClient } from '@/lib/supabase';
+import { validatePassword } from '@/lib/validation';
 
 export const POST: APIRoute = async ({ request, cookies, locals }) => {
   const formData = await request.formData();
@@ -12,9 +13,10 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
     );
   }
 
-  if (password.length < 8) {
+  const passwordError = validatePassword(password);
+  if (passwordError) {
     return new Response(
-      JSON.stringify({ error: 'Le mot de passe doit contenir au moins 8 caractères.' }),
+      JSON.stringify({ error: passwordError }),
       { status: 400, headers: { 'Content-Type': 'application/json' } },
     );
   }

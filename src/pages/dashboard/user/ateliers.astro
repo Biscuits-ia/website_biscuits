@@ -2,12 +2,11 @@
 // src/pages/dashboard/user/ateliers.astro
 import DashboardLayout from '../../../layouts/DashboardLayout.astro';
 import { requireAuth }  from '../../../lib/auth';
-import type { AstroGlobal } from 'astro';
 // Fragment est disponible globalement dans les templates Astro v3+ — pas d'import nécessaire.
 import type { WorkshopSessionWithSeats } from '../../../types/ateliers';
 import { formatDateLong, formatTimeRange } from '../../../types/ateliers';
 
-const result = await requireAuth(Astro as unknown as AstroGlobal);
+const result = await requireAuth(Astro);
 if (result instanceof Response) return result;
 
 const { user, supabase } = result;
@@ -108,7 +107,7 @@ const hasUpcoming = upcomingRows.length !== 0;
 const hasPast     = pastRows.length !== 0;
 ---
 
-<DashboardLayout title="Ateliers" role="user" activePage="ateliers" userName={userName} userEmail={userEmail} authResult={result}>
+<DashboardLayout title="Ateliers" activePage="ateliers" userName={userName} userEmail={userEmail} authResult={result}>
 
   <div class="mb-7">
     <h1 class="text-xl font-bold tracking-tight text-primary">

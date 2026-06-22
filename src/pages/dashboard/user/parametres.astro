@@ -1,7 +1,6 @@
 ---
 import DashboardLayout from '../../../layouts/DashboardLayout.astro';
 import { requireAuth, deleteUserFromSupabase, stopBeingBenevole } from '../../../lib/auth';
-import { Astro } from 'astro';
 
 let actionMessage = '';
 const authResult = await requireAuth(Astro);

@@ -51,7 +51,7 @@ const allRows: ResourceRow[] = resources.map((r: Resource): ResourceRow => ({
   icon:      fileIcon(r.file_type),
   typeLabel: fileTypeLabel(r.file_type),
   sizeLabel: formatFileSize(r.file_size),
-  href:      `/api/resources/telecharger?id=${r.id}`,
+  href:      `/api/admin/resources/telecharger?id=${r.id}`,
 }));
 
 // Groupe par catégorie en respectant l'ordre de RESOURCE_CATEGORIES

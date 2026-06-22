@@ -112,6 +112,7 @@ const nonce = Astro.locals.nonce;
 </style>
 
 <script is:inline nonce={nonce}>
+  const emailEl   = document.getElementById('email');
   const msgEl     = document.getElementById('msg');
   const btn       = document.getElementById('reset-btn');
   const btnText   = document.getElementById('btn-text');
@@ -131,7 +132,7 @@ const nonce = Astro.locals.nonce;
   }
 
   async function handleReset() {
-    const email = (document.getElementById('email') as HTMLInputElement).value.trim();
+    const email = emailEl instanceof HTMLInputElement ? emailEl.value.trim() : '';
 
     msgEl.style.display = 'none';
     if (!email) return showMsg('Veuillez entrer votre adresse email.');

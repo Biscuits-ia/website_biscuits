@@ -37,12 +37,24 @@ const {
 
 <slot />
 
-<!-- Preconnect aux domaines critiques (améliore LCP) -->
+<!--
+  Preconnect GTM : ne se déclenche qu'APRÈS consentement analytics.
+  Sans opt-in, aucun préchauffage TCP/TLS vers Google n'est émis
+  (RGPD / CNIL délibération n°2020-091).
+  Le handshake est ajouté dynamiquement par le loader ci-dessous.
+-->
 {isProd && (
-  <>
-    <link rel="preconnect" href="https://www.googletagmanager.com" crossorigin />
-    <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
-  </>
+  <script is:inline nonce={nonce}>
+    window.addGTMPreconnectIfConsented = () => {
+      if (document.querySelector('link[data-gtm-preconnect]')) return;
+      const link = document.createElement('link');
+      link.rel = 'preconnect';
+      link.href = 'https://www.googletagmanager.com';
+      link.crossOrigin = 'anonymous';
+      link.dataset.gtmPreconnect = '1';
+      document.head.appendChild(link);
+    };
+  </script>
 )}
 
 <SEOHead 
@@ -110,6 +122,7 @@ const {
         const prefs = JSON.parse(consentStr);
         if (prefs.analytics) {
           window.gtmLoaded = true;
+          window.addGTMPreconnectIfConsented?.();
           const script = document.createElement('script');
           script.async = true;
           script.src = 'https://www.googletagmanager.com/gtm.js?id=GTM-W2273TRX';

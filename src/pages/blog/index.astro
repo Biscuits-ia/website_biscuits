@@ -1,6 +1,6 @@
 ﻿---
-// Page d'index du blog : hero + recherche client + filtres par tag + grille de tous les articles.
-// Tous les articles sur une seule page (avec recherche/filtre cote client).
+// Page d'index du blog : hero + recherche + filtres par tag + grille paginee de tous les articles.
+// Pagination 100% cote client (5 articles par page).
 // Les pages dediees par tag sont generees par /blog/tag/[tag].astro.
 
 export const prerender = true;
@@ -20,6 +20,8 @@ const slugifyTag = (tag: string): string =>
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/(^-|-$)/g, '');
 
+const PAGE_SIZE = 5; // Nombre d'articles affiches par page (pagination client)
+
 const allArticles = await getCollection('blog');
 const sorted = allArticles
   .filter((a: CollectionEntry<'blog'>) => (import.meta.env.PROD ? !a.data.draft : true))
@@ -28,6 +30,7 @@ const sorted = allArticles
   );
 
 const total = sorted.length;
+const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
 // Comptage des tags pour l'affichage des filtres.
 const tagCounts = new Map<string, { display: string; count: number }>();
@@ -56,7 +59,7 @@ const featuredArticles = sorted
   )
   .slice(0, 3);
 
-// Donnees serialisees pour la recherche/filtre cote client.
+// Donnees serialisees pour la recherche/filtre/pagination cote client.
 const allArticlesForSearch = sorted.map((a: CollectionEntry<'blog'>) => ({
   id: a.id,
   title: a.data.title,
@@ -64,13 +67,13 @@ const allArticlesForSearch = sorted.map((a: CollectionEntry<'blog'>) => ({
   pubDate: a.data.pubDate.toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' }),
   pubDateISO: a.data.pubDate.toISOString(),
   author: a.data.author ?? 'Biscuits IA',
-  tags: ((a.data.tags ?? []) as string[]).slice(0, 3),
+  tags: ((a.data.tags ?? []) as string[]),
   tagsSlug: ((a.data.tags ?? []) as string[]).map((t) => slugifyTag(t)),
   url: `/blog/${a.id}`,
   featured: a.data.featured ?? false,
 }));
 
-// SEO : titre et description uniques (pas de "Page X sur Y").
+// SEO : titre et description uniques.
 const pageTitle = 'Blog IA & cybersecurite - Guides pratiques pour associations | Biscuits IA';
 const pageDescription = `Decouvrez nos ${total} articles sur l'IA generative, la cybersecurite, les arnaques en ligne et l'automatisation pour les associations, collectivites et TPE. Conseils pratiques, guides telechargeables, et selections d'outils libres.`;
 ---
@@ -93,6 +96,12 @@ const pageDescription = `Decouvrez nos ${total} articles sur l'IA generative, la
     <header class="blog-hero">
       <div class="hero-content">
         <span class="hero-eyebrow">Le blog de Biscuits IA</span>
+        <h1 class="hero-title">
+          L'IA accessible a toutes les structures
+        </h1>
+        <p class="hero-description">
+          {total} articles ecrits par notre equipe pour aider les associations, collectivites et petites structures a comprendre, choisir et utiliser l'IA en toute confiance.
+        </p>
       </div>
     </header>
 
@@ -164,10 +173,15 @@ const pageDescription = `Decouvrez nos ${total} articles sur l'IA generative, la
       </section>
 
       <section id="blog-main-content">
-        <h2 class="section-title">Tous nos articles</h2>
+        <div class="section-head-row">
+          <h2 class="section-title">Tous nos articles</h2>
+          <p id="pagination-status" class="pagination-status">
+            Page 1 sur {totalPages}
+          </p>
+        </div>
         <div class="articles-grid" id="all-articles-grid">
           {sorted.map((article: CollectionEntry<'blog'>, index: number) => (
-            <article class="article-card" style={`--card-index: ${index}`} data-article-id={article.id}>
+            <article class="article-card" style={`--card-index: ${index}`} data-article-id={article.id} data-page={Math.floor(index / PAGE_SIZE) + 1}>
               <a href={`/blog/${article.id}`} class="card-link">
                 <div class="card-content">
                   <div class="card-meta">
@@ -181,34 +195,55 @@ const pageDescription = `Decouvrez nos ${total} articles sur l'IA generative, la
                   {article.data.description && (
                     <p class="card-description">{article.data.description}</p>
                   )}
-                  {article.data.tags && article.data.tags.length > 0 && (
-                    <div class="card-tags">
-                      {(article.data.tags as string[]).slice(0, 3).map((tag: string) => (
-                        <span class="tag" data-tag-slug={slugifyTag(tag)}>#{tag}</span>
-                      ))}
-                    </div>
-                  )}
-                  <span class="read-more">
-                    Lire l'article
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                      <line x1="5" y1="12" x2="19" y2="12"></line>
-                      <polyline points="12 5 19 12 12 19"></polyline>
-                    </svg>
-                  </span>
+                  <div class="card-footer">
+                    {article.data.tags && article.data.tags.length > 0 && (
+                      <div class="card-tags">
+                        {(article.data.tags as string[]).slice(0, 4).map((tag: string) => (
+                          <a href={`/blog/tag/${slugifyTag(tag)}`} class="tag" data-tag-slug={slugifyTag(tag)}>#{tag}</a>
+                        ))}
+                      </div>
+                    )}
+                    <span class="read-more">
+                      Lire l'article
+                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                        <polyline points="12 5 19 12 12 19"></polyline>
+                      </svg>
+                    </span>
+                  </div>
                 </div>
               </a>
             </article>
           ))}
         </div>
+
+        <nav id="pagination" class="pagination" aria-label="Pagination des articles">
+          <button type="button" class="pagination-btn" id="pagination-prev" aria-label="Page precedente" disabled>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <line x1="19" y1="12" x2="5" y2="12"></line>
+              <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+            <span>Precedent</span>
+          </button>
+
+          <ol class="pagination-pages" id="pagination-pages"></ol>
+
+          <button type="button" class="pagination-btn" id="pagination-next" aria-label="Page suivante">
+            <span>Suivant</span>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+              <polyline points="12 5 19 12 12 19"></polyline>
+            </svg>
+          </button>
+        </nav>
       </section>
 
     </div>
   </div>
 </Layout>
 
-<script is:inline define:vars={{ allArticlesForSearch }}>
-  // Initialisation du moteur de recherche client.
-  // Pas de dependance externe : on indexe titres + descriptions + tags en memoire.
+<script is:inline define:vars={{ allArticlesForSearch, totalPages, total, PAGE_SIZE }}>
+  // Moteur de recherche + filtre tag + pagination cote client.
   (function () {
     const searchInput = document.getElementById('blog-search');
     const searchClear = document.getElementById('search-clear');
@@ -219,8 +254,13 @@ const pageDescription = `Decouvrez nos ${total} articles sur l'IA generative, la
     const mainContent = document.getElementById('blog-main-content');
     const allArticlesGrid = document.getElementById('all-articles-grid');
     const tagButtons = document.querySelectorAll('.tag-pill[data-tag]');
+    const paginationEl = document.getElementById('pagination');
+    const paginationPages = document.getElementById('pagination-pages');
+    const paginationPrev = document.getElementById('pagination-prev');
+    const paginationNext = document.getElementById('pagination-next');
+    const paginationStatus = document.getElementById('pagination-status');
 
-    if (!searchInput || !searchResults || !searchGrid || !searchCount || !searchEmpty || !mainContent || !allArticlesGrid) {
+    if (!searchInput || !searchResults || !searchGrid || !searchCount || !searchEmpty || !mainContent || !allArticlesGrid || !paginationEl || !paginationPages || !paginationPrev || !paginationNext || !paginationStatus) {
       return;
     }
 
@@ -229,10 +269,19 @@ const pageDescription = `Decouvrez nos ${total} articles sur l'IA generative, la
       (s || '').toString().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 
     let activeTag = 'all';
+    let currentPage = 1;
+    let currentMatches = allArticlesForSearch.slice();
+
+    function escapeHtml(s) {
+      return (s || '').replace(/[&<>"']/g, (c) =>
+        ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])
+      );
+    }
 
     function renderCard(article) {
       const tagsHtml = (article.tags || [])
-        .map((t) => `<span class="tag">#${t}</span>`)
+        .slice(0, 4)
+        .map((t) => `<a href="/blog/tag/${slugify(t)}" class="tag">#${escapeHtml(t)}</a>`)
         .join('');
       return `
         <article class="article-card" data-article-id="${article.id}">
@@ -241,52 +290,119 @@ const pageDescription = `Decouvrez nos ${total} articles sur l'IA generative, la
               <div class="card-meta">
                 <time datetime="${article.pubDateISO}">${article.pubDate}</time>
                 <span class="meta-sep">&middot;</span>
-                <span>${article.author}</span>
+                <span>${escapeHtml(article.author)}</span>
               </div>
               <h3 class="card-title">${escapeHtml(article.title)}</h3>
               ${article.description ? `<p class="card-description">${escapeHtml(article.description)}</p>` : ''}
-              ${tagsHtml ? `<div class="card-tags">${tagsHtml}</div>` : ''}
-              <span class="read-more">Lire l'article <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></span>
+              <div class="card-footer">
+                ${tagsHtml ? `<div class="card-tags">${tagsHtml}</div>` : ''}
+                <span class="read-more">Lire l'article <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></span>
+              </div>
             </div>
           </a>
         </article>
       `;
     }
 
-    function escapeHtml(s) {
-      return (s || '').replace(/[&<>"']/g, (c) =>
-        ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])
-      );
+    function slugify(s) {
+      return (s || '').toString().normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    }
+
+    function buildPageList(current, last) {
+      // Genere une liste de pages avec ellipses : 1 ... 4 5 6 ... 12
+      const pages = new Set([1, last]);
+      for (let i = Math.max(1, current - 1); i <= Math.min(last, current + 1); i++) {
+        pages.add(i);
+      }
+      const sorted = Array.from(pages).sort((a, b) => a - b);
+      const out = [];
+      let prev = 0;
+      for (const p of sorted) {
+        if (prev && p - prev > 1) {
+          out.push({ kind: 'ellipsis', key: 'ellipsis-' + prev + '-' + p });
+        }
+        out.push({ kind: 'page', num: p, key: 'p-' + p });
+        prev = p;
+      }
+      return out;
+    }
+
+    function renderPagination(lastPage) {
+      if (lastPage <= 1) {
+        paginationEl.hidden = true;
+        return;
+      }
+      paginationEl.hidden = false;
+      paginationPrev.disabled = currentPage <= 1;
+      paginationNext.disabled = currentPage >= lastPage;
+
+      const items = buildPageList(currentPage, lastPage);
+      paginationPages.innerHTML = items
+        .map((it) => {
+          if (it.kind === 'ellipsis') {
+            return `<li class="pagination-ellipsis" aria-hidden="true">&hellip;</li>`;
+          }
+          const isActive = it.num === currentPage;
+          return `<li><button type="button" class="pagination-page${isActive ? ' active' : ''}" data-page="${it.num}" aria-current="${isActive ? 'page' : 'false'}" aria-label="Aller a la page ${it.num}">${it.num}</button></li>`;
+        })
+        .join('');
     }
 
     function applyFilter() {
       const query = normalize(searchInput.value.trim());
       const tag = activeTag;
+      const isFiltering = !!query || tag !== 'all';
 
-      const matches = allArticlesForSearch.filter((a) => {
-        // Filtre tag
-        if (tag !== 'all' && !(a.tagsSlug || []).includes(tag)) return false;
-        // Filtre recherche
-        if (query) {
-          const haystack = normalize(a.title + ' ' + a.description + ' ' + (a.tags || []).join(' '));
-          if (!haystack.includes(query)) return false;
-        }
-        return true;
-      });
-
-      if (query || tag !== 'all') {
-        // Mode recherche : on cache la grille principale, on affiche les resultats.
+      if (isFiltering) {
+        currentMatches = allArticlesForSearch.filter((a) => {
+          if (tag !== 'all' && !(a.tagsSlug || []).includes(tag)) return false;
+          if (query) {
+            const haystack = normalize(a.title + ' ' + a.description + ' ' + (a.tags || []).join(' '));
+            if (!haystack.includes(query)) return false;
+          }
+          return true;
+        });
+        // En mode recherche : pas de pagination, on affiche tout
         mainContent.hidden = true;
+        paginationEl.hidden = true;
         searchResults.hidden = false;
-        searchGrid.innerHTML = matches.map(renderCard).join('');
-        const n = matches.length;
+        searchGrid.innerHTML = currentMatches.map(renderCard).join('');
+        const n = currentMatches.length;
         searchCount.textContent = n + ' article' + (n > 1 ? 's' : '') + ' trouve' + (n > 1 ? 's' : '');
         searchEmpty.hidden = n > 0;
       } else {
-        // Mode normal : on affiche tout.
+        // Mode normal : pagination
         mainContent.hidden = false;
         searchResults.hidden = true;
+        currentMatches = allArticlesForSearch;
+        // Si on a change de filtre, on reset la page
+        if (currentPage > totalPages) currentPage = 1;
+        renderMainPagination();
       }
+    }
+
+    function renderMainPagination() {
+      const lastPage = Math.max(1, Math.ceil(currentMatches.length / PAGE_SIZE));
+      if (currentPage > lastPage) currentPage = lastPage;
+      if (currentPage < 1) currentPage = 1;
+
+      // Cache les cartes hors page
+      const cards = allArticlesGrid.querySelectorAll('.article-card');
+      cards.forEach((card) => {
+        const p = parseInt(card.getAttribute('data-page') || '1', 10);
+        card.hidden = p !== currentPage;
+      });
+
+      renderPagination(lastPage);
+      paginationStatus.textContent = 'Page ' + currentPage + ' sur ' + lastPage + ' (' + currentMatches.length + ' article' + (currentMatches.length > 1 ? 's' : '') + ')';
+    }
+
+    function goToPage(p) {
+      currentPage = p;
+      renderMainPagination();
+      // Scroll vers la grille (pas tout en haut de page)
+      const top = allArticlesGrid.getBoundingClientRect().top + window.scrollY - 120;
+      window.scrollTo({ top, behavior: 'smooth' });
     }
 
     // Filtre par tag (pill).
@@ -298,8 +414,8 @@ const pageDescription = `Decouvrez nos ${total} articles sur l'IA generative, la
         tagButtons.forEach((b) => b.classList.remove('active'));
         btn.classList.add('active');
         activeTag = btn.getAttribute('data-tag') || 'all';
+        currentPage = 1;
         applyFilter();
-        // Si un tag est actif, scrolle vers la grille.
         if (activeTag !== 'all') {
           document.getElementById('search-results')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
@@ -327,6 +443,22 @@ const pageDescription = `Decouvrez nos ${total} articles sur l'IA generative, la
       searchInput.focus();
     });
 
+    // Boutons de pagination.
+    paginationPrev.addEventListener('click', () => {
+      if (currentPage > 1) goToPage(currentPage - 1);
+    });
+    paginationNext.addEventListener('click', () => {
+      const lastPage = Math.max(1, Math.ceil(currentMatches.length / PAGE_SIZE));
+      if (currentPage < lastPage) goToPage(currentPage + 1);
+    });
+    paginationPages.addEventListener('click', (e) => {
+      const t = e.target;
+      if (!(t instanceof HTMLElement)) return;
+      if (t.tagName !== 'BUTTON') return;
+      const p = parseInt(t.getAttribute('data-page') || '1', 10);
+      if (!isNaN(p)) goToPage(p);
+    });
+
     // Raccourci "/" pour focaliser la recherche.
     document.addEventListener('keydown', (e) => {
       if (e.key === '/' && document.activeElement !== searchInput && document.activeElement?.tagName !== 'INPUT' && document.activeElement?.tagName !== 'TEXTAREA') {
@@ -341,6 +473,9 @@ const pageDescription = `Decouvrez nos ${total} articles sur l'IA generative, la
         searchInput.blur();
       }
     });
+
+    // Initialisation : afficher la page 1
+    renderMainPagination();
   })();
 </script>
 
@@ -383,12 +518,11 @@ const pageDescription = `Decouvrez nos ${total} articles sur l'IA generative, la
     font-size: clamp(1rem, 1.5vw, 1.2rem);
     color: var(--color-text-light);
     line-height: 1.6;
-    margin: 0 0 2.5rem;
+    margin: 0;
     max-width: 700px;
     margin-left: auto;
     margin-right: auto;
   }
-
 
   /* === CONTAINER === */
   .blog-container {
@@ -405,6 +539,24 @@ const pageDescription = `Decouvrez nos ${total} articles sur l'IA generative, la
     font-weight: 800;
     color: var(--color-text);
     margin: 2.5rem 0 1.5rem;
+  }
+
+  .section-head-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-top: 2.5rem;
+  }
+
+  .section-head-row .section-title { margin: 0; }
+
+  .pagination-status {
+    color: var(--color-text-light);
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin: 0;
   }
 
   /* === FEATURED === */
@@ -648,6 +800,14 @@ const pageDescription = `Decouvrez nos ${total} articles sur l'IA generative, la
     font-size: 0.95rem;
   }
 
+  .card-footer {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-top: auto;
+    padding-top: 0.5rem;
+  }
+
   .card-tags { display: flex; flex-wrap: wrap; gap: 0.4rem; }
 
   .tag {
@@ -660,6 +820,19 @@ const pageDescription = `Decouvrez nos ${total} articles sur l'IA generative, la
     text-transform: uppercase;
     letter-spacing: 0.04em;
     color: var(--color-text-light);
+    text-decoration: none;
+    border-radius: var(--radius-sm, 0);
+    transition: all var(--transition-fast, 0.2s);
+  }
+
+  .card-tags .tag {
+    cursor: pointer;
+  }
+
+  .card-tags .tag:hover {
+    color: var(--color-bg-elevated);
+    background: var(--color-primary);
+    border-color: var(--color-primary);
   }
 
   .read-more {
@@ -669,13 +842,100 @@ const pageDescription = `Decouvrez nos ${total} articles sur l'IA generative, la
     color: var(--color-primary);
     font-weight: 700;
     font-size: 0.9rem;
-    margin-top: auto;
-    padding-top: 0.5rem;
+  }
+
+  /* === PAGINATION === */
+  .pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: 3rem;
+    flex-wrap: wrap;
+  }
+
+  .pagination[hidden] { display: none; }
+
+  .pagination-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.65rem 1rem;
+    background: var(--color-bg-elevated);
+    color: var(--color-text);
+    font-weight: 700;
+    font-size: 0.9rem;
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-button, 0.875rem);
+    cursor: pointer;
+    font-family: inherit;
+    transition: all var(--transition-fast, 0.2s);
+  }
+
+  .pagination-btn:hover:not(:disabled) {
+    color: var(--color-bg-elevated);
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    transform: translateY(-2px);
+  }
+
+  .pagination-btn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+
+  .pagination-pages {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    gap: 0.25rem;
+  }
+
+  .pagination-page {
+    display: inline-grid;
+    place-items: center;
+    min-width: 2.5rem;
+    height: 2.5rem;
+    padding: 0 0.6rem;
+    background: var(--color-bg-elevated);
+    color: var(--color-text);
+    border: 2px solid var(--color-border);
+    font-size: 0.9rem;
+    font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+    border-radius: var(--radius-button, 0.875rem);
+    transition: all var(--transition-fast, 0.2s);
+  }
+
+  .pagination-page:hover {
+    color: var(--color-bg-elevated);
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+  }
+
+  .pagination-page.active {
+    color: var(--color-bg-elevated);
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    box-shadow: var(--shadow-sm, 3px 3px 0 var(--color-border));
+  }
+
+  .pagination-ellipsis {
+    display: inline-grid;
+    place-items: center;
+    min-width: 2rem;
+    color: var(--color-text-light);
+    font-weight: 700;
   }
 
   /* === RESPONSIVE === */
   @media (max-width: 768px) {
     .blog-hero { padding-top: calc(var(--header-height-mobile) + 1.5rem); }
     .featured-grid, .articles-grid { grid-template-columns: 1fr; }
+    .section-head-row { flex-direction: column; align-items: flex-start; gap: 0.25rem; }
+    .pagination-btn span { display: none; }
+    .pagination-btn { padding: 0.65rem 0.75rem; }
   }
 </style>

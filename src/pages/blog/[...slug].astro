@@ -1,10 +1,13 @@
----
+﻿---
+// Page d'un article de blog : OG image specifique, maillage interne renforce, related articles.
+// URL : /blog/[slug]
+// SEO : Open Graph complet (og:type=article), Twitter Cards, Schema.org Article, canonical unique.
+
 export const prerender = true;
 
 import { getCollection, getEntry, render, type CollectionEntry } from 'astro:content';
 import type { GetStaticPaths } from 'astro';
-import { Image } from 'astro:assets';
-import Layout from '@/layouts/BlogLayout.astro';
+import Layout from '@/layouts/Layout.astro';
 import ReadingTime from '@/components/ReadingTime.astro';
 import TableOfContents from '@/components/TableOfContents.astro';
 import Breadcrumb from '@/components/Breadcrumb.astro';
@@ -12,9 +15,7 @@ import Breadcrumb from '@/components/Breadcrumb.astro';
 // prerender = true exige getStaticPaths().
 export const getStaticPaths = (async () => {
   const all = await getCollection('blog');
-  const visible = import.meta.env.PROD
-    ? all.filter((a) => !a.data.draft)
-    : all;
+  const visible = import.meta.env.PROD ? all.filter((a) => !a.data.draft) : all;
   return visible.map((entry) => ({
     params: { slug: entry.id },
   }));
@@ -30,10 +31,10 @@ if (!entry) {
   return Astro.redirect('/blog');
 }
 
-const articles = await getCollection('blog');
+const allArticles = await getCollection('blog');
 const publishedArticles = import.meta.env.PROD
-  ? articles.filter((article: CollectionEntry<'blog'>) => !article.data.draft)
-  : articles;
+  ? allArticles.filter((article: CollectionEntry<'blog'>) => !article.data.draft)
+  : allArticles;
 
 const sortedArticles = publishedArticles.sort(
   (a: CollectionEntry<'blog'>, b: CollectionEntry<'blog'>) =>
@@ -45,11 +46,22 @@ const isFeatured = sortedArticles.length > 0 && sortedArticles[0] && entry.id ==
 const { Content, headings } = await render(entry);
 const body = entry.body ?? '';
 
-// Related posts : 3 articles partageant au moins un tag, hors article courant.
+// Normalisation des tags en slug.
+const slugifyTag = (tag: string): string =>
+  tag
+    .toString()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '');
+
+// Articles relies : 3 articles partageant au moins un tag, hors article courant.
+const entryTags = ((entry.data.tags as string[]) || []) as string[];
 const relatedArticles = publishedArticles
   .filter((a: CollectionEntry<'blog'>) => a.id !== entry.id)
   .map((a: CollectionEntry<'blog'>) => {
-    const entryTags = ((entry.data.tags as string[]) || []) as string[];
     const candidateTags = ((a.data.tags as string[]) || []) as string[];
     const shared = candidateTags.filter((t) => entryTags.includes(t)).length;
     return { entry: a, shared };
@@ -58,12 +70,55 @@ const relatedArticles = publishedArticles
   .sort((a, b) => b.shared - a.shared || b.entry.data.pubDate.getTime() - a.entry.data.pubDate.getTime())
   .slice(0, 3)
   .map((x) => x.entry);
+
+// Article precedent / suivant dans la liste chronologique.
+const currentIndex = sortedArticles.findIndex((a) => a.id === entry.id);
+const prevArticle = currentIndex < sortedArticles.length - 1 ? sortedArticles[currentIndex + 1] : null;
+const nextArticle = currentIndex > 0 ? sortedArticles[currentIndex - 1] : null;
+
+// "Autres articles sur le meme theme" : fallback si pas de related ou en complement.
+const sameTagArticles = publishedArticles
+  .filter((a: CollectionEntry<'blog'>) => a.id !== entry.id)
+  .filter((a: CollectionEntry<'blog'>) => {
+    const tags = ((a.data.tags as string[]) || []) as string[];
+    return tags.some((t) => entryTags.includes(t));
+  })
+  .sort((a: CollectionEntry<'blog'>, b: CollectionEntry<'blog'>) => b.data.pubDate.getTime() - a.data.pubDate.getTime())
+  .slice(0, 6);
+
+// SEO : Open Graph specifique a l'article.
+const siteUrl = import.meta.env.SITE || 'https://biscuits-ia.com';
+const articleUrl = `${siteUrl}/blog/${entry.id}`;
+const ogImage = `${siteUrl}/og-default.webp`; // Placeholder : idealement une image generee par article
+const seoTitle = entry.data.title;
+const seoDescription = entry.data.description || entry.data.title;
+
+const articleSchema = {
+  type: 'Article' as const,
+  data: {
+    title: seoTitle,
+    headline: seoTitle,
+    description: seoDescription,
+    image: ogImage,
+    datePublished: entry.data.pubDate.toISOString(),
+    dateModified: entry.data.pubDate.toISOString(),
+    author: entry.data.author || 'Biscuits IA',
+    category: 'Intelligence Artificielle',
+    keywords: entryTags,
+  },
+};
 ---
 
 <Layout
-  title={entry.data.title}
-  description={entry.data.description || entry.data.title}
+  title={seoTitle}
+  description={seoDescription}
+  canonical={`/blog/${entry.id}`}
+  ogType="article"
+  ogImage={ogImage}
+  schema={articleSchema}
 >
+  <Breadcrumb />
+
   <div class="article-wrapper">
     <article class="article-content">
       <header class="article-header">
@@ -77,7 +132,7 @@ const relatedArticles = publishedArticles
 
         {isFeatured && (
           <div class="featured-badge">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
               <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
             </svg>
             Article en vedette
@@ -111,24 +166,11 @@ const relatedArticles = publishedArticles
         {entry.data.tags && entry.data.tags.length > 0 && (
           <div class="tags">
             {entry.data.tags.map((tag: string) => (
-              <span class="tag">#{tag}</span>
+              <a href={`/blog/tag/${slugifyTag(tag)}`} class="tag tag-link">#{tag}</a>
             ))}
           </div>
         )}
       </header>
-
-      {entry.data.thumbnail && (
-        <div class="article-thumbnail">
-          <Image
-            src={entry.data.thumbnail}
-            alt={entry.data.title}
-            width={800}
-            height={450}
-            loading="lazy"
-            format="webp"
-          />
-        </div>
-      )}
 
       <TableOfContents headings={headings} />
 
@@ -138,322 +180,489 @@ const relatedArticles = publishedArticles
 
       {relatedArticles.length > 0 && (
         <section class="related-posts" aria-labelledby="related-title">
-          <h2 id="related-title" class="related-title"> À lire aussi</h2>
+          <h2 id="related-title" class="related-title">Articles sur le meme theme</h2>
           <div class="related-grid">
             {relatedArticles.map((rel: CollectionEntry<'blog'>) => (
-              <a href={/blog/} class="related-card">
+              <a href={`/blog/${rel.id}`} class="related-card">
+                <span class="related-card-meta">
+                  <time datetime={rel.data.pubDate.toISOString()}>
+                    {rel.data.pubDate.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}
+                  </time>
+                </span>
                 <h3 class="related-card-title">{rel.data.title}</h3>
-                {rel.data.description && <p class="related-card-desc">{rel.data.description}</p>}
-                {rel.data.tags && rel.data.tags.length > 0 && (
-                  <div class="related-card-tags">
-                    {((rel.data.tags as string[]).slice(0, 2)).map((tag: string) => (
-                      <span class="tag">#{tag}</span>
-                    ))}
-                  </div>
+                {rel.data.description && (
+                  <p class="related-card-desc">{rel.data.description}</p>
                 )}
-                <span class="related-card-cta">Lire l'article â†’</span>
+                <span class="related-card-cta">Lire →</span>
               </a>
             ))}
           </div>
         </section>
       )}
 
+      {(prevArticle || nextArticle) && (
+        <nav class="article-nav" aria-label="Navigation entre articles">
+          {prevArticle && (
+            <a href={`/blog/${prevArticle.id}`} class="article-nav-link article-nav-prev">
+              <span class="article-nav-eyebrow">Article plus ancien</span>
+              <span class="article-nav-title">{prevArticle.data.title}</span>
+            </a>
+          )}
+          {nextArticle && (
+            <a href={`/blog/${nextArticle.id}`} class={`article-nav-link article-nav-next${!prevArticle ? ' article-nav-only' : ''}`}>
+              <span class="article-nav-eyebrow">Article plus recent</span>
+              <span class="article-nav-title">{nextArticle.data.title}</span>
+            </a>
+          )}
+        </nav>
+      )}
+
+      {sameTagArticles.length > 0 && (
+        <section class="same-tag-section" aria-labelledby="same-tag-title">
+          <h2 id="same-tag-title" class="related-title">Continuer la decouverte</h2>
+          <div class="same-tag-grid">
+            {sameTagArticles.slice(0, 4).map((rel: CollectionEntry<'blog'>) => (
+              <a href={`/blog/${rel.id}`} class="same-tag-card">
+                <span class="related-card-meta">
+                  <time datetime={rel.data.pubDate.toISOString()}>
+                    {rel.data.pubDate.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })}
+                  </time>
+                </span>
+                <h3 class="related-card-title">{rel.data.title}</h3>
+                <span class="related-card-cta">Lire →</span>
+              </a>
+            ))}
+          </div>
+          <div class="same-tag-cta">
+            <a href="/blog" class="same-tag-back">Voir tous les articles</a>
+          </div>
+        </section>
+      )}
+
       <footer class="article-footer">
-        <a href="/blog" class="back-button">
-          Retour au blog
-        </a>
+        <p>
+          {entry.data.author || 'Biscuits IA'} &middot;
+          <time datetime={entry.data.pubDate.toISOString()}>
+            {entry.data.pubDate.toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' })}
+          </time>
+        </p>
+        <div class="article-footer-actions">
+          <a href="/blog" class="footer-link">← Tous les articles du blog</a>
+          <a href="/rejoignez-nous" class="footer-link footer-link-primary">Nous rejoindre</a>
+        </div>
       </footer>
     </article>
   </div>
 </Layout>
 
 <style>
-.article-wrapper * {
-  animation: none !important;
-  transition: none !important;
-}
+  .article-wrapper { background: var(--color-bg); }
 
-.article-wrapper a,
-.article-wrapper button,
-.article-wrapper .tag,
-.article-wrapper .share-btn,
-.article-wrapper .back-button,
-.article-wrapper .back-link {
-  transition: transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast) !important;
-}
-
-.article-wrapper { min-height: 100vh; background: var(--color-bg); }
-.article-content { max-width: 800px; margin: 0 auto; padding: 2rem 1rem 4rem; }
-
-.back-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 2rem;
-  color: var(--color-text-light);
-  text-decoration: none;
-  font-size: 0.875rem;
-  font-weight: 600;
-  padding: 0.5rem 0;
-}
-
-.back-link:hover { color: var(--color-primary); transform: translateX(-4px); }
-
-.featured-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  background: var(--color-first);
-  color: var(--color-gray-900);
-  padding: 0.5rem 1rem;
-  border-radius: var(--radius-full);
-  border: 2px solid var(--color-border);
-  font-size: 0.875rem;
-  font-weight: 700;
-  margin-bottom: 1.5rem;
-  box-shadow: var(--shadow-glow);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.article-header { margin-top: 4.5rem; margin-bottom: 3rem; }
-
-.article-title {
-  font-size: clamp(2rem, 5vw, 3rem);
-  font-weight: 900;
-  margin-bottom: 1rem;
-  line-height: 1.2;
-  color: var(--color-text);
-  letter-spacing: -0.02em;
-}
-
-.article-description {
-  font-size: 1.25rem;
-  color: var(--color-text-light);
-  margin: 1.5rem 0;
-  line-height: 1.7;
-  font-weight: 500;
-}
-
-.article-meta {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 1.5rem;
-  margin: 2rem 0;
-  padding: 1rem 0;
-  border-top: 2px solid var(--color-border);
-  border-bottom: 2px solid var(--color-border);
-}
-
-.meta-item {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  color: var(--color-text-light);
-  font-size: 0.875rem;
-  font-weight: 600;
-}
-
-.tags { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1.5rem; }
-
-.tag {
-  padding: 0.375rem 0.875rem;
-  background: var(--glass-bg);
-  color: var(--color-text-light);
-  border-radius: var(--radius-full);
-  font-size: 0.875rem;
-  font-weight: 600;
-  border: 1px solid var(--glass-border);
-}
-
-.article-thumbnail {
-  margin: 3rem 0;
-  border-radius: var(--radius-xl);
-  overflow: hidden;
-  box-shadow: var(--shadow-2xl);
-  border: 2px solid var(--color-border);
-}
-
-.prose { font-size: 1.125rem; line-height: 1.8; color: var(--color-text); }
-
-.prose :global(h2) {
-  font-size: 1.875rem;
-  margin: 2.5rem 0 1.25rem;
-  color: var(--color-text);
-  letter-spacing: -0.01em;
-  padding-left: 1rem;
-  font-weight: 900;
-}
-
-.prose :global(h3) {
-  font-size: 1.5rem;
-  font-weight: 800;
-  margin: 2rem 0 1rem;
-  color: var(--color-text);
-}
-
-.prose :global(p) { margin: 1.5rem 0; line-height: 1.8; color: var(--color-text); }
-
-.prose :global(a) {
-  color: var(--color-primary);
-  text-decoration: none;
-  font-weight: 600;
-  background-size: 0% 2px;
-  background-position: 0 100%;
-  background-repeat: no-repeat;
-  transition: background-size var(--transition-base);
-}
-
-.prose :global(ul), .prose :global(ol) {
-  margin: 1.5rem 0;
-  padding-left: 1.75rem;
-}
-
-.prose :global(blockquote) {
-  margin: 2rem 0;
-  padding: 1.5rem;
-  border-left: 4px solid var(--color-primary);
-  background: var(--glass-bg);
-  border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
-  font-style: italic;
-  color: var(--color-text);
-}
-
-.prose :global(pre) {
-  background: var(--color-bg-elevated);
-  color: var(--color-text);
-  padding: 1.5rem;
-  border-radius: var(--radius-lg);
-  overflow-x: auto;
-  margin: 2rem 0;
-  border: 2px solid var(--color-border);
-}
-
-.prose :global(code) {
-  background: var(--glass-bg);
-  color: var(--color-first);
-  border-radius: var(--radius-sm);
-  font-size: 0.9em;
-  font-family: monospace;
-  font-weight: 600;
-  border: 1px solid var(--color-border);
-  padding: 0.2em 0.4em;
-}
-
-.prose :global(img) {
-  max-width: 100%;
-  height: auto;
-  border-radius: var(--radius-lg);
-  margin: 2.5rem 0;
-  box-shadow: var(--shadow-xl);
-  border: 2px solid var(--color-border);
-}
-
-.related-posts {
-  margin: 4rem auto 0;
-  padding-top: 2.5rem;
-  border-top: 2px solid var(--color-border);
-  max-width: 800px;
-}
-
-.related-title {
-  font-size: 1.5rem;
-  font-weight: 800;
-  margin: 0 0 1.25rem;
-  color: var(--color-text);
-}
-
-.related-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 1rem;
-}
-
-.related-card {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  padding: 1rem 1.25rem;
-  background: var(--color-bg-alt);
-  border: 2px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  text-decoration: none;
-  color: inherit;
-  transition: transform var(--transition-base), border-color var(--transition-base), box-shadow var(--transition-base);
-}
-
-.related-card:hover {
-  transform: translateY(-3px);
-  border-color: var(--color-primary);
-  box-shadow: var(--shadow-md);
-}
-
-.related-card-title {
-  margin: 0;
-  font-size: 1rem;
-  font-weight: 800;
-  color: var(--color-text);
-  line-height: 1.3;
-}
-
-.related-card-desc {
-  margin: 0;
-  font-size: 0.875rem;
-  color: var(--color-text-light);
-  line-height: 1.5;
-}
-
-.related-card-tags { display: flex; flex-wrap: wrap; gap: 0.35rem; }
-.related-card .tag { font-size: 0.65rem; padding: 0.1rem 0.4rem; }
-.related-card-cta {
-  color: var(--color-primary);
-  font-weight: 700;
-  font-size: 0.85rem;
-  margin-top: auto;
-}
-
-.article-footer {
-  margin-top: 5rem;
-  padding-top: 3rem;
-  border-top: 2px solid var(--color-border);
-}
-
-.back-button {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.75rem;
-  color: var(--color-text-light);
-  text-decoration: none;
-  font-weight: 700;
-  font-size: 1rem;
-  padding: 1rem 1.5rem;
-  border: 2px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  background: var(--glass-bg);
-  box-shadow: var(--shadow-md);
-}
-
-.back-button:hover {
-  color: var(--color-primary);
-  border-color: var(--color-primary);
-  background: var(--color-bg-elevated);
-  box-shadow: var(--shadow-glow);
-}
-
-@media (max-width: 768px) {
-  .article-content { padding: 1.5rem 1rem 3rem; }
-  .article-title { font-size: 2rem; }
-  .prose { font-size: 1rem; }
-  .prose :global(h2) { font-size: 1.5rem; padding-left: 0.75rem; }
-  .prose :global(h3) { font-size: 1.25rem; }
-  .back-button { display: flex; width: 100%; justify-content: center; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .article-wrapper *, .back-link, .tag, .back-button {
-    transition: none !important;
-    animation: none !important;
+  .article-content {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: calc(var(--header-height-desktop) + 2rem) 1rem 4rem;
   }
-}
+
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--color-text-light);
+    font-weight: 600;
+    text-decoration: none;
+    font-size: 0.9rem;
+    margin-bottom: 2rem;
+    padding: 0.4rem 0.8rem;
+    border: 2px solid transparent;
+    border-radius: var(--radius-button, 0.875rem);
+    transition: all var(--transition-fast, 0.2s);
+  }
+
+  .back-link:hover { color: var(--color-primary); transform: translateX(-4px); }
+
+  .featured-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: var(--color-first);
+    color: var(--color-gray-900);
+    padding: 0.4rem 0.85rem;
+    border-radius: var(--radius-full, 9999px);
+    border: 2px solid var(--color-border);
+    font-size: 0.75rem;
+    font-weight: 800;
+    margin-bottom: 1.5rem;
+    box-shadow: var(--shadow-glow, 5px 5px 0 var(--color-border));
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .article-header { margin-bottom: 2.5rem; }
+
+  .article-title {
+    font-size: clamp(1.8rem, 4vw, 2.75rem);
+    font-weight: 900;
+    margin: 0 0 1.25rem;
+    line-height: 1.2;
+    color: var(--color-text);
+    letter-spacing: -0.02em;
+  }
+
+  .article-description {
+    font-size: 1.2rem;
+    color: var(--color-text-light);
+    margin: 0 0 2rem;
+    line-height: 1.65;
+    font-weight: 500;
+  }
+
+  .article-meta {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem 1.5rem;
+    margin: 1.5rem 0;
+    padding: 1rem 0;
+    border-top: 2px solid var(--color-border);
+    border-bottom: 2px solid var(--color-border);
+  }
+
+  .meta-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: var(--color-text-light);
+    font-size: 0.875rem;
+    font-weight: 600;
+  }
+
+  .tags { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1.5rem; }
+
+  .tag {
+    padding: 0.3rem 0.75rem;
+    background: var(--glass-bg, var(--color-bg-elevated));
+    color: var(--color-text-light);
+    border-radius: var(--radius-full, 9999px);
+    font-size: 0.8rem;
+    font-weight: 700;
+    border: 1.5px solid var(--color-border);
+    text-decoration: none;
+    transition: all var(--transition-fast, 0.2s);
+  }
+
+  .tag-link:hover {
+    color: var(--color-bg-elevated);
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+  }
+
+  /* === PROSE === */
+  .prose {
+    font-size: 1.1rem;
+    line-height: 1.8;
+    color: var(--color-text);
+  }
+
+  .prose :global(h2) {
+    font-size: 1.875rem;
+    font-weight: 800;
+    margin: 2.75rem 0 1.25rem;
+    color: var(--color-text);
+    letter-spacing: -0.01em;
+    padding-left: 1rem;
+    border-left: 4px solid var(--color-primary);
+  }
+
+  .prose :global(h3) {
+    font-size: 1.5rem;
+    font-weight: 800;
+    margin: 2rem 0 0.85rem;
+    color: var(--color-text);
+  }
+
+  .prose :global(p) { margin: 1.25rem 0; line-height: 1.8; }
+  .prose :global(a) { color: var(--color-primary); text-decoration: underline; font-weight: 600; }
+  .prose :global(a:hover) { color: var(--color-secondary); }
+
+  .prose :global(ul), .prose :global(ol) { margin: 1.25rem 0; padding-left: 1.75rem; }
+  .prose :global(li) { margin: 0.4rem 0; }
+
+  .prose :global(blockquote) {
+    margin: 1.75rem 0;
+    padding: 1.25rem 1.5rem;
+    border-left: 4px solid var(--color-primary);
+    background: var(--color-bg-alt);
+    border-radius: 0 var(--radius-lg, 0) var(--radius-lg, 0) 0;
+    font-style: italic;
+    color: var(--color-text);
+  }
+
+  .prose :global(pre) {
+    background: var(--color-bg-elevated);
+    color: var(--color-text);
+    padding: 1.5rem;
+    border-radius: var(--radius-lg, 0);
+    overflow-x: auto;
+    margin: 1.75rem 0;
+    border: 2px solid var(--color-border);
+  }
+
+  .prose :global(code) {
+    background: var(--color-bg-elevated);
+    color: var(--color-first);
+    border-radius: var(--radius-sm, 0);
+    font-size: 0.9em;
+    font-family: monospace;
+    font-weight: 600;
+    border: 1px solid var(--color-border);
+    padding: 0.15em 0.4em;
+  }
+
+  .prose :global(pre code) { background: transparent; padding: 0; border: none; }
+
+  .prose :global(img) {
+    max-width: 100%;
+    height: auto;
+    border-radius: var(--radius-lg, 0);
+    margin: 2rem auto;
+    box-shadow: var(--shadow-md, 5px 5px 0 var(--color-border));
+    border: 2px solid var(--color-border);
+  }
+
+  /* === RELATED POSTS === */
+  .related-posts {
+    margin: 4rem 0 0;
+    padding-top: 2.5rem;
+    border-top: 2px solid var(--color-border);
+  }
+
+  .related-title {
+    font-size: 1.4rem;
+    font-weight: 800;
+    margin: 0 0 1.5rem;
+    color: var(--color-text);
+  }
+
+  .related-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+  }
+
+  .related-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 1.25rem;
+    background: var(--color-bg-alt);
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-lg, 0);
+    text-decoration: none;
+    color: inherit;
+    transition: transform var(--transition-base, 0.3s), border-color var(--transition-base, 0.3s), box-shadow var(--transition-base, 0.3s);
+  }
+
+  .related-card:hover {
+    transform: translateY(-3px);
+    border-color: var(--color-primary);
+    box-shadow: var(--shadow-md, 5px 5px 0 var(--color-border));
+  }
+
+  .related-card-meta {
+    color: var(--color-text-light);
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+
+  .related-card-title {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 800;
+    color: var(--color-text);
+    line-height: 1.3;
+  }
+
+  .related-card-desc {
+    margin: 0;
+    font-size: 0.85rem;
+    color: var(--color-text-light);
+    line-height: 1.5;
+  }
+
+  .related-card-cta {
+    color: var(--color-primary);
+    font-weight: 700;
+    font-size: 0.85rem;
+    margin-top: auto;
+  }
+
+  /* === ARTICLE NAV (prev/next) === */
+  .article-nav {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin: 3rem 0 0;
+    padding-top: 2rem;
+    border-top: 2px solid var(--color-border);
+  }
+
+  .article-nav-link {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 1.25rem;
+    background: var(--color-bg-alt);
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-lg, 0);
+    text-decoration: none;
+    color: inherit;
+    transition: all var(--transition-fast, 0.2s);
+  }
+
+  .article-nav-only { grid-column: 2; }
+
+  .article-nav-prev { text-align: left; }
+  .article-nav-next { text-align: right; }
+
+  .article-nav-link:hover {
+    border-color: var(--color-primary);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm, 3px 3px 0 var(--color-border));
+  }
+
+  .article-nav-eyebrow {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-primary);
+  }
+
+  .article-nav-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--color-text);
+    line-height: 1.3;
+  }
+
+  /* === SAME TAG SECTION === */
+  .same-tag-section {
+    margin: 3rem 0 0;
+    padding-top: 2.5rem;
+    border-top: 2px solid var(--color-border);
+  }
+
+  .same-tag-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .same-tag-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    padding: 1rem 1.15rem;
+    background: var(--color-bg-alt);
+    border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-lg, 0);
+    text-decoration: none;
+    color: inherit;
+    transition: all var(--transition-fast, 0.2s);
+  }
+
+  .same-tag-card:hover {
+    border-color: var(--color-primary);
+    transform: translateY(-2px);
+  }
+
+  .same-tag-cta { text-align: center; }
+
+  .same-tag-back {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    color: var(--color-primary);
+    font-weight: 700;
+    text-decoration: none;
+    border: 2px solid var(--color-primary);
+    border-radius: var(--radius-button, 0.875rem);
+    transition: all var(--transition-fast, 0.2s);
+  }
+
+  .same-tag-back:hover {
+    color: var(--color-bg-elevated);
+    background: var(--color-primary);
+  }
+
+  /* === FOOTER === */
+  .article-footer {
+    margin-top: 4rem;
+    padding-top: 2rem;
+    border-top: 2px solid var(--color-border);
+    text-align: center;
+    color: var(--color-text-light);
+    font-size: 0.85rem;
+  }
+
+  .article-footer p { margin: 0 0 1.25rem; }
+
+  .article-footer-actions {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  .footer-link {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    color: var(--color-text);
+    font-weight: 600;
+    text-decoration: none;
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-button, 0.875rem);
+    background: var(--color-bg-elevated);
+    transition: all var(--transition-fast, 0.2s);
+  }
+
+  .footer-link:hover {
+    color: var(--color-primary);
+    border-color: var(--color-primary);
+  }
+
+  .footer-link-primary {
+    color: var(--color-bg-elevated);
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+  }
+
+  .footer-link-primary:hover {
+    color: var(--color-bg-elevated);
+    background: var(--color-primary-dark);
+    border-color: var(--color-primary-dark);
+  }
+
+  /* === RESPONSIVE === */
+  @media (max-width: 768px) {
+    .article-content { padding: calc(var(--header-height-mobile) + 1rem) 1rem 2.5rem; }
+    .article-title { font-size: 1.8rem; }
+    .article-description { font-size: 1.05rem; }
+    .prose { font-size: 1rem; }
+    .prose :global(h2) { font-size: 1.5rem; padding-left: 0.75rem; }
+    .prose :global(h3) { font-size: 1.25rem; }
+    .article-meta { gap: 0.5rem 1rem; }
+    .article-nav { grid-template-columns: 1fr; }
+    .article-nav-only { grid-column: 1; }
+    .related-grid, .same-tag-grid { grid-template-columns: 1fr; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .article-wrapper *, .back-link, .tag, .related-card, .article-nav-link, .same-tag-card, .footer-link {
+      transition: none !important;
+      animation: none !important;
+    }
+  }
 </style>

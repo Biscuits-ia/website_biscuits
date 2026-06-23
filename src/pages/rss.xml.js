@@ -1,4 +1,4 @@
-export const prerender = true;
+﻿export const prerender = true;
 
 import rss from '@astrojs/rss';
 import { getCollection } from 'astro:content';
@@ -7,7 +7,7 @@ import MarkdownIt from 'markdown-it';
 
 const SITE = {
   title: 'Biscuits IA',
-  description: 'Agir pour une Intelligence Artificielle éthique et solidaire',
+  description: 'Agir pour une Intelligence Artificielle Ã©thique et solidaire',
   author: 'Biscuits IA',
   email: 'contact@biscuits-ia.com',
 };
@@ -27,7 +27,7 @@ export async function GET(context) {
       title: post.data.title,
       pubDate: post.data.pubDate,
       description: post.data.description || '',
-      link: `/blog/article/${post.slug}/`,
+      link: `/blog/${post.id}/`,
       content: sanitizeHtml(parser.render(post.body), {
         allowedTags: sanitizeHtml.defaults.allowedTags.concat(['img']),
         allowedAttributes: {

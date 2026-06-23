@@ -1,337 +1,740 @@
----
-// Page d'index du blog : hero + 2 articles mis en avant + grille paginée.
-// Page 1 = `/blog`. Pages 2+ = `/blog/[page]`.
+﻿---
+// Page d'index du blog : hero + recherche client + filtres par tag + grille de tous les articles.
+// Tous les articles sur une seule page (avec recherche/filtre cote client).
+// Les pages dediees par tag sont generees par /blog/tag/[tag].astro.
 
 export const prerender = true;
 
 import Layout from '@/layouts/Layout.astro';
+import Breadcrumb from '@/components/Breadcrumb.astro';
 import { getCollection, type CollectionEntry } from 'astro:content';
 
-const PAGE_SIZE = 6;
+// Normalisation des tags en slug (coherent avec /blog/tag/[tag].astro).
+const slugifyTag = (tag: string): string =>
+  tag
+    .toString()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '');
 
 const allArticles = await getCollection('blog');
 const sorted = allArticles
-  .filter((a: CollectionEntry<'blog'>) => import.meta.env.PROD ? !a.data.draft : true)
+  .filter((a: CollectionEntry<'blog'>) => (import.meta.env.PROD ? !a.data.draft : true))
   .sort((a: CollectionEntry<'blog'>, b: CollectionEntry<'blog'>) =>
     b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
   );
 
 const total = sorted.length;
-const lastPage = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
-const featuredArticles = sorted.slice(0, 2);
+// Comptage des tags pour l'affichage des filtres.
+const tagCounts = new Map<string, { display: string; count: number }>();
+for (const a of sorted) {
+  const tags = ((a.data.tags as string[]) || []) as string[];
+  for (const t of tags) {
+    const slug = slugifyTag(t);
+    const existing = tagCounts.get(slug);
+    if (existing) existing.count += 1;
+    else tagCounts.set(slug, { display: t, count: 1 });
+  }
+}
+const allTags = Array.from(tagCounts.entries())
+  .sort((a, b) => b[1].count - a[1].count || a[0].localeCompare(b[0]))
+  .map(([slug, meta]) => ({ slug, display: meta.display, count: meta.count }));
 
-const allTags = [...new Set(sorted.flatMap((a: CollectionEntry<'blog'>) => (a.data.tags as string[]) || []))] as string[];
+// Articles en vedette : on prend les 3 plus recents marques featured:true,
+// sinon on complete avec les plus recents.
+const featuredArticles = sorted
+  .filter((a) => a.data.featured)
+  .slice(0, 3)
+  .concat(
+    sorted
+      .filter((a) => !a.data.featured)
+      .slice(0, Math.max(0, 3 - sorted.filter((a) => a.data.featured).length))
+  )
+  .slice(0, 3);
 
-const articles: CollectionEntry<'blog'>[] = sorted.slice(0, PAGE_SIZE);
-
+// Donnees serialisees pour la recherche/filtre cote client.
 const allArticlesForSearch = sorted.map((a: CollectionEntry<'blog'>) => ({
   id: a.id,
   title: a.data.title,
   description: (a.data.description ?? '') as string,
   pubDate: a.data.pubDate.toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' }),
+  pubDateISO: a.data.pubDate.toISOString(),
+  author: a.data.author ?? 'Biscuits IA',
   tags: ((a.data.tags ?? []) as string[]).slice(0, 3),
+  tagsSlug: ((a.data.tags ?? []) as string[]).map((t) => slugifyTag(t)),
+  url: `/blog/${a.id}`,
+  featured: a.data.featured ?? false,
 }));
+
+// SEO : titre et description uniques (pas de "Page X sur Y").
+const pageTitle = 'Blog IA & cybersecurite - Guides pratiques pour associations | Biscuits IA';
+const pageDescription = `Decouvrez nos ${total} articles sur l'IA generative, la cybersecurite, les arnaques en ligne et l'automatisation pour les associations, collectivites et TPE. Conseils pratiques, guides telechargeables, et selections d'outils libres.`;
 ---
 
 <Layout
-  title="Biscuits du Dev | Articles DevOps, IA & Développement"
-  description="Articles techniques sur le DevOps, l'Intelligence Artificielle et les bonnes pratiques de développement pour développeurs et équipes techniques."
+  title={pageTitle}
+  description={pageDescription}
+  canonical="/blog"
   schema={{
     type: 'WebPage',
     data: {
-      name: 'Biscuits du Dev - Blog',
-      description: 'Articles, guides et tutoriels pour accompagner les associations et TPE dans leurs projets IA et numériques.',
+      name: pageTitle,
+      description: pageDescription,
     }
   }}
 >
+  <Breadcrumb />
+
   <div class="blog-wrapper">
     <header class="blog-hero">
       <div class="hero-content">
+        <span class="hero-eyebrow">Le blog de Biscuits IA</span>
         <h1 class="hero-title">
-          Développe plus vite avec
-          <span class="gradient-text">Biscuits du Dev</span>
+          L'IA accessible a toutes les structures
         </h1>
-
         <p class="hero-description">
-          Des articles, guides et tutoriels pour accompagner les associations et TPE dans leurs projets IA et numériques, dans une démarche d'intérêt général, solidaire et d'entraide.
+          {total} articles ecrits par notre equipe pour aider les associations, collectivites et petites structures a comprendre, choisir et utiliser l'IA en toute confiance.
         </p>
 
         <div class="stats-grid">
           <div class="stat-card">
-            <div class="stat-icon" aria-hidden="true">📚</div>
-            <div class="stat-info">
-              <div class="stat-number">{total}</div>
-              <div class="stat-label">Articles</div>
-            </div>
+            <div class="stat-number">{total}</div>
+            <div class="stat-label">Articles publies</div>
           </div>
           <div class="stat-card">
-            <div class="stat-icon" aria-hidden="true">📄</div>
-            <div class="stat-info">
-              <div class="stat-number">{lastPage}</div>
-              <div class="stat-label">Pages</div>
-            </div>
+            <div class="stat-number">{allTags.length}</div>
+            <div class="stat-label">Themes abordes</div>
           </div>
           <div class="stat-card">
-            <div class="stat-icon" aria-hidden="true">⭐</div>
-            <div class="stat-info">
-              <div class="stat-number">{featuredArticles.length}</div>
-              <div class="stat-label">En vedette</div>
-            </div>
+            <div class="stat-number">100%</div>
+            <div class="stat-label">Gratuit et open source</div>
           </div>
         </div>
       </div>
     </header>
 
     <div class="blog-container">
-      <div class="search-wrapper">
-        <div class="search-box">
-          <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <circle cx="11" cy="11" r="8"></circle>
-            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-          </svg>
-          <input type="search" id="blog-search" placeholder="Rechercher un article..." autocomplete="off" aria-label="Rechercher un article" />
-          <button type="button" id="search-clear" class="search-clear" aria-label="Effacer la recherche" hidden>
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="18" y1="6" x2="6" y2="18"></line>
-              <line x1="6" y1="6" x2="18" y2="18"></line>
-            </svg>
-          </button>
-        </div>
-      </div>
 
-      <div id="search-results" hidden>
+      <section class="featured-section" aria-labelledby="featured-title">
+        <h2 id="featured-title" class="section-title">
+          <span aria-hidden="true">★</span> Articles en vedette
+        </h2>
+        <div class="featured-grid">
+          {featuredArticles.map((article) => (
+            <a href={`/blog/${article.id}`} class="featured-card">
+              <span class="featured-eyebrow">A la une</span>
+              <h3 class="featured-title">{article.data.title}</h3>
+              {article.data.description && (
+                <p class="featured-description">{article.data.description}</p>
+              )}
+              <span class="featured-cta">Lire l'article →</span>
+            </a>
+          ))}
+        </div>
+      </section>
+
+      <section class="filter-section" aria-label="Filtrer les articles">
+        <div class="search-wrapper">
+          <div class="search-box">
+            <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input
+              type="search"
+              id="blog-search"
+              placeholder="Rechercher dans {total} articles..."
+              autocomplete="off"
+              aria-label="Rechercher un article"
+            />
+            <button type="button" id="search-clear" class="search-clear" aria-label="Effacer la recherche" hidden>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <nav class="tag-filters" aria-label="Filtrer par theme">
+          <button type="button" class="tag-pill active" data-tag="all">
+            Tous <span class="tag-count">{total}</span>
+          </button>
+          {allTags.map((tag) => (
+            <a
+              href={`/blog/tag/${tag.slug}`}
+              class="tag-pill"
+              data-tag={tag.slug}
+            >
+              #{tag.display} <span class="tag-count">{tag.count}</span>
+            </a>
+          ))}
+        </nav>
+      </section>
+
+      <section id="search-results" aria-live="polite" hidden>
         <p id="search-count" class="search-count"></p>
         <div id="search-grid" class="articles-grid"></div>
-        <p id="search-empty" class="search-empty" hidden></p>
-      </div>
+        <p id="search-empty" class="search-empty" hidden>
+          Aucun article ne correspond a votre recherche. Essayez d'autres mots-cles ou <a href="/blog">reinitialisez le filtre</a>.
+        </p>
+      </section>
 
-      <div id="blog-main-content">
-        {featuredArticles.length > 0 && (
-          <section class="featured-section">
-            <div class="section-header">
-              <div class="section-title-wrapper">
-                <h2 class="section-title">
-                  <span class="title-icon" aria-hidden="true">⭐</span>
-                  Articles en vedette
-                </h2>
-                <p class="section-subtitle">Les meilleurs articles sélectionnés pour toi</p>
-              </div>
-            </div>
-
-            <div class="featured-grid">
-              {featuredArticles.map((article: CollectionEntry<'blog'>, index: number) => (
-                <article class="featured-card" style={`animation-delay: ${index * 0.1}s`}>
-                  <a href={`/blog/${article.id}`} class="card-link">
-                    {article.data.thumbnail && (
-                      <div class="card-thumbnail">
-                        <img src={article.data.thumbnail} alt={article.data.title} loading="lazy" width="600" height="338" />
-                        <div class="thumbnail-overlay"></div>
-                        <div class="featured-badge">⭐ En vedette</div>
-                      </div>
-                    )}
-                    <div class="card-content">
-                      <div class="card-meta">
-                        <time datetime={article.data.pubDate.toISOString()}>
-                          {article.data.pubDate.toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' })}
-                        </time>
-                        {article.data.author && <span class="author">{article.data.author}</span>}
-                      </div>
-                      <h3 class="card-title">{article.data.title}</h3>
-                      {article.data.description && <p class="card-description">{article.data.description}</p>}
-                      {article.data.tags && article.data.tags.length > 0 && (
-                        <div class="card-tags">
-                          {(article.data.tags as string[]).slice(0, 3).map((tag: string) => (
-                            <span class="tag">#{tag}</span>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  </a>
-                </article>
-              ))}
-            </div>
-          </section>
-        )}
-
-        <section class="articles-section">
-          <div class="section-header">
-            <div class="section-title-wrapper">
-              <h2 class="section-title">Tous les articles</h2>
-              <p class="section-subtitle">
-                {Math.min(PAGE_SIZE, total)} sur {total} article{total > 1 ? 's' : ''}
-              </p>
-            </div>
-          </div>
-
-          <div class="articles-grid">
-            {articles.map((article: CollectionEntry<'blog'>, index: number) => (
-              <article class="article-card" style={`animation-delay: ${index * 0.05}s`}>
-                <a href={`/blog/${article.id}`} class="card-link">
-                  <div class="card-content">
-                    {featuredArticles.some((f: CollectionEntry<'blog'>) => f.id === article.id) && (
-                      <div class="inline-featured-badge">⭐ En vedette</div>
-                    )}
-                    <div class="card-meta">
-                      <time datetime={article.data.pubDate.toISOString()}>
-                        {article.data.pubDate.toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' })}
-                      </time>
-                      {article.data.author && <span class="author">{article.data.author}</span>}
-                    </div>
-                    <h3 class="card-title">{article.data.title}</h3>
-                    {article.data.description && <p class="card-description">{article.data.description}</p>}
-                    {article.data.tags && article.data.tags.length > 0 && (
-                      <div class="card-tags">
-                        {(article.data.tags as string[]).slice(0, 3).map((tag: string) => (
-                          <span class="tag">#{tag}</span>
-                        ))}
-                      </div>
-                    )}
+      <section id="blog-main-content">
+        <h2 class="section-title">Tous nos articles</h2>
+        <div class="articles-grid" id="all-articles-grid">
+          {sorted.map((article: CollectionEntry<'blog'>, index: number) => (
+            <article class="article-card" style={`--card-index: ${index}`} data-article-id={article.id}>
+              <a href={`/blog/${article.id}`} class="card-link">
+                <div class="card-content">
+                  <div class="card-meta">
+                    <time datetime={article.data.pubDate.toISOString()}>
+                      {article.data.pubDate.toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' })}
+                    </time>
+                    {article.data.author && <span class="meta-sep">&middot;</span>}
+                    {article.data.author && <span>{article.data.author}</span>}
                   </div>
-                </a>
-              </article>
-            ))}
-          </div>
-
-          {lastPage > 1 && (
-            <nav class="pagination" aria-label="Navigation des pages">
-              <a href="/blog/2" class="pagination-btn">
-                Page suivante →
+                  <h3 class="card-title">{article.data.title}</h3>
+                  {article.data.description && (
+                    <p class="card-description">{article.data.description}</p>
+                  )}
+                  {article.data.tags && article.data.tags.length > 0 && (
+                    <div class="card-tags">
+                      {(article.data.tags as string[]).slice(0, 3).map((tag: string) => (
+                        <span class="tag" data-tag-slug={slugifyTag(tag)}>#{tag}</span>
+                      ))}
+                    </div>
+                  )}
+                  <span class="read-more">
+                    Lire l'article
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <line x1="5" y1="12" x2="19" y2="12"></line>
+                      <polyline points="12 5 19 12 12 19"></polyline>
+                    </svg>
+                  </span>
+                </div>
               </a>
-            </nav>
-          )}
-        </section>
+            </article>
+          ))}
+        </div>
+      </section>
 
-        {allTags.length > 0 && (
-          <section class="tags-section">
-            <div class="section-header">
-              <h2 class="section-title-small">🏷️ Tags populaires</h2>
-            </div>
-            <div class="popular-tags">
-              {allTags.slice(0, 10).map((tag: string) => (
-                <p class="popular-tag">#{tag}</p>
-              ))}
-            </div>
-          </section>
-        )}
-      </div>
     </div>
   </div>
-
-  <script type="application/json" id="blog-search-data" set:html={JSON.stringify(allArticlesForSearch)} is:inline></script>
-
-  <script is:inline>
-    (() => {
-      const dataEl = document.getElementById('blog-search-data');
-      if (!dataEl) return;
-      const data = JSON.parse(dataEl.textContent || '[]');
-      const input = document.getElementById('blog-search');
-      const clearBtn = document.getElementById('search-clear');
-      const results = document.getElementById('search-results');
-      const main = document.getElementById('blog-main-content');
-      const grid = document.getElementById('search-grid');
-      const count = document.getElementById('search-count');
-      const empty = document.getElementById('search-empty');
-
-      function escapeHtml(s) {
-        return s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-      }
-
-      function render(matches) {
-        if (!grid) return;
-        grid.innerHTML = matches.map((a) => '<article class="article-card"><a href="/blog/' + encodeURIComponent(a.id) + '" class="card-link"><div class="card-content"><div class="card-meta"><time>' + escapeHtml(a.pubDate) + '</time></div><h3 class="card-title">' + escapeHtml(a.title) + '</h3><p class="card-description">' + escapeHtml(a.description) + '</p>' + (a.tags && a.tags.length ? '<div class="card-tags">' + a.tags.map((t) => '<span class="tag">#' + escapeHtml(t) + '</span>').join('') + '</div>' : '') + '</div></a></article>').join('');
-      }
-
-      function run(q) {
-        if (!q) {
-          if (results) results.setAttribute('hidden', '');
-          if (main) main.style.display = '';
-          if (clearBtn) clearBtn.setAttribute('hidden', '');
-          return;
-        }
-        const needle = q.toLowerCase().trim();
-        const matches = data.filter((a) =>
-          a.title.toLowerCase().includes(needle) ||
-          (a.description || '').toLowerCase().includes(needle) ||
-          (a.tags || []).some((t) => t.toLowerCase().includes(needle))
-        );
-        if (main) main.style.display = 'none';
-        if (results) results.removeAttribute('hidden');
-        if (clearBtn) clearBtn.removeAttribute('hidden');
-        if (count) count.textContent = matches.length + ' résultat' + (matches.length > 1 ? 's' : '') + ' pour "' + q + '"';
-        if (matches.length === 0) {
-          if (grid) grid.innerHTML = '';
-          if (empty) empty.removeAttribute('hidden');
-        } else {
-          if (empty) empty.setAttribute('hidden', '');
-          render(matches);
-        }
-      }
-
-      if (input) input.addEventListener('input', (e) => run(e.target.value || ''));
-      if (clearBtn) clearBtn.addEventListener('click', () => { input.value = ''; run(''); });
-    })();
-  </script>
 </Layout>
+
+<script is:inline define:vars={{ allArticlesForSearch }}>
+  // Initialisation du moteur de recherche client.
+  // Pas de dependance externe : on indexe titres + descriptions + tags en memoire.
+  (function () {
+    const searchInput = document.getElementById('blog-search');
+    const searchClear = document.getElementById('search-clear');
+    const searchResults = document.getElementById('search-results');
+    const searchGrid = document.getElementById('search-grid');
+    const searchCount = document.getElementById('search-count');
+    const searchEmpty = document.getElementById('search-empty');
+    const mainContent = document.getElementById('blog-main-content');
+    const allArticlesGrid = document.getElementById('all-articles-grid');
+    const tagButtons = document.querySelectorAll('.tag-pill[data-tag]');
+
+    if (!searchInput || !searchResults || !searchGrid || !searchCount || !searchEmpty || !mainContent || !allArticlesGrid) {
+      return;
+    }
+
+    // Normalise le texte (lowercase + retrait des accents).
+    const normalize = (s) =>
+      (s || '').toString().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+    let activeTag = 'all';
+
+    function renderCard(article) {
+      const tagsHtml = (article.tags || [])
+        .map((t) => `<span class="tag">#${t}</span>`)
+        .join('');
+      return `
+        <article class="article-card" data-article-id="${article.id}">
+          <a href="${article.url}" class="card-link">
+            <div class="card-content">
+              <div class="card-meta">
+                <time datetime="${article.pubDateISO}">${article.pubDate}</time>
+                <span class="meta-sep">&middot;</span>
+                <span>${article.author}</span>
+              </div>
+              <h3 class="card-title">${escapeHtml(article.title)}</h3>
+              ${article.description ? `<p class="card-description">${escapeHtml(article.description)}</p>` : ''}
+              ${tagsHtml ? `<div class="card-tags">${tagsHtml}</div>` : ''}
+              <span class="read-more">Lire l'article <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></span>
+            </div>
+          </a>
+        </article>
+      `;
+    }
+
+    function escapeHtml(s) {
+      return (s || '').replace(/[&<>"']/g, (c) =>
+        ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])
+      );
+    }
+
+    function applyFilter() {
+      const query = normalize(searchInput.value.trim());
+      const tag = activeTag;
+
+      const matches = allArticlesForSearch.filter((a) => {
+        // Filtre tag
+        if (tag !== 'all' && !(a.tagsSlug || []).includes(tag)) return false;
+        // Filtre recherche
+        if (query) {
+          const haystack = normalize(a.title + ' ' + a.description + ' ' + (a.tags || []).join(' '));
+          if (!haystack.includes(query)) return false;
+        }
+        return true;
+      });
+
+      if (query || tag !== 'all') {
+        // Mode recherche : on cache la grille principale, on affiche les resultats.
+        mainContent.hidden = true;
+        searchResults.hidden = false;
+        searchGrid.innerHTML = matches.map(renderCard).join('');
+        const n = matches.length;
+        searchCount.textContent = n + ' article' + (n > 1 ? 's' : '') + ' trouve' + (n > 1 ? 's' : '');
+        searchEmpty.hidden = n > 0;
+      } else {
+        // Mode normal : on affiche tout.
+        mainContent.hidden = false;
+        searchResults.hidden = true;
+      }
+    }
+
+    // Filtre par tag (pill).
+    tagButtons.forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        // Liens : on laisse la navigation se faire naturellement (vers /blog/tag/...).
+        if (btn.tagName === 'A') return;
+        e.preventDefault();
+        tagButtons.forEach((b) => b.classList.remove('active'));
+        btn.classList.add('active');
+        activeTag = btn.getAttribute('data-tag') || 'all';
+        applyFilter();
+        // Si un tag est actif, scrolle vers la grille.
+        if (activeTag !== 'all') {
+          document.getElementById('search-results')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      });
+    });
+
+    // Recherche live (debounced).
+    let searchTimer = null;
+    searchInput.addEventListener('input', () => {
+      window.clearTimeout(searchTimer);
+      searchTimer = window.setTimeout(() => {
+        if (searchInput.value.trim()) {
+          searchClear.hidden = false;
+        } else {
+          searchClear.hidden = true;
+        }
+        applyFilter();
+      }, 120);
+    });
+
+    searchClear.addEventListener('click', () => {
+      searchInput.value = '';
+      searchClear.hidden = true;
+      applyFilter();
+      searchInput.focus();
+    });
+
+    // Raccourci "/" pour focaliser la recherche.
+    document.addEventListener('keydown', (e) => {
+      if (e.key === '/' && document.activeElement !== searchInput && document.activeElement?.tagName !== 'INPUT' && document.activeElement?.tagName !== 'TEXTAREA') {
+        e.preventDefault();
+        searchInput.focus();
+        searchInput.select();
+      }
+      if (e.key === 'Escape' && document.activeElement === searchInput) {
+        searchInput.value = '';
+        searchClear.hidden = true;
+        applyFilter();
+        searchInput.blur();
+      }
+    });
+  })();
+</script>
 
 <style>
   .blog-wrapper { min-height: 100vh; background: var(--color-bg); }
-  .blog-hero { padding: 2rem 1rem 3rem; }
-  .hero-content { max-width: 900px; margin: 0 auto; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 2rem; }
-  .hero-title { font-size: clamp(2.5rem, 6vw, 4.5rem); font-weight: 900; color: var(--color-text); letter-spacing: -0.03em; line-height: 1.1; margin: 0; }
-  .gradient-text { display: inline-block; background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-first) 50%, var(--color-primary) 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; background-size: 200% 200%; animation: gradient-shift 4s ease infinite; }
-  @keyframes gradient-shift { 0%,100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
-  .hero-description { font-size: clamp(1rem, 2.5vw, 1.5rem); color: var(--color-text-light); max-width: 700px; margin: 0; font-weight: 600; }
-  .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1.5rem; max-width: 700px; width: 100%; }
-  .stat-card { background: var(--color-bg-alt); border: 2px solid var(--color-border); padding: 1.5rem; border-radius: var(--radius-xl); display: flex; align-items: center; gap: 1rem; box-shadow: var(--shadow-lg); position: relative; overflow: hidden; }
-  .stat-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--color-primary), var(--color-first)); }
-  .stat-icon { font-size: 2rem; flex-shrink: 0; }
-  .stat-info { text-align: left; flex: 1; }
-  .stat-number { font-size: 2rem; font-weight: 900; line-height: 1; margin-bottom: 0.25rem; }
-  .stat-label { font-size: 0.85rem; color: var(--color-text-light); font-weight: 600; }
 
-  .blog-container { max-width: 1200px; margin: 0 auto; padding: 0 1rem 4rem; }
-  .search-wrapper { margin: 0 0 2rem; }
-  .search-box { display: flex; align-items: center; gap: 0.75rem; background: var(--color-bg-alt); border: 2px solid var(--color-border); border-radius: var(--radius-xl); padding: 0.75rem 1rem; }
-  .search-box:focus-within { border-color: var(--color-primary); }
+  /* === HERO === */
+  .blog-hero {
+    padding: calc(var(--header-height-desktop) + 2rem) 1rem 3rem;
+    background: var(--color-bg);
+    text-align: center;
+  }
+
+  .hero-content { max-width: 800px; margin: 0 auto; }
+
+  .hero-eyebrow {
+    display: inline-block;
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--color-primary);
+    background: var(--color-bg-elevated);
+    border: 2px solid var(--color-border);
+    padding: 0.4rem 1rem;
+    border-radius: var(--radius-full, 9999px);
+    margin-bottom: 1.25rem;
+  }
+
+  .hero-title {
+    font-size: clamp(2rem, 5vw, 3.25rem);
+    font-weight: 900;
+    margin: 0 0 1.25rem;
+    color: var(--color-text);
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+  }
+
+  .hero-description {
+    font-size: clamp(1rem, 1.5vw, 1.2rem);
+    color: var(--color-text-light);
+    line-height: 1.6;
+    margin: 0 0 2.5rem;
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    max-width: 700px;
+    margin: 0 auto;
+  }
+
+  .stat-card {
+    padding: 1.5rem 1rem;
+    background: var(--color-bg-alt);
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-xl, 1rem);
+    transition: transform var(--transition-base, 0.3s), border-color var(--transition-base, 0.3s);
+  }
+
+  .stat-card:hover {
+    transform: translateY(-3px);
+    border-color: var(--color-primary);
+  }
+
+  .stat-number {
+    font-size: clamp(1.75rem, 3vw, 2.5rem);
+    font-weight: 900;
+    color: var(--color-primary);
+    line-height: 1;
+    margin-bottom: 0.4rem;
+  }
+
+  .stat-label {
+    font-size: 0.8rem;
+    color: var(--color-text-light);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  /* === CONTAINER === */
+  .blog-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1rem 4rem;
+  }
+
+  .section-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: clamp(1.4rem, 2.5vw, 1.8rem);
+    font-weight: 800;
+    color: var(--color-text);
+    margin: 2.5rem 0 1.5rem;
+  }
+
+  /* === FEATURED === */
+  .featured-section { margin-bottom: 3rem; }
+
+  .featured-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .featured-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1.75rem;
+    background: var(--color-bg-alt);
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-xl, 1rem);
+    text-decoration: none;
+    color: inherit;
+    box-shadow: var(--shadow-md, 5px 5px 0 var(--color-border));
+    transition: transform var(--transition-base, 0.3s), box-shadow var(--transition-base, 0.3s), border-color var(--transition-base, 0.3s);
+  }
+
+  .featured-card:hover {
+    transform: translate(-3px, -3px);
+    box-shadow: var(--shadow-xl, 10px 10px 0 var(--color-border));
+    border-color: var(--color-primary);
+  }
+
+  .featured-eyebrow {
+    display: inline-block;
+    align-self: flex-start;
+    font-size: 0.7rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--color-bg-elevated);
+    background: var(--color-primary);
+    padding: 0.25rem 0.65rem;
+    border-radius: var(--radius-sm, 0);
+  }
+
+  .featured-title {
+    margin: 0;
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: var(--color-text);
+    line-height: 1.3;
+  }
+
+  .featured-description {
+    margin: 0;
+    color: var(--color-text-light);
+    line-height: 1.55;
+    font-size: 0.95rem;
+  }
+
+  .featured-cta {
+    color: var(--color-primary);
+    font-weight: 700;
+    font-size: 0.9rem;
+    margin-top: auto;
+  }
+
+  /* === FILTRES === */
+  .filter-section { margin: 2rem 0 1rem; }
+
+  .search-wrapper { margin-bottom: 1.5rem; }
+
+  .search-box {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: var(--color-bg-elevated);
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-xl, 1rem);
+    padding: 0.85rem 1.1rem;
+    box-shadow: var(--shadow-sm, 3px 3px 0 var(--color-border));
+    transition: box-shadow var(--transition-base, 0.3s), border-color var(--transition-base, 0.3s);
+  }
+
+  .search-box:focus-within {
+    border-color: var(--color-primary);
+    box-shadow: var(--shadow-md, 5px 5px 0 var(--color-border));
+  }
+
   .search-icon { flex-shrink: 0; color: var(--color-text-light); }
-  .search-box input { flex: 1; background: transparent; border: 0; outline: 0; color: var(--color-text); font-size: 1rem; font-family: inherit; }
-  .search-clear { background: transparent; border: 0; padding: 0.25rem; cursor: pointer; color: var(--color-text-light); }
-  .search-count { color: var(--color-text-light); margin-bottom: 1rem; font-weight: 600; }
-  .search-empty { color: var(--color-text-light); font-style: italic; }
 
-  .featured-section, .articles-section, .tags-section { margin: 3rem 0; }
-  .section-header { margin-bottom: 2rem; }
-  .section-title-wrapper { display: flex; flex-direction: column; gap: 0.5rem; }
-  .section-title { display: flex; align-items: center; gap: 0.75rem; font-size: clamp(1.5rem, 3vw, 2rem); font-weight: 800; margin: 0; color: var(--color-text); }
-  .title-icon { color: var(--color-primary); }
-  .section-subtitle { color: var(--color-text-light); font-weight: 500; margin: 0; }
+  .search-box input {
+    flex: 1;
+    background: transparent;
+    border: 0;
+    outline: 0;
+    color: var(--color-text);
+    font-size: 1rem;
+    font-family: inherit;
+    font-weight: 500;
+  }
 
-  .featured-grid, .articles-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; }
-  .featured-card, .article-card { background: var(--color-bg-alt); border: 2px solid var(--color-border); border-radius: var(--radius-xl); overflow: hidden; box-shadow: var(--shadow-md); transition: transform var(--transition-base), box-shadow var(--transition-base), border-color var(--transition-base); }
-  .featured-card:hover, .article-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-xl); border-color: var(--color-primary); }
+  .search-box input::placeholder { color: var(--color-text-light); opacity: 0.7; }
+
+  .search-clear {
+    background: transparent;
+    border: 0;
+    padding: 0.25rem;
+    cursor: pointer;
+    color: var(--color-text-light);
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .tag-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .tag-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 0.95rem;
+    background: var(--color-bg-elevated);
+    border: 2px solid var(--color-border);
+    color: var(--color-text);
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-decoration: none;
+    border-radius: var(--radius-button, 0.875rem);
+    cursor: pointer;
+    transition: all var(--transition-fast, 0.2s);
+    font-family: inherit;
+  }
+
+  .tag-pill:hover {
+    color: var(--color-bg-elevated);
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+  }
+
+  .tag-pill.active {
+    color: var(--color-bg-elevated);
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+  }
+
+  .tag-count {
+    background: var(--color-bg);
+    color: var(--color-text);
+    font-size: 0.7rem;
+    font-weight: 800;
+    padding: 0.1rem 0.45rem;
+    border-radius: var(--radius-sm, 0);
+    min-width: 1.5rem;
+    text-align: center;
+  }
+
+  .tag-pill.active .tag-count,
+  .tag-pill:hover .tag-count {
+    background: var(--color-bg-elevated);
+    color: var(--color-primary);
+  }
+
+  /* === RESULTATS RECHERCHE === */
+  .search-count {
+    color: var(--color-text-light);
+    margin: 1rem 0 1.5rem;
+    font-weight: 600;
+    font-size: 0.95rem;
+  }
+
+  .search-empty {
+    color: var(--color-text-light);
+    font-style: italic;
+    text-align: center;
+    padding: 3rem 1rem;
+  }
+
+  .search-empty a {
+    color: var(--color-primary);
+    font-weight: 600;
+  }
+
+  /* === GRILLE D'ARTICLES === */
+  .articles-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .article-card {
+    background: var(--color-bg-alt);
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-xl, 1rem);
+    overflow: hidden;
+    transition: transform var(--transition-base, 0.3s), box-shadow var(--transition-base, 0.3s), border-color var(--transition-base, 0.3s);
+    animation: fadeInUp 0.4s ease-out backwards;
+    animation-delay: calc(var(--card-index, 0) * 0.04s);
+  }
+
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .article-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg, 7px 7px 0 var(--color-border));
+    border-color: var(--color-primary);
+  }
+
   .card-link { color: inherit; text-decoration: none; display: block; }
-  .card-thumbnail { position: relative; aspect-ratio: 16/9; overflow: hidden; background: var(--color-bg-elevated); }
-  .card-thumbnail img { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .thumbnail-overlay { position: absolute; inset: 0; background: linear-gradient(180deg, transparent 60%, rgba(0,0,0,0.35)); }
-  .featured-badge { position: absolute; top: 0.75rem; left: 0.75rem; display: inline-flex; align-items: center; gap: 0.25rem; background: var(--color-primary); color: var(--color-bg); padding: 0.35rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; }
-  .card-content { padding: 1.25rem; display: flex; flex-direction: column; gap: 0.75rem; }
-  .card-meta { display: flex; gap: 1rem; color: var(--color-text-light); font-size: 0.85rem; font-weight: 600; flex-wrap: wrap; }
-  .card-title { font-size: 1.25rem; font-weight: 800; margin: 0; color: var(--color-text); line-height: 1.3; }
-  .card-description { margin: 0; color: var(--color-text-light); line-height: 1.55; }
-  .card-tags { display: flex; flex-wrap: wrap; gap: 0.35rem; }
-  .tag { display: inline-block; padding: 0.15rem 0.5rem; background: var(--color-bg-elevated); border: 1.5px solid var(--color-border); font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-text-light); }
-  .card-footer { margin-top: auto; }
-  .read-more { display: inline-flex; align-items: center; gap: 0.4rem; color: var(--color-primary); font-weight: 700; }
-  .inline-featured-badge { display: inline-block; align-self: flex-start; padding: 0.15rem 0.5rem; background: var(--color-first); color: var(--color-bg); font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.25rem; }
+  .card-content { padding: 1.5rem; display: flex; flex-direction: column; gap: 0.75rem; }
 
-  .pagination { display: flex; justify-content: flex-end; margin-top: 2rem; }
-  .pagination-btn { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.25rem; background: var(--color-primary); color: var(--color-bg); font-weight: 800; text-decoration: none; border: 2px solid var(--color-border); box-shadow: var(--shadow-md); transition: transform var(--transition-base), box-shadow var(--transition-base); }
-  .pagination-btn:hover { transform: translate(-2px, -2px); box-shadow: var(--shadow-lg); }
+  .card-meta {
+    display: flex;
+    gap: 0.5rem;
+    color: var(--color-text-light);
+    font-size: 0.85rem;
+    font-weight: 600;
+    flex-wrap: wrap;
+    align-items: center;
+  }
 
-  .section-title-small { font-size: 1.25rem; font-weight: 800; margin: 0 0 1rem; color: var(--color-text); }
-  .popular-tags { display: flex; flex-wrap: wrap; gap: 0.5rem; }
-  .popular-tag { margin: 0; padding: 0.35rem 0.75rem; background: var(--color-bg-alt); border: 1.5px solid var(--color-border); font-size: 0.85rem; font-weight: 700; }
+  .meta-sep { color: var(--color-border); }
 
-  @media (prefers-reduced-motion: reduce) { .gradient-text { animation: none; } }
+  .card-title {
+    font-size: 1.25rem;
+    font-weight: 800;
+    margin: 0;
+    color: var(--color-text);
+    line-height: 1.3;
+  }
+
+  .card-description {
+    margin: 0;
+    color: var(--color-text-light);
+    line-height: 1.55;
+    font-size: 0.95rem;
+  }
+
+  .card-tags { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+
+  .tag {
+    display: inline-block;
+    padding: 0.2rem 0.6rem;
+    background: var(--color-bg-elevated);
+    border: 1.5px solid var(--color-border);
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--color-text-light);
+  }
+
+  .read-more {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: var(--color-primary);
+    font-weight: 700;
+    font-size: 0.9rem;
+    margin-top: auto;
+    padding-top: 0.5rem;
+  }
+
+  /* === RESPONSIVE === */
+  @media (max-width: 768px) {
+    .blog-hero { padding-top: calc(var(--header-height-mobile) + 1.5rem); }
+    .stats-grid { grid-template-columns: 1fr; gap: 0.75rem; }
+    .stat-card { padding: 1rem; }
+    .featured-grid, .articles-grid { grid-template-columns: 1fr; }
+  }
 </style>

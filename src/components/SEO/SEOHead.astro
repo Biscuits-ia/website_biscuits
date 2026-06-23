@@ -31,13 +31,13 @@ const fullOgImage = ogImage.startsWith('http')
   : `${siteUrl}${ogImage}`;
 
 // Optimisation longueur description (SEO 2026)
-const seoDescription = description.length > 155
-  ? description.substring(0, 152) + '...'
+const seoDescription = description.length > 160
+  ? description.substring(0, 157) + '...'
   : description;
 
 // Optimisation longueur titre (SEO 2026)
-const seoTitle = title.length > 60
-  ? title.substring(0, 57) + '...'
+const seoTitle = title.length > 65
+  ? title.substring(0, 62) + '...'
   : title;
 ---
 

@@ -1,4 +1,4 @@
-﻿declare global {
+declare global {
   interface Window {
     /** Google Tag Manager gtag function */
     gtag?: (

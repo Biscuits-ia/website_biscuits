@@ -1,0 +1,98 @@
+---
+title: "Comparatif 2026 : choisir le bon modele IA open source"
+description: "Llama 4, Mistral, Qwen, Phi-4 : panorama a jour des modeles IA open source en 2026, et conseils concrets pour choisir celui qui correspond a votre association, collectivite ou TPE."
+pubDate: 2026-04-29T09:00:00Z
+author: "Biscuits IA"
+featured: true
+tags: ["ia", "open-source", "llm", "comparatif", "guide", "self-hosting"]
+---
+
+import Callout from '@/components/Callout.astro';
+import ComparisonGrid from '@/components/ComparisonGrid.astro';
+
+# Comparatif 2026 : choisir le bon modele IA open source
+
+Llama 4, Mistral, Qwen, DeepSeek, Phi-4, Gemma 3... En 2026, choisir un modele d'IA open source ressemble a choisir un restaurant dans une rue de 50 etablissements. Tous ont l'air bien, mais lequel correspond vraiment a votre besoin ?
+
+Pour une association, une mairie ou une TPE, **le bon modele n'est pas forcement le plus puissant**. C'est celui qui repond a votre cas d'usage tout en restant dans votre budget et vos contraintes techniques.
+
+<Callout type="info" title="Ce que vous allez lire">
+Un panorama a jour des modeles open source en 2026, leurs forces et faiblesses, et des conseils concrets pour choisir le votre selon votre profil (association, collectivite, TPE).
+</Callout>
+
+---
+
+## Le paysage 2026 en un coup d'oeil
+
+L'ecosysteme open source a explose depuis 2023. On distingue aujourd'hui trois grandes familles :
+
+**Les modeles generalistes** : ils gerent bien la conversation, la redaction, l'analyse. Ce sont les plus polyvalents.
+
+**Les modeles specialises** : affutes pour une tache precise (code, raisonnement mathematique, multimodal).
+
+**Les petits modeles** : compacts (1 a 4 milliards de parametres), parfaits pour tourner sur un PC standard ou un Raspberry Pi.
+
+<ComparisonGrid
+  type="ai"
+  items={[
+    { icon: "LL", title: "Llama 4 (Meta)", description: "Le polyglotte made in Meta. Excellente qualite en francais et dans 100+ langues. Tailles de 8B a 70B. Licence Llama Community (gratuite jusqu'a 700M d'utilisateurs/mois)." },
+    { icon: "FR", title: "Mistral Large 2 (Mistral AI)", description: "Le champion francais. Tres bon en francais, multilingue, conforme RGPD par conception. Licence Apache 2.0 pour les versions Small/Medium." },
+    { icon: "GL", title: "Qwen 3 (Alibaba)", description: "Le couteau suisse chinois. Excellent multilingue dont le francais, performant en code et raisonnement. Licence Apache 2.0." },
+    { icon: "DS", title: "DeepSeek-V3 (DeepSeek)", description: "Le specialiste du raisonnement et du code. Tres bon en maths, logique, generation de code. Licence MIT-like." },
+    { icon: "PH", title: "Phi-4 (Microsoft)", description: "Le petit prodige. 14B de parametres qui rivalise avec des modeles 70B sur certaines taches. Ideal pour les PC modestes." }
+  ]}
+/>
+
+---
+
+## Lequel choisir pour votre structure ?
+
+### Vous etes une association avec des benevoles techniques
+
+**Llama 4 8B Instruct** est probablement votre meilleur allie. Il combine :
+- Une licence permissive pour un usage non commercial (parfait pour une asso)
+- Une taille compacte (8 milliards de parametres) qui tourne sur un PC correct
+- Une excellente comprehension du francais
+- Une vaste communaute (Meta, Hugging Face) pour trouver de l'aide
+
+### Vous etes une collectivite (mairie, CCAS, EPCI)
+
+**Mistral Large 2** est le choix naturel. Pourquoi ?
+- Heberge en Europe (serveurs en France), conforme RGPD
+- Excellent en francais (edite par une startup francaise)
+- Licence Apache 2.0 pour les versions Small et Medium
+
+### Vous etes une TPE/PME avec un budget serre
+
+Commencez par **Phi-4** (14B) ou **Gemma 3 4B** :
+- **Phi-4** : 14B de parametres, tourne sur un PC gaming a 1500 EUR
+- **Gemma 3 4B** : 4 milliards de parametres, tourne meme sur un MacBook Air M1
+
+### Vous voulez automatiser du code
+
+**DeepSeek-V3** ou **Qwen 3 Coder** : specialises dans la generation de code.
+
+---
+
+## Recommandations par profil
+
+| Profil | Premier choix | Budget cloud | Alternative |
+|---|---|---|---|
+| Association < 10 personnes | Llama 4 8B | 0 EUR (self-host) | Phi-4 14B |
+| Association 10-50 personnes | Mistral Small 3 | 50-150 EUR/mois | Qwen 3 32B |
+| Mairie / CCAS | Mistral Large 2 | 200-500 EUR/mois | Qwen 3 32B |
+| TPE 1-5 personnes | Phi-4 / Gemma 3 4B | 0 EUR (PC) | Llama 4 8B |
+| PME 5-50 personnes | Llama 4 70B | 300-800 EUR/mois | Qwen 3 72B |
+| Grand compte | DeepSeek-V3 | Sur mesure | Llama 4 405B |
+
+---
+
+## Conclusion
+
+Le choix d'un modele n'est pas definitif. Vous pouvez commencer avec un petit modele sur un PC, valider votre cas d'usage, puis monter en puissance quand vos besoins augmentent.
+
+### Les 3 actions a faire cette semaine
+
+1. **Explorez Ollama ou LM Studio** sur votre poste : telechargez un petit modele (Phi-4 ou Gemma 3) et testez-le.
+2. **Listez 3 cas d'usage** concrets dans votre structure ou une IA pourrait vous faire gagner du temps.
+3. **Contactez-nous** : on propose un premier echange gratuit de 30 minutes pour evaluer ensemble ce qui est realiste pour votre structure.

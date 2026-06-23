@@ -1,0 +1,271 @@
+---
+title: "Evaluer un LLM : comment juger la qualite des reponses"
+description: "Methodes concretes pour evaluer la qualite d'un LLM open source sur vos propres donnees : benchmark, jeu de test, notation humaine, et outils automatises."
+pubDate: 2026-06-10T09:00:00Z
+author: "Biscuits IA"
+featured: false
+tags: ["ia", "evaluation", "open-source", "qualite", "benchmark", "guide"]
+---
+
+import Callout from '@/components/Callout.astro';
+import ComparisonGrid from '@/components/ComparisonGrid.astro';
+
+# Evaluer un LLM : comment savoir si un modele est assez bon pour vous
+
+Vous avez installe Ollama, telecharge 3 modeles differents, et maintenant vous vous demandez : "lequel choisir pour mon usage ?"
+
+La tentation est grande de regarder les benchmarks publies (MMLU, HumanEval, etc.) et de prendre celui qui a le meilleur score. C'est une mauvaise idee. **Les benchmarks ne disent rien sur la qualite d'un modele sur VOS donnees reelles.**
+
+Pour evaluer si un LLM est adapte a votre besoin, il faut le tester sur des cas concrets qui viennent de votre activite. Voici une methode pratique.
+
+<Callout type="info" title="Pour qui ?">
+Pour les responsables de projet IA, coordinateurs techniques, et decideurs qui doivent choisir un modele sans tomber dans les pieges des benchmarks marketing.
+</Callout>
+
+---
+
+## Pourquoi les benchmarks publics ne suffisent pas
+
+Les benchmarks comme MMLU, HumanEval, GSM8K, ou MT-Bench mesurent des capacites generales. Un modele peut etre excellent en maths et mediocre en francais specialise, ou vice-versa.
+
+**Trois raisons de ne pas se fier aux seuls benchmarks** :
+
+1. **Ils sont publies par les createurs des modeles** (avec conflit d'interet evident)
+2. **Ils testent des capacites academiques**, pas des cas professionnels
+3. **Les conditions d'evaluation varient** (quantification, prompt, temperature)
+
+Pour evaluer un LLM sur votre besoin, vous devez faire **votre propre evaluation**.
+
+---
+
+## La methode en 4 etapes
+
+### Etape 1 : Constituer un jeu de test (1-2 jours)
+
+Le jeu de test est **le coeur de l'evaluation**. Mauvais jeu de test = evaluation inutile.
+
+#### Combien de cas ?
+
+- **Minimum viable** : 20 cas
+- **Confortable** : 50-100 cas
+- **Ideal** : 200+ cas
+
+Pour une premiere evaluation, 30 cas bien choisis suffisent.
+
+#### D'ou viennent les cas ?
+
+- Vos cas reels passes (mails types, CR, FAQ recurrente)
+- Des cas generes par vous-meme en pensant aux difficultes
+- Des cas inspires de vos erreurs frequentes
+
+#### Format d'un cas
+
+Chaque cas comporte :
+- **La question ou tache** : "Rédige un mail de relance..."
+- **Le contexte** : informations supplementaires (statut adherent, montant, etc.)
+- **La reponse ideale** : ce qu'un humain repondrait idealement
+- **Les criteres de qualite** : ton, longueur, informations obligatoires
+
+### Etape 2 : Tester les modeles (2-3 heures)
+
+Pour chaque cas de votre jeu de test, testez **3 a 5 modeles**. Gardez les memes prompts, la meme temperature, le meme format.
+
+#### Methode de test
+
+- **En aveugle** : ne regardez pas le nom du modele, juste la reponse
+- **Dans le desordre** : melangez les reponses pour eviter les biais
+- **Plusieurs fois** : un meme prompt peut donner des reponses differentes (temperature > 0)
+
+#### Outils pour automatiser
+
+- **Open WebUI** : interface de chat, vous pouvez copier-coller vos prompts
+- **LM Studio** : interface native avec modele switch rapide
+- **Scripts Python** : pour tester systematiquement
+
+### Etape 3 : Evaluer les reponses (2-4 heures)
+
+Pour chaque reponse, notez sur une echelle (par exemple 1 a 5) :
+- **Pertinence** : repond a la question ?
+- **Exactitude** : informations correctes ?
+- **Ton** : respecte le ton attendu ?
+- **Completude** : tous les elements requis presents ?
+- **Originalite** : pas de contenu plagie ou trop generique
+
+#### Methode rapide : notation 1-5
+
+| Note | Signification |
+|---|---|
+| 5 | Excellent, utilisable tel quel |
+| 4 | Bon, reutilisable apres legeres corrections |
+| 3 | Correct, modifications importantes necessaires |
+| 2 | Mediocre, refait a la main |
+| 1 | Inutilisable, hallucination ou hors sujet |
+
+Calculez la moyenne par modele. Le modele avec la meilleure moyenne sur vos cas est le meilleur pour vous.
+
+### Etape 4 : Valider sur le terrain (1-2 semaines)
+
+Les notes en aveugle sont utiles mais insuffisantes. Il faut **utiliser le modele en conditions reelles** pendant 1-2 semaines.
+
+#### Methodes de validation terrain
+
+- **A/B testing** : comparez 2 modeles sur 50 requetes chacun
+- **Validation humaine** : les beneficiaires (adherents, citoyens) notent les reponses
+- **Mesure d'impact** : temps gagne, taux de resolution, satisfaction
+
+---
+
+## Les criteres objectifs a mesurer
+
+Au-dela de la qualite subjective, certains criteres sont mesurables.
+
+### Latence
+
+Temps entre l'envoi du prompt et la reception de la premiere reponse.
+
+- **< 1 seconde** : excellent
+- **1-3 secondes** : bon
+- **3-10 secondes** : acceptable pour du non-interactif
+- **> 10 secondes** : problematique
+
+### Debit (tokens/seconde)
+
+Nombre de mots generes par seconde.
+
+- **> 50 tokens/s** : excellent
+- **20-50 tokens/s** : bon
+- **10-20 tokens/s** : acceptable
+- **< 10 tokens/s** : lent
+
+### Taux d'hallucination
+
+Sur votre jeu de test, combien de reponses contiennent des informations inventees ?
+
+C'est **le critere le plus important** pour un usage professionnel.
+
+- **< 5%** : excellent
+- **5-15%** : bon avec verification
+- **15-30%** : mediocre, verification systematique requise
+- **> 30%** : inutilisable pour un usage pro
+
+### Taux de refus
+
+Combien de fois le modele refuse de repondre ou dit "je ne sais pas" ?
+
+- **< 10%** : peut-etre trop confiant
+- **10-30%** : equilibre raisonnable
+- **> 30%** : trop prudent, legerement sous-utilise
+
+### Consommation memoire
+
+Combien de RAM le modele prend-il ? Si c'est trop, il ne tournera pas sur votre PC.
+
+---
+
+## Outils d'evaluation automatises
+
+### lm-evaluation-harness (EleutherAI)
+
+Le standard de l'industrie. Permet de tester un modele sur des benchmarks personnalises.
+
+```bash
+pip install lm-eval
+
+lm_eval --model hf \
+  --model_args pretrained=meta-llama/Llama-4-8B \
+  --tasks my_custom_task \
+  --output_path results/
+```
+
+### Hugging Face Evaluate
+
+Bibliotheque de metriques d'evaluation (BLEU, ROUGE, BERTScore, etc.).
+
+```python
+from evaluate import load
+bertscore = load("bertscore")
+results = bertscore.compute(
+    predictions=model_outputs,
+    references=expected_outputs,
+    lang="fr"
+)
+```
+
+### Ragas (specialise RAG)
+
+Si vous evaluez un systeme RAG, Ragas fournit des metriques specifiques :
+- **Faithfulness** : la reponse est-elle fidele au contexte ?
+- **Answer relevancy** : la reponse est-elle pertinente ?
+- **Context precision** : les passages trouves sont-ils les bons ?
+
+---
+
+## Le piege des benchmarks
+
+Vous voyez "Llama 4 70B : 85% sur MMLU". Super ! Mais :
+
+- **MMLU est en anglais** : pas pertinent pour du francais specialise
+- **Le score est en zero-shot** : pas en Chain-of-Thought ou avec prompting adapte
+- **Le modele teste est la version complete** : pas la quantifiee que vous utiliserez
+
+**Faites vos propres tests**, toujours.
+
+---
+
+## Quand changer de modele ?
+
+### Signaux d'alerte
+
+- Vous passez plus de temps a corriger les reponses qu'a les utiliser
+- Le modele hallucine regulierement sur des sujets critiques
+- Les utilisateurs finaux (adherents, citoyens) se plaignent de la qualite
+- Le cout d'infrastructure depasse les benefices
+
+### Signaux que le modele est le bon
+
+- 80% de reponses utilisables en l'etat ou avec corrections legeres
+- Les utilisateurs finaux ne remarquent pas qu'une IA repond
+- Le temps gagne est superieur au temps passe a valider
+- Pas d'hallucination critique detectee en 1 mois
+
+---
+
+## Checklist d'evaluation
+
+Avant de choisir un modele, passez par cette checklist :
+
+- [ ] Jeu de test de 30+ cas representatifs
+- [ ] 3-5 modeles testes sur le meme jeu
+- [ ] Notation en aveugle par au moins 2 personnes
+- [ ] Latence mesuree
+- [ ] Taux d'hallucination evalue
+- [ ] Test terrain de 1-2 semaines
+- [ ] Feedback des utilisateurs finaux collecte
+- [ ] Cout total evalue (infra + temps humain)
+- [ ] Documentation des forces et faiblesses par cas d'usage
+
+---
+
+## Conclusion : vos 30 cas valent tous les benchmarks
+
+Les benchmarks disent ce qu'un modele sait faire en moyenne. **Votre jeu de test dit ce qu'il sait faire pour vous.**
+
+Investissez 2-3 jours a constituer un bon jeu de test et a noter les reponses. C'est l'investissement qui vous evitera 6 mois d'utilisation d'un modele mal adapte.
+
+### Les 3 actions a faire cette semaine
+
+1. **Listez 30 cas reels** que vous aimeriez deleguer a l'IA
+2. **Testez 3 modeles** (Llama 4 8B, Mistral Small 3, Qwen 3 14B) sur ces 30 cas
+3. **Notez les reponses** sur 5 criteres et choisissez votre modele
+
+---
+
+<Callout type="tip" title="Atelier dedie">
+Biscuits IA propose des **ateliers "Evaluer son LLM"** avec constitution de jeu de test, protocole d'evaluation, et matrice de decision. Adaptes aux structures qui ont deja teste 2-3 modeles et veulent trancher.
+
+*Contactez-nous pour organiser une session !*
+</Callout>
+
+---
+
+*Vous avez un protocole d'evaluation qui marche bien ? Partagez-le en commentaire. 🍪*

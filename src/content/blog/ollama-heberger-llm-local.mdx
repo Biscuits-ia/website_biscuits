@@ -1,0 +1,142 @@
+---
+title: "Ollama : heberger un modele IA sur votre PC en 5 minutes"
+description: "Guide pas a pas pour installer Ollama et faire tourner un LLM localement, sans cloud, sans envoyer vos donnees a Microsoft ou Google."
+pubDate: 2026-05-06T09:00:00Z
+author: "Biscuits IA"
+featured: true
+tags: ["ia", "ollama", "open-source", "self-hosting", "tutoriel", "guide"]
+---
+
+import Callout from '@/components/Callout.astro';
+import ComparisonGrid from '@/components/ComparisonGrid.astro';
+
+# Ollama : heberger un modele IA sur votre PC en 5 minutes
+
+L'idee que "faire tourner une IA" necessite des serveurs a 50 000 EUR et une equipe d'ingenieurs, c'est fini. Aujourd'hui, un simple PC portable peut executer un modele de langage performant. Et la facon la plus simple d'y arriver, c'est Ollama.
+
+Ollama est un outil open source qui installe, configure et fait tourner des modeles IA en une seule commande. Pas de configuration complexe, pas de Python a installer, pas de GPU obligatoire. Juste une commande et ca marche.
+
+<Callout type="info" title="Pour qui ce guide est-il ecrit ?">
+Pour les personnes qui n'ont jamais touche a un terminal. Ollama a l'air d'un outil de geek, mais en pratique, vous allez taper 3-4 commandes et tout fonctionnera.
+</Callout>
+
+---
+
+## Pourquoi Ollama plutot qu'un autre outil ?
+
+Il existe plusieurs solutions pour faire tourner un LLM localement (LM Studio, GPT4All, Jan). Ollama se distingue par sa **simplicite radicale** et sa **philosophie Unix** : un outil qui fait une chose et qui la fait bien.
+
+### Les avantages concrets pour une structure
+
+- **Installation en une ligne** : `curl -fsSL https://ollama.com/install.sh | sh`
+- **Telechargement de modele en une ligne** : `ollama pull phi4`
+- **Lancement en une ligne** : `ollama run phi4`
+- **API REST automatique** : votre LLM expose une API locale sur `http://localhost:11434`
+- **Confidentialite totale** : rien ne quitte votre machine
+- **Gratuit** : pas d'abonnement, pas de quota
+
+---
+
+## Installation pas a pas
+
+### Sur macOS
+
+Si vous avez un Mac (Apple Silicon ou Intel), telechargez l'installateur depuis https://ollama.com/download, double-cliquez, c'est fait.
+
+### Sur Linux
+
+Une seule commande dans votre terminal :
+
+```
+curl -fsSL https://ollama.com/install.sh | sh
+```
+
+### Sur Windows
+
+Installez Ollama via le sous-systeme Linux (WSL2) ou telechargez l'installateur Windows.
+
+### Verification
+
+Une fois installe, ouvrez un terminal et tapez :
+
+```
+ollama --version
+```
+
+---
+
+## Telecharger votre premier modele
+
+Ollama propose un catalogue de modeles sur https://ollama.com/library. Pour un premier test, on va installer **Phi-4** de Microsoft : 14 milliards de parametres, qualite honorable, tourne sur un PC avec 16 Go de RAM.
+
+```
+ollama pull phi4
+```
+
+Pour un PC modeste, vous pouvez essayer **Gemma 3 4B** (4 milliards de parametres, ~2 Go) :
+
+```
+ollama pull gemma3:4b
+```
+
+---
+
+## Lancer une conversation
+
+Une fois le modele telecharge, lancez-le :
+
+```
+ollama run phi4
+```
+
+Vous entrez dans un chat interactif. Posez votre premiere question :
+
+```
+>>> Bonjour, peux-tu te presenter en 3 phrases ?
+```
+
+Phi-4 repond en francais, explique qu'il est un modele d'IA de Microsoft, et precise ses limites. Tapez `/bye` pour quitter la conversation.
+
+---
+
+## Cas d'usage concrets pour votre structure
+
+### Pour une association
+
+**1. Rediger des mails de relance** pour les cotisations en retard. Tapez votre prompt :
+
+```
+Redige un mail de relance pour une cotisation annuelle de 20 EUR en retard depuis 2 mois. Ton : bienveillant, non culpabilisant. Maximum 100 mots.
+```
+
+**2. Resumer un compte-rendu** de reunion en points actionnables.
+
+**3. Generer des FAQ** pour le site web ou l'accueil.
+
+### Pour une collectivite (mairie, CCAS)
+
+**1. Rediger des reponses-types** aux courriers citoyens.
+
+**2. Preparer des syntheses de deliberations**.
+
+**3. Generer des FAQ** pour le site web ou l'accueil.
+
+### Pour une TPE/PME
+
+**1. Generer des descriptions produits**.
+
+**2. Preparer des reponses a des appels d'offres**.
+
+**3. Analyser des avis clients**.
+
+---
+
+## Conclusion
+
+Ollama a democratise l'IA locale. Ce qui necessitait hier une equipe d'ingenieurs et des serveurs a 50 000 EUR est maintenant accessible en 5 minutes a toute structure equipee d'un PC correct.
+
+### Les 3 actions a faire cette semaine
+
+1. **Installez Ollama** sur votre PC (https://ollama.com)
+2. **Telechargez Phi-4** ou **Gemma 3 4B** avec `ollama pull`
+3. **Testez sur 3 cas concrets** de votre activite quotidienne

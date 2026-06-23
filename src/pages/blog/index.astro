@@ -1,4 +1,4 @@
-﻿---
+---
 // Page d'index du blog : hero + recherche + filtres par tag + grille paginee de tous les articles.
 // Pagination 100% cote client (5 articles par page).
 // Les pages dediees par tag sont generees par /blog/tag/[tag].astro.
@@ -20,7 +20,7 @@ const slugifyTag = (tag: string): string =>
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/(^-|-$)/g, '');
 
-const PAGE_SIZE = 6; // Nombre d'articles affiches par page (pagination client)
+const PAGE_SIZE = 5; // Nombre d'articles affiches par page (pagination client)
 
 const allArticles = await getCollection('blog');
 const sorted = allArticles
@@ -74,8 +74,8 @@ const allArticlesForSearch = sorted.map((a: CollectionEntry<'blog'>) => ({
 }));
 
 // SEO : titre et description uniques.
-const pageTitle = 'Blog IA & cybersecurite - Guides pratiques pour associations | Biscuits IA';
-const pageDescription = `Decouvrez nos ${total} articles sur l'IA generative, la cybersecurite, les arnaques en ligne et l'automatisation pour les associations, collectivites et TPE. Conseils pratiques, guides telechargeables, et selections d'outils libres.`;
+const pageTitle = 'Blog IA pour associations et collectivites | Biscuits IA';
+const pageDescription = `${total} articles sur l'IA generative, la cybersecurite, les arnaques en ligne et l'automatisation pour les associations, collectivites et TPE. Guides pratiques, tutoriels et outils libres.`;
 ---
 
 <Layout
@@ -109,7 +109,7 @@ const pageDescription = `Decouvrez nos ${total} articles sur l'IA generative, la
 
       <section class="featured-section" aria-labelledby="featured-title">
         <h2 id="featured-title" class="section-title">
-          <span aria-hidden="true">â˜…</span> Articles en vedette
+          <span aria-hidden="true">★</span> Articles en vedette
         </h2>
         <div class="featured-grid">
           {featuredArticles.map((article) => (
@@ -119,7 +119,7 @@ const pageDescription = `Decouvrez nos ${total} articles sur l'IA generative, la
               {article.data.description && (
                 <p class="featured-description">{article.data.description}</p>
               )}
-              <span class="featured-cta">Lire l'article â†’</span>
+              <span class="featured-cta">Lire l'article →</span>
             </a>
           ))}
         </div>
@@ -226,7 +226,7 @@ const pageDescription = `Decouvrez nos ${total} articles sur l'IA generative, la
                   <div class="card-footer">
                     {article.data.tags && article.data.tags.length > 0 && (
                       <div class="card-tags">
-                        {(article.data.tags as string[]).slice(0, 4).map((tag: string) => (
+                        {(article.data.tags as string[]).slice(0, 3).map((tag: string) => (
                           <a href={`/blog/tag/${slugifyTag(tag)}`} class="tag" data-tag-slug={slugifyTag(tag)}>#{tag}</a>
                         ))}
                       </div>
@@ -308,7 +308,7 @@ const pageDescription = `Decouvrez nos ${total} articles sur l'IA generative, la
 
     function renderCard(article) {
       const tagsHtml = (article.tags || [])
-        .slice(0, 4)
+        .slice(0, 3)
         .map((t) => `<a href="/blog/tag/${slugify(t)}" class="tag">#${escapeHtml(t)}</a>`)
         .join('');
       return `
@@ -587,8 +587,9 @@ const pageDescription = `Decouvrez nos ${total} articles sur l'IA generative, la
     justify-content: space-between;
     gap: 1rem;
     flex-wrap: wrap;
-    margin-top: 4.5rem;
-    padding-top: 2rem;
+    margin-top: 5rem;
+    padding-top: 2.5rem;
+    padding-bottom: 0.5rem;
     border-top: 2px solid var(--color-border);
   }
 

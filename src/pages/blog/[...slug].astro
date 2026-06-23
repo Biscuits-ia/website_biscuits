@@ -163,13 +163,6 @@ const articleSchema = {
           </div>
         </div>
 
-        {entry.data.tags && entry.data.tags.length > 0 && (
-          <div class="tags">
-            {entry.data.tags.map((tag: string) => (
-              <a href={`/blog/tag/${slugifyTag(tag)}`} class="tag tag-link">#{tag}</a>
-            ))}
-          </div>
-        )}
       </header>
 
       <TableOfContents headings={headings} />
@@ -240,6 +233,14 @@ const articleSchema = {
       )}
 
       <footer class="article-footer">
+        {entry.data.tags && entry.data.tags.length > 0 && (
+          <nav class="article-tags" aria-label="Tags de l'article">
+            <span class="article-tags-label">Tags</span>
+            {entry.data.tags.map((tag: string) => (
+              <a href={`/blog/tag/${slugifyTag(tag)}`} class="tag tag-link">#{tag}</a>
+            ))}
+          </nav>
+        )}
         <p>
           {entry.data.author || 'Biscuits IA'} &middot;
           <time datetime={entry.data.pubDate.toISOString()}>
@@ -596,7 +597,26 @@ const articleSchema = {
     background: var(--color-primary);
   }
 
-  /* === FOOTER === */
+  /* === ARTICLE TAGS (in footer) === */
+  .article-tags {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+  }
+  .article-tags-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--color-text-light);
+    margin-right: 0.4rem;
+  }
+  .article-tags .tag-link { font-size: 0.78rem; padding: 0.35rem 0.85rem; }
+
+    /* === FOOTER === */
   .article-footer {
     margin-top: 4rem;
     padding-top: 2rem;

@@ -1,0 +1,172 @@
+---
+title: "Materiel et cloud pour l'IA open source en 2026"
+description: "PC, serveur interne, GPU, cloud : quel choix pour quel modele d'IA open source ? Comparatif honnete, couts reels, et recommandations par profil."
+pubDate: 2026-05-27T09:00:00Z
+author: "Biscuits IA"
+featured: false
+tags: ["ia", "open-source", "materiel", "cloud", "serveur", "gpu", "guide"]
+---
+
+import Callout from '@/components/Callout.astro';
+import ComparisonGrid from '@/components/ComparisonGrid.astro';
+
+# Materiel et cloud pour faire tourner un modele IA : le guide 2026
+
+Une fois que vous avez choisi votre modele IA open source (Llama 4, Mistral, Qwen, etc.), la question pratique se pose : **avec quoi le faire tourner ?**
+
+La reponse depend de trois criteres : la taille du modele, votre volume d'usage, et votre tolerance a la latence. Voici un guide concret pour faire le bon choix.
+
+<Callout type="info" title="Ce que vous allez lire">
+Un panorama des options materielles (PC, serveur, cloud), leurs couts reels, leurs limites, et des recommandations par profil et par cas d'usage.
+</Callout>
+
+---
+
+## Le critere principal : la taille du modele
+
+La taille d'un modele determine **directement la RAM et le GPU** necessaires.
+
+| Modele | Taille params | RAM minimum | GPU recommande |
+|---|---|---|---|
+| Gemma 3 1B | 1 milliard | 4 Go | Aucun (CPU suffit) |
+| Phi-3-mini | 3,8 milliards | 8 Go | Optionnel |
+| Gemma 3 4B | 4 milliards | 8 Go | Optionnel |
+| Phi-4 | 14 milliards | 16 Go | RTX 4090 |
+| Llama 4 8B | 8 milliards | 16 Go | RTX 4080 |
+| Mistral Small 3 | 24 milliards | 32 Go | RTX 4090 |
+| Qwen 3 32B | 32 milliards | 48 Go | A100 40 Go |
+| Llama 4 70B | 70 milliards | 80 Go | 2x A100 80 Go |
+
+---
+
+## Option 1 : votre PC actuel (0 EUR)
+
+### Ce que vous avez probablement chez vous
+
+- **PC de bureau ou portable** avec 8-16 Go de RAM
+- Un CPU correct (Intel i5/i7, AMD Ryzen 5/7, ou Apple M1/M2)
+- Pas forcement de GPU dedie (et c'est ok)
+
+### Ce que vous pouvez faire tourner
+
+- **Gemma 3 1B/4B** : 4-8 Go de RAM, CPU suffit
+- **Phi-3-mini** : 8 Go de RAM, CPU suffit
+- **Phi-4 quantifie** : 16 Go de RAM, GPU recommande
+
+### Pour qui c'est pertinent
+
+- Tester l'IA pour la premiere fois
+- Usages personnels ou associatifs peu frequents
+- Premiers prototypes avant d'investir
+
+### Limites
+
+- **Latence** : 5-30 secondes par reponse (CPU) vs 1-3 secondes (GPU)
+- **Pas de service simultane** : un seul utilisateur a la fois en pratique
+- **Pas de volume** : pas pour 100+ requetes par jour
+
+---
+
+## Option 2 : PC gaming ou workstation (1500-3000 EUR)
+
+### La config ideale
+
+- **GPU** : NVIDIA RTX 4090 (24 Go VRAM) ou RTX 4080 (16 Go)
+- **RAM** : 64 Go DDR5
+- **Stockage** : 2 To SSD NVMe
+- **CPU** : Intel i7-14700K ou AMD Ryzen 9 7900X
+
+### Cout total
+
+- Carte mere + CPU : 600-800 EUR
+- GPU RTX 4090 : 1600-2200 EUR
+- RAM 64 Go : 200-300 EUR
+- SSD 2 To : 100-150 EUR
+- Boitier + alimentation 850W : 300-400 EUR
+- **Total** : 2800-3800 EUR
+
+---
+
+## Option 3 : serveur dedie interne (3000-10000 EUR)
+
+### Ce que c'est
+
+Une machine dediee, installee dans un local technique ou un placard serveur, qui tourne 24/7 et sert plusieurs utilisateurs en simultane.
+
+### Configurations possibles
+
+**Serveur moyen** (5000-7000 EUR) :
+- Serveur rack 1U ou tour
+- 2x GPU A100 40 Go (ou 1x A100 80 Go)
+- 128-256 Go RAM
+- 4 To SSD en RAID
+
+---
+
+## Option 4 : cloud europeen (100-1000 EUR/mois)
+
+### Les providers recommandes
+
+- **Scaleway** (France) : GPU L4 (24 Go) : ~200 EUR/mois
+- **OVHcloud** (France) : GPU instances : ~200-800 EUR/mois
+- **Hetzner** (Allemagne) : GPU instances : moins cher (~150-500 EUR/mois)
+- **Cloud Temple** (France) : cloud qualifie SecNumCloud
+
+### Pour qui c'est pertinent
+
+- Volumes variables (montee en charge imprevisible)
+- Pas d'investissement initial possible (tresorerie)
+- Besoin de scalabilite rapide
+- Pas d'equipe IT interne
+
+### Avantages
+
+- Pas d'investissement initial
+- Scalabilite a la demande
+- Maintenance incluse
+- Datacenters en France pour Scaleway, OVHcloud, Cloud Temple
+
+---
+
+## Recommandations par profil
+
+### Association (5-15 personnes)
+
+**Option recommandee** : PC de l'association (1500-2500 EUR) avec RTX 4060/4070.
+- Tourne Llama 4 8B et Mistral Small 3 quantifie
+- 1 a 5 utilisateurs en simultane
+- Cout mensuel : ~30 EUR d'electricite
+
+### Mairie / CCAS (20-100 personnes)
+
+**Option recommandee** : serveur interne moyen (7000-10000 EUR) ou Scaleway H100 mutualise (500-1000 EUR/mois).
+
+### TPE (1-5 personnes)
+
+**Option recommandee** : PC existant (si 16 Go+ de RAM) ou upgrade a 1500 EUR.
+
+### PME (5-50 personnes)
+
+**Option recommandee** : serveur dedie (10000-15000 EUR) ou cloud H100 mutualise.
+
+### Grand compte (50+ personnes)
+
+**Option recommandee** : cloud GPU H100 dedie + deploiement multi-sites.
+
+---
+
+## Conclusion : commencez petit, scalez progressivement
+
+Le piege classique : **commencer par un serveur a 10 000 EUR** et se rendre compte 6 mois plus tard que le besoin reel etait couvert par un PC a 2 000 EUR.
+
+Le bon reflexe :
+1. **Semaine 1-2** : test sur PC existant (0 EUR)
+2. **Mois 1-2** : si usage confirme, achat d'un PC dedie (1500-3000 EUR)
+3. **Mois 3-6** : si volume explose, migration vers serveur ou cloud
+4. **Annee 2+** : industrialisation avec redondance et scalabilite
+
+### Les 3 actions a faire cette semaine
+
+1. **Auditez votre materiel** : quelle RAM, quel CPU, quel GPU ?
+2. **Estimez votre volume** : combien de requetes par jour ? Combien d'utilisateurs ?
+3. **Calculez votre budget** : investissement materiel vs abonnement cloud vs cout horaire

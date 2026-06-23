@@ -1,0 +1,327 @@
+---
+title: "RAG : votre documentation dans l'IA en pratique"
+description: "Donner à un LLM vos statuts, reglement interieur, CR et FAQ pour qu'il reponde à vos adherents : methode, outils, et retour d'experience associatif."
+pubDate: 2026-06-03T09:00:00Z
+author: "Biscuits IA"
+featured: false
+tags: ["ia", "rag", "open-source", "documentation", "association", "guide"]
+---
+
+import Callout from '@/components/Callout.astro';
+import ComparisonGrid from '@/components/ComparisonGrid.astro';
+
+# RAG : comment mettre votre documentation associative dans l'IA
+
+Vos statuts, votre reglement interieur, vos 30 derniers comptes-rendus de CA, votre FAQ, vos guides d'accueil des benevoles : toute cette connaissance est **enfouie dans des PDF, des mails, des documents Word** que personne ne relit jamais.
+
+Un adherent qui pose une question doit attendre qu'un benevole retrouve l'info. Un nouveau tresorier qui veut comprendre les statuts passe 3 heures a chercher. Un journaliste qui demande la politique de vote de l'asso recoit une reponse vague 5 jours plus tard.
+
+Et si un LLM pouvait repondre instantanement a toutes ces questions, en se basant sur vos documents internes ? C'est exactement ce que permet le **RAG** (Retrieval-Augmented Generation).
+
+<Callout type="info" title="Ce que vous allez lire">
+Comment transformer votre documentation interne en assistant IA, sans envoyer vos donnees a OpenAI, en gardant le controle total, et avec un budget quasi nul.
+</Callout>
+
+---
+
+## Le probleme : la connaissance associative est eclatee
+
+Une association type a une connaissance critique dispersee dans :
+- Statuts et reglements (PDF datant de 2015, jamais mis a jour)
+- Comptes-rendus de CA et d'AG (archives dans un Drive mal nomme)
+- FAQ informelle (dans la tete des benevoles)
+- Mails de reponses types (dans la boite mail de la coordinatrice)
+- Documents de formation (Word, PDF, Google Docs)
+- Comptes-rendus d'audit (Excel, PDF)
+
+Resultat : **80% des questions recurrentes prennent 30 minutes a 2 jours** pour obtenir une reponse, parce qu'il faut chercher la bonne personne qui connait la bonne info.
+
+---
+
+## Comprendre le RAG en 5 minutes
+
+Le RAG (Retrieval-Augmented Generation) est une technique qui combine :
+
+1. **Un LLM** (Llama 4, Mistral, etc.) : capable de comprendre et rediger en langage naturel
+2. **Une base vectorielle** : qui indexe vos documents et retrouve les passages pertinents
+3. **Un orchestrateur** : qui combine les deux pour repondre a la question
+
+### Le flux concret
+
+**Etape 1 : indexation** (une fois pour toutes)
+Vous prenez vos 200 documents. Un script les decoupe en petits morceaux (500-1000 mots chacun), les transforme en vecteurs mathematiques (embeddings), et les stocke dans une base. Duree : 1-2 heures pour 200 documents.
+
+**Etape 2 : question utilisateur** (a chaque fois)
+Un adherent demande : "Quelle est la politique de remboursement des frais de mission ?"
+
+**Etape 3 : recherche semantique** (instantanee)
+Le systeme cherche les 3-5 passages les plus pertinents dans la base. Il trouve :
+- Article 12 du reglement interieur
+- Extrait d'un CR de CA de 2024
+- Section du guide du benevole
+
+**Etape 4 : generation** (5-15 secondes)
+Le LLM recoit la question + les passages trouves, et redige une reponse claire avec citations des sources.
+
+### Pourquoi le RAG plutot qu'un chatbot classique ?
+
+| Critere | Chatbot classique | RAG |
+|---|---|---|
+| Base de connaissances | Sequences d'entrainement figees | Vos documents a jour |
+| Sources des reponses | Opacite totale | Citations explicites |
+| Mise a jour | Reentrainement complet | Ajout d'un document = dispo immediatement |
+| Risque d'hallucination | Eleve (sujets pointus) | Limite (source par vos docs) |
+
+---
+
+## Stack technique recommandee
+
+### Les composants (tout open source)
+
+- **LLM** : Llama 4 8B (equilibre) ou Mistral Small 3 (qualite) ou Qwen 3 32B (multilingue)
+- **Embeddings** : nomic-embed-text (rapide, multilingue, 137M parametres)
+- **Base vectorielle** : ChromaDB (simple) ou Qdrant (production) ou pgvector (PostgreSQL)
+- **Orchestrateur** : LlamaIndex (le plus simple) ou LangChain (le plus puissant)
+- **Interface** : Open WebUI (deja RAG-ready) ou AnythingLLM
+
+### Prerequis materiels
+
+- Un PC avec 16 Go de RAM minimum
+- Python 3.10+ installe
+- 50 Go d'espace disque pour les modeles et la base
+
+### Cout total
+
+- **0 EUR** de licence logicielle
+- **0 EUR** de cloud (tourne en local)
+- ~50 EUR d'electricite par mois pour un usage modere
+
+---
+
+## Preparer vos documents : l'etape critique
+
+C'est l'etape la plus longue (50% du temps total) et la plus determinante pour la qualite des reponses.
+
+### Quels documents indexer en priorite
+
+**Niveau 1 (essentiels)** :
+- Statuts et reglement interieur
+- Proces-verbaux des 10 dernieres AG
+- Document de presentation de l'asso
+
+**Niveau 2 (importants)** :
+- Comptes-rendus des 20 derniers CA
+- Guide du benevole / chartre
+- FAQ officielle
+- Documents de politique (adhesion, exclusion, etc.)
+
+**Niveau 3 (bonus)** :
+- Comptes-rendus plus anciens
+- Mails types de reponse
+- Documents de formation interne
+- Rapports d'activite
+
+### Comment preparer un document
+
+1. **Numeriser** si necessaire (scan OCR des PDF papier)
+2. **Nettoyer** : retirer en-tetes/pieds de page, dates en haut, signataires
+3. **Renommer** clairement : `reglement-interieur-2024-v3.pdf`
+4. **Decouper** : un PDF de 50 pages devient 30-50 chunks
+
+### Combien de documents faut-il ?
+
+**Minimum viable** : 20-30 documents (statuts, RI, 10 CR, FAQ).
+**Confortable** : 100-200 documents.
+**Ideal** : 300+ documents couvrant tous les aspects de l'asso.
+
+---
+
+## Mise en place pas a pas
+
+### Etape 1 : installer les outils (30 minutes)
+
+```bash
+# Installer Ollama
+curl -fsSL https://ollama.com/install.sh | sh
+
+# Telecharger un modele LLM
+ollama pull llama4:8b
+
+# Telecharger un modele d'embeddings
+ollama pull nomic-embed-text
+
+# Installer Python et les dependances
+pip install chromadb llama-index open-webui
+```
+
+### Etape 2 : indexer les documents (1-2 heures)
+
+```python
+import chromadb
+from llama_index.core import VectorStoreIndex, SimpleDirectoryReader
+
+# Charger les documents
+documents = SimpleDirectoryReader("docs/").load_data()
+
+# Creer l'index
+index = VectorStoreIndex.from_documents(documents)
+
+# Persister l'index
+index.storage_context.persist("storage/")
+```
+
+### Etape 3 : poser une question (instantane)
+
+```python
+# Recharger l'index
+from llama_index.core import load_index_from_storage
+index = load_index_from_storage("storage/")
+
+# Question
+query_engine = index.as_query_engine()
+response = query_engine.query("Quelle est la politique de remboursement des frais ?")
+print(response)
+```
+
+### Etape 4 : interface utilisateur (1-2 heures)
+
+Installer Open WebUI :
+```bash
+docker run -d -p 3000:8080 \
+  -e OLLAMA_BASE_URL=http://host.docker.internal:11434 \
+  -v open-webui:/app/backend/data \
+  --name open-webui \
+  ghcr.io/open-webui/open-webui:main
+```
+
+Puis configurer la base de documents dans l'interface, brancher sur le LLM local, et vous avez un **ChatGPT prive** qui connait toute votre asso.
+
+---
+
+## Configurer le prompt systeme
+
+Le prompt qui dit au LLM comment se comporter est **critique**. Il doit etre precis sur le ton, les limites, et la posture.
+
+### Prompt recommande pour une association
+
+```
+Tu es l'assistant interne de l'association [NOM]. Tu reponds aux
+questions des benevoles, adherents, et salaries sur la base des
+documents officiels de l'association.
+
+Regles strictes :
+- Tu reponds UNIQUEMENT en te basant sur les documents officiels
+  qui te sont fournis en contexte.
+- Si l'information n'est pas dans les documents, dis-le clairement :
+  "Cette information n'est pas dans les documents officiels. Je vous
+  recommande de contacter [service] a [email]."
+- Tu cites tes sources : a la fin de chaque reponse, indique le nom
+  du document et la date.
+- Tu utilises un ton bienveillant, factuel, et adapte au public
+  (benevoles, adherents, partenaires institutionnels).
+- Tu ne donnes jamais d'avis juridique, comptable, ou medical.
+- Pour les questions sensibles (conflit, exclusion, litige), tu
+  renvoies vers le bureau ou la commission competente.
+- Tu ne partages jamais de donnees personnelles d'adherents ou de
+  benevoles, meme si l'information est dans les documents.
+```
+
+---
+
+## Mesurer la qualite des reponses
+
+### Criteres d'evaluation
+
+- **Pertinence** : la reponse adresse-t-elle la question ?
+- **Fidelite** : la reponse est-elle fidele au document source ?
+- **Completude** : manque-t-il des elements importants ?
+- **Citations** : les sources sont-elles mentionnees ?
+- **Ton** : la reponse respecte-t-elle le ton attendu ?
+
+### Methode de test
+
+Preparez 20 questions reelles (collectees via votre FAQ informelle). Testez le systeme sur ces questions. Notez les reponses sur 5 criteres.
+
+**Objectif** : 80% de reponses pertinentes et fideles en moins de 3 mois.
+
+### Iteration
+
+Les premieres semaines, vous allez decouvrir des trous dans votre documentation. C'est normal et c'est meme **un benefice** : vous identifiez ce qui n'est pas documente.
+
+Ajoutez les documents manquants. Le RAG s'ameliore a chaque nouvel ajout.
+
+---
+
+## Securite et RGPD
+
+### Donnees sensibles
+
+Si vos documents contiennent des **donnees personnelles** (listes d'adherents avec adresses, mails, telephones), vous avez deux options :
+
+1. **Anonymiser avant indexation** : remplacer les noms par des pseudonymes, supprimer les adresses
+2. **Restreindre l'acces** : ne pas exposer le chatbot publiquement, le garder en interne
+
+### Hebergement
+
+Puisque tout tourne en local, **les donnees ne quittent jamais votre serveur**. C'est l'avantage majeur du RAG open source vs un outil SaaS.
+
+### Logs
+
+Si vous voulez auditer les questions posees, loggez-les localement. Sinon, desactivez les logs pour respecter la vie privee.
+
+### Mentions legales
+
+Ajoutez sur l'interface :
+- "Les reponses sont generees par IA et fournies a titre indicatif"
+- "Seuls les documents officiels font foi"
+- "Pour toute question sensible, contactez le bureau"
+
+---
+
+## Cas d'usage concrets pour une association
+
+### Onboarding des nouveaux benevoles
+
+**Avant** : 3-4h de presentation par un benevole experimente.
+**Apres** : le chatbot repond 24/7 aux questions du nouveau, qui devient autonome en 1h.
+
+### Reponses aux adherents
+
+**Avant** : 2-3 jours pour repondre a un mail complexe.
+**Apres** : le chatbot propose une reponse en 30 secondes, le benevole valide et envoie.
+
+### Preparation des AG
+
+**Avant** : 2-3h pour retrouver les decisions des AG precedentes sur un sujet donne.
+**Apres** : 5 minutes pour demander au chatbot "Quelles ont ete les decisions concernant les cotisations depuis 2020 ?"
+
+### Veille interne
+
+**Avant** : "On avait parle de ca en 2022, mais je ne retrouve plus le CR."
+**Apres** : 10 secondes pour interroger le chatbot et obtenir la reponse exacte avec citation.
+
+---
+
+## Conclusion : la memoire vivante de votre association
+
+Le RAG applique a votre documentation associative, c'est **transformer des archives statiques en assistant interactif**. C'est rendre la connaissance accessible 24/7, sans dependre d'un benevole qui a la memoire des decisions passees.
+
+Pour une association, c'est un avantage considerable : les nouveaux s'integrent plus vite, les adherents obtiennent des reponses immediates, et les benevoles experimentes ne passent plus leur temps a chercher des documents.
+
+### Les 3 actions a faire cette semaine
+
+1. **Listez vos 20 documents les plus importants** (statuts, RI, CR recents, FAQ)
+2. **Installez Ollama + Llama 4 8B + Open WebUI** sur un PC de l'asso
+3. **Indexez 20 documents et testez 10 questions reelles** pour valider l'approche
+
+---
+
+<Callout type="tip" title="Atelier dedie">
+Biscuits IA propose des **ateliers "Mettre sa documentation dans l'IA"** adaptes aux associations. Au programme : selection des documents, configuration du RAG, et formation de l'equipe a l'utilisation.
+
+*Associations : tarif solidaire. Contactez-nous pour organiser une session !*
+</Callout>
+
+---
+
+*Vous avez mis en place un RAG dans votre association ? Partagez votre retour en commentaire. 🍪*

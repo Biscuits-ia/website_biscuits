@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import '@/styles/cookie-consent.css';
 
 type CookieCategory = 'necessary' | 'analytics';

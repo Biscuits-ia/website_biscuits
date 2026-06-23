@@ -1,0 +1,252 @@
+---
+title: "Mistral + RAG : chatbot des deliberations d'une mairie"
+description: "Comment une mairie peut déployer un chatbot IA sur ses délibérations, délibérations municipales et FAQ, en gardant les données en France."
+pubDate: 2026-05-20T09:00:00Z
+author: "Biscuits IA"
+featured: true
+tags: ["ia", "mistral", "rag", "open-source", "chatbot", "mairie", "collectivite"]
+---
+
+import Callout from '@/components/Callout.astro';
+import ComparisonGrid from '@/components/ComparisonGrid.astro';
+
+# Mistral + RAG : créer un chatbot sur les délibérations d'une mairie
+
+Les mairies reçoivent des centaines de demandes citoyennes par an sur les mêmes sujets : horaires des services, dates de conseil municipal, conditions d'inscription à l'école, règlements locaux. Les agents passent un temps fou à répondre aux mêmes questions.
+
+Un chatbot alimenté par vos documents officiels (délibérations, règlements, FAQ) peut répondre à 80% de ces demandes en autonomie. Et avec **Mistral AI** (modèle français, hébergé en France), les données ne quittent jamais l'hexagone.
+
+Voici comment mettre en place ce système pas à pas.
+
+<Callout type="info" title="Pour qui ?">
+Pour les directeurs généraux des services, responsables de la communication, et agents municipaux qui veulent moderniser l'accueil citoyen sans externaliser les données.
+</Callout>
+
+---
+
+## 🤔 Le problème classique des mairies
+
+Une mairie moyenne reçoit :
+- 200 à 500 demandes citoyennes par mois (mail, téléphone, accueil)
+- 60% portent sur les mêmes 20-30 questions récurrentes
+- Les réponses se basent sur des délibérations, délibérations, règlements
+
+Les agents municipaux passent ainsi 30 à 50% de leur temps à chercher l'information dans des documents parfois mal indexés.
+
+Un chatbot bien fait peut **dégager 1 à 2 ETP** pour des missions à plus forte valeur ajoutée.
+
+---
+
+## 🤖 Pourquoi Mistral plutôt que ChatGPT ?
+
+Pour une collectivité, la question de la **souveraineté des données** n'est pas un détail. Les délibérations, délibérations, FAQ contiennent souvent des données personnelles (noms, adresses, situations).
+
+### Comparaison honnête
+
+| Critère | Mistral Large 2 | ChatGPT (OpenAI) |
+|---|---|---|
+| Hébergement des serveurs | France / Europe | États-Unis |
+| Conformité RGPD by design | Oui | Non (transferts UE-US) |
+| Modèle open source | Oui (Apache 2.0) | Non |
+| Qualité en français | Excellente | Très bonne |
+| Support entreprise | Oui (Mistral AI) | Oui |
+| Coût à grande échelle | Maîtrisé (self-host possible) | À l'usage |
+
+Pour une mairie qui doit garantir que les délibérations et délibérations ne sortent jamais de France, **Mistral est le choix par défaut**.
+
+<Callout type="warning" title="Le CLOUD Act américain">
+Depuis 2018, le CLOUD Act permet aux autorités américaines d'exiger l'accès aux données stockées par les entreprises US, même si les serveurs sont en Europe. Pour une mairie française, utiliser ChatGPT sur des délibérations = exposer potentiellement ces données au gouvernement américain.
+</Callout>
+
+---
+
+## 🧠 Comprendre le RAG
+
+Le RAG (Retrieval-Augmented Generation) est la technique qui permet à un LLM de répondre à des questions **en se basant sur vos documents**.
+
+### Le principe en 3 étapes
+
+**1. Indexation** : vous "digérez" vos documents (PDF, Word, pages web) en les découpant en petits morceaux, puis en les transformant en vecteurs numériques (embeddings) stockés dans une base de données.
+
+**2. Recherche** : quand un citoyen pose une question, le système cherche les 3-5 passages les plus pertinents dans la base.
+
+**3. Génération** : Mistral reçoit la question + les passages trouvés, et rédige une réponse sourcée.
+
+### Pourquoi le RAG plutôt qu'un fine-tuning ?
+
+Le fine-tuning consiste à réentraîner le modèle sur vos données. C'est long, coûteux, et rigide. Le RAG est **dynamique** : ajoutez un nouveau document, il est immédiatement disponible.
+
+Pour 90% des usages municipaux, le RAG est la bonne approche.
+
+---
+
+## 🛠️ Architecture technique
+
+### Les composants
+
+- **Mistral Small 3** (24B) ou **Mistral Large 2** (123B) : le modèle de langage
+- **Ollama** ou **vLLM** : pour faire tourner Mistral en local
+- **PostgreSQL + pgvector** : la base de données vectorielle (open source, robuste)
+- **Open WebUI** : l'interface utilisateur (chatbot web)
+- **n8n** (optionnel) : pour automatiser (mise à jour auto de la base de documents)
+
+### Schéma simplifié
+
+`
+Citoyen → Question sur le chatbot
+        ↓
+Recherche dans la base vectorielle
+        ↓
+3-5 passages pertinents identifiés
+        ↓
+Mistral reçoit : "Voici la question et les passages. Réponds de
+manière claire et cite tes sources."
+        ↓
+Réponse générée + liens vers les délibérations sources
+`
+
+### Coût de mise en place
+
+- **Infrastructure** : un serveur Scaleway GPU (L4 ou H100) à 200-500 €/mois, ou un serveur interne pour 3000-5000 €
+- **Logiciels** : tout est open source (Mistral, Ollama, Open WebUI, PostgreSQL)
+- **Mise en place initiale** : 5-10 jours d'un développeur spécialisé
+- **Maintenance** : 0,5-1 jour par mois
+
+---
+
+## 📚 Préparer la base de documents
+
+C'est l'étape la plus importante. Un chatbot qui repose sur des documents mal organisés donnera de mauvaises réponses.
+
+### Quels documents indexer ?
+
+- Délibérations du conseil municipal (5 dernières années minimum)
+- Règlements municipaux (voirie, urbanisme, etc.)
+- FAQ de la mairie (si elle existe)
+- Guide des services publics locaux
+- Pages principales du site web de la mairie
+
+### Comment les préparer ?
+
+1. **Numériser** les documents non numériques (PDF scannés, photos)
+2. **Nettoyer** : supprimer les pieds de page, les en-têtes répétitifs
+3. **Découper** : un document = plusieurs "chunks" de 500-1000 mots
+4. **Indexer** : utiliser un outil comme **LlamaIndex** ou **LangChain**
+
+### Fréquence de mise à jour
+
+- Délibérations : à chaque nouveau conseil (1 fois par mois en général)
+- Règlements : à chaque modification
+- FAQ : à chaque nouvelle question récurrente
+
+Vous pouvez automatiser cette mise à jour avec **n8n** (open source) qui détecte les nouveaux documents sur votre SharePoint ou GED et les ajoute à la base.
+
+---
+
+## 💬 Configurer le chatbot
+
+### Interface
+
+**Open WebUI** (https://github.com/open-webui/open-webui) est l'interface recommandée :
+- Open source, belle UI
+- Multi-modèles (Mistral + autres)
+- Gestion des conversations, historique
+- RAG intégré
+- Personnalisation possible (logo, couleurs de la mairie)
+
+### Le prompt système
+
+Le plus important : le prompt qui dit à Mistral comment se comporter.
+
+`
+Tu es l'assistant virtuel de la Mairie de [Nom]. Tu réponds aux
+questions des citoyens sur les services municipaux.
+
+Règles strictes :
+- Tu réponds UNIQUEMENT en te basant sur les documents officiels
+  de la mairie qui te sont fournis en contexte.
+- Si tu ne trouves pas l'information dans les documents, dis-le
+  clairement et oriente vers le service concerné.
+- Tu cites toujours tes sources (nom du document + date).
+- Tu utilises un ton respectueux, clair, et tu vouvoies.
+- Tu ne donnes jamais d'avis politique, juridique, ou médical.
+- Pour les demandes de permis, inscriptions, ou formalités,
+  tu renvoies vers le service compétent avec ses horaires.
+`
+
+### Les prompts citoyens (exemples)
+
+**Q : "Quels sont les horaires de la piscine municipale ?"**
+R : "La piscine municipale est ouverte du lundi au vendredi de 10h à 19h, le samedi de 9h à 18h, et le dimanche de 10h à 17h. Source : Règlement des services sportifs, délibération du 12 mars 2025."
+
+**Q : "Comment faire pour inscrire mon enfant à l'école ?"**
+R : "Pour inscrire votre enfant à l'école, vous devez fournir : un justificatif de domicile, le livret de famille, un certificat de non-radiation de l'école précédente. Les inscriptions se font à la Direction de l'Éducation, du lundi au vendredi de 9h à 17h. Vous pouvez aussi pré-inscrire en ligne sur www.mairie-[nom].fr. Source : Guide des services scolaires, page 4."
+
+---
+
+## 🔒 Sécurité et conformité
+
+### Données traitées
+
+- Les questions des citoyens transitent par votre serveur
+- Les réponses sont générées en local
+- Aucune donnée ne part chez un tiers
+
+### Hébergement recommandé
+
+- **Scaleway** (France) : GPU L4, conformité RGPD
+- **OVHcloud** (France) : cloud SecNumCloud
+- **Outscale** (France) : cloud qualifié SecNumCloud
+
+Évitez AWS, Google Cloud, Azure pour ce type d'usage sensible.
+
+### Mentions légales
+
+Affichez clairement sur l'interface du chatbot :
+- "Ce chatbot est alimenté par l'IA. Les réponses sont fournies à titre indicatif."
+- "Pour toute décision administrative, contactez le service compétent."
+- "Vos questions ne sont pas conservées au-delà de [durée]."
+
+---
+
+## 📊 Mesurer l'efficacité
+
+### Indicateurs à suivre
+
+- **Taux de résolution** : % de questions pour lesquelles le citoyen est satisfait
+- **Taux de transfert** : % de questions renvoyées vers un humain
+- **Temps gagné** : nombre d'heures agents économisées par mois
+- **Satisfaction** : note moyenne donnée par les citoyens
+
+### Objectif réaliste
+
+Après 3 mois de mise en service :
+- 50% de taux de résolution autonome
+- 30% de transfert vers humain (avec contexte pré-rempli)
+- 20% de questions non comprises (enrichir la base)
+
+---
+
+## 🥠 Conclusion : la démocratie locale augmentée
+
+Un chatbot IA sur les délibérations et services municipaux, ce n'est pas déshumaniser le service public. C'est **libérer les agents** pour qu'ils se concentrent sur les demandes complexes, les situations sensibles, et l'accueil physique qui nécessite une vraie présence humaine.
+
+Mistral AI, modèle français, hébergé en France, open source : c'est **la stack technique par défaut** pour une collectivité française qui veut moderniser son service public sans compromettre la souveraineté de ses données.
+
+### Les 3 actions à faire
+
+1. 📚 **Auditez vos documents** : combien de délibérations, délibérations, FAQ avez-vous ? Sont-ils numérisés et accessibles ?
+2. 🧪 **Testez Mistral Small 3** sur un cas d'usage simple (FAQ sur le site web)
+3. 💬 **Construisez un POC** de chatbot RAG sur 50 documents tests avant d'industrialiser
+
+---
+
+<Callout type="tip" title="Atelier dédié">
+Biscuits IA propose des **ateliers "Chatbot IA pour les collectivités"** avec mise en place concrète d'un POC Mistral + RAG. Au programme : sélection des documents, configuration, déploiement, et formation des agents.
+
+*Collectivités : tarif adapté. Contactez-nous !*
+</Callout>
+
+---
+
+*Votre mairie a déjà déployé un chatbot IA ? Partagez votre retour en commentaire. 🍪*

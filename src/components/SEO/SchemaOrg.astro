@@ -1,13 +1,13 @@
 ---
-// â”€â”€ Types discriminés par type de schéma Schema.org â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// -------- Types discriminés par type de schéma Schema.org --------------------------------------------------------------------------------------------------------
 //
-// Avant : `data?: Record<string, any>` â€” perdait la sécurité de type et
+// Avant : `data?: Record<string, any>` — — perdait la sécurité de type et
 // laissait passer des payloads mal formés en compilation. Maintenant chaque
 // type de schéma a sa propre interface typée, et l'union discriminée par
 // `type` garantit que `data` correspond bien au `type` choisi.
 
 // Types discriminés par type de schéma Schema.org.
-// Avant : `data?: Record<string, any>` â€” perdait la sécurité de type et
+// Avant : `data?: Record<string, any>` — — perdait la sécurité de type et
 // laissait passer des payloads mal formés en compilation. Maintenant chaque
 // type de schéma a sa propre interface typée, et l'union discriminée par
 // `type` garantit que `data` correspond bien au `type` choisi.
@@ -60,7 +60,7 @@ type WebPageData = {
 };
 
 type ProductData = {
-  // Conservé pour extension future â€” non utilisé aujourd'hui
+  // Conservé pour extension future — — non utilisé aujourd'hui
   name?: string;
 };
 
@@ -72,7 +72,7 @@ type SchemaData =
   | WebPageData
   | ProductData;
 
-// Props du composant â€” le `type` discrimine l'union `data`.
+// Props du composant — — le `type` discrimine l'union `data`.
 type Props = {
   type: 'Organization' | 'NGO' | 'Service' | 'FAQPage' | 'Article' | 'WebPage' | 'Course' | 'Product';
   data?: SchemaData;
@@ -107,7 +107,7 @@ const organizationSchema = {
     "width": "1200",
     "height": "630"
   },
-  "description": "Association Loi 1901 d'intérêt général. Nous rendons l'IA accessible à tous â€” associations, collectivités et petites structures â€” sans jargon et sans but lucratif.",
+  "description": "Association Loi 1901 d'intérêt général. Nous rendons l'IA accessible à tous — — associations, collectivités et petites structures — — sans jargon et sans but lucratif.",
   "email": "contact@biscuits-ia.com",
   "telephone": "+33952587543",
   "address": {
@@ -149,7 +149,7 @@ const organizationSchema = {
   },
   "knowsAbout": [
     "Intelligence Artificielle",
-    "→thique de l'IA",
+    "Éthique de l'IA",
     "Fracture numérique",
     "Formation numérique",
     "Autonomie numérique",
@@ -178,7 +178,7 @@ const websiteSchema = {
   "@id": `${siteUrl}/#website`,
   "url": siteUrl,
   "name": "Biscuits IA",
-  "description": "Association Loi 1901 â€” IA accessible à tous, sans jargon et sans but lucratif.",
+  "description": "Association Loi 1901 — — IA accessible à tous, sans jargon et sans but lucratif.",
   "publisher": {
     "@id": `${siteUrl}/#organization`
   },
@@ -347,7 +347,7 @@ if (type === 'Service') {
   };
 } else if (type === 'WebPage') {
   // Branche manquante avant l'audit : `WebPage` était déclaré dans Props.type
-  // mais jamais géré ici â€” `data` passé par `blog/[page].astro` était silencieusement
+  // mais jamais géré ici — — `data` passé par `blog/[page].astro` était silencieusement
   // abandonné. Cf. AUDIT.md Â§3.
   const webPageData = data as WebPageData;
   specificSchema = {
@@ -356,7 +356,7 @@ if (type === 'Service') {
     "@id": Astro.url.href,
     "url": Astro.url.href,
     "name": webPageData.name || "Biscuits IA",
-    "description": webPageData.description || "Association Loi 1901 â€” IA accessible à tous.",
+    "description": webPageData.description || "Association Loi 1901 — — IA accessible à tous.",
     "isPartOf": {
       "@id": `${siteUrl}/#website`
     },

@@ -1,0 +1,267 @@
+---
+title: "IA au service du citoyen : FAQ et delibrations intelligentes"
+description: "Comment les collectivites peuvent deployer une IA open source pour ameliorer l'accueil citoyen : FAQ, delibrations municipales, analyse de l'open data."
+pubDate: 2026-06-17T09:00:00Z
+author: "Biscuits IA"
+featured: true
+tags: ["ia", "open-source", "collectivite", "service-public", "faq", "open-data"]
+---
+
+import Callout from '@/components/Callout.astro';
+import ComparisonGrid from '@/components/ComparisonGrid.astro';
+
+# IA au service du citoyen : FAQ intelligente, delibrations et open data
+
+Les mairies, CCAS, EPCI et conseils departementaux recoivent chaque jour des centaines de demandes citoyennes. Agents submerges, reponses en retard, citoyens perdus dans des sites web touffus.
+
+Une IA open source, deployee en local, peut **ameliorer concretement le service public** sans ceder les donnees des citoyens a des entreprises etrangeres. Voici 3 cas d'usage deployables en 2026.
+
+<Callout type="info" title="Pour qui ?">
+Pour les DGS, responsables de la communication, directeurs des systemes d'information, et elus charges de la transformation numerique des collectivites.
+</Callout>
+
+---
+
+## Cas d'usage n°1 : FAQ intelligente sur le site de la mairie
+
+### Le probleme
+
+Le site web d'une mairie type a 50 a 200 pages. Les questions recurrentes des citoyens concernent 20-30 sujets : horaires, demarches, reglements, evenements. Les agents passent 1-3h par jour a repondre aux memes questions par mail ou telephone.
+
+### La solution : chatbot RAG sur les contenus du site
+
+Vous indexez :
+- Les pages du site web de la mairie
+- Les FAQ existantes
+- Les formulaires et demarches
+- Les arrets et reglements municipaux
+- Les delibrations recentes
+
+Le chatbot repond instantanement aux questions courantes, avec lien vers la source officielle.
+
+### Mise en place
+
+- **Outils** : Mistral Large 2 (self-hosted sur Scaleway) + RAG (ChromaDB) + interface web
+- **Cout** : 300-800 €/mois de serveur GPU, ou serveur interne 10000 €
+- **Delai** : 4-6 semaines (audit contenu, indexation, configuration, formation agents)
+
+### Exemple de reponse du chatbot
+
+**Citoyen** : "Comment inscrire mon enfant au centre de loisirs pour les vacances de fevrier ?"
+
+**Chatbot** : "Les inscriptions au centre de loisirs pour les vacances de fevrier 2026 ouvrent le 13 janvier. Vous pouvez inscrire votre enfant :
+- En ligne sur www.mairie-[nom].fr/vacances (formulaire en ligne)
+- A l'accueil de la mairie du lundi au vendredi de 9h a 17h
+- Par telephone au 01 23 45 67 89
+
+Documents a fournir : justificatif de domicile, carnet de sante, numero CAF. Tarifs : 5 a 15 € par jour selon quotient familial.
+
+Source : Service Enfance-Jeunesse, reglement interieur (maj 12/2025)."
+
+### Resultat attendu
+
+- 50-70% des questions recurrentes traitees en autonomie
+- Agents liberes pour les demandes complexes
+- Citoyens servis 24/7, y compris en dehors des heures d'ouverture
+
+---
+
+## Cas d'usage n°2 : Analyse des deliberations municipales
+
+### Le probleme
+
+Une commune type a 200 a 500 delibations par an. Les journalistes, chercheurs, citoyens veulent les consulter, mais :
+- Le site les affiche en PDF mal indexes
+- La recherche par mot-cle est imprecise
+- Impossible d'avoir une vue d'ensemble ("quelles delib sur le logement en 2025 ?")
+
+### La solution : moteur de recherche semantique sur les delib
+
+Vous indexez toutes les deliberations (PDF) dans une base vectorielle. Un chatbot repond aux questions des journalistes et citoyens sur les delib.
+
+### Mise en place
+
+- **Outils** : Mistral Small 3 + RAG (Qdrant ou pgvector) + interface web
+- **Donnees** : 5-10 ans de delib (environ 1000-2000 PDF)
+- **Cout** : serveur GPU moyen 500-1000 €/mois
+
+### Exemple d'usage
+
+**Journaliste** : "Quelles delib sur les transports en commun ont ete prises entre 2023 et 2025 ?"
+
+**Chatbot** : "5 delib concernent les transports en commun sur cette periode :
+1. Delib 2023-045 (15 mars 2023) : Approbation du plan de mobilite
+2. Delib 2024-112 (12 juin 2024) : Subvention a l'association Veloo
+3. Delib 2025-023 (8 fevrier 2025) : Extension du plan velo
+4. ...
+
+Souhaitez-vous le detail d'une deliberation particuliere ?"
+
+### Benefice democratique
+
+Les deliberations sont **la memoire de la vie locale**. Les rendre interrogeables en langage naturel, c'est renforcer la transparence democratique.
+
+---
+
+## Cas d'usage n°3 : Analyse de l'open data
+
+### Le probleme
+
+L'open data (data.gouv.fr, open.data.paris.fr, etc.) met a disposition des centaines de jeux de donnees : budgets, equipements, activites, frequentation. Mais ces CSV/JSON sont difficiles a exploiter pour des non-specialistes.
+
+### La solution : chatbot d'analyse open data
+
+Un chatbot qui :
+- Connait les jeux de donnees open data locaux
+- Sait faire des requetes SQL/pandas sur les CSV
+- Repond aux questions en langage naturel avec graphiques
+
+### Mise en place
+
+- **Outils** : Mistral Large 2 + PandasAI ou ChatCSV + interface
+- **Donnees** : catalogues open data locaux + nationaux
+- **Cout** : serveur GPU 500-1500 €/mois
+
+### Exemple
+
+**Elu** : "Combien de personnes ont beneficie de l'aide alimentaire en 2024 dans notre commune ?"
+
+**Chatbot** : "En 2024, le CCAS a accompagne 247 menages (483 personnes) pour l'aide alimentaire, repartis comme suit :
+- Aide alimentaire d'urgence : 156 menages
+- Epiceries sociales : 91 menages
+
+Evolution : +12% par rapport a 2023 (221 menages). Le cout total pour la commune s'est eleve a 48 500 €.
+
+Source : Rapport d'activite CCAS 2024 (donnees open data)."
+
+### Usages avances
+
+- **Veille** : detecter automatiquement les tendances inhabituelles
+- **Rapports** : generer des rapports structures a partir des donnees brutes
+- **Comparaisons** : comparer avec d'autres collectivites
+
+---
+
+## Stack technique recommandee par cas d'usage
+
+### FAQ intelligente (cas 1)
+
+- **LLM** : Mistral Small 3 (24B) ou Llama 4 8B
+- **Embeddings** : nomic-embed-text
+- **Base vectorielle** : ChromaDB (simple) ou Qdrant (production)
+- **Orchestrateur** : LlamaIndex
+- **Interface** : widget web (custom ou Crisp)
+- **Hebergement** : Scaleway L4 (200-300 €/mois)
+
+### Analyse de deliberations (cas 2)
+
+- **LLM** : Mistral Large 2 (123B) ou Qwen 3 72B
+- **Embeddings** : BGE-M3 (multilingue)
+- **Base vectorielle** : Qdrant ou pgvector
+- **Orchestrateur** : LangChain
+- **Interface** : Open WebUI
+- **Hebergement** : Scaleway H100 (800-1500 €/mois) ou serveur interne 15000 €
+
+### Analyse open data (cas 3)
+
+- **LLM** : Mistral Large 2 (avec fonction calling)
+- **Bibliotheque** : PandasAI ou ChatCSV
+- **Sources** : API open data locale + data.gouv.fr
+- **Interface** : Streamlit ou Open WebUI
+- **Hebergement** : Scaleway H100 (1000-2000 €/mois)
+
+---
+
+## Les pieges a eviter
+
+### Le chatbot qui repond n'importe quoi
+
+Un LLM sans RAG repond en fonction de ses connaissances d'entrainement, pas de vos documents. Resultat : reponses inventees ou generiques.
+
+**Solution** : toujours utiliser du RAG sur vos documents specifiques.
+
+### Le chatbot qui repond trop largement
+
+Un LLM peut repondre a des questions sensibles (politique, juridique, medical) qu'il devrait refuser.
+
+**Solution** : prompt systeme strict + filtres de securite.
+
+### Le chatbot qui ralentit en heures de pointe
+
+Un serveur sous-dimensionne sature quand 50+ citoyens utilisent le chatbot en meme temps.
+
+**Solution** : dimensionner le serveur pour le pic de trafic (matin 9-11h).
+
+### Le chatbot qui ne s'ameliore pas
+
+Sans boucle de feedback, le chatbot reste fige sur la qualite initiale.
+
+**Solution** : logger les questions + feedback utilisateur, ameliorer la base documentaire.
+
+---
+
+## Conformite et ethique
+
+### RGPD
+
+- **Donnees** : les questions des citoyens peuvent contenir des donnees personnelles (nom, adresse)
+- **Logs** : a conserver X jours selon votre politique
+- **Hebergement** : serveur europeen certifie (Scaleway, OVHcloud SecNumCloud)
+- **Transparence** : informer que les echanges peuvent etre analyses
+
+### Securite
+
+- **Prompt injection** : proteger le systeme contre les tentatives de manipulation
+- **Jailbreak** : empecher le chatbot de repondre a des questions hors perimetre
+- **PII** : detecter et anonymiser les donnees personnelles dans les echanges
+
+### Ethique
+
+- **Equite** : le chatbot doit repondre de la meme maniere a tous les citoyens
+- **Transparence** : indiquer clairement que c'est une IA
+- **Recours humain** : toujours permettre de joindre un humain
+
+---
+
+## Mesurer l'impact
+
+### Indicateurs cles
+
+- **Taux de resolution autonome** : % de questions traitees sans humain
+- **Temps de reponse moyen** : secondes entre question et reponse
+- **Taux de satisfaction** : note des citoyens
+- **Reduction de charge** : temps agents economise
+- **Adoption** : % de citoyens qui utilisent le chatbot
+
+### Objectifs realistes (12 mois)
+
+- Taux de resolution : 50-60% (FAQ simple), 30-40% (FAQ complexe)
+- Satisfaction : 7/10 minimum
+- Reduction de charge : 20-30% du temps des agents
+- Adoption : 10-20% des demandes recurrentes
+
+---
+
+## Conclusion : l'IA au service du bien commun
+
+Deployer une IA open source dans une collectivite, ce n'est pas de la technologie pour la technologie. C'est **rendre le service public plus accessible, plus rapide, plus equitable**.
+
+Les 3 cas d'usage presentes ici (FAQ intelligente, analyse des delib, open data) sont deployables en 2026 par des collectivites moyennes, sans ceder les donnees des citoyens a des acteurs etrangers, avec un cout maitrise.
+
+### Les 3 actions a faire
+
+1. **Identifiez le cas d'usage prioritaire** : FAQ, delib, ou open data
+2. **Auditez vos contenus** : combien de pages, delib, jeux de donnees avez-vous ?
+3. **Contactez-nous** pour un atelier de cadrage : on vous aide a dimensionner
+
+---
+
+<Callout type="tip" title="Atelier dedie">
+Biscuits IA propose des **ateliers "IA et service public"** pour les collectivites. Au programme : cas d'usage, cadrage budgetaire, et plan de deploiement en 6 mois.
+
+*Collectivites : tarif adapte. Contactez-nous pour organiser une session !*
+</Callout>
+
+---
+
+*Votre collectivite a deploye un chatbot IA ? Partagez votre retour en commentaire. 🍪*

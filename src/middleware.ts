@@ -197,30 +197,41 @@ export const onRequest = defineMiddleware(async (context, next) => {
 
   const response = await next();
 
+  // CSP 3 + strict-dynamic. Un script signe par nonce peut charger
+  // d'autres scripts dynamiquement sans whitelister chaque domain.
+  // Recommandation CSP 2024+ pour les apps first-party.
   const scriptSrc = [
-    "'self'",
+    `'self'`,
     `'nonce-${nonce}'`,
-    "'sha256-3bzWVxQE32IZQKH9eh8KzyHuhXOlMrboDVVBRd0fWTU='",
-    'https://www.googletagmanager.com',
-    'https://www.google-analytics.com',
-    'https://cdn.vercel-insights.com',
-    'https://*.vercel.app',
-    'https://vercel.live',
-    'https://cdn.jsdelivr.net',
+    `'strict-dynamic'`,
+    'https://fonts.googleapis.com',
   ];
 
+  // connect-src : strict-dynamic ne le couvre PAS, on le maintient a la main.
   const connectSrc = [
-    "'self'",
+    `'self'`,
+    'https://www.googletagmanager.com',
     'https://*.google-analytics.com',
     'https://analytics.google.com',
-    'https://*.vercel-insights.com',
+    'https://cdn.vercel-insights.com',
+    'https://*.vercel.app',
     'https://*.supabase.co',
-    'https://cdn.jsdelivr.net',
+    'https://fonts.googleapis.com',
+    'https://fonts.gstatic.com',
   ];
 
+  // frame-src : iframes (GTM noscript, Vercel live)
   const frameSrc = [
     'https://www.googletagmanager.com',
     'https://vercel.live',
+  ];
+
+  // img-src : https: pour visuels externes (open graph, etc.)
+  const imgSrc = [
+    `'self'`,
+    'data:',
+    'blob:',
+    'https:',
   ];
 
   if (isDev) {
@@ -228,17 +239,18 @@ export const onRequest = defineMiddleware(async (context, next) => {
   }
 
   const csp = [
-    "default-src 'self'",
+    `default-src 'self'`,
     `script-src ${scriptSrc.join(' ')}`,
-    "worker-src 'self' blob:",
-    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-    "img-src 'self' data: https:",
-    "font-src 'self' https://fonts.gstatic.com",
+    `worker-src 'self' blob:`,
+    `style-src 'self' 'unsafe-inline' https://fonts.googleapis.com`,
+    `img-src ${imgSrc.join(' ')}`,
+    `font-src 'self' https://fonts.gstatic.com`,
     `connect-src ${connectSrc.join(' ')}`,
     `frame-src ${frameSrc.join(' ')}`,
-    "object-src 'none'",
-    "base-uri 'self'",
-    "form-action 'self'",
+    `object-src 'none'`,
+    `base-uri 'self'`,
+    `form-action 'self'`,
+    `frame-ancestors 'none'`,
   ].join('; ');
 
   const contentType = response.headers.get('content-type') ?? '';

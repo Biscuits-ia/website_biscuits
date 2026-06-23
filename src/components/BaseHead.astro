@@ -121,17 +121,24 @@ const {
       if (window.gtmLoaded) return;
       const consentStr = localStorage.getItem('cookie-consent');
       if (!consentStr) return;
+      let prefs;
       try {
-        const prefs = JSON.parse(consentStr);
-        if (prefs.analytics) {
-          window.gtmLoaded = true;
-          window.addGTMPreconnectIfConsented?.();
-          const script = document.createElement('script');
-          script.async = true;
-          script.src = 'https://www.googletagmanager.com/gtm.js?id=GTM-W2273TRX';
-          document.head.appendChild(script);
-        }
-      } catch (e) {}
+        prefs = JSON.parse(consentStr);
+      } catch (e) {
+        return;
+      }
+      if (!prefs || !prefs.analytics) return;
+      window.gtmLoaded = true;
+      try { window.addGTMPreconnectIfConsented?.(); } catch (e) {}
+      const script = document.createElement('script');
+      script.async = true;
+      script.src = 'https://www.googletagmanager.com/gtm.js?id=GTM-W2273TRX';
+      script.onerror = () => {
+        // Bloqueur pub / offline / CSP : on libere l'etat pour retenter au prochain consentement
+        window.gtmLoaded = false;
+        console.info('[GTM] load failed (likely blocked or offline)');
+      };
+      document.head.appendChild(script);
     };
 
     // →couter les mises à jour de consentement

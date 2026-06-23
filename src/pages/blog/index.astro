@@ -1,4 +1,4 @@
----
+﻿---
 // Page d'index du blog : hero + recherche + filtres par tag + grille paginee de tous les articles.
 // Pagination 100% cote client (5 articles par page).
 // Les pages dediees par tag sont generees par /blog/tag/[tag].astro.
@@ -20,7 +20,7 @@ const slugifyTag = (tag: string): string =>
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/(^-|-$)/g, '');
 
-const PAGE_SIZE = 5; // Nombre d'articles affiches par page (pagination client)
+const PAGE_SIZE = 6; // Nombre d'articles affiches par page (pagination client)
 
 const allArticles = await getCollection('blog');
 const sorted = allArticles
@@ -109,7 +109,7 @@ const pageDescription = `Decouvrez nos ${total} articles sur l'IA generative, la
 
       <section class="featured-section" aria-labelledby="featured-title">
         <h2 id="featured-title" class="section-title">
-          <span aria-hidden="true">★</span> Articles en vedette
+          <span aria-hidden="true">â˜…</span> Articles en vedette
         </h2>
         <div class="featured-grid">
           {featuredArticles.map((article) => (
@@ -119,7 +119,7 @@ const pageDescription = `Decouvrez nos ${total} articles sur l'IA generative, la
               {article.data.description && (
                 <p class="featured-description">{article.data.description}</p>
               )}
-              <span class="featured-cta">Lire l'article →</span>
+              <span class="featured-cta">Lire l'article â†’</span>
             </a>
           ))}
         </div>
@@ -152,7 +152,7 @@ const pageDescription = `Decouvrez nos ${total} articles sur l'IA generative, la
           <button type="button" class="tag-pill active" data-tag="all">
             Tous <span class="tag-count">{total}</span>
           </button>
-          {allTags.map((tag) => (
+          {allTags.slice(0, 6).map((tag) => (
             <a
               href={`/blog/tag/${tag.slug}`}
               class="tag-pill"
@@ -161,6 +161,34 @@ const pageDescription = `Decouvrez nos ${total} articles sur l'IA generative, la
               #{tag.display} <span class="tag-count">{tag.count}</span>
             </a>
           ))}
+          {allTags.length > 6 && (
+            <div class="tag-overflow" id="tag-overflow" hidden>
+              {allTags.slice(6).map((tag) => (
+                <a
+                  href={`/blog/tag/${tag.slug}`}
+                  class="tag-pill"
+                  data-tag={tag.slug}
+                >
+                  #{tag.display} <span class="tag-count">{tag.count}</span>
+                </a>
+              ))}
+            </div>
+          )}
+          {allTags.length > 6 && (
+            <button
+              type="button"
+              class="tag-pill tag-pill-toggle"
+              id="tag-toggle"
+              aria-expanded="false"
+              aria-controls="tag-overflow"
+            >
+              <span class="tag-toggle-label-show">Voir plus ({allTags.length - 6})</span>
+              <span class="tag-toggle-label-hide">Voir moins</span>
+              <svg class="tag-toggle-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </button>
+          )}
         </nav>
       </section>
 
@@ -405,6 +433,18 @@ const pageDescription = `Decouvrez nos ${total} articles sur l'IA generative, la
       window.scrollTo({ top, behavior: 'smooth' });
     }
 
+    // Bouton "Voir plus" pour les tags.
+    const tagToggle = document.getElementById('tag-toggle');
+    const tagOverflow = document.getElementById('tag-overflow');
+    if (tagToggle && tagOverflow) {
+      tagToggle.addEventListener('click', () => {
+        const expanded = tagToggle.getAttribute('aria-expanded') === 'true';
+        const next = !expanded;
+        tagToggle.setAttribute('aria-expanded', String(next));
+        tagOverflow.hidden = !next;
+      });
+    }
+
     // Filtre par tag (pill).
     tagButtons.forEach((btn) => {
       btn.addEventListener('click', (e) => {
@@ -547,7 +587,9 @@ const pageDescription = `Decouvrez nos ${total} articles sur l'IA generative, la
     justify-content: space-between;
     gap: 1rem;
     flex-wrap: wrap;
-    margin-top: 2.5rem;
+    margin-top: 4.5rem;
+    padding-top: 2rem;
+    border-top: 2px solid var(--color-border);
   }
 
   .section-head-row .section-title { margin: 0; }
@@ -716,6 +758,39 @@ const pageDescription = `Decouvrez nos ${total} articles sur l'IA generative, la
     text-align: center;
   }
 
+
+  .tag-overflow {
+    display: contents;
+  }
+
+  .tag-overflow[hidden] {
+    display: none;
+  }
+
+  .tag-pill-toggle {
+    color: var(--color-primary);
+    border-color: var(--color-border);
+    background: var(--color-bg);
+  }
+
+  .tag-pill-toggle[aria-expanded="true"] {
+    color: var(--color-bg-elevated);
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+  }
+
+  .tag-toggle-icon {
+    transition: transform var(--transition-fast, 0.2s);
+  }
+
+  .tag-pill-toggle[aria-expanded="true"] .tag-toggle-icon {
+    transform: rotate(180deg);
+  }
+
+  .tag-pill-toggle[aria-expanded="true"] .tag-toggle-label-show,
+  .tag-pill-toggle:not([aria-expanded="true"]) .tag-toggle-label-hide {
+    display: none;
+  }
   .tag-pill.active .tag-count,
   .tag-pill:hover .tag-count {
     background: var(--color-bg-elevated);

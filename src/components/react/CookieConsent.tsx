@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+﻿import { useState, useEffect, useCallback } from 'react';
 import '@/styles/cookie-consent.css';
 
 type CookieCategory = 'necessary' | 'analytics';
@@ -30,11 +30,30 @@ export default function CookieConsent({
   });
 
   const loadAnalytics = useCallback(() => {
+    // Kill-switch runtime (preprod / debug).
+    if (window.__ANALYTICS_DISABLED__ === true) return;
+    // Garde-fou : on ne tente pas de re-injecter si une instance existe
+    // deja ou est en cours d'injection (cas d'un load GTM/Vercel en vol).
+    if (document.querySelector('script[data-consent="analytics"], script[data-vercel-insights]')) {
+      return;
+    }
     const script = document.createElement('script');
     script.src = '/_vercel/insights/script.js';
     script.async = true;
     script.dataset.consent = 'analytics';
-    document.head.appendChild(script);
+    script.dataset.vercelInsights = '1';
+    // Erreur silencieuse : un blocage reseau / bloqueur n'est pas une
+    // erreur applicative. On log uniquement en mode debug.
+    script.addEventListener('error', () => {
+      if (window.__GTM_DEBUG__ === true) {
+        console.info('[Vercel Insights] load failed (likely blocked or offline)');
+      }
+    }, { once: true });
+    try {
+      document.head.appendChild(script);
+    } catch (e) {
+      // DOM indisponible (page unload, sandbox) : on ne fait rien.
+    }
   }, []);
 
   const isScriptLoaded = useCallback((type: string): boolean => {
@@ -63,11 +82,11 @@ export default function CookieConsent({
         new CustomEvent('cookieConsentUpdated', { detail: consentData }),
       );
 
-      // Charge ou dcharge les scripts selon le consentement.
-      // (RGPD : un refus explicite doit retirer les scripts dj chargs.)
-      if (prefs.analytics && typeof globalThis.window !== 'undefined') {
-        if (typeof globalThis.loadGTMIfConsented === 'function') {
-          globalThis.loadGTMIfConsented();
+      // Charge ou decharge les scripts selon le consentement.
+      // (RGPD : un refus explicite doit retirer les scripts deja charges.)
+      if (prefs.analytics && typeof window !== 'undefined') {
+        if (typeof window.loadGTMIfConsented === 'function') {
+          window.loadGTMIfConsented();
         }
         if (!isScriptLoaded('analytics')) {
           loadAnalytics();
@@ -145,7 +164,7 @@ export default function CookieConsent({
         loadAnalytics();
       }
     } catch (e) {
-      console.error('Erreur lors du chargement des prfrences:', e);
+      console.error('Erreur lors du chargement des preferences:', e);
       setShowBanner(true);
     }
 
@@ -155,152 +174,157 @@ export default function CookieConsent({
     };
   }, [consentVersion, cleanupExpiredConsent, loadAnalytics]);
 
-  if (!showBanner) return null;
-
   return (
-    <dialog aria-labelledby="cookie-title" open>
-      <div className="cookie-banner-content">
-        {showSettings ? (
-          <div>
-            <div className="cookie-settings-header">
-              <h3>Prfrences des cookies</h3>
-              <p>Choisissez ce que vous autorisez. Vous pouvez modifier  tout moment.</p>
-            </div>
-
-            <div className="cookie-preferences">
-              <div className="cookie-pref-item">
-                <div className="cookie-pref-text">
-                  <p className="cookie-pref-title">Cookies ncessaires</p>
-                  <p className="cookie-pref-desc">
-                    Requis pour le fonctionnement du site (toujours activs)
+    <dialog>
+      {showBanner && (
+        <div className="cookie-banner">
+          {showSettings ? (
+            <div>
+              <div className="cookie-header">
+                <div className="cookie-text">
+                  <h3 id="cookie-banner-title">Vos preferences</h3>
+                  <p id="cookie-banner-description">
+                    Choisissez les categories de cookies que vous autorisez.
+                    Vous pouvez modifier votre choix a tout moment.
                   </p>
-                </div>
-                <div className="cookie-toggle cookie-toggle-active">
-                  <div className="cookie-toggle-thumb"></div>
                 </div>
               </div>
 
-              <div className="cookie-pref-item">
-                <div className="cookie-pref-text">
-                  <p className="cookie-pref-title">Cookies analytiques</p>
-                  <p className="cookie-pref-desc">
-                    Nous aident  comprendre comment vous utilisez le site
-                  </p>
+              <div className="cookie-preferences">
+                <div className="cookie-pref-item">
+                  <div className="cookie-pref-text">
+                    <p className="cookie-pref-title">Cookies necessaires</p>
+                    <p className="cookie-pref-desc">
+                      Requis pour le fonctionnement du site (toujours actives)
+                    </p>
+                  </div>
+                  <div className="cookie-toggle cookie-toggle-active">
+                    <div className="cookie-toggle-thumb"></div>
+                  </div>
                 </div>
+
+                <div className="cookie-pref-item">
+                  <div className="cookie-pref-text">
+                    <p className="cookie-pref-title">Cookies analytiques</p>
+                    <p className="cookie-pref-desc">
+                      Nous aident a comprendre comment vous utilisez le site
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => togglePreference('analytics')}
+                    className={`cookie-toggle ${preferences.analytics ? 'cookie-toggle-active' : ''}`}
+                    role="switch"
+                    aria-checked={preferences.analytics}
+                    aria-label="Activer les cookies analytiques"
+                  >
+                    <div className="cookie-toggle-thumb"></div>
+                  </button>
+                </div>
+              </div>
+
+              <div className="cookie-actions">
                 <button
-                  onClick={() => togglePreference('analytics')}
-                  className={`cookie-toggle ${preferences.analytics ? 'cookie-toggle-active' : ''}`}
-                  role="switch"
-                  aria-checked={preferences.analytics}
-                  aria-label="Activer les cookies analytiques"
+                  onClick={() => setShowSettings(false)}
+                  className="cookie-btn cookie-btn-secondary"
                 >
-                  <div className="cookie-toggle-thumb"></div>
+                  Annuler
+                </button>
+                <button
+                  onClick={saveCustomPreferences}
+                  className="cookie-btn cookie-btn-primary"
+                >
+                  Enregistrer
                 </button>
               </div>
             </div>
-
-            <div className="cookie-actions">
-              <button
-                onClick={() => setShowSettings(false)}
-                className="cookie-btn cookie-btn-secondary"
-              >
-                Annuler
-              </button>
-              <button
-                onClick={saveCustomPreferences}
-                className="cookie-btn cookie-btn-primary"
-              >
-                Enregistrer
-              </button>
-            </div>
-          </div>
-        ) : (
-          <div>
-            <div className="cookie-header">
-              <div className="cookie-text">
-                <h3 id="cookie-banner-title">?? Cookies</h3>
-                <p id="cookie-banner-description">
-                  Nous utilisons des cookies pour amliorer votre exprience. Les
-                  cookies ncessaires sont requis pour le fonctionnement du site.
-                  Vous pouvez personnaliser vos prfrences  tout moment.{' '}
-                  <a
-                    href="/legal/cookies"
-                    style={{ color: 'inherit', textDecoration: 'underline' }}
+          ) : (
+            <div>
+              <div className="cookie-header">
+                <div className="cookie-text">
+                  <h3 id="cookie-banner-title">Cookies</h3>
+                  <p id="cookie-banner-description">
+                    Nous utilisons des cookies pour ameliorer votre experience. Les
+                    cookies necessaires sont requis pour le fonctionnement du site.
+                    Vous pouvez personnaliser vos preferences a tout moment.{' '}
+                    <a
+                      href="/legal/cookies"
+                      style={{ color: 'inherit', textDecoration: 'underline' }}
+                    >
+                      En savoir plus
+                    </a>
+                  </p>
+                  <span className="cookie-example">
+                    Exemple : session, securite, preferences
+                  </span>
+                </div>
+                <button
+                  onClick={acceptNecessary}
+                  className="cookie-close"
+                  aria-label="Refuser les cookies optionnels"
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    aria-hidden="true"
                   >
-                    En savoir plus
-                  </a>
-                </p>
-                <span className="cookie-example">
-                  Exemple: session, scurit, prfrences
-                </span>
+                    <line
+                      x1="18"
+                      y1="6"
+                      x2="6"
+                      y2="18"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                    />
+                    <line
+                      x1="6"
+                      y1="6"
+                      x2="18"
+                      y2="18"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                </button>
               </div>
-              <button
-                onClick={acceptNecessary}
-                className="cookie-close"
-                aria-label="Refuser les cookies optionnels"
-              >
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  aria-hidden="true"
-                >
-                  <line
-                    x1="18"
-                    y1="6"
-                    x2="6"
-                    y2="18"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                  />
-                  <line
-                    x1="6"
-                    y1="6"
-                    x2="18"
-                    y2="18"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                  />
-                </svg>
-              </button>
-            </div>
 
-            <div className="cookie-actions">
-              <button
-                onClick={() => setShowSettings(true)}
-                className="cookie-btn cookie-btn-secondary"
-              >
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  aria-hidden="true"
+              <div className="cookie-actions">
+                <button
+                  onClick={() => setShowSettings(true)}
+                  className="cookie-btn cookie-btn-secondary"
                 >
-                  <circle cx="12" cy="12" r="3" strokeWidth="2" />
-                  <path
-                    d="M12 1v6m0 6v6M23 12h-6m-6 0H1"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                  />
-                </svg>
-                Personnaliser
-              </button>
-              <button
-                onClick={acceptNecessary}
-                className="cookie-btn cookie-btn-secondary"
-              >
-                Refuser
-              </button>
-              <button
-                onClick={acceptAll}
-                className="cookie-btn cookie-btn-primary"
-              >
-                Accepter tout
-              </button>
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    aria-hidden="true"
+                  >
+                    <circle cx="12" cy="12" r="3" strokeWidth="2" />
+                    <path
+                      d="M12 1v6m0 6v6M23 12h-6m-6 0H1"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                  Personnaliser
+                </button>
+                <button
+                  onClick={acceptNecessary}
+                  className="cookie-btn cookie-btn-secondary"
+                >
+                  Refuser
+                </button>
+                <button
+                  onClick={acceptAll}
+                  className="cookie-btn cookie-btn-primary"
+                >
+                  Accepter tout
+                </button>
+              </div>
             </div>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
+      )}
     </dialog>
   );
 }

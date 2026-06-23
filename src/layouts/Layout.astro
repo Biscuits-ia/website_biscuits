@@ -1,4 +1,4 @@
----
+﻿---
 import Header from '@/components/Header.astro';
 import Footer from '@/components/Footer.astro';
 import BaseHead from '@/components/BaseHead.astro';
@@ -33,13 +33,16 @@ const {
 
 const siteUrl = import.meta.env.SITE || 'https://biscuits-ia.com';
 
-const fullCanonical = canonical 
-  ? `${siteUrl}${canonical}` 
+const fullCanonical = canonical
+  ? `${siteUrl}${canonical}`
   : `${siteUrl}${Astro.url.pathname}`;
 
 const fullTitle = title.includes('|') ? title : `${title} | Biscuits IA`;
 
 const isProd = import.meta.env.PROD;
+// PUBLIC_ANALYTICS_DISABLED : kill-switch global (utile en preprod, en local, ou en cas d'incident).
+// Expose au client via window.__ANALYTICS_DISABLED__ ; BaseHead et CookieConsent consultent ce flag.
+const analyticsDisabled = import.meta.env.PUBLIC_ANALYTICS_DISABLED === 'true';
 const nonce = Astro.locals.nonce;
 
 const criticalCSS = `
@@ -76,6 +79,12 @@ const criticalCSS = `
 </head>
 
 <body>
+  <!-- Kill-switch analytics : expose au client le plus tot possible pour empecher
+       le load GTM / Vercel Insights meme en cas de bug JS en aval. -->
+  <script is:inline nonce={nonce}>
+    window.__ANALYTICS_DISABLED__ = {analyticsDisabled};
+  </script>
+
   <Header />
 
   <main id="main-content" role="main">
@@ -122,24 +131,24 @@ const criticalCSS = `
   main {
     min-height: 60vh;
   }
-    
+
   /* Prévention du CLS pour les images */
   img:not([width]):not([height]) {
     aspect-ratio: attr(width) / attr(height);
   }
-  
+
   /* Amélioration du contraste pour l'accessibilité */
   ::selection {
     background-color: var(--color-primary);
     color: var(--color-bg-elevated);
   }
-  
+
   /* Focus visible amélioré (Accessibility) */
   :focus-visible {
     outline: 3px solid var(--color-primary);
     outline-offset: 2px;
   }
-  
+
   /* Réduction du mouvement pour accessibilité */
   @media (prefers-reduced-motion: reduce) {
     *,
@@ -151,7 +160,7 @@ const criticalCSS = `
       scroll-behavior: auto !important;
     }
   }
-  
+
   /* Dark mode support */
   @media (prefers-color-scheme: dark) {
     :root {

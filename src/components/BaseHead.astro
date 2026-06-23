@@ -1,4 +1,4 @@
----
+﻿---
 import SEOHead from '@/components/SEO/SEOHead.astro';
 import SchemaOrg from '@/components/SEO/SchemaOrg.astro';
 
@@ -38,26 +38,22 @@ const {
 <slot />
 
 <!--
-  Preconnect GTM : ne se déclenche qu'APRÆS consentement analytics.
-  Sans opt-in, aucun préchauffage TCP/TLS vers Google n'est émis
-  (RGPD / CNIL délibération nÂ°2020-091).
-  Le handshake est ajouté dynamiquement par le loader ci-dessous.
+  Preconnect GTM : ne se declenche qu'APRES consentement analytics.
+  Sans opt-in, aucun prechauffage TCP/TLS vers Google n'est emis
+  (RGPD / CNIL deliberation n 2020-091).
+  Le handshake est ajoute dynamiquement par le loader ci-dessous.
 -->
 {isProd && (
   <script is:inline nonce={nonce}>
-    window.addGTMPreconnectIfConsented = () => {
-      if (document.querySelector('link[data-gtm-preconnect]')) return;
-      const link = document.createElement('link');
-      link.rel = 'preconnect';
-      link.href = 'https://www.googletagmanager.com';
-      link.crossOrigin = 'anonymous';
-      link.dataset.gtmPreconnect = '1';
-      document.head.appendChild(link);
-    };
+    if (window.location.hostname === 'biscuits-ia.com') {
+      window.__PARTYTOWN_CONFIG = {
+        skipDeprecatedAPIs: true,
+      };
+    }
   </script>
 )}
 
-<SEOHead 
+<SEOHead
   title={fullTitle}
   description={description}
   canonical={fullCanonical}
@@ -87,17 +83,7 @@ const {
   </>
 )}
 
-{isProd && (
-  <script is:inline nonce={nonce}>
-    if (window.location.hostname === 'biscuits-ia.com') {
-      window.__PARTYTOWN_CONFIG = {
-        skipDeprecatedAPIs: true,
-      };
-    }
-  </script>
-)}
-
-<!-- Favicons optimisés (format moderne) -->
+<!-- Favicons optimises (format moderne) -->
 <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 <link rel="alternate icon" href="/favicon.ico" sizes="32x32" />
 <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
@@ -112,43 +98,61 @@ const {
 
 {isProd && (
   <script is:inline nonce={nonce}>
-    // Définition du dataLayer pour GTM (chargé dynamiquement par CookieConsent)
+    // Definition du dataLayer pour GTM (charge dynamiquement par CookieConsent)
     window.dataLayer = window.dataLayer || [];
     function gtag() { dataLayer.push(arguments); }
 
-    // Fonction pour charger GTM (appelée par CookieConsent quand analytics accepté)
-    window.loadGTMIfConsented = () => {
-      if (window.gtmLoaded) return;
-      const consentStr = localStorage.getItem('cookie-consent');
-      if (!consentStr) return;
-      let prefs;
-      try {
-        prefs = JSON.parse(consentStr);
-      } catch (e) {
-        return;
-      }
-      if (!prefs || !prefs.analytics) return;
-      window.gtmLoaded = true;
-      try { window.addGTMPreconnectIfConsented?.(); } catch (e) {}
-      const script = document.createElement('script');
-      script.async = true;
-      script.src = 'https://www.googletagmanager.com/gtm.js?id=GTM-W2273TRX';
-      script.onerror = () => {
-        // Bloqueur pub / offline / CSP : on libere l'etat pour retenter au prochain consentement
-        window.gtmLoaded = false;
-        console.info('[GTM] load failed (likely blocked or offline)');
+    // Cooldown pour eviter le spam de tentatives si le reseau est instable
+    // ou si un bloqueur de pub rejette systematiquement la requete.
+    const GTM_RETRY_COOLDOWN_MS = 30000;
+
+    // Kill-switch runtime (utile en preprod / debug).
+    // Active via la variable d'env PUBLIC_ANALYTICS_DISABLED exposee par le Layout.
+    if (!window.__ANALYTICS_DISABLED__) {
+      // Fonction pour charger GTM (appelee par CookieConsent quand analytics accepte)
+      window.loadGTMIfConsented = () => {
+        if (window.gtmLoaded) return;
+        const consentStr = localStorage.getItem('cookie-consent');
+        if (!consentStr) return;
+        let prefs;
+        try {
+          prefs = JSON.parse(consentStr);
+        } catch (e) {
+          return;
+        }
+        if (!prefs || !prefs.analytics) return;
+        window.gtmLoaded = true;
+        try { window.addGTMPreconnectIfConsented?.(); } catch (e) {}
+        const script = document.createElement('script');
+        script.async = true;
+        script.dataset.gtmLoader = '1';
+        script.src = 'https://www.googletagmanager.com/gtm.js?id=GTM-W2273TRX';
+        // Erreur silencieuse : un blocage reseau / bloqueur n'est pas une
+        // erreur applicative. On log uniquement en mode debug.
+        script.addEventListener('error', () => {
+          window.gtmLoaded = false;
+          if (window.__GTM_DEBUG__ === true) {
+            console.info('[GTM] load failed (likely blocked or offline)');
+          }
+          window.setTimeout(() => { window.gtmLoaded = false; }, GTM_RETRY_COOLDOWN_MS);
+        }, { once: true });
+        try {
+          document.head.appendChild(script);
+        } catch (e) {
+          // DOM indisponible (page unload, sandbox) : on libere l'etat.
+          window.gtmLoaded = false;
+        }
       };
-      document.head.appendChild(script);
-    };
 
-    // →couter les mises à jour de consentement
-    window.addEventListener('cookieConsentUpdated', (e) => {
-      if (e.detail.analytics) window.loadGTMIfConsented();
-    });
+      // Ecouter les mises a jour de consentement
+      window.addEventListener('cookieConsentUpdated', (e) => {
+        if (e.detail.analytics) window.loadGTMIfConsented();
+      });
 
-    // Charger GTM si déjà accepté au chargement
-    if (typeof localStorage !== 'undefined') {
-      window.loadGTMIfConsented();
+      // Charger GTM si deja accepte au chargement
+      if (typeof localStorage !== 'undefined') {
+        window.loadGTMIfConsented();
+      }
     }
   </script>
 )}

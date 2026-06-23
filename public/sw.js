@@ -1,80 +1,86 @@
 // Service Worker pour Biscuits IA
-// Version: 2.0.0
+// Version: 3.0.0
+// Strategie: stale-while-revalidate pour les pages publiques, bypass strict
+// pour les extensions navigateur, les schemes non-http(s), les API, l'auth
+// et tout ce qui sort du perimetre du site.
 
-const CACHE_NAME = 'biscuits-ia-v2';
+const CACHE_NAME = 'biscuits-ia-v3';
+const RUNTIME_CACHE = 'biscuits-ia-runtime-v3';
+const PRECACHE_URLS = ['/', '/og-default.webp', '/favicon.svg'];
 
-// Stratégie de cache : network-first avec fallback
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then(cache => {
-        // Mettre en cache la page d'accueil
-        return cache.addAll(['/']);
-      })
+      .then((cache) => cache.addAll(PRECACHE_URLS))
       .then(() => self.skipWaiting())
   );
 });
 
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then(cacheNames => {
-      return Promise.all(
-        cacheNames.map(cacheName => {
-          if (cacheName !== CACHE_NAME) {
-            return caches.delete(cacheName);
-          }
-        })
-      );
-    })
+    caches.keys().then((cacheNames) =>
+      Promise.all(
+        cacheNames
+          .filter((name) => name !== CACHE_NAME && name !== RUNTIME_CACHE)
+          .map((name) => caches.delete(name))
+      )
+    ).then(() => self.clients.claim())
   );
 });
+
+const NON_CACHEABLE_PREFIXES = [
+  '/api/',
+  '/auth/',
+  '/dashboard/',
+  '/connexion',
+  '/inscription',
+  '/utilisateurs',
+  '/trombinoscope',
+  '/verifier-code-',
+  '/reinitialisation',
+  '/mot-de-passe-',
+];
+
+function isHttpRequest(url) {
+  return url.protocol === 'http:' || url.protocol === 'https:';
+}
+
+function isSameOrigin(url) {
+  return url.origin === self.location.origin;
+}
+
+function isNonCacheable(pathname) {
+  return NON_CACHEABLE_PREFIXES.some((p) => pathname === p || pathname.startsWith(p));
+}
 
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // Ne pas intercepter les requêtes POST
-  if (request.method !== 'GET') {
-    return;
-  }
+  // Bypass: requetes non GET, schemes non http(s), origines externes,
+  // requetes chrome-extension, tracking, analytics
+  if (request.method !== 'GET') return;
+  if (!isHttpRequest(url)) return;
+  if (!isSameOrigin(url)) return;
+  if (isNonCacheable(url.pathname)) return;
 
-  // Ne pas cacher les routes authentifiées, API et auth
-  if (
-    url.pathname.startsWith('/dashboard/') ||
-    url.pathname.startsWith('/api/') ||
-    url.pathname.startsWith('/auth/')
-  ) {
-    return;
-  }
-
-  // Stratégie network-first pour le contenu public uniquement
+  // Stale-while-revalidate pour le contenu public
   event.respondWith(
-    fetch(request)
-      .then(response => {
-        // Cloner la réponse pour la mettre en cache
-        const responseClone = response.clone();
-        caches.open(CACHE_NAME).then(cache => {
-          // Limiter le cache à 50 entrées
-          cache.keys().then(keys => {
-            if (keys.length >= 50) {
-              cache.delete(keys[0]);
+    caches.open(RUNTIME_CACHE).then((cache) =>
+      cache.match(request).then((cached) => {
+        const fetchPromise = fetch(request)
+          .then((response) => {
+            if (response && response.status === 200 && response.type === 'basic') {
+              cache.put(request, response.clone());
+              cache.keys().then((keys) => {
+                if (keys.length > 50) cache.delete(keys[0]);
+              });
             }
-          });
-          cache.put(request, responseClone);
-        });
-        return response;
+            return response;
+          })
+          .catch(() => cached || new Response('offline', { status: 503 }));
+        return cached || fetchPromise;
       })
-      .catch(() => {
-        // Fallback en cas d'erreur réseau
-        if (request.destination === 'document') {
-          // Pour les pages HTML, fallback vers la page d'accueil
-          return caches.match('/').then(cached => {
-            if (cached) return cached;
-            throw new Error('Aucune page de secours disponible');
-          });
-        }
-        // Pour les autres ressources, échouer (pas de cache)
-        throw new Error('Requête échouée');
-      })
+    )
   );
 });

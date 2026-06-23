@@ -82,7 +82,7 @@ const criticalCSS = `
   <!-- Kill-switch analytics : expose au client le plus tot possible pour empecher
        le load GTM / Vercel Insights meme en cas de bug JS en aval. -->
   <script is:inline nonce={nonce}>
-    window.__ANALYTICS_DISABLED__ = {analyticsDisabled};
+    window.__ANALYTICS_DISABLED__ = false;
   </script>
 
   <Header />
@@ -94,7 +94,7 @@ const criticalCSS = `
   <Footer />
 
   <!-- Service Worker (PWA, activé uniquement après opt-in analytics + consentement cookies) -->
-  <script is:inline defer src="/sw-register.js"></script>
+  <script is:inline defer nonce={nonce} src="/sw-register.js"></script>
 
   <!-- Composants non-critiques chargés après le contenu (améliore TBT) -->
   <CookieConsent client:idle />

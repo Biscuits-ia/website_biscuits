@@ -1,16 +1,44 @@
-// src/lib/supabase.ts
+﻿// src/lib/supabase.ts
 import { createServerClient, parseCookieHeader } from '@supabase/ssr';
 import { createClient } from '@supabase/supabase-js';
 
 /**
+ * Résolution de la clé publique Supabase côté client.
+ * Préfère la nouvelle Publishable Key (format 2024+, préfixe PUBLIC_) si
+ * définie, sinon retombe sur l’ancienne anon key pour rétrocompatibilité.
+ * Les deux sont safe-by-design : leur sécurité repose sur les RLS policies.
+ */
+function resolvePublishableKey(): string {
+  const publishable = import.meta.env.PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+  const anon        = import.meta.env.SUPABASE_ANON_KEY;
+
+  const key = (typeof publishable === 'string' && publishable.length > 0)
+    ? publishable
+    : (typeof anon === 'string' && anon.length > 0 ? anon : '');
+
+  if (!key) {
+    throw new Error(
+      '[supabase] Aucune clé publique Supabase trouvée. ' +
+      'Définir PUBLIC_SUPABASE_PUBLISHABLE_KEY (format 2024+) ou SUPABASE_ANON_KEY dans .env.',
+    );
+  }
+  return key;
+}
+
+/**
  * Client SSR principal.
  * Lit les cookies de session, crit les nouveaux via Astro.cookies.
- * Utilis par toutes les routes Astro et API en SSR.
+ * Utilisé par toutes les routes Astro et API en SSR.
  */
 export function createSupabaseClient(context: { request: Request; cookies: any }) {
+  const url = import.meta.env.SUPABASE_URL;
+  if (!url) {
+    throw new Error('[supabase] SUPABASE_URL manquant dans .env.');
+  }
+
   return createServerClient(
-    import.meta.env.SUPABASE_URL,
-    import.meta.env.SUPABASE_ANON_KEY,
+    url,
+    resolvePublishableKey(),
     {
       cookies: {
         getAll() {

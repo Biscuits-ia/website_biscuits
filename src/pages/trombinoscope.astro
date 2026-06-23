@@ -3,7 +3,7 @@ import Layout from '@/layouts/Layout.astro';
 import Breadcrumb from '@/components/Breadcrumb.astro';
 import { createSupabaseAdminClient } from '@/lib/supabase';
 
-export const prerender = true;
+export const prerender = false;
 
 const { data: membres, error } = await createSupabaseAdminClient()
   .from('benevoles')

@@ -49,6 +49,12 @@ function checkRouteRateLimit(
   let limit = 20;
   let windowMs = 60_000;
 
+  // Endpoints RDV : protecs contre les boucles de polling et le scraping.
+  if (pathname === '/api/appointment-slots' || pathname === '/api/user-appointments') {
+    limit = 30;
+    windowMs = 60_000;
+  }
+
   if (pathname.startsWith('/auth/')) {
     if (
       pathname === '/auth/inscription'
@@ -145,8 +151,39 @@ export const onRequest = defineMiddleware(async (context, next) => {
     return next();
   }
 
-  const blocked = checkRouteRateLimit(context, isDev, url.pathname);
-  if (blocked) return blocked;
+  // Le client SSR (cookies Supabase) n'est utile que pour les routes qui lisent
+  // ou posent des cookies d'auth. Sur les pages 100% statiques (prerender = true)
+  // le middleware tente sinon de lire Astro.request.headers via parseCookieHeader,
+  // ce qui declenche un warning Astro par page prerendue.
+  // Filet: on ne cree le client Supabase que sur les paths qui en ont besoin.
+  const needsSupabase =
+    url.pathname.startsWith('/api/') ||
+    url.pathname.startsWith('/auth/') ||
+    url.pathname.startsWith('/connexion') ||
+    url.pathname.startsWith('/inscription') ||
+    url.pathname.startsWith('/mot-de-passe-oublie') ||
+    url.pathname.startsWith('/reinitialisation-mot-de-passe') ||
+    url.pathname.startsWith('/verifier-code-') ||
+    url.pathname.startsWith('/dashboard') ||
+    url.pathname.startsWith('/trombinoscope') ||
+    url.pathname.startsWith('/utilisateurs') ||
+    url.pathname.startsWith('/ateliers/inscription') ||
+    url.pathname.startsWith('/rdv');
+
+  // Rate-limit applique uniquement aux routes /api et /auth (les pages publiques
+  // statiques n'en ont pas besoin).
+  if (url.pathname.startsWith('/api/') || url.pathname.startsWith('/auth/')) {
+    const blocked = checkRouteRateLimit(context, isDev, url.pathname);
+    if (blocked) return blocked;
+  }
+
+  if (!needsSupabase) {
+    // Pour les pages prerendered, on pose juste le nonce (utilise par les
+    // <script is:inline> pour la CSP) et on laisse next() faire son travail.
+    const nonce = crypto.randomBytes(16).toString('base64');
+    context.locals.nonce = nonce;
+    return next();
+  }
 
   const nonce = crypto.randomBytes(16).toString('base64');
   context.locals.nonce = nonce;
@@ -178,14 +215,18 @@ export const onRequest = defineMiddleware(async (context, next) => {
 
   const response = await next();
 
-  // CSP 3 + strict-dynamic. Un script signe par nonce peut charger
-  // d'autres scripts dynamiquement sans whitelister chaque domain.
-  // Recommandation CSP 2024+ pour les apps first-party.
+  // CSP 3 : strict-dynamic permet aux scripts signes par nonce de charger
+  // dynamiquement d'autres scripts. Pour les scripts externalises avec src=,
+  // on garde une whitelist explicite comme filet de securite (UA anciens
+  // ou mode rapport-only).
   const scriptSrc = [
     `'self'`,
     `'nonce-${nonce}'`,
     `'strict-dynamic'`,
     'https://fonts.googleapis.com',
+    'https://www.googletagmanager.com',
+    'https://cdn.vercel-insights.com',
+    'https://*.vercel.app',
   ];
 
   // connect-src : strict-dynamic ne le couvre PAS, on le maintient a la main.
@@ -199,6 +240,10 @@ export const onRequest = defineMiddleware(async (context, next) => {
     'https://*.supabase.co',
     'https://fonts.googleapis.com',
     'https://fonts.gstatic.com',
+    // Cloudflare (email-decode + beacon analytics) + domaine site.
+    'https://*.cloudflare.com',
+    'https://biscuits-ia.com',
+    'https://*.biscuits-ia.com',
   ];
 
   // frame-src : iframes (GTM noscript, Vercel live)
@@ -219,9 +264,24 @@ export const onRequest = defineMiddleware(async (context, next) => {
     connectSrc.push('http://localhost:4321', 'ws://localhost:4321', 'http://127.0.0.1:4321', 'ws://127.0.0.1:4321');
   }
 
+  // script-src : inline (nonce + strict-dynamic)
+  // script-src-elem : externe (whitelist host, pas de nonce/strict-dynamic)
+  // Cela permet a /sw-register.js, GTM, Vercel Insights d’etre charges.
+  const scriptSrcElem = [
+    `'self'`,
+    'https://www.googletagmanager.com',
+    'https://cdn.vercel-insights.com',
+    'https://*.vercel.app',
+    'https://*.googletagmanager.com',
+    // Cloudflare email-decode.min.js (auto-injected sur les pages contenant
+    // des adresses email) + sous-domaines du site.
+    'https://biscuits-ia.com',
+    'https://*.biscuits-ia.com',
+  ];
   const csp = [
     `default-src 'self'`,
     `script-src ${scriptSrc.join(' ')}`,
+    `script-src-elem ${scriptSrcElem.join(' ')}`,
     `worker-src 'self' blob:`,
     `style-src 'self' 'unsafe-inline' https://fonts.googleapis.com`,
     `img-src ${imgSrc.join(' ')}`,

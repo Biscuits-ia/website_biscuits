@@ -32,6 +32,7 @@ interface ImportMetaEnv {
    * Le prefixe PUBLIC_ permet l'usage cote client si besoin.
    */
   readonly PUBLIC_SITE_URL?: string;
+  readonly PUBLIC_SITE_HOST?: string;
   /**
    * PUBLIC_ANALYTICS_DISABLED
    * Mettre a true pour desactiver GTM + Vercel Web Analytics cote client.

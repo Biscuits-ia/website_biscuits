@@ -16,6 +16,8 @@ pnpm-debug.log*
 # environment variables
 .env
 .env.production
+.env*.local
+.env*
 
 # macOS-specific files
 .DS_Store
@@ -23,5 +25,20 @@ pnpm-debug.log*
 # jetbrains setting folder
 .idea/
 .vercel
-.env*.local
-.env*
+
+# Artefacts de build / check (debug, ne pas versionner)
+build_*.mdx.txt
+check_full*.txt
+build.log
+build_stdout.txt
+build_stderr.txt
+check_stdout.txt
+check_stderr.txt
+test_html.txt
+fix-quotes2.cjs
+
+# Assistants dev / IDE
+.claude/
+.agents/
+.serena/
+.vscode/

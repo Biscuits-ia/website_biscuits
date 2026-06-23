@@ -1,6 +1,7 @@
 // src/middleware.ts
 import { defineMiddleware } from 'astro:middleware';
 import { rateLimit } from './lib/rateLimit';
+import { getClientIpOrNull } from './lib/http';
 import { createSupabaseAdminClient, createSupabaseClient } from './lib/supabase';
 import crypto from 'node:crypto';
 
@@ -18,27 +19,7 @@ interface LogoutCacheEntry {
 // entre toutes les requetes du meme warm container (cold start = cache miss).
 const logoutCache = new Map<string, LogoutCacheEntry>();
 
-function parseForwardedFor(value: string | null): string | null {
-  if (!value) return null;
-  const first = value.split(',')[0]?.trim();
-  if (!first) return null;
-  return first;
-}
-
-function getClientIp(context: { request: Request; clientAddress?: string }): string | null {
-  const headers = context.request.headers;
-  const fromCf = headers.get('cf-connecting-ip');
-  const fromRealIp = headers.get('x-real-ip');
-  const fromForwarded = parseForwardedFor(headers.get('x-forwarded-for'));
-  const fromAstro = typeof context.clientAddress === 'string' ? context.clientAddress : null;
-
-  const ip = fromCf ?? fromRealIp ?? fromForwarded ?? fromAstro;
-  if (!ip) return null;
-
-  const normalized = ip.trim();
-  if (!normalized || normalized === 'unknown') return null;
-  return normalized;
-}
+// parseForwardedFor supprime : la lib http fait le meme travail.
 
 function readAccessTokenIssuedAtMs(accessToken: string | null | undefined): number | null {
   if (!accessToken) return null;
@@ -62,7 +43,7 @@ function checkRouteRateLimit(
   if (isDev) return null;
   if (!pathname.startsWith('/api/') && !pathname.startsWith('/auth/')) return null;
 
-  const ip = getClientIp(context);
+  const ip = getClientIpOrNull(context.request, context.clientAddress);
   if (!ip) return null;
 
   let limit = 20;

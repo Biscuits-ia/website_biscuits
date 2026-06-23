@@ -1,5 +1,6 @@
 import type { APIRoute } from 'astro';
 import { createSupabaseClient } from '@/lib/supabase';
+import { isValidUUID } from '@/lib/validation';
 
 /**
  * GET /api/appointments/
@@ -60,13 +61,17 @@ export const GET: APIRoute = async ({ request, cookies }) => {
 /**
  * POST /api/appointments/
  * Crée un nouveau rendez-vous (admin only)
- * Body: { slot_id: string, candidate_email?: string, notes?: string }
+ * Body: { slot_id: string (UUID), candidate_email?: string, notes?: string }
+ *
+ * Validation runtime :
+ * - slot_id doit etre un UUID (la FK l'attend).
+ * - notes limite a 1000 chars (evite payload abusif).
+ * - candidate_email limite a 255 chars et normalise en lowercase.
  */
 export const POST: APIRoute = async ({ request, cookies }) => {
   try {
     const supabase = createSupabaseClient({ request, cookies });
 
-    // Vérifier que l'utilisateur est authentifié et admin
     const { data: { user }, error: authError } = await supabase.auth.getUser();
 
     if (authError || !user) {
@@ -89,17 +94,25 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       notes?: string;
     };
 
-    if (!body.slot_id) {
-      return jsonError('slot_id requis', 400);
+    if (!body.slot_id || !isValidUUID(body.slot_id)) {
+      return jsonError('slot_id requis (UUID invalide)', 400);
     }
+
+    // Sanitize: limite notes et candidate_email.
+    const safeNotes = typeof body.notes === 'string'
+      ? body.notes.slice(0, 1000)
+      : null;
+    const safeEmail = typeof body.candidate_email === 'string' && body.candidate_email
+      ? body.candidate_email.slice(0, 255).trim().toLowerCase()
+      : null;
 
     const { data, error } = await supabase
       .from('volunteer_appointments')
       .insert({
         slot_id: body.slot_id,
-        candidate_email: body.candidate_email || null,
+        candidate_email: safeEmail,
         status: 'pending',
-        notes: body.notes || null,
+        notes: safeNotes,
       })
       .select()
       .single();

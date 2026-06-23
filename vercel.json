@@ -278,10 +278,9 @@
       ]
     }
   ],
-  "rewrites": [
-    {
-      "source": "/:path*",
-      "destination": "/:path*"
+  "crons": [{
+      "path": "/api/appointments/cron/expire",
+      "schedule": "*/5 * * * *"
     }
   ]
 }

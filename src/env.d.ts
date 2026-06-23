@@ -1,9 +1,18 @@
+// src/env.d.ts
 ///<reference types="astro/client" />
 
 declare module '*.css';
+
 interface ImportMetaEnv {
   readonly SUPABASE_URL: string;
   readonly SUPABASE_ANON_KEY: string;
+  /**
+   * SUPABASE_SERVICE_ROLE_KEY (DANGEREUSE — bypass RLS).
+   * Uniquement lisible cote serveur. Ne JAMAIS l'utiliser dans un composant
+   * client (frontmatter .astro avec client:load, fichier .tsx importe par
+   * un composant client). Le consommateur doit etre dans une API route,
+   * le middleware, ou une lib executee cote serveur.
+   */
   readonly SUPABASE_SERVICE_ROLE_KEY: string;
   readonly PROD: boolean;
   readonly DEV: boolean;
@@ -11,16 +20,26 @@ interface ImportMetaEnv {
   readonly VERCEL_URL?: string;
   readonly VERCEL_PROJECT_PRODUCTION_URL?: string;
   /**
+   * PUBLIC_SUPABASE_PUBLISHABLE_KEY (nouveau format Supabase 2024+).
+   * Le prefixe PUBLIC_ autorise l'exposition au client. Equivalent
+   * moderne de l'ancienne anon key. Laissez vide tant que la migration
+   * n'est pas faite.
+   */
+  readonly PUBLIC_SUPABASE_PUBLISHABLE_KEY?: string;
+  /**
+   * PUBLIC_SITE_URL — URL absolue du site.
+   * Utilisee par IndexNow, sitemap, og:url, schema.org.
+   * Le prefixe PUBLIC_ permet l'usage cote client si besoin.
+   */
+  readonly PUBLIC_SITE_URL?: string;
+  /**
    * PUBLIC_ANALYTICS_DISABLED
-   *
-   * Mettez cette variable d'env a `true` pour desactiver completement
-   * le chargement de Google Tag Manager et de Vercel Web Analytics
-   * cote client. Utile en preprod, en local, ou en cas d'incident
-   * cote tiers. Le flag est expose au runtime via `window.__ANALYTICS_DISABLED__`
-   * et consulte par `BaseHead.astro` + `CookieConsent.tsx` AVANT toute
-   * injection de `<script>` analytics. Defaut : non defini (= false).
+   * Mettre a true pour desactiver GTM + Vercel Web Analytics cote client.
+   * Defaut : non defini (= false).
    */
   readonly PUBLIC_ANALYTICS_DISABLED?: string;
+  readonly INDEXNOW_KEY?: string;
+  readonly CRON_SECRET?: string;
 }
 
 interface ImportMeta {
@@ -33,3 +52,8 @@ declare namespace App {
     supabase: import('@supabase/supabase-js').SupabaseClient;
   }
 }
+
+// Garde-fou de typage : sert a documenter que la cle service_role
+// ne doit pas etre lue depuis un bundle client. Voir lib/supabase.ts.
+type __ServiceRoleKeyBrand = ImportMetaEnv['SUPABASE_SERVICE_ROLE_KEY'];
+export type __SSRServiceRoleKey = __ServiceRoleKeyBrand;

@@ -1,5 +1,7 @@
 import type { APIRoute } from 'astro';
 import { createSupabaseClient } from '@/lib/supabase';
+import { rateLimitRoute } from '@/lib/rateLimit';
+import { getClientIp } from '@/lib/http';
 
 /**
  * Normalise une URL en un origin (scheme + host)
@@ -51,6 +53,8 @@ function getAuthRedirectOrigin(request: Request, url: URL, site: URL | undefined
 /**
  * Classifie les erreurs Supabase pour le reset de mot de passe
  */
+
+
 function getErrorMessage(errorMessage: string): string {
   const msg = errorMessage.toLowerCase();
   if (msg.includes('rate') || msg.includes('limit')) return 'Trop d\'emails envoyés. Attendez quelques minutes avant de réessayer.';
@@ -60,6 +64,11 @@ function getErrorMessage(errorMessage: string): string {
 }
 
 export const POST: APIRoute = async ({ request, cookies, url, site }) => {
+  // 1. Rate-limit IP avant tout parsing (anti email-bombing).
+  const ip = getClientIp(request, clientAddress);
+  const blocked = rateLimitRoute(ip, '/api/auth/mot-de-passe-oublie', 3, 10 * 60_000);
+  if (blocked) return blocked;
+
   try {
     const formData = await request.formData();
     const email = formData.get('email') instanceof File ? null : (formData.get('email') as string | null);

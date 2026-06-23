@@ -3,11 +3,14 @@ import { createSupabaseAdminClient } from '@/lib/supabase';
 
 /**
  * POST /api/appointments/cron/expire
- * Marque les rendez-vous pending expires comme 'expired'.
+ * DEPRECATED : l'expiration des RDV est desormais geree par pg_cron
+ * cote Supabase (cf. migration 20260623_expire_appointments_pg_cron.sql).
+ * Vercel Hobby interdit les crons sub-quotidiens, donc on ne peut plus
+ * planifier ce job sur Vercel. Ce handler reste en place pour :
+ *   1. Permettre un test manuel (POST avec Bearer CRON_SECRET).
+ *   2. Fournir un GET qui decrit le calendrier d'execution.
  *
  * Authentification: Bearer token dans l'env variable CRON_SECRET.
- * Pour etre planifie automatiquement, declare un cron Vercel dans vercel.json
- * (voir la section "crons" ajoutee dans cette migration).
  *
  * Implementation: une seule requete UPDATE atomique avec WHERE sur le statut
  * + expires_at. Plus de race condition entre le SELECT initial et l'UPDATE

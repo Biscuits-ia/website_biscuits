@@ -42,3 +42,5 @@ fix-quotes2.cjs
 .agents/
 .serena/
 .vscode/
+.vercel
+.env*

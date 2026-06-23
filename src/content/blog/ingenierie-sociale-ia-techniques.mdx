@@ -1,0 +1,193 @@
+﻿---
+title: "Ingénierie sociale à l'ère de l'IA : 5 techniques que vous ne verrez pas venir"
+description: "Vishing, quishing, MFA bombing, romance scams, fausses offres d'emploi : tour d'horizon des nouvelles méthodes d'arnaques dopées à l'intelligence artificielle."
+pubDate: 2026-06-01T09:00:00Z
+author: "Biscuits IA"
+featured: false
+tags: ["ingenierie-sociale", "arnaque", "ia", "cybersecurite", "sensibilisation"]
+---
+
+import Callout from '@/components/Callout.astro';
+import ComparisonGrid from '@/components/ComparisonGrid.astro';
+
+# Ingénierie sociale à l'ère de l'IA : 5 techniques que vous ne verrez pas venir
+
+L'ingénierie sociale, c'est l'art de **manipuler les humains** plutôt que de pirater les machines. C'est l'un des plus vieux trucs des escrocs, et ça marche depuis toujours.
+
+Ce qui change en 2026, c'est l'**échelle et la précision** que permet l'IA. Ce qui prenait des semaines à un escroc prend désormais quelques heures à un modèle de langage.
+
+Voici 5 techniques qui explosent en 2026, et comment les repérer.
+
+<Callout type="warning" title="Le maillon faible, c'est l'humain">
+Dans 80% des cyberattaques réussies, c'est un humain qui a cliqué, ouvert une pièce jointe, ou transmis une information. L'IA générative permet désormais de produire des attaques ciblées et personnalisées à une échelle industrielle.
+</Callout>
+
+---
+
+## 🎯 Technique 1 : Le vishing ultra-personnalisé
+
+Le vishing, c'est du **phishing par téléphone**. L'escroc vous appelle en se faisant passer pour votre banque, un service technique, ou une administration.
+
+### Ce que l'IA a changé
+
+Avant, les arnaques vocales étaient reconnaissables : accent étranger, script rigide, difficultés avec les questions imprévues. Aujourd'hui, l'IA permet :
+
+- **Voix synthétiques parfaites** : clonage vocal en quelques secondes
+- **Conversations naturelles** : les modèles de langage gèrent les digressions, les questions, les hésitations
+- **Contexte personnalisé** : l'IA a analysé votre profil LinkedIn, votre site web, vos publications
+
+<Callout type="info" title="Cas réel">
+En 2024, un retraité français a transmis ses codes bancaires après un appel d'un faux conseiller bancaire. La voix était celle d'un **clone vocal généré par IA** à partir d'une vidéo YouTube du vrai conseiller, repérée via une recherche approfondie.
+</Callout>
+
+### Comment s'en protéger
+
+- **Raccrochez et rappelez** le numéro officiel que vous connaissez
+- **Ne donnez jamais** de code, même si la personne connaît votre nom et votre adresse
+- **Méfiez-vous des appels non sollicités**, même avec un numéro français
+- **Demandez un délai** : les vrais services administratifs ne précipitent jamais
+
+---
+
+## 📱 Technique 2 : Le quishing (phishing par QR code)
+
+Le quishing, c'est du **phishing via QR code**. Vous scannez un QR code (sur un parking, dans un email, sur une affiche), et vous arrivez sur un site frauduleux qui imite un service légitime.
+
+### Pourquoi ça marche mieux avec l'IA
+
+Les QR codes sont partout en 2026 : menus de restaurant, bornes de paiement, affiches, emails professionnels. L'IA générative permet aux escrocs de :
+
+- **Créer des pages d'atterrissage** quasi-indistinguables des originaux
+- **Adapter automatiquement** la page selon la cible (mobile, desktop, langue)
+- **Personnaliser le piège** en fonction du contexte (un restaurant de luxe aura une page imitant un service de paiement premium)
+
+<Callout type="error" title="Exemple concret">
+Un email de la "CNAV" demande à un retraité de scanner un QR code pour "vérifier ses droits". Le QR code mène vers une page identique à l'originale, où l'utilisateur entre ses identifiants. Ils sont immédiatement transmis à l'escroc.
+</Callout>
+
+### Comment s'en protéger
+
+- **Vérifiez l'URL** du site après avoir scanné (elle s'affiche)
+- **Méfiez-vous des QR codes** dans des emails non sollicités
+- **Préférez taper l'URL** vous-même pour les services sensibles
+- **Utilisez un lecteur QR** qui prévisualise le lien avant ouverture
+
+---
+
+## 🔐 Technique 3 : Le MFA bombing (fatigue d'authentification)
+
+Le MFA (Multi-Factor Authentication) est l'une des meilleures protections contre le piratage de compte. Mais il a une faiblesse : **les notifications push**.
+
+### Le principe du MFA bombing
+
+L'escroc a déjà vos identifiants (achetés sur le dark web ou volés). Il essaie de se connecter à votre compte. Le service vous envoie une **notification push** : "Voulez-vous autoriser cette connexion ?"
+
+- **Vous refusez** une première fois
+- **Une deuxième, troisième, quatrième fois**
+- **Las de refuser**, vous acceptez par habitude ou par erreur
+- L'escroc est connecté
+
+<Callout type="warning" title="La variante IA 2026">
+L'IA temporise intelligemment les tentatives, les espace sur plusieurs heures pour fatiguer, et cible le moment où vous êtes le plus susceptible d'accepter (fin de journée, lundi matin, vendredi soir).
+</Callout>
+
+### Comment s'en protéger
+
+- **Ne jamais accepter** une notification de connexion que vous n'avez pas initiée
+- **Vérifier le contexte** : pays, appareil, heure
+- **Changer immédiatement** de mot de passe si vous avez accepté par erreur
+- **Préférer les codes TOTP** (applications type Google Authenticator) aux notifications push
+
+---
+
+## 💕 Technique 4 : Les romance scams industriels
+
+Les arnaques sentimentales existent depuis l'avènement des sites de rencontre. Mais l'IA a permis de les **passer à l'échelle industrielle**.
+
+### Le nouveau scénario
+
+1. **Création de profils** hyperréalistes sur les réseaux sociaux et applications de rencontre
+2. **Photos générées par IA** : visage d'une personne qui n'existe pas, mais cohérent (même visage sous différents angles)
+3. **Conversation automatisée** au début, puis reprise par un humain au moment critique
+4. **Développement d'une relation** sur plusieurs semaines
+5. **Première demande d'argent** : urgence médicale, billet d'avion, problème juridique
+6. **Escalade** : demandes de plus en plus grosses
+
+<Callout type="info" title="Le chiffre"
+Les romance scams ont généré **plus de 3,5 milliards de dollars de pertes** dans le monde en 2023 selon la FTC américaine. En France, la plateforme PHAROS reçoit des signalements en hausse constante.
+</Callout>
+
+### Comment s'en protéger
+
+- **Méfiez-vous des profils trop parfaits** : photos de qualité professionnelle, parcours impressionnant
+- **Recherchez l'image** sur Google Images pour vérifier qu'elle n'est pas volée ou générée
+- **Ne transmettez jamais d'argent** à quelqu'un que vous n'avez pas rencontré en personne
+- **Méfiez-vous des excuses** pour ne jamais se voir (à l'étranger, en mission, hospitalisé)
+- **Parlez-en à un proche** de confiance avant de poursuivre
+
+---
+
+## 💼 Technique 5 : Les fausses offres d'emploi
+
+Vous recevez un email d'un cabinet de recrutement prestigieux, ou d'une grande entreprise qui vous propose un poste. Le processus de candidature est simple, rapide, et l'offre est très attractive.
+
+### Le piège
+
+- **Entretien via WhatsApp** avec un "recruteur" qui ne montre jamais son visage
+- **Documents à fournir** : pièce d'identité, RIB, parfois même un avis d'imposition
+- **Versement d'une "formation obligatoire"** : on vous demande de payer 200€ pour une formation avant de commencer
+- **Collecte de données personnelles** : l'objectif principal est souvent le vol d'identité
+
+<Callout type="error" title="Cas réel récent">
+Plusieurs victimes ont reçu une offre d'emploi d'un faux cabinet se faisant passer pour une grande entreprise française. Après le "premier entretien", on leur demandait leurs papiers d'identité et un RIB pour "établir le contrat". Ces informations ont été utilisées pour ouvrir des comptes bancaires frauduleux.
+</Callout>
+
+### Comment s'en protéger
+
+- **Vérifiez l'entreprise** sur son site officiel (URL cohérente, recruteurs nommés)
+- **Recherchez le nom du recruteur** sur LinkedIn
+- **Méfiez-vous des entretiens** uniquement par messagerie ou visio floue
+- **Ne payez jamais** pour postuler à un emploi légitime
+- **Ne transmettez pas** de documents sensibles avant d'avoir signé un contrat
+
+---
+
+## 🛡️ Le méta-principe : la vérification humaine
+
+Quelle que soit la sophistication de l'arnaque, **un humain de confiance peut la détecter** à condition d'être dans le bon état d'esprit.
+
+### Les 3 réflexes universels
+
+1. **Ralentir** : toute urgence est suspecte. Les vraies opportunités n'expirent jamais en 24h.
+2. **Vérifier** : confirmer l'information par un canal indépendant (téléphone, site officiel, contact connu).
+3. **Partager** : parler à un proche, un collègue, un référent. L'isolement est l'arme favorite des escrocs.
+
+<Callout type="tip" title="L'exercice pratique">
+Imprimez cet article et discutez-en lors de votre prochaine réunion d'équipe. Demandez à chaque membre de partager une tentative d'arnaque qu'il a vécue. **Les expériences partagées sont la meilleure formation.**
+</Callout>
+
+---
+
+## 🥠 Conclusion : la technologie change, l'humain reste
+
+Les techniques d'ingénierie sociale évoluent avec la technologie. Mais les **leviers psychologiques** qu'elles exploitent (peur, urgence, confiance, cupidité) restent les mêmes depuis des siècles.
+
+La meilleure protection n'est pas un antivirus, mais une **culture de la vérification** partagée par toute l'équipe.
+
+### Les 3 actions à faire cette semaine
+
+1. 📞 **Créez un protocole** de vérification pour les demandes inhabituelles (finances, accès, identités)
+2. 📅 **Organisez une session** de partage d'expériences d'arnaques au sein de votre équipe
+3. 📚 **Imprimez cet article** et diffusez-le aux membres les plus exposés
+
+---
+
+<Callout type="tip" title="Sensibilisation collective">
+Biscuits IA propose des **ateliers d'ingénierie sociale inversée** : on simule des tentatives d'arnaques sur votre équipe (avec votre accord), et on débriefe ensemble. C'est la meilleure formation qui existe.
+
+*Contactez-nous pour organiser une session dans votre structure !*
+</Callout>
+
+---
+
+*Vous avez vécu une tentative d'arnaque utilisant une de ces techniques ? Racontez-nous en commentaire — votre histoire peut en protéger d'autres. 🍪*

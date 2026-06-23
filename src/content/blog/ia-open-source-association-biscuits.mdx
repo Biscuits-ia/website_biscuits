@@ -136,7 +136,7 @@ Pour une association qui fait 100 000 requêtes par mois :
 
 **Le point de bascule** se situe généralement autour de **50 000 à 100 000 requêtes par mois**. En dessous, l'API est souvent plus rentable. Au-dessus, l'open source devient intéressant.
 
-<Callout type="tip" title="La main d'œuvre, le vrai coût"
+<Callout type="tip" title="La main d'œuvre, le vrai coût">
 Le calcul ci-dessus oublie le principal : le **temps humain** pour mettre en place, maintenir, faire évoluer. Comptez 1 à 5 jours-homme pour la mise en place, puis 0.5 à 1 jour par mois pour la maintenance. C'est là que l'accompagnement Biscuits IA fait la différence.
 </Callout>
 
@@ -202,7 +202,7 @@ curl -fsSL https://ollama.com/install.sh | sh
 ollama run llama4:8b
 
 # Test direct dans le terminal
->>> Explique-moi le RGPD en 3 phrases
+Pose une question : `Explique-moi le RGPD en 3 phrases`
 ```
 
 Pour un usage en production, on passe par **vLLM** ou **Ollama + Open WebUI** (interface web) pour avoir une application utilisable par des non-techniciens.
@@ -218,7 +218,7 @@ L'IA seule n'a que peu d'intérêt. La valeur vient de son **intégration** à v
 
 On utilise des frameworks d'orchestration comme **LangChain**, **LlamaIndex**, ou **Flowise** pour chaîner le LLM avec vos données et vos APIs.
 
-<Callout type="warning" title="Le RAG, indispensable pour les usages professionnels"
+<Callout type="warning" title="Le RAG, indispensable pour les usages professionnels">
 Pour qu'une IA connaisse vos documents, votre vocabulaire, vos processus, on ne la fine-tune pas (coûteux, complexe). On utilise le **RAG** (Retrieval-Augmented Generation) : l'IA va chercher les bonnes informations dans vos documents avant de répondre. C'est la méthode standard en 2026, et elle fonctionne remarquablement bien.
 </Callout>
 
@@ -275,7 +275,7 @@ Une IA mal configurée peut fuiter des données, générer des contenus dangereu
 - **Sandboxing** (isolation du modèle)
 - **Logs et audit** (traçabilité)
 
-<Callout type="error" title="L'erreur classique du débutant"
+<Callout type="error" title="L'erreur classique du débutant">
 Beaucoup de structures achètent un GPU à 5 000 € avant d'avoir testé si le modèle convient à leur besoin. **Testez d'abord sur du matériel modeste ou dans le cloud**, validez l'usage, puis investissez dans l'infrastructure dédiée si nécessaire.
 </Callout>
 
@@ -354,7 +354,7 @@ Biscuits IA n'est pas un éditeur de logiciel. C'est une **association d'intér�
 - **Open source par défaut** : nos livrables (code, documentation, configurations) sont publiés en open source. Vous n'êtes jamais captif.
 - **Transmission** : notre objectif est que vous deveniez autonomes, pas que vous dépendiez de nous indéfiniment.
 
-<Callout type="tip" title="Le bon réflexe avant de se lancer"
+<Callout type="tip" title="Le bon réflexe avant de se lancer">
 Avant d'investir du temps et de l'argent, **participez à l'un de nos ateliers de découverte**. En une journée, vous aurez une vision claire de ce qui est possible, de ce qui est réaliste pour votre structure, et des prochaines étapes concrètes. C'est gratuit pour les associations.
 </Callout>
 
@@ -419,3 +419,5 @@ Biscuits IA propose régulièrement des **ateliers d'initiation à l'IA open sou
 ---
 
 *Vous avez déjà déployé une IA open source dans votre structure ? Partagez votre retour d'expérience en commentaire — vos apprentissages peuvent aider d'autres associations à se lancer. 🍪*
+
+

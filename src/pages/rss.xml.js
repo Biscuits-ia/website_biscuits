@@ -1,4 +1,4 @@
-﻿export const prerender = true;
+export const prerender = true;
 
 import rss from '@astrojs/rss';
 import { getCollection } from 'astro:content';
@@ -7,7 +7,7 @@ import MarkdownIt from 'markdown-it';
 
 const SITE = {
   title: 'Biscuits IA',
-  description: 'Agir pour une Intelligence Artificielle Ã©thique et solidaire',
+  description: 'Agir pour une Intelligence Artificielle éthique et solidaire',
   author: 'Biscuits IA',
   email: 'contact@biscuits-ia.com',
 };

@@ -1,4 +1,4 @@
-﻿---
+---
 const { pathname } = Astro.url;
 const isActive = (href: string) =>
   href === '/' ? pathname === '/' : pathname.startsWith(href);
@@ -29,43 +29,43 @@ const isActive = (href: string) =>
 
           <div id="mega-solutions" class="mega-panel" role="region" aria-label="Nos produits">
             <div class="mega-grid">
-              <aside class="mega-categories" aria-label="CatÃ©gories">
+              <aside class="mega-categories" aria-label="Catégories">
                 <button class="mega-cat active" data-cat="collab" aria-selected="true">
                   Outils collaboratifs
                 </button>
                 <button class="mega-cat" data-cat="rgpd" aria-selected="false">
-                  Confiance et conformitÃ©
+                  Confiance et conformité
                 </button>
                 <button class="mega-cat" data-cat="communaute" aria-selected="false">
-                  CommunautÃ©
+                  Communauté
                 </button>
                 <button class="mega-cat" data-cat="accompagnement" aria-selected="false">
                   Accompagnement
                 </button>
               </aside>
 
-              <div class="mega-content" role="region" aria-label="DÃ©tails">
+              <div class="mega-content" role="region" aria-label="Détails">
                 <section class="mega-section active" data-panel="collab">
                   <header class="mega-head">
                     <h3>Suite collaborative</h3>
-                    <a href="/projects-collaboratif">DÃ©couvrir les projets</a>
+                    <a href="/projects-collaboratif">Découvrir les projets</a>
                   </header>
                   <div class="mega-items">
                     <a href="/projects-collaboratif" class="mega-item">
                       <strong>Projets collaboratifs</strong>
-                      <span>DÃ©couvrez les initiatives co-construites avec les acteurs locaux.</span>
+                      <span>Découvrez les initiatives co-construites avec les acteurs locaux.</span>
                     </a>
                     <a href="/services" class="mega-item">
                       <strong>Nos services</strong>
                       <span>Accompagnement concret pour associations et petites structures.</span>
                     </a>
                     <a href="/ressources" class="mega-item">
-                      <strong>Ressources tÃ©lÃ©chargeables</strong>
-                      <span>ModÃ¨les, checklists et kits pratiques pour le terrain.</span>
+                      <strong>Ressources téléchargeables</strong>
+                      <span>Modèles, checklists et kits pratiques pour le terrain.</span>
                     </a>
                     <a href="/ateliers" class="mega-item">
                       <strong>Ateliers IA</strong>
-                      <span>Formations concrÃ¨tes pour monter en compÃ©tence.</span>
+                      <span>Formations concrètes pour monter en compétence.</span>
                     </a>
                   </div>
                 </section>
@@ -106,8 +106,8 @@ const isActive = (href: string) =>
                       <span>Contribuez a une IA utile, locale et inclusive.</span>
                     </a>
                     <a href="/trombinoscope" class="mega-item">
-                      <strong>Notre Ã©quipe</strong>
-                      <span>DÃ©couvrez les bÃ©nÃ©voles et membres qui font vivre l'asso.</span>
+                      <strong>Notre équipe</strong>
+                      <span>Découvrez les bénévoles et membres qui font vivre l'asso.</span>
                     </a>
                     <a href="/blog" class="mega-item">
                       <strong>Blog pratique</strong>
@@ -115,7 +115,7 @@ const isActive = (href: string) =>
                     </a>
                     <a href="/ressources" class="mega-item">
                       <strong>Ressources et FAQ</strong>
-                      <span>RÃ©ponses rapides pour avancer sans blocage.</span>
+                      <span>Réponses rapides pour avancer sans blocage.</span>
                     </a>
                     <a href="/nos-missions" class="mega-item">
                       <strong>Nos missions</strong>
@@ -155,7 +155,7 @@ const isActive = (href: string) =>
               <li role="none"><a role="menuitem" href="/projects-collaboratif" class="mega-mobile-link">Projets collaboratifs</a></li>
               <li role="none"><a role="menuitem" href="/services" class="mega-mobile-link">Nos services</a></li>
               <li role="none"><a role="menuitem" href="/ateliers" class="mega-mobile-link">Ateliers IA</a></li>
-              <li role="none"><a role="menuitem" href="/trombinoscope" class="mega-mobile-link">Notre Ã©quipe</a></li>
+              <li role="none"><a role="menuitem" href="/trombinoscope" class="mega-mobile-link">Notre équipe</a></li>
               <li role="none"><a role="menuitem" href="/charte-ethique" class="mega-mobile-link">Confiance et conformite</a></li>
               <li role="none"><a role="menuitem" href="/ressources" class="mega-mobile-link">Ressources</a></li>
               <li role="none"><a role="menuitem" href="/rdv" class="mega-mobile-link">Prendre rendez-vous</a></li>
@@ -188,7 +188,7 @@ const isActive = (href: string) =>
           <a href="/nos-missions" class={`nav-link ${isActive('/nos-missions') ? 'nav-link--active' : ''}`} role="menuitem">A propos</a>
         </li>
         <li class="nav-item" role="none">
-          <a href="/trombinoscope" class={`nav-link ${isActive('/trombinoscope') ? 'nav-link--active' : ''}`} role="menuitem">Notre Ã©quipe</a>
+          <a href="/trombinoscope" class={`nav-link ${isActive('/trombinoscope') ? 'nav-link--active' : ''}`} role="menuitem">Notre équipe</a>
         </li>
         <li class="nav-item" role="none">
           <a href="/blog" class={`nav-link ${isActive('/blog') ? 'nav-link--active' : ''}`} role="menuitem">Blog</a>
@@ -866,7 +866,7 @@ const isActive = (href: string) =>
       });
     }
 
-    // Desktop hover intent: Ã©vite le clignotement/flicker du menu dÃ©roulant
+    // Desktop hover intent: évite le clignotement/flicker du menu déroulant
     const megaItem = document.querySelector('.has-mega');
     const dropdownItem = document.querySelector('.has-dropdown');
     let closeTimer: number | undefined;

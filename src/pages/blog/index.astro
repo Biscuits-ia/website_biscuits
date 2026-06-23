@@ -100,20 +100,6 @@ const pageDescription = `Decouvrez nos ${total} articles sur l'IA generative, la
           {total} articles ecrits par notre equipe pour aider les associations, collectivites et petites structures a comprendre, choisir et utiliser l'IA en toute confiance.
         </p>
 
-        <div class="stats-grid">
-          <div class="stat-card">
-            <div class="stat-number">{total}</div>
-            <div class="stat-label">Articles publies</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-number">{allTags.length}</div>
-            <div class="stat-label">Themes abordes</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-number">100%</div>
-            <div class="stat-label">Gratuit et open source</div>
-          </div>
-        </div>
       </div>
     </header>
 
@@ -410,42 +396,6 @@ const pageDescription = `Decouvrez nos ${total} articles sur l'IA generative, la
     margin-right: auto;
   }
 
-  .stats-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1rem;
-    max-width: 700px;
-    margin: 0 auto;
-  }
-
-  .stat-card {
-    padding: 1.5rem 1rem;
-    background: var(--color-bg-alt);
-    border: 2px solid var(--color-border);
-    border-radius: var(--radius-xl, 1rem);
-    transition: transform var(--transition-base, 0.3s), border-color var(--transition-base, 0.3s);
-  }
-
-  .stat-card:hover {
-    transform: translateY(-3px);
-    border-color: var(--color-primary);
-  }
-
-  .stat-number {
-    font-size: clamp(1.75rem, 3vw, 2.5rem);
-    font-weight: 900;
-    color: var(--color-primary);
-    line-height: 1;
-    margin-bottom: 0.4rem;
-  }
-
-  .stat-label {
-    font-size: 0.8rem;
-    color: var(--color-text-light);
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-  }
 
   /* === CONTAINER === */
   .blog-container {
@@ -733,8 +683,6 @@ const pageDescription = `Decouvrez nos ${total} articles sur l'IA generative, la
   /* === RESPONSIVE === */
   @media (max-width: 768px) {
     .blog-hero { padding-top: calc(var(--header-height-mobile) + 1.5rem); }
-    .stats-grid { grid-template-columns: 1fr; gap: 0.75rem; }
-    .stat-card { padding: 1rem; }
     .featured-grid, .articles-grid { grid-template-columns: 1fr; }
   }
 </style>

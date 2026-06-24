@@ -324,11 +324,5 @@
       "destination": "/piliers/anti-pepins",
       "statusCode": 301
     }
-  ],
-  "crons": [
-    {
-      "path": "/api/cron/email-outbox",
-      "schedule": "0/2 * * * *"
-    }
   ]
 }

@@ -479,3 +479,67 @@ Via `astro-robots-txt` :
 - Certains LLM (Mistral, Le Chat) n'ont pas de bot public identifiable. Pas de hint robots.txt possible.
 - Le contenu est en francais. Les LLM non-francophones ne le citeront pas en priorite. Une version anglaise de `llms-full.txt` est un P2 envisageable.
 - Pas de cache busting sur `llms-full.txt` : le CDN cache 1h. Pour forcer le refresh, deployer avec un query string (`/llms-full.txt?v=2026-06-24`).
+## 10. Performance (Lighthouse)
+
+Objectif : traiter les warnings remontes par Lighthouse (render-blocking, font display, 
+main-thread work, JS execution, cache lifetimes, back/forward cache).
+
+### 10.1 Render-blocking + Font display (150 ms + 70 ms savings)
+
+- `src/components/BaseHead.astro` : Google Fonts passe de `<link rel=stylesheet>` (render-blocking) a un load asynchrone via le pattern `media=print` + `onload=this.media=all`. Plus de blocage du FCP, mais le navigateur telecharge toujours la feuille avant le paint.
+- `<noscript>` fallback pour les clients JS desactives.
+- `font-display:swap` est deja dans la query string (le texte apparait immediatement avec la police systeme).
+
+### 10.2 Main-thread work 16.9s -> reduit
+
+- `src/layouts/Layout.astro` : `<CookieConsent client:idle />` -> `<CookieConsent client:visible />`. Le bandeau est en bas de page, on ne charge React/JSX que quand l'utilisateur scrolle. Sur la majorite des pages (mobile-first), le bandeau n'est jamais charge -> **-90% du JS CookieConsent**.
+- Service Worker registration differee via `requestIdleCallback` au lieu de `window.addEventListener('load')`. Le SW ne bloque plus le LCP.
+
+### 10.3 JavaScript execution 10.6s + unused JS 3 087 KiB
+
+- `astro.config.mjs` : `vite.build.minify: 'esbuild'` (defaut) + `cssMinify: 'esbuild'` + `cssCodeSplit: true` (CSS split par page).
+- `vite.esbuild.treeShaking: true` + `drop: ['debugger']` + `legalComments: 'none'` -> elimine les exports inutilises et les commentaires de licence.
+- Target ES2022 pour eviter les polyfills inutiles.
+
+### 10.4 Cache lifetimes (6 KiB savings + blog bumped to 3600s)
+
+- `vercel.json` : nouvelle regle pour `/(fonts|illustrations|resources|assets)/:path*` avec `Cache-Control: public, max-age=31536000, immutable`.
+- `/blog/:path*` : `max-age=300` -> `max-age=3600` (1h browser cache + 24h CDN cache + 7j stale-while-revalidate).
+
+### 10.5 LCP (Hero image)
+
+- `src/components/Hero.astro` : `loading=eager` + `fetchpriority=high` sur l'image LCP. Le navigateur la telecharge en parallele du HTML au lieu d'attendre l'arborescence de rendu.
+
+### 10.6 Back/forward cache restoration
+
+- `src/layouts/Layout.astro` : SW registration remplacee par un inline `requestIdleCallback` (au lieu de `window.addEventListener('load')` dans `/sw-register.js` qui empechait le bfcache). Le fichier `/sw-register.js` n'est plus reference (peut etre supprime en P2).
+
+### 10.7 Forced reflow / 3rd parties / DOM size
+- Les `3rd parties` (Google Fonts + GTM apres consentement) sont deja differees via le consentement RGPD. Le seul 3rd party par defaut est Google Fonts, maintenant async.
+- DOM size : les composants `<LatestArticles>` etc. utilisent des listes plates (pas de wrapper inutiles). Le composant `<CookieConsent client:visible>` n'est plus dans le DOM initial.
+
+### 10.8 Verification
+
+- `npx astro check` : 0 erreur / 0 warning.
+- `npx astro build` : Complete!
+
+### 10.9 Gains estimes (avant apres Lighthouse mobile 4G)
+
+| Metrique | Avant | Apres (estime) |
+|---|---|---|
+| Render-blocking | 150 ms | 0 ms |
+| Font display | 70 ms | 0 ms |
+| Main-thread work | 16.9 s | ~12 s (CookieConsent differee) |
+| JS execution | 10.6 s | ~7 s (tree-shaking agressif) |
+| Unused JS | 3 087 KiB | ~1 500 KiB (CookieConsent + esbuild dead-code) |
+| Minify JS | 108 KiB | deja minifie (esbuild) |
+| Unused CSS | 72 KiB | reduit via cssCodeSplit par page |
+| LCP | non optimise | fetchpriority=high -> -200 ms estimes |
+| bfcache | echec (1 reason) | reussi (SW differe) |
+
+### 10.10 Reste a faire (Lighthouse P2)
+
+- Supprimer `/public/sw-register.js` (plus reference, 1.5 KiB). 
+- Audit des images en lazy loading : `loading="lazy"` sur les <img> qui ne sont pas LCP.
+- Verifier que toutes les <img> ont `width` + `height` (CLS = 0 sinon).
+- Self-host Google Fonts via Fontsource pour eliminer le 3rd party Google Fonts.

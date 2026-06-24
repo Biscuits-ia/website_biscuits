@@ -92,9 +92,22 @@ const {
 
 <meta http-equiv="X-Content-Type-Options" content="nosniff" />
 <meta name="referrer" content="strict-origin-when-cross-origin" />
+<!--
+  Fonts : preconnect + load asynchrone pour ne pas bloquer le render (Lighthouse).
+  Le swap `media=print` + onload evite que la feuille de style Google Fonts bloque le FCP.
+  font-display:swap est deja dans la query string (deja inclus).
+-->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Zalando+Sans+SemiExpanded:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet">
+<link
+  rel="stylesheet"
+  href="https://fonts.googleapis.com/css2?family=Zalando+Sans+SemiExpanded:ital,wght@0,200..900;1,200..900&display=swap"
+  media="print"
+  onload="this.media='all'"
+>
+<noscript>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zalando+Sans+SemiExpanded:ital,wght@0,200..900;1,200..900&display=swap">
+</noscript>
 
 {isProd && (
   <script is:inline nonce={nonce}>

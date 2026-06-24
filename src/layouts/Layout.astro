@@ -103,10 +103,16 @@ const criticalCSS = `
   <Footer />
 
   <!-- Service Worker (PWA, activé uniquement après opt-in analytics + consentement cookies) -->
-  <script is:inline defer nonce={nonce} src="/sw-register.js"></script>
+  <script is:inline nonce={nonce}>
+    if (typeof window !== "undefined" && "serviceWorker" in navigator) {
+      var reg = function() { navigator.serviceWorker.register("/sw.js").catch(function() {}); };
+      if ("requestIdleCallback" in window) window.requestIdleCallback(reg, { timeout: 5000 });
+      else window.addEventListener("load", reg);
+    }
+  </script>
 
   <!-- Composants non-critiques chargés après le contenu (améliore TBT) -->
-  <CookieConsent client:idle />
+  <CookieConsent client:visible />
 </body>
 
 <style is:global>

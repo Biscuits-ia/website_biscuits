@@ -143,18 +143,31 @@ export default defineConfig({
     react(),
   ],
 
+  output: 'server',
+  build: {
+    assets: '_astro',
+    inlineStylesheets: 'always',
+    // Lighthouse: minify JS + CSS via esbuild (defaut Vite, deja actif). Cf.audit.md section 10.
+    // cssCodeSplit = split CSS par page (reduit le CSS inutilise envoye sur chaque page).
+  },
   vite: {
     plugins: [tailwindcss()],
     resolve: {
       extensions: ['.tsx', '.ts', '.jsx', '.js', '.json'],
       dedupe: ['react', 'react-dom'],
     },
-  },
-
-  output: 'server',
-  build: {
-    assets: '_astro',
-    inlineStylesheets: 'always',
+    build: {
+      minify: 'esbuild',
+      cssMinify: 'esbuild',
+      cssCodeSplit: true,
+      reportCompressedSize: false,
+      target: 'es2022',
+    },
+    esbuild: {
+      treeShaking: true,
+      drop: ['debugger'],
+      legalComments: 'none',
+    },
   },
 
   adapter: vercel(),

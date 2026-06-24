@@ -1,0 +1,564 @@
+---
+// src/pages/dashboard/admin/formations.astro
+// Dashboard admin : liste des formations, sessions, CA, parrainages,
+// demandes d exoneration en attente. Acces reserve aux admins.
+
+import DashboardLayout from '@/layouts/DashboardLayout.astro';
+import { requireAdmin } from '@/lib/auth';
+import { createSupabaseAdminClient } from '@/lib/supabase';
+import {
+  formatDate,
+  formatSlidingScale,
+  isFreeTraining,
+  formatPriceCents,
+} from '@/types/formations';
+import type { TrainingSessionWithSeats, Training, } from '@/types/formations';
+
+const result = await requireAdmin(Astro);
+if (result instanceof Response) return result;
+
+const { user } = result;
+const userName = user.user_metadata?.full_name ?? user.email?.split('@')[0] ?? 'Admin';
+
+const admin = createSupabaseAdminClient();
+
+const { data: trainings } = await admin
+  .from('trainings')
+  .select(`
+    id, slug, title, short_description, category, level, duration_label,
+    is_paying, min_price_cents, suggested_price_cents, solidarity_price_cents,
+    is_published, display_order,
+    training_sessions (id, starts_at, is_published)
+  `)
+  .order('display_order', { ascending: true })
+  .order('created_at', { ascending: false });
+
+const { data: upcomingSessions } = await admin
+  .from('training_sessions_with_seats')
+  .select('*')
+  .gte('starts_at', new Date().toISOString())
+  .order('starts_at', { ascending: true });
+
+const { data: pendingFreeRequests } = await admin
+  .from('training_free_seat_requests')
+  .select(`
+    id, session_id, user_id, reason, status, created_at,
+    profiles:profiles!training_free_seat_requests_user_id_fkey (full_name, email)
+  `)
+  .eq('status', 'pending')
+  .order('created_at', { ascending: true });
+
+const { data: pendingSponsorships } = await admin
+  .from('training_sponsorships')
+  .select('id, sponsor_name, sponsor_email, amount_cents, mode, beneficiary_email, target_training_id, redemption_code, created_at')
+  .eq('payment_status', 'pending')
+  .order('created_at', { ascending: true });
+
+const { data: revenueRows } = await admin
+  .from('training_revenue_by_month')
+  .select('total_cents');
+
+const totalRevenueCents = (revenueRows ?? []).reduce(
+  (acc: number, r: { total_cents: number | string }) => acc + Number(r.total_cents ?? 0),
+  0,
+);
+
+const sessionById = new Map<string, TrainingSessionWithSeats>(
+  (upcomingSessions ?? []).map((s) => [s.id, s as TrainingSessionWithSeats]),
+);
+
+const saved  = Astro.url.searchParams.get('saved') === '1';
+const errorMsg = Astro.url.searchParams.get('error') ?? '';
+
+// 7. Paiements recus (avec statut remboursement) - pour l'admin overview
+const { data: receivedPayments } = await admin
+  .from('helloasso_payments')
+  .select(`
+    id, intent_id, amount_cents, refunded_amount_cents, status, payer_email, payer_name,
+    received_at, registration_id
+  `)
+  .order('received_at', { ascending: false })
+  .limit(50);
+
+// 8. Stats de l'outbox email
+import { getOutboxStats } from '@/lib/email-queue';
+const outboxStats = await getOutboxStats().catch(() => null);
+
+// 9. Liste des refunds
+const { data: refundsList } = await admin
+  .from('helloasso_refunds')
+  .select(`
+    id, helloasso_payment_id, amount_cents, refund_type, source, reason, refunded_at,
+    helloasso_payments!inner ( registration_id, intent_id )
+  `)
+  .order('refunded_at', { ascending: false })
+  .limit(20);
+
+const trainingList = (trainings ?? []) as unknown as Training[];
+
+// Requete legal compliance pour bandeau d'alerte CGV
+const { data: compliance } = await admin
+  .from('legal_compliance')
+  .select('cgv_activees, cgv_version, cgv_date_activation, prochain_audit, mediateur_nom')
+  .eq('id', 1)
+  .maybeSingle();
+const cgvActivees = compliance?.cgv_activees ?? false;
+const cgvVersion = compliance?.cgv_version ?? null;
+const cgvDateActivation = compliance?.cgv_date_activation ?? null;
+const prochainAudit = compliance?.prochain_audit ?? null;
+const mediateurNom = compliance?.mediateur_nom ?? null;
+const hasTrainings = trainingList.length > 0;
+const hasPendingFree = (pendingFreeRequests ?? []).length > 0;
+const hasPendingSponsorship = (pendingSponsorships ?? []).length > 0;
+---
+
+<DashboardLayout title="Gestion formations" activePage="formations" userName={userName} authResult={result}>
+
+  <div class="header-row">
+    <div>
+      <h1>Gestion des formations</h1>
+      <p class="subtitle">{trainingList.length} formation{trainingList.length > 1 ? 's' : ''} au catalogue.</p>
+    </div>
+    <div class="header-actions">
+      <a href="/api/admin/formations/export-csv" class="btn btn-ghost btn-sm">Exporter CA (CSV)</a>
+      <button class="btn btn-primary" data-modal-open="modal-training">+ Nouvelle formation</button>
+    </div>
+  </div>
+
+  {saved && <div class="flash flash-ok" role="alert">Modifications sauvegardees.</div>}
+  {errorMsg && <div class="flash flash-err" role="alert">{decodeURIComponent(errorMsg)}</div>}
+
+  {!cgvActivees && (
+    <div class="alert alert-warn">
+      <strong>⚠️ CGV non activées.</strong>
+      Les Conditions Générales de Vente doivent être validées par le bureau et activées
+      avant d'autoriser la vente de formations.
+      <ul style="margin:8px 0 0 0;padding-left:24px;list-style:disc">
+        <li><a href="/legal/cgv">Consulter les CGV</a></li>
+        <li><a href="/legal/guide-relecture" target="_blank" rel="noopener">Guide de relecture (checklist Bureau)</a></li>
+        <li>Activer via : <code>UPDATE legal_compliance SET cgv_activees = true WHERE id = 1;</code></li>
+      </ul>
+    </div>
+  )}
+
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <span class="kpi-label">Outbox emails</span>
+      <span class="kpi-value">
+        {outboxStats ? (outboxStats.pending + outboxStats.failed) : '?'}
+        <small style="font-size:0.7rem;font-weight:400;color:var(--text-muted)">en attente</small>
+      </span>
+    </div>
+    <div class="kpi-card">
+      <span class="kpi-label">Dead (a relancer)</span>
+      <span class="kpi-value">{outboxStats?.dead ?? 0}</span>
+    </div>
+    <div class="kpi-card">
+      <span class="kpi-label">CA total recu</span>
+      <span class="kpi-value">{formatPriceCents(totalRevenueCents)}</span>
+    </div>
+    <div class="kpi-card">
+      <span class="kpi-label">Sessions a venir</span>
+      <span class="kpi-value">{(upcomingSessions ?? []).length}</span>
+    </div>
+    <div class="kpi-card">
+      <span class="kpi-label">Demandes d exoneration en attente</span>
+      <span class="kpi-value">{(pendingFreeRequests ?? []).length}</span>
+    </div>
+    <div class="kpi-card">
+      <span class="kpi-label">Parrainages en attente</span>
+      <span class="kpi-value">{(pendingSponsorships ?? []).length}</span>
+    </div>
+  </div>
+
+  {hasPendingFree && (
+    <div class="card">
+      <h2 class="card-title">Demandes d exoneration a valider</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Utilisateur</th>
+              <th>Session</th>
+              <th>Motivation</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {(pendingFreeRequests ?? []).map((req: any) => {
+              const session = sessionById.get(req.session_id);
+              return (
+                <tr>
+                  <td>
+                    <strong>{req.profiles?.full_name ?? '(sans nom)'}</strong><br />
+                    <span class="muted">{req.profiles?.email}</span>
+                  </td>
+                  <td>{session ? `${formatDate(session.starts_at)} - ${session.training_title}` : 'Session inconnue'}</td>
+                  <td class="cell-reason">{req.reason}</td>
+                  <td>
+                    <form method="POST" action="/api/admin/formations/validate-payment" style="display:inline;">
+                      <input type="hidden" name="free_request_id" value={req.id} />
+                      <button type="submit" class="btn btn-primary btn-xs">Approuver</button>
+                    </form>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )}
+
+  {hasPendingSponsorship && (
+    <div class="card">
+      <h2 class="card-title">Parrainages a valider (paiement en attente)</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Parrain</th>
+              <th>Montant</th>
+              <th>Mode</th>
+              <th>Code</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {(pendingSponsorships ?? []).map((s: any) => (
+              <tr>
+                <td>
+                  <strong>{s.sponsor_name}</strong><br />
+                  <span class="muted">{s.sponsor_email}</span>
+                  {s.mode === 'nominative' && s.beneficiary_email && (
+                    <Fragment><br /><span class="muted">Pour : {s.beneficiary_email}</span></Fragment>
+                  )}
+                </td>
+                <td class="mono">{formatPriceCents(s.amount_cents)}</td>
+                <td>{s.mode === 'pool' ? 'Pool libre' : 'Nominatif'}</td>
+                <td><code class="code-inline">{s.redemption_code}</code></td>
+                <td>
+                  <form method="POST" action="/api/admin/formations/validate-payment" style="display:inline;">
+                    <input type="hidden" name="sponsorship_id" value={s.id} />
+                    <button type="submit" class="btn btn-primary btn-xs">Confirmer paiement</button>
+                  </form>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )}
+
+  <h2 class="section-title">Catalogue</h2>
+
+  {hasTrainings ? (
+    <div class="trainings-list">
+      {trainingList.map((t: any) => {
+        const sessionCount = (t.training_sessions ?? []).length;
+        const isFree = isFreeTraining(t.min_price_cents, t.suggested_price_cents, t.solidarity_price_cents);
+        const priceLabel = isFree
+          ? 'Gratuit'
+          : formatSlidingScale(t.min_price_cents, t.suggested_price_cents, t.solidarity_price_cents);
+        const hasSessionCount = sessionCount > 0;
+        return (
+          <div class="card">
+            <div class="workshop-header">
+              <div>
+                <div class="workshop-title">{t.title}</div>
+                {t.category && <span class="badge badge-info badge-mt">{t.category}</span>}
+                {t.level    && <span class="badge badge-neutral badge-mt">{t.level}</span>}
+                <span class="badge badge-price badge-mt">{priceLabel}</span>
+                <span class={`badge ${t.is_published ? 'badge-ok' : 'badge-neutral'} badge-mt`}>
+                  {t.is_published ? 'Publie' : 'Brouillon'}
+                </span>
+                {t.short_description && <p class="workshop-desc">{t.short_description}</p>}
+              </div>
+              <div class="workshop-actions">
+                <form method="POST" action="/api/admin/formations/toggle" style="display:inline;">
+                  <input type="hidden" name="training_id" value={t.id} />
+                  <input type="hidden" name="is_published" value={String(!t.is_published)} />
+                  <button type="submit" class="btn btn-ghost btn-sm">{t.is_published ? 'Depublier' : 'Publier'}</button>
+                </form>
+                <button class="btn btn-ghost btn-sm" data-modal-open={`modal-edit-${t.id}`}>Modifier</button>
+                <form method="POST" action="/api/admin/formations/supprimer" style="display:inline;">
+                  <input type="hidden" name="training_id" value={t.id} />
+                  <button type="submit" class="btn btn-danger btn-sm"
+                          data-confirm="Supprimer cette formation et toutes ses donnees associees (sessions, inscriptions, paiements) ?">
+                    Supprimer
+                  </button>
+                </form>
+              </div>
+            </div>
+
+            {hasSessionCount && (
+              <p class="muted small">{sessionCount} session{sessionCount > 1 ? 's' : ''} planifiee{sessionCount > 1 ? 's' : ''}.</p>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  ) : (
+    <div class="card text-center">
+      <p>Aucune formation dans le catalogue. Cliquez sur "+ Nouvelle formation" pour commencer.</p>
+    </div>
+  )}
+
+  <dialog id="modal-training" class="modal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <span class="card-title">Nouvelle formation</span>
+        <button class="btn btn-ghost modal-close" data-modal-close="modal-training">x</button>
+      </div>
+      <form method="POST" action="/api/admin/formations/creer" class="modal-form">
+        <div class="field">
+          <label>Titre *</label>
+          <input type="text" name="title" required maxlength="150" />
+        </div>
+        <div class="field">
+          <label>Description courte (280 chars max)</label>
+          <input type="text" name="short_description" maxlength="280" />
+        </div>
+        <div class="field">
+          <label>Description longue (markdown)</label>
+          <textarea name="description" rows="5" maxlength="5000"></textarea>
+        </div>
+        <div class="field-group">
+          <div class="field">
+            <label>Categorie</label>
+            <input type="text" name="category" maxlength="80" placeholder="Ex : IA generative" />
+          </div>
+          <div class="field">
+            <label>Niveau</label>
+            <input type="text" name="level" maxlength="80" placeholder="Ex : Debutant" />
+          </div>
+        </div>
+        <div class="field">
+          <label>Duree (libelle)</label>
+          <input type="text" name="duration_label" maxlength="80" placeholder="Ex : 4 seances de 3h" />
+        </div>
+        <div class="field-group">
+          <div class="field">
+            <label>Prix minimum (centimes)</label>
+            <input type="number" name="min_price_cents" value="0" min="0" step="1" />
+          </div>
+          <div class="field">
+            <label>Prix suggere (centimes)</label>
+            <input type="number" name="suggested_price_cents" value="0" min="0" step="1" />
+          </div>
+          <div class="field">
+            <label>Prix solidarite (centimes)</label>
+            <input type="number" name="solidarity_price_cents" value="0" min="0" step="1" />
+          </div>
+        </div>
+        <div class="field-group">
+          <div class="field">
+            <label>Ordre d affichage</label>
+            <input type="number" name="display_order" value="0" min="0" />
+          </div>
+          <div class="checkbox-row">
+            <input type="checkbox" id="is_paying" name="is_paying" value="on" checked />
+            <label for="is_paying" class="label-sm">Formation payante</label>
+          </div>
+        </div>
+        <div class="checkbox-row">
+          <input type="checkbox" id="is_published" name="is_published" value="on" />
+          <label for="is_published" class="label-sm">Publier immediatement</label>
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary">Creer la formation</button>
+          <button type="button" class="btn btn-ghost" data-modal-close="modal-training">Annuler</button>
+        </div>
+      </form>
+    </div>
+  </dialog>
+
+
+  {refundsList && refundsList.length > 0 && (
+    <div class="card" id="outbox">
+      <h2 class="card-title">Remboursements recents</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Type</th>
+              <th>Montant</th>
+              <th>Source</th>
+              <th>Inscription</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {refundsList.map((r: any) => (
+              <tr>
+                <td class="mono">{formatDate(r.refunded_at)}</td>
+                <td>
+                  <span class={`badge ${r.refund_type === 'full' ? 'badge-warn' : 'badge-info'}`}>
+                    {r.refund_type === 'full' ? 'Total' : 'Partiel'}
+                  </span>
+                </td>
+                <td class="mono">{formatPriceCents(r.amount_cents)}</td>
+                <td>
+                  <span class={`badge ${r.source === 'webhook' ? 'badge-info' : r.source === 'admin' ? 'badge-warn' : 'badge-neutral'}`}>
+                    {r.source === 'webhook' ? 'IPN HelloAsso' : r.source === 'admin' ? 'Manuel' : 'API'}
+                  </span>
+                </td>
+                <td class="mono">{r.helloasso_payments?.intent_id?.slice(0, 12) ?? '?'}...</td>
+                <td>
+                  <form method="POST" action="/dashboard/admin/formations" style="display:inline;">
+                    <input type="hidden" name="action" value="noop" />
+                  </form>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )}
+
+  {receivedPayments && receivedPayments.length > 0 && (
+    <div class="card">
+      <h2 class="card-title">Paiements recus (50 derniers)</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Intent</th>
+              <th>Montant</th>
+              <th>Rembourse</th>
+              <th>Statut</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {receivedPayments.map((p: any) => {
+              const refundableCents = p.amount_cents - p.refunded_amount_cents;
+              const isRefunded = p.refunded_amount_cents > 0;
+              return (
+                <tr>
+                  <td class="mono">{formatDate(p.received_at)}</td>
+                  <td class="mono" title={p.intent_id}>{p.intent_id.slice(0, 12)}...</td>
+                  <td class="mono">{formatPriceCents(p.amount_cents)}</td>
+                  <td class="mono">{isRefunded ? formatPriceCents(p.refunded_amount_cents) : '-'}</td>
+                  <td>
+                    <span class={`badge ${p.status === 'refunded' ? 'badge-warn' : 'badge-ok'}`}>
+                      {p.status === 'refunded' ? 'Rembourse' : p.status}
+                    </span>
+                  </td>
+                  <td>
+                    {refundableCents > 0 && (
+                      <details>
+                        <summary class="btn btn-ghost btn-xs">Rembourser</summary>
+                        <form method="POST" action="/api/admin/formations/refund" style="margin-top:6px;display:flex;flex-direction:column;gap:6px;min-width:200px">
+                          <input type="hidden" name="payment_id" value={p.id} />
+                          <label style="font-size:0.75rem">
+                            Montant (centimes) - max {refundableCents}
+                            <input type="number" name="amount_cents" value={refundableCents} min="1" max={refundableCents} required />
+                          </label>
+                          <label style="font-size:0.75rem">
+                            Raison (optionnel)
+                            <input type="text" name="reason" maxlength="500" placeholder="Remboursement suite demande user" />
+                          </label>
+                          <button type="submit" class="btn btn-danger btn-xs"
+                                  data-confirm={`Confirmer le remboursement de ${formatPriceCents(refundableCents)} ?`}>
+                            Confirmer
+                          </button>
+                        </form>
+                      </details>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )}
+</DashboardLayout>
+
+<style>
+  .header-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 24px; }
+  .header-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .subtitle { margin-top: 6px; color: var(--text-secondary); }
+  .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin-bottom: 24px; }
+  .kpi-card { padding: 18px; border: var(--brutal-border); background: var(--surface); box-shadow: var(--shadow-sm); }
+  .kpi-label { display: block; font-size: 0.8rem; text-transform: uppercase; color: var(--text-secondary); font-weight: 700; letter-spacing: 0.05em; }
+  .kpi-value { display: block; font-size: 1.6rem; font-weight: 900; color: var(--text-primary); margin-top: 6px; }
+  .trainings-list { display: flex; flex-direction: column; gap: 14px; }
+  .section-title { font-size: 1.25rem; font-weight: 800; margin: 24px 0 12px; color: var(--text-primary); }
+  .workshop-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  .workshop-title { font-size: 1.1rem; font-weight: 800; color: var(--text-primary); }
+  .workshop-desc  { font-size: 0.9rem; color: var(--text-secondary); margin-top: 8px; max-width: 600px; }
+  .workshop-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+  .badge-mt { margin-top: 6px; display: inline-block; margin-right: 6px; }
+  .badge-info    { background: var(--color-accent-honey); }
+  .badge-neutral { background: var(--color-accent-vanilla); }
+  .badge-ok      { background: var(--ok-bg); color: var(--ok-fg); }
+  .badge-price   { background: #fef3c7; color: #92400e; font-weight: 700; }
+  .muted { color: var(--text-muted); }
+  .small { font-size: 0.85rem; }
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--border-mid); font-size: 0.9rem; }
+  th { font-size: 0.75rem; text-transform: uppercase; color: var(--text-secondary); }
+  .cell-reason { max-width: 320px; font-size: 0.85rem; color: var(--text-secondary); }
+  .mono { font-family: var(--font-mono); font-size: 0.85rem; }
+  .code-inline { background: var(--surface-raised); padding: 2px 8px; font-family: var(--font-mono); font-size: 0.85rem; }
+  .btn { padding: 10px 18px; font-weight: 700; text-decoration: none; display: inline-block; border: var(--brutal-border); cursor: pointer; }
+  .btn-sm { font-size: 0.82rem; padding: 6px 12px; }
+  .btn-xs { font-size: 0.75rem; padding: 4px 10px; }
+  .btn-primary { background: var(--color-primary); color: white; }
+  .btn-ghost   { background: var(--surface); color: var(--text-primary); }
+  .btn-danger  { background: var(--err-bg); color: var(--err-fg); }
+  .card { padding: 18px; border: var(--brutal-border); background: var(--surface); box-shadow: var(--shadow-sm); margin-bottom: 14px; }
+  .card-title { font-size: 1.05rem; font-weight: 800; margin-bottom: 12px; color: var(--text-primary); }
+  .alert-warn { padding: 14px 18px; margin-bottom: 20px; border: var(--brutal-border); background: #fef3c7; color: var(--text-primary); box-shadow: var(--shadow-sm); }
+  .alert-warn a { color: var(--color-primary-dark); text-decoration: underline; font-weight: 700; }
+  .flash { padding: 12px 18px; margin-bottom: 20px; font-size: 0.9rem; font-weight: 600; border: var(--brutal-border-thin); box-shadow: var(--shadow-sm); }
+  .flash-ok  { background: var(--ok-bg);  color: var(--ok-fg);  border-color: var(--ok); }
+  .flash-err { background: var(--err-bg); color: var(--err-fg); border-color: var(--err); }
+  .modal { border: var(--brutal-border); box-shadow: var(--shadow-xl); padding: 0; background: var(--surface); max-width: 600px; width: 92vw; }
+  .modal::backdrop { background: rgba(0,0,0,0.5); }
+  .modal-box { padding: 24px; display: flex; flex-direction: column; gap: 14px; }
+  .modal-header { display: flex; align-items: center; justify-content: space-between; padding-bottom: 12px; border-bottom: var(--brutal-border-thin); }
+  .modal-form { display: flex; flex-direction: column; gap: 12px; }
+  .field { display: flex; flex-direction: column; gap: 4px; }
+  .field label { font-size: 0.8rem; font-weight: 700; text-transform: uppercase; color: var(--text-secondary); }
+  .field input, .field textarea { padding: 8px 12px; font-size: 0.95rem; }
+  .field-group { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; }
+  .checkbox-row { display: flex; align-items: center; gap: 8px; }
+  .label-sm { font-size: 0.85rem; }
+  .form-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .text-center { text-align: center; }
+</style>
+
+<script>
+  document.addEventListener('click', (e) => {
+    const btn = (e.target as HTMLElement).closest('[data-modal-open]');
+    if (btn) {
+      const id = btn.getAttribute('data-modal-open');
+      const dialog = id ? (document.getElementById(id) as HTMLDialogElement | null) : null;
+      dialog?.showModal();
+    }
+  });
+  document.addEventListener('click', (e) => {
+    const btn = (e.target as HTMLElement).closest('[data-modal-close]');
+    if (btn) {
+      const id = btn.getAttribute('data-modal-close');
+      const dialog = id ? (document.getElementById(id) as HTMLDialogElement | null) : null;
+      dialog?.close();
+    }
+  });
+  document.addEventListener('click', (e) => {
+    const btn = (e.target as HTMLElement).closest('[data-confirm]');
+    if (btn) {
+      const msg = btn.getAttribute('data-confirm') ?? 'Confirmer ?';
+      if (!window.confirm(msg)) e.preventDefault();
+    }
+  });
+</script>

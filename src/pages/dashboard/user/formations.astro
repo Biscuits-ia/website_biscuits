@@ -1,0 +1,338 @@
+---
+// src/pages/dashboard/user/formations.astro
+// Dashboard user : mes inscriptions aux sessions de formation, a venir et
+// passees, avec leur statut de paiement.
+
+import DashboardLayout from '@/layouts/DashboardLayout.astro';
+import { requireAuth } from '@/lib/auth';
+import { formatDateLong, formatTimeRange, formatPriceCents } from '@/types/formations';
+import type { TrainingSessionWithSeats } from '@/types/formations';
+
+const result = await requireAuth(Astro);
+if (result instanceof Response) return result;
+
+const { user, supabase } = result;
+const userId    = user.id;
+const userEmail = user.email ?? '';
+const userName  = user.user_metadata?.full_name ?? userEmail.split('@')[0] ?? 'Utilisateur';
+
+const saved   = Astro.url.searchParams.get('saved') === '1';
+const error   = Astro.url.searchParams.get('error') ?? '';
+const message = Astro.url.searchParams.get('msg') ?? '';
+
+const fallbackId = '00000000-0000-0000-0000-000000000000';
+
+// 1. Mes inscriptions (toutes, avec contexte de session)
+const { data: myRegs } = await supabase
+  .from('training_registrations')
+  .select(`
+    id, session_id, amount_cents, payment_method, status, created_at,
+    training_sessions (
+      id, starts_at, ends_at, is_published, training_id,
+      trainings (id, slug, title, short_description)
+    )
+  `)
+  .eq('user_id', userId)
+  .order('created_at', { ascending: false });
+
+// 2. Pour les inscriptions a venir, on a besoin de la vue pour seats + prix
+const upcomingSessionIds = (myRegs ?? [])
+  .filter((r: { training_sessions: { starts_at: string; is_published: boolean } | Array<{ starts_at: string; is_published: boolean }> | null }) => {
+    const s = r.training_sessions;
+    if (Array.isArray(s)) return false;
+    return s && new Date(s.starts_at) >= new Date();
+  })
+  .map((r: { session_id: string }) => r.session_id);
+
+const { data: upcomingSessionsData } = await supabase
+  .from('training_sessions_with_seats')
+  .select('*')
+  .in('id', upcomingSessionIds.length > 0 ? upcomingSessionIds : [fallbackId]);
+
+const sessionsById = new Map<string, TrainingSessionWithSeats>(
+  (upcomingSessionsData ?? []).map((s) => [s.id, s as TrainingSessionWithSeats]),
+);
+
+interface UpcomingRow {
+  regId:         string;
+  session:       TrainingSessionWithSeats | null;
+  paymentLabel:  string;
+  paymentMethod: string;
+  statusLabel:   string;
+  statusBadge:   string;
+  amountLabel:   string;
+  isCancellable: boolean;
+  canPayOnline:  boolean;
+  canPayTransfer: boolean;
+}
+
+interface PastRow {
+  title:        string;
+  dateLabel:    string;
+  amountLabel:  string;
+  statusLabel:  string;
+  statusBadge:  string;
+}
+
+const paymentLabels: Record<string, string> = {
+  helloasso:     'HelloAsso',
+  transfer:      'Virement',
+  sponsorship:   'Parrainage',
+  free_request:  'Demande d\'exoneration',
+  free_approved: 'Place offerte',
+  pending:       'En attente',
+};
+
+const statusLabels: Record<string, string> = {
+  pending_payment:      'Paiement en attente',
+  awaiting_sponsorship: 'Parrainage en cours',
+  awaiting_validation:  'En cours de validation',
+  confirmed:            'Confirme',
+  cancelled:            'Annule',
+  attended:             'Termine - present',
+  no_show:              'Termine - absent',
+};
+
+function statusBadgeClass(s: string): string {
+  if (s === 'confirmed' || s === 'attended') return 'badge-ok';
+  if (s === 'cancelled' || s === 'no_show')  return 'badge-err';
+  if (s === 'awaiting_validation' || s === 'awaiting_sponsorship') return 'badge-warn';
+  return 'badge-info';
+}
+
+interface RawReg {
+  id: string;
+  session_id: string;
+  amount_cents: number;
+  payment_method: string;
+  status: string;
+  training_sessions:
+    | {
+        id: string;
+        starts_at: string;
+        ends_at: string;
+        is_published: boolean;
+        trainings: { id: string; slug: string; title: string; short_description: string | null } | Array<{ id: string; slug: string; title: string; short_description: string | null }> | null;
+      }
+    | Array<unknown>
+    | null;
+}
+
+const regsRaw: RawReg[] = (myRegs ?? []) as unknown as RawReg[];
+
+const upcomingRows: UpcomingRow[] = [];
+const pastRows:     PastRow[] = [];
+
+for (const r of regsRaw) {
+  const s = r.training_sessions;
+  if (!s || Array.isArray(s)) continue;
+  const innerTrainings = Array.isArray(s.trainings) ? s.trainings[0] : s.trainings;
+  const isPast = new Date(s.starts_at) < new Date();
+
+  if (!isPast) {
+    const sessionFull = sessionsById.get(r.session_id) ?? null;
+    const isCancellable = r.status === 'pending_payment' || r.status === 'awaiting_validation' || r.status === 'awaiting_sponsorship';
+    upcomingRows.push({
+      regId:         r.id,
+      session:       sessionFull,
+      paymentLabel:  paymentLabels[r.payment_method] ?? r.payment_method,
+      paymentMethod: r.payment_method,
+      canPayOnline:   r.status === 'pending_payment' && r.payment_method === 'helloasso',
+      canPayTransfer: r.status === 'pending_payment' && r.payment_method === 'transfer',
+      statusLabel:   statusLabels[r.status] ?? r.status,
+      statusBadge:   statusBadgeClass(r.status),
+      amountLabel:   formatPriceCents(r.amount_cents),
+      isCancellable,
+    });
+  } else {
+    pastRows.push({
+      title:       innerTrainings?.title ?? 'Formation',
+      dateLabel:   formatDateLong(s.starts_at),
+      amountLabel: formatPriceCents(r.amount_cents),
+      statusLabel: statusLabels[r.status] ?? r.status,
+      statusBadge: statusBadgeClass(r.status),
+    });
+  }
+}
+
+const hasUpcoming = upcomingRows.length > 0;
+const hasPast     = pastRows.length > 0;
+---
+
+<DashboardLayout
+  title="Mes formations"
+  activePage="formations"
+  userName={userName}
+  userEmail={userEmail}
+  authResult={result}
+>
+  <div class="mb-7">
+    <h1 class="text-xl font-bold tracking-tight text-primary">Mes formations</h1>
+    <p class="description">
+      Retrouvez ici vos inscriptions aux formations de Biscuits IA, ainsi que leur statut de paiement.
+    </p>
+  </div>
+
+  {saved && message && <div class="flash flash-ok" role="alert">{decodeURIComponent(message)}</div>}
+  {saved && !message && <div class="flash flash-ok" role="alert">Operation enregistree avec succes.</div>}
+  {error  && <div class="flash flash-err" role="alert">{decodeURIComponent(error)}</div>}
+
+  <div class="card-title section-title">Sessions a venir</div>
+
+  {hasUpcoming ? (
+    <div class="formations-grid mb-6">
+      {upcomingRows.map((row) => (
+        <div class={`formation-card${row.statusBadge === 'badge-err' ? ' cancelled' : ''}`}>
+          {row.session && (
+            <>
+              {row.session.training_category && (
+                <span class="category-badge">{row.session.training_category}</span>
+              )}
+              <h3 class="formation-title">{row.session.training_title}</h3>
+              <div class="formation-meta">
+                <div class="meta-row">
+                  <span class="meta-icon">Date</span>
+                  <span>{formatDateLong(row.session.starts_at)}</span>
+                </div>
+                <div class="meta-row">
+                  <span class="meta-icon">Heure</span>
+                  <span>{formatTimeRange(row.session.starts_at, row.session.ends_at)}</span>
+                </div>
+                {row.session.online ? (
+                  <div class="meta-row"><span class="meta-icon">Lieu</span><span>En ligne</span></div>
+                ) : row.session.location ? (
+                  <div class="meta-row"><span class="meta-icon">Lieu</span><span>{row.session.location}</span></div>
+                ) : null}
+                <div class="meta-row">
+                  <span class="meta-icon">Montant</span>
+                  <span>{row.amountLabel}</span>
+                </div>
+                <div class="meta-row">
+                  <span class="meta-icon">Paiement</span>
+                  <span>{row.paymentLabel}</span>
+                </div>
+              </div>
+              <div class="formation-status">
+                <span class={`badge ${row.statusBadge}`}>{row.statusLabel}</span>
+              </div>
+              {row.canPayOnline && (
+                <a href={`/api/formations/helloasso/start?registration_id=${row.regId}`} class="btn btn-primary btn-sm">
+                  Payer via HelloAsso
+                </a>
+              )}
+              {row.canPayTransfer && row.session && row.session.bank_transfer_info && (
+                <details class="formation-bank-info">
+                  <summary class="btn btn-ghost btn-sm">Coordonnees bancaires</summary>
+                  <pre style="white-space:pre-wrap;font-family:inherit;background:#fdf3d8;padding:12px;border:2px solid #2a2424;margin-top:8px">{row.session.bank_transfer_info}</pre>
+                </details>
+              )}
+              {row.isCancellable && (
+                <form method="POST" action="/api/formations/desinscrire" class="formation-cancel">
+                  <input type="hidden" name="session_id" value={row.session.id} />
+                  <button type="submit" class="btn btn-ghost btn-sm"
+                          data-confirm="Annuler votre inscription a cette session ?">
+                    Se desinscrire
+                  </button>
+                </form>
+              )}
+            </>
+          )}
+        </div>
+      ))}
+    </div>
+  ) : (
+    <div class="card text-center py-12 px-6">
+      <p class="text-xl mb-2">Aucune inscription pour le moment.</p>
+      <p>
+        <a href="/formations" class="link-primary">Decouvrir les formations</a>
+      </p>
+    </div>
+  )}
+
+  {hasPast && (
+    <Fragment>
+      <div class="card-title section-title">Mes formations passees</div>
+      <div class="card card-flush">
+        <div class="timeline">
+          {pastRows.map((row) => (
+            <div class="timeline-item">
+              <div class="timeline-dot ok" />
+              <div class="timeline-body">
+                <div class="timeline-event">{row.title}</div>
+                <div class="timeline-meta">{row.dateLabel} - {row.amountLabel}</div>
+              </div>
+              <span class={`badge ${row.statusBadge}`}>{row.statusLabel}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </Fragment>
+  )}
+
+</DashboardLayout>
+
+<style>
+  .section-title { margin-bottom: 14px; }
+  .formations-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 16px;
+  }
+  .formation-card {
+    display: flex; flex-direction: column; gap: 12px;
+    padding: 18px; border: var(--brutal-border); background: var(--surface);
+    box-shadow: var(--shadow-sm);
+  }
+  .formation-card.cancelled { opacity: 0.7; border-style: dashed; }
+  .formation-title { font-size: 1.05rem; font-weight: 700; color: var(--text-primary); }
+  .category-badge {
+    display: inline-block; font-size: 0.7rem; font-weight: 800; text-transform: uppercase;
+    padding: 4px 10px; background: var(--color-accent-honey); color: var(--text-primary);
+    border: 2px solid var(--color-border);
+  }
+  .formation-meta { display: flex; flex-direction: column; gap: 4px; padding: 8px 0; border-top: var(--brutal-border-thin); border-bottom: var(--brutal-border-thin); }
+  .meta-row { display: flex; gap: 6px; font-size: 0.9rem; color: var(--text-secondary); }
+  .meta-icon { font-weight: 800; text-transform: uppercase; font-size: 0.7rem; color: var(--text-muted); min-width: 70px; }
+  .formation-status { margin-top: 4px; }
+  .formation-cancel { margin-top: auto; }
+  .badge-ok   { background: var(--ok-bg);  color: var(--ok-fg); }
+  .badge-err  { background: var(--err-bg); color: var(--err-fg); }
+  .badge-warn { background: #fef3c7; color: #92400e; }
+  .badge-info { background: var(--color-accent-vanilla); color: var(--text-primary); }
+  .card-flush { padding: 0; }
+  .timeline { padding: 0 24px; }
+  .timeline-item { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border-mid); }
+  .timeline-item:last-child { border-bottom: none; }
+  .timeline-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--ok); flex-shrink: 0; }
+  .timeline-body { flex: 1; }
+  .timeline-event { font-weight: 700; color: var(--text-primary); }
+  .timeline-meta  { font-size: 0.85rem; color: var(--text-secondary); }
+  .flash { padding: 12px 18px; margin-bottom: 20px; font-size: 0.95rem; font-weight: 600; border: var(--brutal-border-thin); }
+  .flash-ok  { background: var(--ok-bg);  color: var(--ok-fg); }
+  .flash-err { background: var(--err-bg); color: var(--err-fg); }
+  .link-primary { color: var(--color-primary); font-weight: 700; text-decoration: none; }
+  .link-primary:hover { text-decoration: underline; }
+  .btn-ghost { background: var(--surface); color: var(--text-primary); border: var(--brutal-border); padding: 8px 14px; font-weight: 600; cursor: pointer; }
+  .btn-sm { font-size: 0.85rem; }
+  .text-center { text-align: center; }
+  .py-12 { padding: 48px 0; }
+  .px-6  { padding-left: 24px; padding-right: 24px; }
+  .mb-2  { margin-bottom: 8px; }
+  .mb-6  { margin-bottom: 24px; }
+  .mb-7  { margin-bottom: 28px; }
+  .text-xl { font-size: 1.25rem; }
+  .font-bold { font-weight: 700; }
+  .tracking-tight { letter-spacing: -0.02em; }
+  .text-primary { color: var(--color-primary); }
+  .description { color: var(--text-secondary); margin-top: 6px; line-height: 1.6; }
+</style>
+
+<script>
+  document.addEventListener('click', (e) => {
+    const btn = (e.target as HTMLElement).closest('[data-confirm]');
+    if (btn) {
+      const msg = btn.getAttribute('data-confirm') ?? 'Confirmer ?';
+      if (!window.confirm(msg)) e.preventDefault();
+    }
+  });
+</script>

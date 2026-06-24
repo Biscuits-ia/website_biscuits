@@ -1,0 +1,313 @@
+﻿---
+// src/pages/piliers/anti-pepins.astro
+// Pilier 4 : Anti Pepins, service public d'analyse de messages suspects.
+
+export const prerender = true;
+
+import Layout from '@/layouts/Layout.astro';
+import Breadcrumb from '@/components/Breadcrumb.astro';
+
+const schema = {
+  type: 'Service' as const,
+  data: {
+    serviceType: 'Service public anti-arnaques',
+    name: 'Anti Pepins - detecteur d\'arnaques',
+    description: 'Anti Pepins est un service public gratuit pour analyser un message suspect (SMS, mail, lien) et obtenir un avis immediat. Edite par Biscuits IA.',
+  },
+};
+---
+
+<Layout
+  title="Anti Pepins | Pilier 4 | Biscuits IA"
+  description="Vous avez recu un message suspect ? Anti Pepins l'analyse gratuitement. SMS, e-mails, liens : on vous dit si c'est une arnaque et on vous explique pourquoi."
+  schema={schema}
+>
+  <Breadcrumb />
+
+  <section class="pilier-hero">
+    <div class="container">
+      <p class="eyebrow eyebrow-anti">Pilier 4</p>
+      <h1>Anti Pepins : analysez vos messages suspects en quelques secondes</h1>
+      <p class="lead">
+        Anti Pepins est notre service public : un site gratuit ou vous collez un SMS, un e-mail ou un lien recu, et l'outil vous dit en clair s'il s'agit d'une arnaque, et pourquoi. Edite et maintenu par Biscuits IA, en partenariat avec des associations de lutte contre les arnaques.
+      </p>
+      <div class="hero-cta">
+        <a href="https://anti-pepins.biscuits-ia.com/" class="btn-primary btn-external" rel="noopener noreferrer">
+          Ouvrir Anti Pepins
+        </a>
+        <a href="#comment-ca-marche" class="btn-ghost">Comment ca marche</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="content" id="comment-ca-marche">
+    <div class="container">
+      <h2>Comment ca marche</h2>
+      <div class="steps">
+        <article class="step">
+          <span class="step-num">1</span>
+          <h3>Vous collez le message</h3>
+          <p>SMS douteux, mail suspect, lien inconnu : copiez-collez le contenu (ou l'URL) dans l'analyseur Anti Pepins.</p>
+        </article>
+        <article class="step">
+          <span class="step-num">2</span>
+          <h3>On analyse les signaux</h3>
+          <p>Anti Pepins verifie le domaine, la presence dans nos bases de signalements, les patterns connus (phishing, smishing, fausse livraison, faux support).</p>
+        </article>
+        <article class="step">
+          <span class="step-num">3</span>
+          <h3>On vous dit quoi faire</h3>
+          <p>Vous recevez un avis clair : arnaque probable, douteux, ou probablement legitime. Et les bons reflexes a adopter.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="features">
+    <div class="container">
+      <h2>Pourquoi Anti Pepins</h2>
+      <div class="grid">
+        <article class="card">
+          <h3>100 % gratuit</h3>
+          <p>Le service est finance par Biscuits IA et ses partenaires associatifs. Aucun modele freemium, aucune pub, aucune revente de vos donnees.</p>
+        </article>
+        <article class="card">
+          <h3>Rapide</h3>
+          <p>Resultats en moins de 5 secondes pour 95 % des messages analyses.</p>
+        </article>
+        <article class="card">
+          <h3>Confidentiel</h3>
+          <p>Vos messages ne sont pas stockes. Anti Pepins n'envoie rien a des tiers et n'utilise pas vos donnees pour entrainer des modeles.</p>
+        </article>
+        <article class="card">
+          <h3>Marque blanche pour associations</h3>
+          <p>Les associations de lutte contre les arnaques peuvent deployer Anti Pepins sur leur propre domaine, avec leurs couleurs et leur charte.</p>
+          <a href="/contact?sujet=anti-pepins-wh">Devis marque blanche</a>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="signalements">
+    <div class="container">
+      <h2>Vous voulez signaler une nouvelle arnaque ?</h2>
+      <p>Anti Pepins apprend grace a la communaute. Si vous avez recu un message d'arnaque non reference, vous pouvez nous le transmettre. Notre equipe le verifie, puis l'ajoute a la base de detection.</p>
+      <a href="/contact?sujet=signalement-anti-pepins" class="btn-primary">Proposer un signalement</a>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .pilier-hero {
+    padding: 5rem 1.5rem 3rem;
+    background: linear-gradient(180deg, var(--color-bg) 0%, var(--color-bg-alt) 100%);
+    text-align: center;
+  }
+
+  .pilier-hero .container {
+    max-width: 880px;
+    margin: 0 auto;
+  }
+
+  .eyebrow {
+    font-size: 0.85rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--color-primary);
+    margin-bottom: 0.75rem;
+  }
+
+  .eyebrow-anti {
+    color: var(--color-accent-caramel);
+  }
+
+  .pilier-hero h1 {
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 900;
+    margin: 0 0 1rem;
+    color: var(--color-text);
+    line-height: 1.15;
+  }
+
+  .lead {
+    color: var(--color-text-light);
+    font-size: 1.1rem;
+    line-height: 1.6;
+    margin: 0 0 2rem;
+  }
+
+  .hero-cta {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .btn-primary {
+    display: inline-block;
+    padding: 0.85rem 1.5rem;
+    background: var(--color-accent-caramel);
+    color: var(--color-bg-elevated);
+    border: 2px solid var(--color-border);
+    font-weight: 800;
+    text-decoration: none;
+  }
+
+  .btn-primary:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 4px 4px 0 var(--color-border);
+    color: var(--color-bg-elevated);
+  }
+
+  .btn-external::after {
+    content: ' \2197';
+    font-weight: 400;
+  }
+
+  .btn-ghost {
+    display: inline-block;
+    padding: 0.85rem 1.5rem;
+    background: transparent;
+    color: var(--color-text);
+    border: 2px solid var(--color-border);
+    text-decoration: none;
+    font-weight: 700;
+  }
+
+  .btn-ghost:hover {
+    background: var(--color-bg-elevated);
+  }
+
+  .content {
+    padding: 4rem 1.5rem;
+    background: var(--color-bg);
+  }
+
+  .content .container {
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .content h2 {
+    text-align: center;
+    font-size: clamp(1.6rem, 3vw, 2.2rem);
+    margin: 0 0 2rem;
+    color: var(--color-text);
+  }
+
+  .steps {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr));
+    gap: 1.5rem;
+  }
+
+  .step {
+    background: var(--color-bg-elevated);
+    border: 2px solid var(--color-border);
+    padding: 1.5rem;
+    position: relative;
+  }
+
+  .step-num {
+    position: absolute;
+    top: -14px;
+    left: 1rem;
+    width: 32px;
+    height: 32px;
+    background: var(--color-accent-caramel);
+    color: var(--color-bg-elevated);
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .step h3 {
+    font-size: 1.15rem;
+    font-weight: 800;
+    margin: 0.5rem 0;
+    color: var(--color-text);
+  }
+
+  .step p {
+    color: var(--color-text-light);
+    line-height: 1.55;
+    margin: 0;
+  }
+
+  .features {
+    padding: 4rem 1.5rem;
+    background: var(--color-bg-alt);
+  }
+
+  .features .container {
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .features h2 {
+    text-align: center;
+    font-size: clamp(1.6rem, 3vw, 2.2rem);
+    margin: 0 0 2rem;
+    color: var(--color-text);
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr));
+    gap: 1.5rem;
+  }
+
+  .card {
+    background: var(--color-bg-elevated);
+    border: 2px solid var(--color-border);
+    padding: 1.5rem;
+  }
+
+  .card h3 {
+    font-size: 1.15rem;
+    font-weight: 800;
+    margin: 0 0 0.5rem;
+    color: var(--color-text);
+  }
+
+  .card p {
+    color: var(--color-text-light);
+    line-height: 1.55;
+    margin: 0 0 0.75rem;
+  }
+
+  .card a {
+    display: inline-block;
+    color: var(--color-accent-caramel);
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .card a:hover {
+    text-decoration: underline;
+  }
+
+  .signalements {
+    padding: 4rem 1.5rem 5rem;
+    background: var(--color-bg);
+    text-align: center;
+  }
+
+  .signalements .container {
+    max-width: 720px;
+    margin: 0 auto;
+  }
+
+  .signalements h2 {
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    margin: 0 0 0.75rem;
+    color: var(--color-text);
+  }
+
+  .signalements p {
+    color: var(--color-text-light);
+    margin: 0 0 1.5rem;
+  }
+</style>

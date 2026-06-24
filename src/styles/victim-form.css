@@ -1,0 +1,39 @@
+﻿/* Styles specifiques au formulaire victimes (VictimForm). Reutilise les classes auth-* deja chargees par AuthLayout ou Layout. */
+
+.field-error {
+  margin: 0.35rem 0 0;
+  padding: 0;
+  font-size: 0.85rem;
+  color: var(--color-danger, #c0392b);
+  list-style: none;
+}
+
+.field-error:not(:last-child) {
+  margin-bottom: 0.15rem;
+}
+
+.victim-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.victim-form .auth-input {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.victim-form .cta-btn-dark {
+  align-self: flex-start;
+}
+
+.victim-form select.auth-input {
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, var(--color-text) 50%),
+                    linear-gradient(135deg, var(--color-text) 50%, transparent 50%);
+  background-position: calc(100% - 18px) center, calc(100% - 12px) center;
+  background-size: 6px 6px, 6px 6px;
+  background-repeat: no-repeat;
+  padding-right: 2.25rem;
+}

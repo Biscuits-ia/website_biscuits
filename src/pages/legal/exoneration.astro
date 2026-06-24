@@ -1,0 +1,180 @@
+---
+// src/pages/legal/exoneration.astro
+// Conditions d\'acces aux places offertes (exoneration de paiement)
+// Version 1.0 - 24 juin 2026
+
+import BaseLayout from "@/layouts/Layout.astro";
+
+export const prerender = true;
+---
+
+<BaseLayout
+  title="Conditions d\'acces aux places offertes | Biscuits IA"
+  description="Criteres, procedure et modalites des demandes d\'exoneration de paiement pour les formations Biscuits IA."
+  noindex={false}
+>
+  <main class="legal-wrapper">
+    <div class="container">
+      <h1 class="title">Conditions d\'acces aux places offertes</h1>
+      <p class="update">Version 1.0 - 24 juin 2026</p>
+
+      <p>
+        Conformement a sa mission d\'interet general, l\'Association Biscuits IA reserve
+        une partie des places de chaque formation a des beneficiaires ne pouvant pas
+        acquitter le tarif minimum, et ce sans avoir a fournir de justificatif de ressources.
+      </p>
+
+      <h2>1. Principe</h2>
+      <p>
+        L\'Association considere que <strong>l\'acces a la formation ne doit pas etre
+        freine par les moyens financiers du beneficiaire</strong>. Toute personne peut demander
+        une place offerte, sans avoir a motiver sa demande au-dela d\'une courte explication
+        de contexte.
+      </p>
+      <p>
+        La place offerte est financee soit :
+      </p>
+      <ul>
+        <li>Par le fonds associatif (donnees generees par les formations au tarif conscient) ;</li>
+        <li>Par un parrain externe (parrainage nominatif) ;</li>
+        <li>Par un don specifique de l\'Association sur ses reserves.</li>
+      </ul>
+
+      <h2>2. Beneficiaires eligibles</h2>
+      <p>
+        Toute personne physique peut demander une place offerte, sans condition de ressources,
+        de statut ou d\'appartenance. La demande est examinee par l\'Association au cas par cas.
+      </p>
+      <p>
+        L\'Association accorde une attention particuliere aux demandes emanant de :
+      </p>
+      <ul>
+        <li>Beneficiaires du RSA, de l\'ASS, de l\'AAH ou d\'autres minima sociaux ;</li>
+        <li>Etudiants, apprentis, personnes en formation professionnelle ;</li>
+        <li>Demandeurs d\'emploi ;</li>
+        <li>Retraites a faibles revenus ;</li>
+        <li>Benevoles associatifs ;</li>
+        <li>Toute personne en situation de precarite financiere.</li>
+      </ul>
+      <p>
+        Cette liste n\'est pas exhaustive : <strong>toute personne qui estime ne pas pouvoir
+        acquitter le tarif minimum peut en faire la demande</strong>.
+      </p>
+
+      <h2>3. Procedure de demande</h2>
+
+      <h3>3.1 Modalites</h3>
+      <p>
+        La demande se fait directement depuis la page d\'inscription a la Formation concernee,
+        en cliquant sur le bouton <strong>"Demander une place gratuite"</strong>. Le demandeur
+        est invite a expliquer sa situation en quelques phrases (entre 50 et 500 caracteres).
+      </p>
+
+      <h3>3.2 Examen par l\'Association</h3>
+      <p>
+        La demande est examinee par un administrateur de l\'Association sous
+        <strong>48 heures ouvrables</strong>. La decision est notifiee par email au demandeur.
+      </p>
+      <p>
+        En cas d\'accord : l\'inscription est automatiquement confirmee, et le demandeur
+        recoit les memes informations pratiques que les autres inscrits (convocation, lien
+        ou adresse de la formation).
+      </p>
+      <p>
+        En cas de refus : le demandeur peut toujours s\'inscrire au tarif minimum applicable.
+        Aucun justificatif supplementaire n\'est demande.
+      </p>
+
+      <h2>4. Nature juridique de l\'exoneration</h2>
+      <p>
+        L\'exoneration est un <strong>don du fonds associatif</strong>, au sens de l\'article 6
+        de la loi du 1er juillet 1901. Elle ne constitue pas une prestation de service
+        et ne donne pas lieu a l\'emission d\'une facture.
+      </p>
+      <p>
+        Aucun droit opposable a l\'exoneration ne peut etre invoque par le demandeur.
+        L\'Association se reserve le droit de refuser une demande, de maniere justifiee
+        et motivee (par exemple : file d\'attente trop longue, places deja attribuees).
+      </p>
+
+      <h2>5. Confidentialite</h2>
+      <p>
+        Les informations fournies par le demandeur dans le champ "motivation" sont
+        strictement confidentielles. Elles ne sont lues que par l\'administrateur qui examine
+        la demande, et ne sont jamais partagees, publiees ou utilisees a d\'autres fins.
+      </p>
+      <p>
+        Conformement au RGPD, le demandeur peut a tout moment demander l\'acces, la rectification
+        ou la suppression de sa demande en contactant
+        <a href="mailto:contact@biscuits-ia.com">contact@biscuits-ia.com</a>.
+      </p>
+
+      <h2>6. Absence de discrimination</h2>
+      <p>
+        L\'Association s\'engage a ne pratiquer aucune discrimination dans le traitement
+        des demandes d\'exoneration, conformement aux principes de non-discrimination
+        inscrits dans ses statuts et dans la loi du 1er juillet 1901.
+      </p>
+      <p>
+        Toute discrimination fondee sur le genre, l\'origine, la religion, l\'orientation sexuelle,
+        le handicap, l\'age ou toute autre caracteristique personnelle est strictement interdite
+        et ferait l\'objet de sanctions internes.
+      </p>
+
+      <h2>7. En cas d\'abus</h2>
+      <p>
+        En cas d\'utilisation abusive du systeme (demandes repetees alors que la situation
+        financiere le permet, inscriptions non honorees apres exonération repetees), l\'Association
+        se reserve le droit de refuser les demandes ulterieures de la meme personne, apres
+        avertissement ecrit prealable.
+      </p>
+      <p>
+        Cette mesure est proportionnee et a pour seul objet de preserver les places offertes
+        pour les personnes qui en ont reellement besoin.
+      </p>
+
+      <h2>8. Combinaison avec le parrainage</h2>
+      <p>
+        Une demande d\'exoneration peut etre combinee avec un code de parrainage recu d\'un tiers.
+        Dans ce cas, le demandeur beneficie automatiquement de la place financee par le parrain,
+        et la demande d\'exoneration est ignoree.
+      </p>
+
+      <h2>9. Contact</h2>
+      <p>
+        Pour toute question relative a l\'exoneration :<br />
+        Email : <a href="mailto:contact@biscuits-ia.com">contact@biscuits-ia.com</a>
+      </p>
+
+      <p class="update-footer">
+        Version 1.0 - 24 juin 2026<br />
+        <a href="/legal/index">Retour a l\'index des documents legaux</a>
+      </p>
+    </div>
+  </main>
+</BaseLayout>
+
+<style>
+  .legal-wrapper {
+    padding: 4rem 0 6rem;
+    background: var(--color-bg);
+    line-height: 1.7;
+  }
+  .container { max-width: 860px; margin: 0 auto; padding: 0 24px; }
+  .title { font-size: clamp(1.8rem, 3.5vw, 2.4rem); margin: 0 0 8px; color: var(--color-text); }
+  .update { color: var(--color-text-muted); font-size: 0.9rem; margin: 0 0 24px; }
+  h2 { font-size: 1.3rem; margin: 32px 0 12px; color: var(--color-text); border-bottom: 2px solid var(--color-border); padding-bottom: 6px; }
+  h3 { font-size: 1.05rem; margin: 20px 0 8px; color: var(--color-text); }
+  p, li { color: var(--color-text); line-height: 1.7; margin-bottom: 8px; }
+  ul { margin: 8px 0 12px; padding-left: 24px; }
+  li { margin-bottom: 4px; }
+  a { color: var(--color-primary); }
+  .update-footer {
+    text-align: center;
+    color: var(--color-text-muted);
+    font-size: 0.9rem;
+    margin-top: 40px;
+    padding-top: 20px;
+    border-top: 1px solid var(--color-border);
+  }
+</style>

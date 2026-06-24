@@ -1,0 +1,438 @@
+---
+// src/pages/legal/guide-relecture.astro
+// Mini-guide de relecture juridique des documents legaux de Biscuits IA.
+// Cette page sert de checklist pour Alexis (president) et le bureau avant
+// d'activer les CGV dans legal_compliance.
+// Lisible a l'ecran + imprimable (CSS print-friendly).
+
+import BaseLayout from "@/layouts/Layout.astro";
+
+export const prerender = true;
+---
+
+<BaseLayout
+  title="Guide de relecture juridique | Biscuits IA"
+  description="Checklist de relecture des CGV, CGU, RGPD et autres documents legaux de Biscuits IA avant activation."
+  noindex={true}
+>
+  <main class="legal-wrapper">
+    <div class="container">
+      <h1 class="title">Guide de relecture juridique</h1>
+      <p class="update">Version 1.0 - 24 juin 2026 - Reserve au bureau de l'association</p>
+
+      <div class="callout-print">
+        <strong>Aperçu imprimable :</strong> cette page est optimisee pour l'impression
+        (Ctrl+P). Utilisez-la comme checklist lors d'une reunion du bureau ou d'un
+        echange avec un professionnel du droit.
+      </div>
+
+      <section class="legal-section">
+        <h2>0. Avant de commencer</h2>
+        <p>
+          Les documents legaux ci-dessous ont ete rediges en s'appuyant sur les
+          obligations legales francaises courantes pour une association Loi 1901
+          vendant des prestations de formation. Ils ne constituent <strong>pas un avis
+          juridique</strong> et doivent etre relus par une personne ayant les competences
+          pour le faire, idealement un avocat ou un juriste specialise en droit associatif.
+        </p>
+        <p>
+          En cas de doute sur un point, il est preferable de consulter avant d'activer
+          les CGV. Un passage mal adapte peut engager la responsabilite de l'Association
+          et de ses representants legaux.
+        </p>
+        <p class="muted">
+          <em>Temps de relecture prevu : 45 a 90 minutes si vous etes familier du
+          vocabulaire juridique, 2 a 3 heures sinon.</em>
+        </p>
+      </section>
+
+      <hr class="sep" />
+
+      <section class="legal-section">
+        <h2>1. Identite vendeur et representant legal</h2>
+        <p class="check-title"><strong>Documents concernes :</strong> CGV, CGU, Mentions legales, Politique de confidentialite</p>
+
+        <h3>1.1 Verifications a faire</h3>
+        <ul class="checklist">
+          <li><label><input type="checkbox" /> Le nom de l'Association est correctement orthographie : <strong>Biscuits IA</strong></label></li>
+          <li><label><input type="checkbox" /> Le numero RNA est correct : <strong>W863012707</strong></label></li>
+          <li><label><input type="checkbox" /> Le SIRET est correct : <strong>10151660700013</strong></label></li>
+          <li><label><input type="checkbox" /> L'adresse du siege est a jour : <strong>2 B RUE de la Cueille Mirebalaise, Appartement 4, 86000 Poitiers</strong></label></li>
+          <li><label><input type="checkbox" /> Le representant legal designe est bien <strong>Alexis Gallard, President</strong> (a verifier qu'il est toujours en fonction)</label></li>
+          <li><label><input type="checkbox" /> L'adresse email de contact est monitorée : <strong>contact@biscuits-ia.com</strong></label></li>
+        </ul>
+
+        <h3>1.2 Risques si erreur</h3>
+        <p>
+          Une erreur sur l'identite du vendeur peut entrainer la nullite du contrat de vente
+          (l'acheteur ne peut pas identifier a qui il a achete), des difficultes en cas de
+          reclamation CNIL, ou des soucis avec le mediateur de la consommation.
+        </p>
+      </section>
+
+      <hr class="sep" />
+
+      <section class="legal-section">
+        <h2>2. Prix, TVA et fiscalite</h2>
+        <p class="check-title"><strong>Documents concernes :</strong> CGV (articles 4, 5, 8)</p>
+
+        <h3>2.1 Points a valider imperativement avec un fiscaliste</h3>
+
+        <div class="alert-fiscal">
+          <strong>POINTS FISCAUX CRITIQUES - ne pas activer les CGV sans avis professionnel :</strong>
+        </div>
+
+        <ul class="checklist">
+          <li>
+            <label><input type="checkbox" />
+              <strong>Franchise de TVA (article 293 B du CGI) :</strong> l'Association declare
+              etre franchisee de TVA. C'est exact <strong>tant que le CA annuel des activites
+              lucratives reste sous 60 110 EUR</strong> (en pratique, sous 30 000 EUR pour
+              avoir une marge de securite). A verifier avec l'expert-comptable de l'asso.
+            </label>
+          </li>
+          <li>
+            <label><input type="checkbox" />
+              <strong>Caractere accessoire de l'activite :</strong> la formation payante
+              doit rester <em>accessoire</em> par rapport a l'objet principal de l'asso
+              (ateliers gratuits, mission d'interet general). Si elle devient l'activite
+              principale, l'asso risque la requalification en societe commerciale.
+            </label>
+          </li>
+          <li>
+            <label><input type="checkbox" />
+              <strong>Regime fiscal des recettes :</strong> les revenus de formation sont a
+              declarer en <strong>BNC (Benefices Non Commerciaux)</strong> si l'asso est
+              franchisee de TVA, ou en BIC si elle depasse les seuils. A clarifier.
+            </label>
+          </li>
+          <li>
+            <label><input type="checkbox" />
+              <strong>Seuil des 60 110 EUR :</strong> mettre en place un suivi comptable
+              distinct (que nous avons deja dans <code>training_payments</code>) et une
+              alerte des 30 000 EUR pour anticiper la requalification.
+            </label>
+          </li>
+        </ul>
+
+        <h3>2.2 Points de relecture juridique pure</h3>
+        <ul class="checklist">
+          <li><label><input type="checkbox" /> Le tarif conscient (sliding scale) est clairement presente comme un <em>choix libre</em> du beneficiaire, pas comme une negociation</label></li>
+          <li><label><input type="checkbox" /> Les prix sont exprimes en euros TTC, avec mention explicite "TVA non applicable, art. 293 B du CGI"</label></li>
+          <li><label><input type="checkbox" /> Les modes de paiement sont clairement listes (HelloAsso, virement, parrainage, exoneration)</label></li>
+        </ul>
+      </section>
+
+      <hr class="sep" />
+
+      <section class="legal-section">
+        <h2>3. Droit de retractation</h2>
+        <p class="check-title"><strong>Documents concernes :</strong> CGV (article 5)</p>
+
+        <h3>3.1 Verifications legales</h3>
+        <ul class="checklist">
+          <li><label><input type="checkbox" /> Le delai de 14 jours est conforme au Code de la consommation (article L221-18)</label></li>
+          <li><label><input type="checkbox" /> L'exception pour service pleinement execute avant la fin du delai (article L221-28-1) est correctement documentee</label></li>
+          <li><label><input type="checkbox" /> Le <strong>consentement exprès du beneficiaire</strong> a renoncer a son droit de retractation est coche <strong>AVANT le paiement</strong>, pas apres</label></li>
+        </ul>
+
+        <h3>3.2 Verifications UX</h3>
+        <ul class="checklist">
+          <li><label><input type="checkbox" /> Sur <code>/formations/[slug]/inscription</code>, la date de la session est visible <strong>avant</strong> la coche CGV (le user voit qu'il perd son droit de retractation)</label></li>
+          <li><label><input type="checkbox" /> L'email de confirmation inclut la date de la session, le prix, et mentionne la perte du droit de retractation</label></li>
+          <li><label><input type="checkbox" /> Un email dedie de retractation peut etre envoye a <a href="mailto:contact@biscuits-ia.com">contact@biscuits-ia.com</a> avec mention de la date butoir</label></li>
+        </ul>
+
+        <h3>3.3 Risques si erreur</h3>
+        <p>
+          Le non-respect du droit de retractation est une <strong>infraction passible
+          de 15 000 EUR d'amende par contrat</strong> (article L132-2 du Code de la consommation),
+          et l'Association s'expose a des actions de groupe (article L623-1 et suivants).
+        </p>
+      </section>
+
+      <hr class="sep" />
+
+      <section class="legal-section">
+        <h2>4. Place offerte et exoneration</h2>
+        <p class="check-title"><strong>Documents concernes :</strong> CGV (article 6), Conditions d'exoneration</p>
+
+        <h3>4.1 Verifications juridiques</h3>
+        <ul class="checklist">
+          <li><label><input type="checkbox" /> L'exoneration est clairement definie comme un <strong>don du fonds associatif</strong> (article 6 loi 1901), pas comme une prestation de service</label></li>
+          <li><label><input type="checkbox" /> Aucun justificatif de ressources n'est exige (critere illegal de discrimination)</label></li>
+          <li><label><input type="checkbox" /> L'Association se reserve le droit de refuser (pas de droit opposable a l'exoneration)</label></li>
+          <li><label><input type="checkbox" /> La non-discrimination est explicitement engagee</label></li>
+        </ul>
+
+        <h3>4.2 Point d'attention</h3>
+        <div class="alert-warn">
+          <strong>Attention :</strong> un user qui beneficie d'une place offerte ne doit <strong>pas</strong>
+          recevoir de facture. Les CGV actuelles stipulent bien que l'exoneration ne donne pas lieu
+          a emission de facture. A verifier dans la pratique administrative.
+        </div>
+      </section>
+
+      <hr class="sep" />
+
+      <section class="legal-section">
+        <h2>5. Parrainage et recus fiscaux</h2>
+        <p class="check-title"><strong>Documents concernes :</strong> CGV (article 7), Conditions de parrainage</p>
+
+        <h3>5.1 Verifications fiscales (TRES important)</h3>
+        <ul class="checklist">
+          <li><label><input type="checkbox" /> L'Association beneficie bien de la mention <strong>"d'interet general"</strong> dans ses statuts (obligatoire pour emettre des recus fiscaux)</label></li>
+          <li><label><input type="checkbox" /> HelloAsso est bien configure pour delivrer automatiquement des recus fiscaux (parametres admin HelloAsso > Reçus fiscaux)</label></li>
+          <li><label><input type="checkbox" /> Le <strong>numero RNA</strong> de l'Association est renseigne dans les parametres HelloAsso pour que le recu fiscal soit valide</label></li>
+          <li><label><input type="checkbox" /> Les montants du parrainage sont bien declares comme <strong>dons</strong> (pas comme des paiements de prestation)</label></li>
+        </ul>
+
+        <h3>5.2 Verifications juridiques</h3>
+        <ul class="checklist">
+          <li><label><input type="checkbox" /> Le code de redemption est decrit comme personnel, incessible (sauf transmission volontaire), non convertible en especes</label></li>
+          <li><label><input type="checkbox" /> La duree de validite (24 mois) est mentionnee et conforme aux usages</label></li>
+          <li><label><input type="checkbox" /> Le mode nominatif preserve la confidentialite (le parrain ne recoit pas l'identite reelle du beneficiaire)</label></li>
+        </ul>
+
+        <h3>5.3 Risques si erreur</h3>
+        <p>
+          Emettre un recu fiscal sans avoir le statut d'interet general (reserves aux associations
+          reconnues d'utilite publique, ou apres 3 ans d'existence pour les autres) peut etre
+          considere comme une <strong>fraude fiscale</strong> (article 1741 du CGI), passible
+          de 5 ans d'emprisonnement et 500 000 EUR d'amende.
+        </p>
+      </section>
+
+      <hr class="sep" />
+
+      <section class="legal-section">
+        <h2>6. RGPD et sous-traitants</h2>
+        <p class="check-title"><strong>Documents concernes :</strong> Politique de confidentialite (article 4)</p>
+
+        <h3>6.1 Verifications a faire pour chaque sous-traitant</h3>
+        <ul class="checklist">
+          <li><label><input type="checkbox" /> <strong>Supabase</strong> : DPA signe (disponible dans Supabase Dashboard > Settings > Compliance)</label></li>
+          <li><label><input type="checkbox" /> <strong>Vercel</strong> : DPA signe (disponible dans Vercel Dashboard > Settings > Legal > Data Processing Addendum)</label></li>
+          <li><label><input type="checkbox" /> <strong>OVH</strong> : CGV OVH conformes RGPD (pas de DPA a signer, mais CGV integrent les clauses)</label></li>
+          <li><label><input type="checkbox" /> <strong>HelloAsso</strong> : HelloAsso est conforme RGPD en tant que sous-traitant (donnees en France)</label></li>
+        </ul>
+
+        <h3>6.2 Verifications structurelles</h3>
+        <ul class="checklist">
+          <li><label><input type="checkbox" /> Un <strong>registre des traitements</strong> est tenu a jour (simple table ou doc interne)</label></li>
+          <li><label><input type="checkbox" /> La procedure d'exercice des droits RGPD est claire : reponse sous 1 mois, justificatif d'identite demande</label></li>
+          <li><label><input type="checkbox" /> Les durees de conservation sont documentees et chiffrees (3 ans pour suivi, 10 ans pour compta, 1 an pour logs)</label></li>
+          <li><label><input type="checkbox" /> Une procedure de notification de violation de donnees est en place (72h CNIL)</label></li>
+        </ul>
+      </section>
+
+      <hr class="sep" />
+
+      <section class="legal-section">
+        <h2>7. Mediation de la consommation</h2>
+        <p class="check-title"><strong>Documents concernes :</strong> CGV (article 12.2)</p>
+
+        <h3>7.1 Verifications legales</h3>
+        <ul class="checklist">
+          <li><label><input type="checkbox" /> L'article 12.2 des CGV mentionne bien le recours possible a un mediateur de la consommation (article L612-1 du Code de la consommation)</label></li>
+          <li><label><input type="checkbox" /> Un mediateur est identifie (a complementer dans <code>legal_compliance.mediateur_nom</code>) : la liste officielle est sur economie.gouv.fr/dgccrf</label></li>
+          <li><label><input type="checkbox" /> La mention de la plateforme europeenne RLL est correcte (ec.europa.eu/consumers/odr)</label></li>
+        </ul>
+
+        <h3>7.2 Note</h3>
+        <p class="muted">
+          <em>L'obligation d'adhesion a un mediateur s'applique des qu'il y a activite
+          de vente en ligne, mais elle peut etre reportee tant que le CA reste faible.
+          Pour une asso 1901 qui debute, le mediateur peut etre ajoute ulterieurement
+          sans bloquer l'activation des CGV.</em>
+        </p>
+      </section>
+
+      <hr class="sep" />
+
+      <section class="legal-section">
+        <h2>8. Activation finale</h2>
+        <p class="check-title"><strong>A executer par un admin apres validation complete :</strong></p>
+
+        <h3>8.1 Checklist pre-activation</h3>
+        <ul class="checklist">
+          <li><label><input type="checkbox" /> Tous les points ci-dessus ont ete valides (coches)</label></li>
+          <li><label><input type="checkbox" /> Le bureau de l'Association a valide les CGV lors d'une reunion (date a mentionner dans le PV)</label></li>
+          <li><label><input type="checkbox" /> Le mediateur de la consommation a ete identifie (ou decision de l'ajouter ulterieurement documentee)</label></li>
+          <li><label><input type="checkbox" /> Les DPA des sous-traitants sont signes et archives</label></li>
+        </ul>
+
+        <h3>8.2 SQL d'activation (a executer dans Supabase)</h3>
+        <pre class="sql-block"><code>UPDATE legal_compliance
+SET cgv_activees = true,
+    cgv_version = '1.0',
+    cgv_date_activation = now(),
+    prochain_audit = now() + interval '12 months'
+WHERE id = 1;</code></pre>
+
+        <h3>8.3 Apres activation</h3>
+        <ul class="checklist">
+          <li><label><input type="checkbox" /> Le bandeau d'alerte "CGV non activées" disparait du dashboard admin</label></li>
+          <li><label><input type="checkbox" /> L'index <code>/legal/index</code> passe les CGV de "Brouillon" a "En vigueur"</label></li>
+          <li><label><input type="checkbox" /> Un email interne est envoye au bureau : "CGV activees le JJ/MM/AAAA par [prenom]"</label></li>
+          <li><label><input type="checkbox" /> La page d'accueil contient un lien visible vers les CGV (footer)</label></li>
+          <li><label><input type="checkbox" /> Le systeme d'acceptation enregistre bien chaque clic (table <code>legal_acceptance</code> se remplit)</label></li>
+        </ul>
+
+        <h3>8.4 Audit annuel</h3>
+        <p>
+          Le champ <code>prochain_audit</code> de <code>legal_compliance</code> est positionne a
+          J+12 mois. Creer un rappel calendrier pour le <strong>24 juin 2027</strong>
+          afin de verifier que :
+        </p>
+        <ul>
+          <li>Les CGV refletent toujours la pratique (nouveau mode de paiement, evolution du tarif conscient) ;</li>
+          <li>La legislation n'a pas change (notamment seuils TVA, mediateur obligatoire) ;</li>
+          <li>Les sous-traitants sont toujours les memes (DPA a jour).</li>
+        </ul>
+      </section>
+
+      <hr class="sep" />
+
+      <section class="legal-section">
+        <h2>9. Contacts utiles</h2>
+        <ul>
+          <li><strong>CNIL</strong> (donnees personnelles) : <a href="https://www.cnil.fr" target="_blank" rel="noopener">cnil.fr</a> - 3 place de Fontenoy, 75007 Paris</li>
+          <li><strong>DGCCRF</strong> (consommation, CGV) : <a href="https://www.economie.gouv.fr/dgccrf" target="_blank" rel="noopener">economie.gouv.fr/dgccrf</a></li>
+          <li><strong>Liste des mediateurs de la consommation agrees</strong> : <a href="https://www.economie.gouv.fr/dgccrf/liste-des-mediateurs-de-consommation-agrees" target="_blank" rel="noopener">economie.gouv.fr/dgccrf/liste-des-mediateurs</a></li>
+          <li><strong>URSSAF</strong> (reglementation des assos) : <a href="https://www.urssaf.fr" target="_blank" rel="noopener">urssaf.fr</a></li>
+          <li><strong>Le Mouvement Associatif</strong> (reseau d'appui aux assos 1901) : <a href="https://www.lemouvementassociatif.org" target="_blank" rel="noopener">lemouvementassociatif.org</a></li>
+        </ul>
+      </section>
+
+      <p class="update-footer">
+        Document interne - non public - <a href="/legal/index">Retour a l'index des documents legaux</a>
+      </p>
+    </div>
+  </main>
+</BaseLayout>
+
+<style>
+  .legal-wrapper {
+    padding: 4rem 0 6rem;
+    background: var(--color-bg);
+    line-height: 1.7;
+  }
+  .container { max-width: 900px; margin: 0 auto; padding: 0 24px; }
+  .title {
+    font-size: clamp(1.8rem, 3.5vw, 2.4rem);
+    margin: 0 0 8px;
+    color: var(--color-text);
+  }
+  .update {
+    color: var(--color-text-muted);
+    font-size: 0.9rem;
+    margin: 0 0 24px;
+    font-style: italic;
+  }
+  .muted { color: var(--color-text-muted); }
+  .callout-print {
+    background: #dbeafe;
+    border: 3px solid var(--color-border);
+    padding: 14px 18px;
+    margin-bottom: 24px;
+    font-size: 0.95rem;
+  }
+  .alert-warn {
+    background: #fef3c7;
+    border: 3px solid var(--color-border);
+    padding: 14px 18px;
+    margin: 16px 0;
+    font-size: 0.95rem;
+  }
+  .alert-fiscal {
+    background: #fee2e2;
+    border: 3px solid #a02020;
+    padding: 14px 18px;
+    margin: 16px 0;
+    font-size: 0.95rem;
+    color: #7a1a1a;
+  }
+  .alert-fiscal strong { color: #a02020; }
+  h2 {
+    font-size: 1.4rem;
+    margin: 32px 0 12px;
+    color: var(--color-text);
+  }
+  h3 {
+    font-size: 1.1rem;
+    margin: 20px 0 8px;
+    color: var(--color-text);
+  }
+  p, li {
+    color: var(--color-text);
+    line-height: 1.7;
+    margin-bottom: 8px;
+  }
+  .sep { border: 0; border-top: 2px solid var(--color-border); margin: 32px 0; }
+  .legal-section { margin-bottom: 24px; }
+  .check-title { font-size: 0.9rem; color: var(--color-text-muted); margin-bottom: 12px; }
+  .checklist {
+    list-style: none;
+    padding: 0;
+    margin: 12px 0;
+  }
+  .checklist li {
+    padding: 4px 0;
+  }
+  .checklist label {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    cursor: pointer;
+    padding: 4px 6px;
+    border-radius: 4px;
+  }
+  .checklist label:hover {
+    background: var(--color-bg-alt);
+  }
+  .checklist input[type="checkbox"] {
+    margin-top: 5px;
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    cursor: pointer;
+  }
+  .sql-block {
+    background: var(--color-gray-100, #1a1a1a);
+    color: #e0e0e0;
+    padding: 16px;
+    overflow-x: auto;
+    font-family: ui-monospace, 'SF Mono', Consolas, monospace;
+    font-size: 0.85rem;
+    line-height: 1.5;
+    margin: 12px 0;
+  }
+  .sql-block code { color: inherit; background: transparent; }
+  code { background: var(--color-bg-alt); padding: 2px 6px; font-family: ui-monospace, monospace; font-size: 0.9em; }
+  a { color: var(--color-primary); }
+  .update-footer {
+    text-align: center;
+    color: var(--color-text-muted);
+    font-size: 0.9rem;
+    margin-top: 40px;
+    padding-top: 20px;
+    border-top: 1px solid var(--color-border);
+  }
+
+  /* Impression : cache les liens internes, ajuste les marges */
+  @media print {
+    .legal-wrapper { background: white; padding: 0; }
+    .container { max-width: 100%; padding: 0; }
+    .callout-print { background: white; border: 1px solid #ccc; }
+    .alert-warn, .alert-fiscal {
+      background: white;
+      border: 1px solid #ccc;
+    }
+    .checklist label:hover { background: transparent; }
+    a { color: black; text-decoration: none; }
+    .update-footer a { text-decoration: underline; }
+    h2 { page-break-after: avoid; }
+    .legal-section { page-break-inside: avoid; }
+  }
+</style>

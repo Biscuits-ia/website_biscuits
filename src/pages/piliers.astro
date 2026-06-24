@@ -1,0 +1,215 @@
+﻿---
+// src/pages/piliers.astro
+// Hub des 4 piliers de l'association : presentation detaillee et navigation par pilier.
+
+export const prerender = true;
+
+import Layout from '@/layouts/Layout.astro';
+import Breadcrumb from '@/components/Breadcrumb.astro';
+import PillarsGrid from '@/components/PillarsGrid.astro';
+
+const schema = {
+  type: 'WebPage' as const,
+  data: {
+    name: 'Nos piliers - Biscuits IA',
+    description: 'Quatre piliers, une mission : IA accessible, lutte contre la cybercriminalite, logiciels libres pour associations, Anti Pepins.',
+  },
+};
+---
+
+<Layout
+  title="Nos piliers | Biscuits IA"
+  description="Decouvrez les quatre piliers de Biscuits IA : accompagnement a l'IA, lutte contre la cybercriminalite et aide aux victimes, logiciels libres pour associations partenaires, Anti Pepins."
+  schema={schema}
+>
+  <Breadcrumb />
+
+  <section class="hero-piliers">
+    <div class="container">
+      <p class="eyebrow">Notre mission, en quatre piliers</p>
+      <h1>Quatre piliers, une mission d'interet general</h1>
+      <p class="lead">
+        Biscuits IA est une association Loi 1901. Nous agissons sur quatre fronts complementaires pour rendre le numerique utile, sur et accessible aux associations, collectivites et victimes d'arnaques. Chaque pilier alimente les autres : notre travail sur l'IA finance l'aide aux victimes, nos logiciels libres equipent d'autres associations, Anti Pepins protege le grand public.
+      </p>
+    </div>
+  </section>
+
+  <PillarsGrid
+    layout="hub"
+    title="Les quatre piliers"
+    intro="Decouvrez en detail ce que nous faisons sur chaque front."
+    showCta={false}
+  />
+
+  <section class="engagement">
+    <div class="container">
+      <div class="engagement-grid">
+        <div>
+          <h2>Une association, pas une startup</h2>
+          <p>
+            Nous ne cherchons pas la croissance. Nous cherchons l'impact. Tous nos tarifs (logiciels, ateliers, accompagnements) sont calcules au plus juste pour financer la mission, pas pour remunerer des actionnaires.
+          </p>
+        </div>
+        <div>
+          <h2>Soutenir l'association</h2>
+          <p>
+            Adherents, dons, partenariats associatifs : chaque contribution nous aide a accompagner plus de structures et plus de victimes. Si notre mission vous parle, il y a plusieurs facons de nous soutenir, du simple don ponctuel a l'adhesion annuelle.
+          </p>
+          <a class="btn-secondary" href="/contact?sujet=soutenir">Nous contacter pour soutenir</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta-final">
+    <div class="container">
+      <h2>Vous ne savez pas par ou commencer ?</h2>
+      <p>Decrivez-nous votre situation en quelques lignes, nous vous orienterons vers le bon pilier.</p>
+      <div class="cta-actions">
+        <a href="/contact" class="btn-primary">Echanger avec l'equipe</a>
+        <a href="/rdv" class="btn-ghost">Prendre rendez-vous</a>
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .hero-piliers {
+    padding: 5rem 1.5rem 3rem;
+    background: var(--color-bg);
+    text-align: center;
+  }
+
+  .hero-piliers .container {
+    max-width: 880px;
+    margin: 0 auto;
+  }
+
+  .hero-piliers .eyebrow {
+    font-size: 0.85rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--color-primary);
+    margin-bottom: 0.75rem;
+  }
+
+  .hero-piliers h1 {
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 900;
+    margin: 0 0 1rem;
+    color: var(--color-text);
+    line-height: 1.15;
+  }
+
+  .hero-piliers .lead {
+    color: var(--color-text-light);
+    font-size: 1.1rem;
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  .engagement {
+    padding: 4rem 1.5rem;
+    background: var(--color-bg-alt);
+  }
+
+  .engagement .container {
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .engagement-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr));
+    gap: 2rem;
+  }
+
+  .engagement-grid h2 {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: var(--color-text);
+    margin: 0 0 0.75rem;
+  }
+
+  .engagement-grid p {
+    color: var(--color-text-light);
+    line-height: 1.6;
+    margin: 0 0 1rem;
+  }
+
+  .btn-secondary {
+    display: inline-block;
+    padding: 0.65rem 1.25rem;
+    background: var(--color-bg);
+    color: var(--color-text);
+    border: 2px solid var(--color-border);
+    text-decoration: none;
+    font-weight: 700;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .btn-secondary:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 4px 4px 0 var(--color-border);
+  }
+
+  .cta-final {
+    padding: 4rem 1.5rem 5rem;
+    background: var(--color-primary);
+    color: var(--color-bg-elevated);
+    text-align: center;
+  }
+
+  .cta-final .container {
+    max-width: 760px;
+    margin: 0 auto;
+  }
+
+  .cta-final h2 {
+    font-size: clamp(1.6rem, 3vw, 2.2rem);
+    font-weight: 900;
+    margin: 0 0 0.75rem;
+  }
+
+  .cta-final p {
+    color: rgba(255, 255, 255, 0.92);
+    margin: 0 0 1.5rem;
+  }
+
+  .cta-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .btn-primary {
+    display: inline-block;
+    padding: 0.85rem 1.5rem;
+    background: var(--color-bg);
+    color: var(--color-primary);
+    border: 2px solid var(--color-border);
+    font-weight: 800;
+    text-decoration: none;
+  }
+
+  .btn-primary:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.4);
+  }
+
+  .btn-ghost {
+    display: inline-block;
+    padding: 0.85rem 1.5rem;
+    background: transparent;
+    color: var(--color-bg-elevated);
+    border: 2px solid var(--color-bg-elevated);
+    text-decoration: none;
+    font-weight: 700;
+  }
+
+  .btn-ghost:hover {
+    background: rgba(255, 255, 255, 0.12);
+  }
+</style>

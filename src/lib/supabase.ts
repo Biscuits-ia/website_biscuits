@@ -1,12 +1,12 @@
-﻿// src/lib/supabase.ts
+// src/lib/supabase.ts
 import { createServerClient, parseCookieHeader } from '@supabase/ssr';
 import { createClient } from '@supabase/supabase-js';
 
 /**
- * Résolution de la clé publique Supabase côté client.
- * Préfère la nouvelle Publishable Key (format 2024+, préfixe PUBLIC_) si
- * définie, sinon retombe sur l’ancienne anon key pour rétrocompatibilité.
- * Les deux sont safe-by-design : leur sécurité repose sur les RLS policies.
+ * Resolution de la cle publique Supabase cote client.
+ * Prefere la nouvelle Publishable Key (format 2024+, prefixe PUBLIC_) si
+ * definie, sinon retombe sur l'ancienne anon key pour retrocompatibilite.
+ * Les deux sont safe-by-design : leur securite repose sur les RLS policies.
  */
 function resolvePublishableKey(): string {
   const publishable = import.meta.env.PUBLIC_SUPABASE_PUBLISHABLE_KEY;
@@ -18,8 +18,8 @@ function resolvePublishableKey(): string {
 
   if (!key) {
     throw new Error(
-      '[supabase] Aucune clé publique Supabase trouvée. ' +
-      'Définir PUBLIC_SUPABASE_PUBLISHABLE_KEY (format 2024+) ou SUPABASE_ANON_KEY dans .env.',
+      '[supabase] Aucune cle publique Supabase trouvee. ' +
+      'Definir PUBLIC_SUPABASE_PUBLISHABLE_KEY (format 2024+) ou SUPABASE_ANON_KEY dans .env.',
     );
   }
   return key;
@@ -27,8 +27,8 @@ function resolvePublishableKey(): string {
 
 /**
  * Client SSR principal.
- * Lit les cookies de session, crit les nouveaux via Astro.cookies.
- * Utilisé par toutes les routes Astro et API en SSR.
+ * Lit les cookies de session, ecrit les nouveaux via Astro.cookies.
+ * Utilise par toutes les routes Astro et API en SSR.
  */
 export function createSupabaseClient(context: { request: Request; cookies: any }) {
   const url = import.meta.env.SUPABASE_URL;
@@ -47,8 +47,6 @@ export function createSupabaseClient(context: { request: Request; cookies: any }
             .map((cookie) => ({ name: cookie.name, value: cookie.value ?? '' }));
         },
         setAll(cookiesToSet) {
-          // IMPORTANT: Set cookies in BOTH the Astro.cookies API AND return them
-          // for the response. This ensures cookies work in SSR mode with Vercel.
           for (const { name, value, options } of cookiesToSet) {
             context.cookies.set(name, value, {
               ...options,
@@ -56,15 +54,10 @@ export function createSupabaseClient(context: { request: Request; cookies: any }
               secure: import.meta.env.PROD,
               sameSite: 'lax',
               path: '/',
-              // SECURITY: pas de `domain` ? cookie limit  l'hte exact.
-              // Avant : `domain: '.biscuits-ia.com'` partageait le cookie
-              // d'auth avec TOUS les sous-domaines ? si un sous-domaine
-              // tait compromis, hijack de session possible. Cf. AUDIT 3.
             });
           }
         },
       },
-      // Critical for SSR: disable auto-refresh in the client, handle it in middleware
       auth: {
         autoRefreshToken: false,
         detectSessionInUrl: false,
@@ -74,24 +67,23 @@ export function createSupabaseClient(context: { request: Request; cookies: any }
 }
 
 /**
- * Client Supabase avec service_role  bypass RLS.
- * Uniquement ct serveur (routes API, lib/auth.ts).
+ * Client Supabase avec service_role : bypass RLS.
+ * Uniquement cote serveur (routes API, lib/auth.ts).
  * Ne jamais exposer ce client au client browser.
  */
-export function createSupabaseAdminClient() {
+export function createSupabaseAdminClient(_ctx?: unknown) {
   const url     = import.meta.env.SUPABASE_URL;
   const svcKey  = import.meta.env.SUPABASE_SERVICE_ROLE_KEY;
 
   if (!url || !svcKey) {
     throw new Error(
       '[supabase] SUPABASE_URL ou SUPABASE_SERVICE_ROLE_KEY manquant dans .env\n' +
-      'Rcupre la cl dans Supabase ? Project Settings ? API ? service_role secret.',
+      'Recupere la cle dans Supabase > Project Settings > API > service_role secret.',
     );
   }
 
   return createClient(url, svcKey, {
     auth: {
-      // Dsactive la persistance de session  ce client est stateless ct serveur
       persistSession: false,
       autoRefreshToken: false,
     },

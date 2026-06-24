@@ -1,0 +1,215 @@
+﻿---
+// src/components/SoftwareShowcase.astro
+// Mise en avant des 3 produits logiciels phares. Pilier 3.
+
+const produits = [
+  {
+    nom: 'Anti Pepins',
+    statut: 'Disponible',
+    statutClass: 'status-live',
+    tagline: 'Analyse de messages suspects (SMS, mails, liens)',
+    description: 'Notre service public gratuit, ouvert a tous. Base de signaux mise a jour quotidiennement par la communaute.',
+    href: '/anti-pepins',
+    cta: 'Decouvrir',
+  },
+  {
+    nom: 'Suite associative',
+    statut: 'Beta 2026',
+    statutClass: 'status-soon',
+    tagline: 'Gestion de benevolat, beneficiaires, rendez-vous, base documentaire',
+    description: 'Outil modulaire pour les associations. Hebergement gere ou self-hosted. Code source libre (AGPLv3).',
+    href: '/contact?sujet=suite-associative',
+    cta: 'Rejoindre la beta',
+  },
+  {
+    nom: 'Outil de signalement',
+    statut: 'Roadmap 2026',
+    statutClass: 'status-soon',
+    tagline: 'Plateforme dediee aux associations specialisees',
+    description: 'Centralisation multi-utilisateurs, generation de dossiers PHAROS, statistiques publiques pour rapports annuels.',
+    href: '/contact?sujet=signalement-pro',
+    cta: 'Programme beta',
+  },
+];
+---
+
+<section class="sw-section" aria-labelledby="sw-title">
+  <div class="sw-inner">
+    <header class="sw-header">
+      <p class="sw-eyebrow">Pilier 3 - Logiciels pour associations</p>
+      <h2 id="sw-title">Des logiciels libres qui financent notre mission</h2>
+      <p class="sw-intro">
+        Les benefices de nos logiciels (Anti Pepins, Suite associative, Outil de signalement) financent les piliers 1 et 2 : accompagnement a l'IA et aide aux victimes. Logiciels libres, hebergeables sur votre infrastructure, maintenus par notre equipe.
+      </p>
+    </header>
+
+    <div class="sw-grid">
+      {produits.map((p) => (
+        <article class="sw-card">
+          <header>
+            <span class={`sw-status ${p.statutClass}`}>{p.statut}</span>
+            <h3>{p.nom}</h3>
+            <p class="sw-tag">{p.tagline}</p>
+          </header>
+          <p class="sw-desc">{p.description}</p>
+          <a href={p.href} class="sw-cta">
+            {p.cta}
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </a>
+        </article>
+      ))}
+    </div>
+
+    <div class="sw-foot">
+      <a href="/logiciels" class="sw-foot-cta">Voir le catalogue complet et demander un devis</a>
+    </div>
+  </div>
+</section>
+
+<style>
+  .sw-section {
+    padding: 5rem 1.5rem;
+    background: var(--color-bg);
+  }
+
+  .sw-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .sw-header {
+    text-align: center;
+    margin-bottom: 2.5rem;
+    max-width: 720px;
+    margin-inline: auto;
+  }
+
+  .sw-eyebrow {
+    font-size: 0.85rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--color-first);
+    margin-bottom: 0.75rem;
+  }
+
+  .sw-header h2 {
+    font-size: clamp(1.6rem, 3.5vw, 2.2rem);
+    font-weight: 900;
+    color: var(--color-text);
+    margin: 0 0 1rem;
+    line-height: 1.15;
+  }
+
+  .sw-intro {
+    color: var(--color-text-light);
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  .sw-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
+    gap: 1.5rem;
+  }
+
+  .sw-card {
+    background: var(--color-bg-elevated);
+    border: 2px solid var(--color-border);
+    padding: 1.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .sw-card header {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid var(--color-border);
+  }
+
+  .sw-status {
+    display: inline-block;
+    align-self: flex-start;
+    padding: 0.2rem 0.6rem;
+    font-size: 0.7rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .status-live {
+    background: var(--color-success);
+    color: var(--color-bg-elevated);
+  }
+
+  .status-soon {
+    background: var(--color-warning);
+    color: var(--color-bg-elevated);
+  }
+
+  .sw-card h3 {
+    font-size: 1.3rem;
+    font-weight: 900;
+    margin: 0;
+    color: var(--color-text);
+  }
+
+  .sw-tag {
+    font-size: 0.9rem;
+    color: var(--color-text-light);
+    margin: 0;
+  }
+
+  .sw-desc {
+    color: var(--color-text-light);
+    line-height: 1.55;
+    margin: 0;
+    font-size: 0.95rem;
+  }
+
+  .sw-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    align-self: flex-start;
+    padding: 0.6rem 1.1rem;
+    background: var(--color-primary);
+    color: var(--color-bg-elevated);
+    font-weight: 700;
+    font-size: 0.9rem;
+    border: 2px solid var(--color-border);
+    text-decoration: none;
+    margin-top: auto;
+  }
+
+  .sw-cta:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 4px 4px 0 var(--color-border);
+    color: var(--color-bg-elevated);
+  }
+
+  .sw-foot {
+    text-align: center;
+    margin-top: 2.5rem;
+  }
+
+  .sw-foot-cta {
+    display: inline-block;
+    padding: 0.85rem 1.5rem;
+    background: var(--color-bg-alt);
+    color: var(--color-text);
+    font-weight: 700;
+    border: 2px solid var(--color-border);
+    text-decoration: none;
+  }
+
+  .sw-foot-cta:hover {
+    background: var(--color-primary);
+    color: var(--color-bg-elevated);
+  }
+</style>

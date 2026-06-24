@@ -21,7 +21,7 @@ const isActive = (href: string) =>
             data-mega-toggle
             role="menuitem"
           >
-            Nos solutions
+            Nos piliers
             <svg class="chevron" width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
               <path d="M2 4L6 8L10 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
@@ -29,135 +29,128 @@ const isActive = (href: string) =>
 
           <div id="mega-solutions" class="mega-panel" role="region" aria-label="Nos produits">
             <div class="mega-grid">
-              <aside class="mega-categories" aria-label="Catégories">
-                <button class="mega-cat active" data-cat="collab" aria-selected="true">
-                  Outils collaboratifs
+              <aside class="mega-categories" aria-label="Piliers">
+                <button class="mega-cat active" data-cat="ia" aria-selected="true">
+                  Pilier 1 : IA
                 </button>
-                <button class="mega-cat" data-cat="rgpd" aria-selected="false">
-                  Confiance et conformité
+                <button class="mega-cat" data-cat="cyber" aria-selected="false">
+                  Pilier 2 : Cyber
                 </button>
-                <button class="mega-cat" data-cat="communaute" aria-selected="false">
-                  Communauté
+                <button class="mega-cat" data-cat="logiciels" aria-selected="false">
+                  Pilier 3 : Logiciels
                 </button>
-                <button class="mega-cat" data-cat="accompagnement" aria-selected="false">
-                  Accompagnement
+                <button class="mega-cat" data-cat="anti" aria-selected="false">
+                  Pilier 4 : Anti Pepins
                 </button>
               </aside>
 
-              <div class="mega-content" role="region" aria-label="Détails">
-                <section class="mega-section active" data-panel="collab">
+              <div class="mega-content" role="region" aria-label="Details">
+                <section class="mega-section active" data-panel="ia">
                   <header class="mega-head">
-                    <h3>Suite collaborative</h3>
-                    <a href="/projects-collaboratif">Découvrir les projets</a>
+                    <h3>Accompagnement a l'IA</h3>
+                    <a href="/piliers/ia">Voir le pilier</a>
                   </header>
                   <div class="mega-items">
-                    <a href="/projects-collaboratif" class="mega-item">
-                      <strong>Projets collaboratifs</strong>
-                      <span>Découvrez les initiatives co-construites avec les acteurs locaux.</span>
+                    <a href="/piliers/ia" class="mega-item">
+                      <strong>Pilier 1 : IA accessible</strong>
+                      <span>Ateliers, diagnostics, feuilles de route pour les structures.</span>
                     </a>
-                    <a href="/services" class="mega-item">
-                      <strong>Nos services</strong>
-                      <span>Accompagnement concret pour associations et petites structures.</span>
+                    <a href="/formations" class="mega-item">
+                    <strong>Formations longues</strong>
+                    <span>Tarifs conscients, parrainage, accessibles a tous.</span>
+                  </a>
+                  <a href="/ateliers" class="mega-item">
+                    <strong>Ateliers pratiques</strong>
+                      <span>Decouvrez les sessions en ligne et en presentiel.</span>
                     </a>
-                    <a href="/ressources" class="mega-item">
-                      <strong>Ressources téléchargeables</strong>
-                      <span>Modèles, checklists et kits pratiques pour le terrain.</span>
-                    </a>
-                    <a href="/ateliers" class="mega-item">
-                      <strong>Ateliers IA</strong>
-                      <span>Formations concrètes pour monter en compétence.</span>
-                    </a>
-                  </div>
-                </section>
-
-                <section class="mega-section" data-panel="rgpd">
-                  <header class="mega-head">
-                    <h3>Confiance et conformite</h3>
-                    <a href="/charte-ethique">Voir nos engagements</a>
-                  </header>
-                  <div class="mega-items">
-                    <a href="/charte-ethique" class="mega-item">
-                      <strong>Charte ethique</strong>
-                      <span>Notre cadre de confiance et nos engagements.</span>
-                    </a>
-                    <a href="/legal/cookies" class="mega-item">
-                      <strong>Politique cookies</strong>
-                      <span>Information claire sur le suivi et le consentement.</span>
-                    </a>
-                    <a href="/blog/tag/rgpd" class="mega-item">
-                      <strong>Guide RGPD</strong>
-                      <span>Les points essentiels pour petites structures.</span>
-                    </a>
-                    <a href="/contact" class="mega-item">
-                      <strong>Besoin d'aide</strong>
-                      <span>Posez vos questions a notre equipe.</span>
-                    </a>
-                  </div>
-                </section>
-
-                <section class="mega-section" data-panel="communaute">
-                  <header class="mega-head">
-                    <h3>Communaute Biscuits IA</h3>
-                    <a href="/rejoignez-nous">Nous rejoindre</a>
-                  </header>
-                  <div class="mega-items">
-                    <a href="/rejoignez-nous" class="mega-item">
-                      <strong>Devenir benevole</strong>
-                      <span>Contribuez a une IA utile, locale et inclusive.</span>
-                    </a>
-                    <a href="/trombinoscope" class="mega-item">
-                      <strong>Notre équipe</strong>
-                      <span>Découvrez les bénévoles et membres qui font vivre l'asso.</span>
-                    </a>
-                    <a href="/blog" class="mega-item">
-                      <strong>Blog pratique</strong>
-                      <span>Conseils simples, alertes et retours d'experience.</span>
-                    </a>
-                    <a href="/ressources" class="mega-item">
-                      <strong>Ressources et FAQ</strong>
-                      <span>Réponses rapides pour avancer sans blocage.</span>
-                    </a>
-                    <a href="/nos-missions" class="mega-item">
-                      <strong>Nos missions</strong>
-                      <span>Le numerique d'interet general, concret et humain.</span>
-                    </a>
-                  </div>
-                </section>
-
-                <section class="mega-section" data-panel="accompagnement">
-                  <header class="mega-head">
-                    <h3>Accompagnement</h3>
-                    <a href="/rdv">Prendre rendez-vous -&gt;</a>
-                  </header>
-                  <div class="mega-items">
                     <a href="/rdv" class="mega-item">
-                      <strong>Rendez-vous personnalise</strong>
-                      <span>Echange direct avec nos experts.</span>
+                      <strong>Diagnostic personnalise</strong>
+                      <span>Un echange de 20 minutes pour cadrer votre besoin.</span>
                     </a>
-                    <a href="/ateliers" class="mega-item">
-                      <strong>Ateliers terrain</strong>
-                      <span>Sessions en ligne et en presentiel selon vos besoins.</span>
+                    <a href="/ressources" class="mega-item">
+                      <strong>Ressources IA</strong>
+                      <span>Guides, checklists et modeles libres.</span>
                     </a>
-                    <a href="/contact" class="mega-item">
-                      <strong>Support</strong>
-                      <span>Nous vous aidons a choisir la bonne approche.</span>
+                  </div>
+                </section>
+
+                <section class="mega-section" data-panel="cyber">
+                  <header class="mega-head">
+                    <h3>Lutte cyber + aide victimes</h3>
+                    <a href="/piliers/cyber">Voir le pilier</a>
+                  </header>
+                  <div class="mega-items">
+                    <a href="/piliers/cyber" class="mega-item">
+                      <strong>Pilier 2 : Cyber</strong>
+                      <span>Arnaques, usurpation, harponnage : on accompagne les victimes.</span>
                     </a>
-                    <a href="/pourquoi-biscuits-ia" class="mega-item">
-                      <strong>Pourquoi Biscuits IA</strong>
-                      <span>Notre vision, notre methode, nos valeurs.</span>
+                    <a href="/aide-victimes" class="mega-item">
+                      <strong>Aide aux victimes</strong>
+                      <span>Procedure pas-a-pas, confidentialite, gratuit.</span>
+                    </a>
+                    <a href="/contact?sujet=signalement" class="mega-item">
+                      <strong>Signaler un contenu</strong>
+                      <span>PHAROS, 3018 : on vous aide a constituer le dossier.</span>
+                    </a>
+                    <a href="/combats/derives-numeriques" class="mega-item">
+                      <strong>Position editorial</strong>
+                      <span>Notre lecture des derives numeriques.</span>
+                    </a>
+                  </div>
+                </section>
+
+                <section class="mega-section" data-panel="logiciels">
+                  <header class="mega-head">
+                    <h3>Logiciels pour associations</h3>
+                    <a href="/piliers/logiciels">Voir le pilier</a>
+                  </header>
+                  <div class="mega-items">
+                    <a href="/piliers/logiciels" class="mega-item">
+                      <strong>Pilier 3 : Logiciels</strong>
+                      <span>Outils libres vendus aux associations engagees.</span>
+                    </a>
+                    <a href="/contact?sujet=devis-logiciel" class="mega-item">
+                      <strong>Devis logiciel</strong>
+                      <span>Vous avez un besoin specifique ? Decrivez-le.</span>
+                    </a>
+                    <a href="/projects-collaboratif" class="mega-item">
+                      <strong>Projets open source</strong>
+                      <span>Contribuez ou reutilisez nos projets.</span>
+                    </a>
+                  </div>
+                </section>
+
+                <section class="mega-section" data-panel="anti">
+                  <header class="mega-head">
+                    <h3>Anti Pepins</h3>
+                    <a href="/piliers/anti-pepins">Voir le pilier</a>
+                  </header>
+                  <div class="mega-items">
+                    <a href="/piliers/anti-pepins" class="mega-item">
+                      <strong>Pilier 4 : Anti Pepins</strong>
+                      <span>Service public gratuit d'analyse de messages suspects.</span>
+                    </a>
+                    <a href="https://anti-pepins.biscuits-ia.com/" class="mega-item">
+                      <strong>Ouvrir Anti Pepins</strong>
+                      <span>Collez un SMS, mail ou lien et obtenez un avis immediat.</span>
+                    </a>
+                    <a href="/contact?sujet=anti-pepins-wh" class="mega-item">
+                      <strong>Marque blanche</strong>
+                      <span>Deployez Anti Pepins sur votre domaine d'association.</span>
                     </a>
                   </div>
                 </section>
               </div>
             </div>
 
-            <ul class="mega-mobile-menu" role="menu" aria-label="Nos solutions en mobile">
-              <li role="none"><a role="menuitem" href="/projects-collaboratif" class="mega-mobile-link">Projets collaboratifs</a></li>
-              <li role="none"><a role="menuitem" href="/services" class="mega-mobile-link">Nos services</a></li>
-              <li role="none"><a role="menuitem" href="/ateliers" class="mega-mobile-link">Ateliers IA</a></li>
-              <li role="none"><a role="menuitem" href="/trombinoscope" class="mega-mobile-link">Notre équipe</a></li>
-              <li role="none"><a role="menuitem" href="/charte-ethique" class="mega-mobile-link">Confiance et conformite</a></li>
-              <li role="none"><a role="menuitem" href="/ressources" class="mega-mobile-link">Ressources</a></li>
+            <ul class="mega-mobile-menu" role="menu" aria-label="Nos piliers en mobile">
+              <li role="none"><a role="menuitem" href="/piliers/ia" class="mega-mobile-link">Pilier 1 : IA</a></li>
+              <li role="none"><a role="menuitem" href="/piliers/cyber" class="mega-mobile-link">Pilier 2 : Cyber + victimes</a></li>
+              <li role="none"><a role="menuitem" href="/piliers/logiciels" class="mega-mobile-link">Pilier 3 : Logiciels</a></li>
+              <li role="none"><a role="menuitem" href="/piliers/anti-pepins" class="mega-mobile-link">Pilier 4 : Anti Pepins</a></li>
+              <li role="none"><a role="menuitem" href="/aide-victimes" class="mega-mobile-link">Aide aux victimes</a></li>
+              <li role="none"><a role="menuitem" href="/ateliers" class="mega-mobile-link">Ateliers</a></li>
+          <li role="none"><a role="menuitem" href="/formations" class="mega-mobile-link">Formations</a></li>
               <li role="none"><a role="menuitem" href="/rdv" class="mega-mobile-link">Prendre rendez-vous</a></li>
             </ul>
           </div>
@@ -185,10 +178,10 @@ const isActive = (href: string) =>
         </li>
 
         <li class="nav-item" role="none">
-          <a href="/nos-missions" class={`nav-link ${isActive('/nos-missions') ? 'nav-link--active' : ''}`} role="menuitem">A propos</a>
+          <a href="/piliers" class={`nav-link ${isActive('/nos-missions') ? 'nav-link--active' : ''}`} role="menuitem">L'association</a>
         </li>
         <li class="nav-item" role="none">
-          <a href="/trombinoscope" class={`nav-link ${isActive('/trombinoscope') ? 'nav-link--active' : ''}`} role="menuitem">Notre équipe</a>
+          <a href="/trombinoscope" class={`nav-link ${isActive('/trombinoscope') ? 'nav-link--active' : ''}`} role="menuitem">L'equipe</a>
         </li>
         <li class="nav-item" role="none">
           <a href="/blog" class={`nav-link ${isActive('/blog') ? 'nav-link--active' : ''}`} role="menuitem">Blog</a>

@@ -1,0 +1,306 @@
+﻿---
+// src/components/PillarsGrid.astro
+// Grille des 4 piliers de l'association, reutilisable sur la home et la page /piliers.
+// Props: title, intro (optionnels) ; layout='home' (compact) | 'hub' (detaille).
+
+interface Props {
+  title?: string;
+  intro?: string;
+  layout?: 'home' | 'hub';
+  showCta?: boolean;
+}
+
+const {
+  title = 'Quatre piliers, une mission',
+  intro = 'Association Loi 1901, Biscuits IA agit sur quatre fronts complementaires pour rendre le numerique utile, sur et accessible a toutes les structures d\u0027interet general.',
+  layout = 'home',
+  showCta = true,
+} = Astro.props;
+
+interface Pillar {
+  id: string;
+  href: string;
+  label: string;
+  title: string;
+  description: string;
+  bullets: string[];
+  cta: string;
+  accent: string;
+}
+
+const pillars: Pillar[] = [
+  {
+    id: 'ia',
+    href: '/piliers/ia',
+    label: 'Pilier 1',
+    title: 'Accompagnement a l\u0027IA',
+    description: 'On aide les associations, collectivites et petites structures a comprendre et utiliser l\u0027intelligence artificielle de facon utile, ethique et autonome.',
+    bullets: [
+      'Ateliers pratiques en ligne et en presentiel',
+      'Diagnostic et feuille de route sur mesure',
+      'Ressources libres (guides, modeles, checklists)',
+    ],
+    cta: 'Decouvrir le pilier IA',
+    accent: 'ia',
+  },
+  {
+    id: 'cyber',
+    href: '/piliers/cyber',
+    label: 'Pilier 2',
+    title: 'Lutte contre la cybercriminalite',
+    description: 'On lutte contre les arnaques en ligne et la pedocriminalite. On accompagne les victimes d\u0027escroqueries, d\u0027usurpation d\u0027identite et de cybermalveillance.',
+    bullets: [
+      'Aide aux victimes (escroqueries, hameconnage, deepfakes)',
+      'Signalement des contenus pedocriminels (PHAROS, 3018)',
+      'Sensibilisation et mediation numerique gratuite',
+    ],
+    cta: 'Demander de l\u0027aide ou signaler',
+    accent: 'cyber',
+  },
+  {
+    id: 'logiciels',
+    href: '/piliers/logiciels',
+    label: 'Pilier 3',
+    title: 'Logiciels pour associations partenaires',
+    description: 'On concoit et vend des logiciels a destination d\u0027autres associations engagees (lutte contre les arnaques, Emmaus, accueil de victimes, etc.).',
+    bullets: [
+      'Outils libres, auditables, souverains',
+      'Licences associatives preferentielles',
+      'Maintenance et evolutions sur mesure',
+    ],
+    cta: 'Voir le catalogue',
+    accent: 'logiciels',
+  },
+  {
+    id: 'anti-pepins',
+    href: '/piliers/anti-pepins',
+    label: 'Pilier 4',
+    title: 'Anti Pepins - detecteur d\u0027arnaques',
+    description: 'Le service public de Biscuits IA : un analyseur de messages suspects (SMS, mails, liens) gratuit pour le grand public et les associations.',
+    bullets: [
+      'Analyse de SMS, e-mails et liens en quelques secondes',
+      'Base de signaux mise a jour par la communaute',
+      'Accessible sur anti-pepins.biscuits-ia.com',
+    ],
+    cta: 'Essayer Anti Pepins',
+    accent: 'anti-pepins',
+  },
+];
+---
+
+<section class="pillars-section" data-layout={layout} aria-labelledby="pillars-title">
+  <div class="pillars-inner">
+    <header class="pillars-header">
+      <p class="pillars-eyebrow">Nos piliers</p>
+      <h2 id="pillars-title">{title}</h2>
+      <p class="pillars-intro">{intro}</p>
+    </header>
+
+    <div class="pillars-grid">
+      {pillars.map((p) => (
+        <article class="pillar-card" data-accent={p.accent}>
+          <div class="pillar-badge" aria-hidden="true">
+            <span class="pillar-number">{p.label}</span>
+          </div>
+          <h3 class="pillar-title">{p.title}</h3>
+          <p class="pillar-desc">{p.description}</p>
+          <ul class="pillar-bullets">
+            {p.bullets.map((b) => (
+              <li>{b}</li>
+            ))}
+          </ul>
+          <a href={p.href} class="pillar-cta">
+            {p.cta}
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </a>
+        </article>
+      ))}
+    </div>
+
+    {showCta && (
+      <div class="pillars-foot">
+        <a href="/piliers" class="pillars-foot-cta">Voir tous nos piliers et nos engagements</a>
+      </div>
+    )}
+  </div>
+</section>
+
+<style>
+  .pillars-section {
+    padding: 5rem 1.5rem;
+    background: var(--color-bg);
+  }
+
+  .pillars-inner {
+    max-width: var(--container-2xl, 1200px);
+    margin: 0 auto;
+  }
+
+  .pillars-header {
+    text-align: center;
+    margin-bottom: 3rem;
+    max-width: 720px;
+    margin-inline: auto;
+  }
+
+  .pillars-eyebrow {
+    font-size: 0.85rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--color-primary);
+    margin-bottom: 0.75rem;
+  }
+
+  .pillars-header h2 {
+    font-size: clamp(1.8rem, 4vw, 2.6rem);
+    font-weight: 900;
+    margin: 0 0 1rem;
+    color: var(--color-text);
+    line-height: 1.15;
+  }
+
+  .pillars-intro {
+    color: var(--color-text-light);
+    font-size: 1.05rem;
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  .pillars-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
+    gap: 1.5rem;
+  }
+
+  .pillar-card {
+    background: var(--color-bg-elevated);
+    border: 2px solid var(--color-border);
+    padding: 1.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    position: relative;
+  }
+
+  .pillar-card:hover,
+  .pillar-card:focus-within {
+    transform: translateY(-4px);
+    border-color: var(--color-primary);
+    box-shadow: 6px 6px 0 var(--color-border);
+  }
+
+  .pillar-card[data-accent="ia"] .pillar-badge { background: var(--color-secondary); }
+  .pillar-card[data-accent="cyber"] .pillar-badge { background: #c0392b; color: #fff; }
+  .pillar-card[data-accent="logiciels"] .pillar-badge { background: var(--color-first); }
+  .pillar-card[data-accent="anti-pepins"] .pillar-badge { background: var(--color-accent-caramel); color: var(--color-gray-900); }
+
+  .pillar-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.3rem 0.65rem;
+    font-size: 0.72rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--color-gray-900);
+    align-self: flex-start;
+  }
+
+  .pillar-title {
+    font-size: 1.35rem;
+    font-weight: 800;
+    margin: 0;
+    color: var(--color-text);
+    line-height: 1.2;
+  }
+
+  .pillar-desc {
+    color: var(--color-text-light);
+    line-height: 1.55;
+    margin: 0;
+    font-size: 0.95rem;
+  }
+
+  .pillar-bullets {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+    font-size: 0.9rem;
+    color: var(--color-text);
+  }
+
+  .pillar-bullets li {
+    position: relative;
+    padding-left: 1.1rem;
+    line-height: 1.45;
+  }
+
+  .pillar-bullets li::before {
+    content: '\2192';
+    position: absolute;
+    left: 0;
+    color: var(--color-primary);
+    font-weight: 700;
+  }
+
+  .pillar-cta {
+    margin-top: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    align-self: flex-start;
+    padding: 0.55rem 1rem;
+    background: var(--color-primary);
+    color: var(--color-bg-elevated);
+    font-weight: 700;
+    font-size: 0.9rem;
+    text-decoration: none;
+    border: 2px solid var(--color-border);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .pillar-cta:hover,
+  .pillar-cta:focus-visible {
+    transform: translate(-2px, -2px);
+    box-shadow: 4px 4px 0 var(--color-border);
+    color: var(--color-bg-elevated);
+  }
+
+  .pillar-cta:focus-visible {
+    outline: 2px solid var(--color-text);
+    outline-offset: 3px;
+  }
+
+  .pillars-foot {
+    text-align: center;
+    margin-top: 2.5rem;
+  }
+
+  .pillars-foot-cta {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    background: var(--color-bg-alt);
+    color: var(--color-text);
+    font-weight: 700;
+    border: 2px solid var(--color-border);
+    text-decoration: none;
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+
+  .pillars-foot-cta:hover {
+    background: var(--color-primary);
+    color: var(--color-bg-elevated);
+  }
+
+  [data-layout="hub"] .pillars-section {
+    padding-block: 3rem;
+  }
+</style>

@@ -1,0 +1,283 @@
+﻿---
+// src/pages/piliers/ia.astro
+// Pilier 1 : accompagnement a l'IA pour associations, collectivites, TPE/PME.
+
+export const prerender = true;
+
+import Layout from '@/layouts/Layout.astro';
+import Breadcrumb from '@/components/Breadcrumb.astro';
+
+const schema = {
+  type: 'Service' as const,
+  data: {
+    serviceType: 'Accompagnement IA',
+    name: 'Accompagnement a l\'intelligence artificielle',
+    description: 'Ateliers, diagnostic, feuilles de route et accompagnement personnalise pour aider les associations, collectivites et PME a s\'approprier l\'IA de facon utile et ethique.',
+  },
+};
+---
+
+<Layout
+  title="Accompagnement a l'IA | Pilier 1 | Biscuits IA"
+  description="Decouvrez notre pilier IA : ateliers, diagnostics, feuilles de route, logiciels libres. On aide les associations, collectivites et petites structures a s'approprier l'IA."
+  schema={schema}
+>
+  <Breadcrumb />
+
+  <section class="pilier-hero">
+    <div class="container">
+      <p class="eyebrow">Pilier 1</p>
+      <h1>Accompagner les structures dans la prise en main de l'IA</h1>
+      <p class="lead">
+        Notre premier pilier de mission : rendre l'intelligence artificielle accessible, utile et ethique pour les associations, collectivites, TPE et PME qui n'ont ni le temps ni le budget de se perdre dans le jargon marketing.
+      </p>
+      <div class="hero-cta">
+        <a href="/ateliers" class="btn-primary">Voir les prochains ateliers</a>
+        <a href="/rdv" class="btn-ghost">Demander un diagnostic</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="content">
+    <div class="container">
+      <h2>Ce que nous faisons concretement</h2>
+      <div class="grid">
+        <article class="card">
+          <h3>Ateliers pratiques</h3>
+          <p>Des sessions courtes (2h a 4h) pour comprendre les bases, tester les outils et repartir avec une methode. En ligne ou en presentiel (Poitiers, villes partenaires).</p>
+          <a href="/ateliers">Decouvrir les ateliers</a>
+        </article>
+        <article class="card">
+          <h3>Diagnostic et feuille de route</h3>
+          <p>Un echange individuel pour comprendre vos besoins reels, identifier les outils adaptes etablir un plan d'action concret, a votre rythme.</p>
+          <a href="/rdv">Prendre rendez-vous</a>
+        </article>
+        <article class="card">
+          <h3>Ressources libres</h3>
+          <p>Guides pratiques, checklists, modeles et tutoriels en libre acces pour vous approprier l'IA sans dependre d'un prestataire.</p>
+          <a href="/ressources">Acceder aux ressources</a>
+        </article>
+        <article class="card">
+          <h3>Logiciels libres adaptes</h3>
+          <p>Pour les structures qui ont besoin d'aller plus loin, nous developpons ou integrons des outils libres (RAG, chatbots, automatisations) avec documentation et formation.</p>
+          <a href="/piliers/logiciels">Voir le pilier Logiciels</a>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="values">
+    <div class="container">
+      <h2>Nos principes d'accompagnement</h2>
+      <ul>
+        <li><strong>Pas de jargon.</strong> On parle comme des humains, pas comme des brochures marketing.</li>
+        <li><strong>Pas de dependance.</strong> Notre objectif : que vous n'ayez plus besoin de nous pour le quotidien.</li>
+        <li><strong>Pas de gadgets.</strong> Avant toute solution, on verifie qu'elle repond a un vrai probleme.</li>
+        <li><strong>Toujours avec votre RGPD.</strong> On vous explique ce que les outils font de vos donnees, en clair.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="cta-final">
+    <div class="container">
+      <h2>On en parle ?</h2>
+      <p>Le plus simple est un echange de 20 minutes pour cadrer votre besoin. C'est gratuit, et sans engagement.</p>
+      <div class="cta-actions">
+        <a href="/rdv" class="btn-primary">Prendre rendez-vous</a>
+        <a href="/contact" class="btn-ghost">Nous ecrire</a>
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .pilier-hero {
+    padding: 5rem 1.5rem 3rem;
+    background: linear-gradient(180deg, var(--color-bg) 0%, var(--color-bg-alt) 100%);
+    text-align: center;
+  }
+
+  .pilier-hero .container {
+    max-width: 880px;
+    margin: 0 auto;
+  }
+
+  .eyebrow {
+    font-size: 0.85rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--color-primary);
+    margin-bottom: 0.75rem;
+  }
+
+  .pilier-hero h1 {
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 900;
+    margin: 0 0 1rem;
+    color: var(--color-text);
+    line-height: 1.15;
+  }
+
+  .lead {
+    color: var(--color-text-light);
+    font-size: 1.1rem;
+    line-height: 1.6;
+    margin: 0 0 2rem;
+  }
+
+  .hero-cta {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .btn-primary {
+    display: inline-block;
+    padding: 0.85rem 1.5rem;
+    background: var(--color-primary);
+    color: var(--color-bg-elevated);
+    border: 2px solid var(--color-border);
+    font-weight: 800;
+    text-decoration: none;
+  }
+
+  .btn-primary:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 4px 4px 0 var(--color-border);
+  }
+
+  .btn-ghost {
+    display: inline-block;
+    padding: 0.85rem 1.5rem;
+    background: transparent;
+    color: var(--color-text);
+    border: 2px solid var(--color-border);
+    text-decoration: none;
+    font-weight: 700;
+  }
+
+  .btn-ghost:hover {
+    background: var(--color-bg-elevated);
+  }
+
+  .content {
+    padding: 4rem 1.5rem;
+    background: var(--color-bg);
+  }
+
+  .content .container {
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .content h2 {
+    text-align: center;
+    font-size: clamp(1.6rem, 3vw, 2.2rem);
+    margin: 0 0 2rem;
+    color: var(--color-text);
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
+    gap: 1.5rem;
+  }
+
+  .card {
+    background: var(--color-bg-elevated);
+    border: 2px solid var(--color-border);
+    padding: 1.5rem;
+  }
+
+  .card h3 {
+    font-size: 1.15rem;
+    font-weight: 800;
+    margin: 0 0 0.5rem;
+    color: var(--color-text);
+  }
+
+  .card p {
+    color: var(--color-text-light);
+    line-height: 1.55;
+    margin: 0 0 0.75rem;
+  }
+
+  .card a {
+    display: inline-block;
+    color: var(--color-primary);
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .card a:hover {
+    text-decoration: underline;
+  }
+
+  .values {
+    padding: 4rem 1.5rem;
+    background: var(--color-bg-alt);
+  }
+
+  .values .container {
+    max-width: 820px;
+    margin: 0 auto;
+  }
+
+  .values h2 {
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    margin: 0 0 1.5rem;
+    color: var(--color-text);
+  }
+
+  .values ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+  }
+
+  .values li {
+    color: var(--color-text);
+    line-height: 1.55;
+    padding: 0.85rem 1rem;
+    background: var(--color-bg-elevated);
+    border-left: 4px solid var(--color-primary);
+  }
+
+  .values strong {
+    color: var(--color-primary);
+  }
+
+  .cta-final {
+    padding: 4rem 1.5rem 5rem;
+    background: var(--color-bg);
+    text-align: center;
+  }
+
+  .cta-final .container {
+    max-width: 720px;
+    margin: 0 auto;
+  }
+
+  .cta-final h2 {
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    margin: 0 0 0.75rem;
+    color: var(--color-text);
+  }
+
+  .cta-final p {
+    color: var(--color-text-light);
+    margin: 0 0 1.5rem;
+  }
+
+  .cta-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+</style>

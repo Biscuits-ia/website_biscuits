@@ -1,0 +1,370 @@
+﻿---
+// src/pages/public/associations.astro
+// Landing dediee aux associations (Loi 1901, collectifs, ONG).
+
+export const prerender = true;
+
+import Layout from '@/layouts/Layout.astro';
+import Breadcrumb from '@/components/Breadcrumb.astro';
+
+const schema = {
+  type: 'WebPage' as const,
+  data: {
+    name: 'Biscuits IA pour les associations',
+    description: 'Biscuits IA aide les associations a s\'approprier l\'IA, a proteger leurs adherents, et a beneficier de logiciels libres adaptes. Ateliers, diagnostics, ressources gratuites.',
+  },
+};
+---
+
+<Layout
+  title="Solutions pour les associations | Biscuits IA"
+  description="Vous etes une association Loi 1901, un collectif, une ONG ? Decouvrez comment Biscuits IA vous aide : ateliers IA gratuits, accompagnement, outils libres et protection anti-arnaques."
+  schema={schema}
+>
+  <Breadcrumb />
+
+  <section class="lp-hero">
+    <div class="container">
+      <p class="lp-eyebrow">Vous etes une association, un collectif, une ONG</p>
+      <h1>Vos missions meritent les bons outils numeriques</h1>
+      <p class="lp-lead">
+        Association Loi 1901, collectif benevole, ONG : on vous aide a reprendre la main sur votre numerique, sans jargon, sans lock-in, et sans exploser votre budget. Ateliers IA, accompagnement humain, outils libres, protection anti-arnaques : tout est concu pour les structures a but non lucratif.
+      </p>
+      <div class="lp-cta">
+        <a href="/ateliers" class="btn-primary">Voir les ateliers</a>
+        <a href="/rdv" class="btn-ghost">Prendre rendez-vous</a>
+        <a href="/contact?sujet=association" class="btn-ghost">Nous contacter</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="lp-problems">
+    <div class="container">
+      <h2>Ce qu'on rencontre le plus souvent</h2>
+      <div class="problem-grid">
+        <article class="problem-card">
+          <h3>Trop de temps sur l'administratif</h3>
+          <p>Comptes-rendus, mails-types, gestion des adherents, suivi des subventions. Vous passez plus de temps sur l'admin que sur votre mission.</p>
+          <p class="problem-fix"><strong>Solution :</strong> atelier IA &quot;gagner 5h par semaine sur l'administratif&quot; (4h, 100 EUR ou prix libre).</p>
+        </article>
+        <article class="problem-card">
+          <h3>Des outils qui vous piegent</h3>
+          <p>Vous avez souscrit a un outil gratuit, le prix a explose, vous n'arrivez plus a migrer. Lock-in etudiant ou professionnel.</p>
+          <p class="problem-fix"><strong>Solution :</strong> diagnostic de votre stack, identification d'alternatives libres, migration assistee.</p>
+        </article>
+        <article class="problem-card">
+          <h3>Des benevoles qui se font avoir</h3>
+          <p>Faux president, phishing president, fausses cagnottes : les arnaques visent en priorite les assos et leurs benevoles.</p>
+          <p class="problem-fix"><strong>Solution :</strong> atelier &quot;reconnaitre les arnaques qui visent les assos&quot; + deploiement d'Anti Pepins.</p>
+        </article>
+        <article class="problem-card">
+          <h3>Un site web qui dort</h3>
+          <p>Votre site a ete fait par un etudiant il y a 5 ans, vous ne pouvez plus le modifier, il reflete plus votre mission.</p>
+          <p class="problem-fix"><strong>Solution :</strong> refonte ou migration vers un CMS libre que vous pouvez maintenir vous-memes.</p>
+        </article>
+        <article class="problem-card">
+          <h3>Une communaute a animer en ligne</h3>
+          <p>Vous voulez envoyer des newsletters, moderer un groupe, creer des evenements, mais sans ceder les donnees de vos adherents a Big Tech.</p>
+          <p class="problem-fix"><strong>Solution :</strong> Suite associative (pilier 3) ou integration d'outils libres (Mailtrain, Mobilizon, etc.).</p>
+        </article>
+        <article class="problem-card">
+          <h3>Pas le temps d'apprendre</h3>
+          <p>Vous savez que l'IA peut aider, mais prendre 3 jours de formation c'est incompatible avec votre planning.</p>
+          <p class="problem-fix"><strong>Solution :</strong> diagnostic de 20 minutes + plan d'action en 1 page, adapte a votre temps reel.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="lp-solutions">
+    <div class="container">
+      <h2>Ce qu'on vous propose concretement</h2>
+      <div class="solution-grid">
+        <article class="solution-card">
+          <h3>Ateliers decouverte (2 a 4h)</h3>
+          <p>Demystifier l'IA, tester les outils adaptes a votre structure, repartir avec une fiche pratique. En ligne ou en presentiel.</p>
+          <p class="solution-price">A partir de 100 EUR (prix libre pour les tres petites assos).</p>
+          <a href="/ateliers" class="solution-cta">Voir le catalogue</a>
+        </article>
+        <article class="solution-card">
+          <h3>Diagnostic personnalise</h3>
+          <p>Un echange de 20 a 60 minutes avec un benevole expert : on regarde vos outils actuels, on identifie 2-3 actions concretes a court terme.</p>
+          <p class="solution-price">Gratuit.</p>
+          <a href="/rdv" class="solution-cta">Prendre rendez-vous</a>
+        </article>
+        <article class="solution-card">
+          <h3>Ressources libres</h3>
+          <p>Guides pratiques, checklists, modeles de documents, tutoriels. Tout est en libre acces et adaptable a votre charte.</p>
+          <p class="solution-price">Gratuit.</p>
+          <a href="/ressources" class="solution-cta">Acceder aux ressources</a>
+        </article>
+        <article class="solution-card">
+          <h3>Suite associative (pilier 3)</h3>
+          <p>Outil modulaire concu par et pour des assos : benevolat, beneficiaires, RDV, documentation. Hebergement gere ou self-hosted.</p>
+          <p class="solution-price">Hebergement gere : a partir de 50 EUR/mois pour petite asso.</p>
+          <a href="/contact?sujet=suite-associative" class="solution-cta">Rejoindre la beta</a>
+        </article>
+        <article class="solution-card">
+          <h3>Anti Pepins pour votre asso</h3>
+          <p>Deploiement du detecteur d'arnaques sur votre propre domaine, avec vos couleurs. Protegez vos adherents et votre communaute.</p>
+          <p class="solution-price">Marque blanche : 500 EUR/an (offre associative).</p>
+          <a href="/anti-pepins" class="solution-cta">Decouvrir Anti Pepins</a>
+        </article>
+        <article class="solution-card">
+          <h3>Mediation en cas d'arnaque</h3>
+          <p>Votre asso, vos benevoles ou vos adherent-e-s sont victimes d'une escroquerie ? On aide a signaler et a reprendre la main.</p>
+          <p class="solution-price">Gratuit, en partenariat avec les assos specialisees.</p>
+          <a href="/aide-victimes" class="solution-cta">Procedure d'aide</a>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="lp-testimonials">
+    <div class="container">
+      <h2>Ce qu'en disent les assos qui nous ont fait confiance</h2>
+      <div class="testimonial-grid">
+        <article class="testimonial">
+          <p class="testimonial-quote">&quot;On a economise 15h par mois sur l'administratif grace a un atelier IA. Le plus beau, c'est qu'on l'a mis en place sans prestataire : on a appris a le faire nous-memes.&quot;</p>
+          <p class="testimonial-author">-- Coordinatrice, association d'insertion (Nouvelle-Aquitaine)</p>
+        </article>
+        <article class="testimonial">
+          <p class="testimonial-quote">&quot;Biscuits IA nous a aide a reprendre la main sur notre site internet. Avant, on payait 80 euros par mois pour un site qu'on ne pouvait pas modifier. Aujourd'hui on heberge nous-memes.&quot;</p>
+          <p class="testimonial-author">-- President, collectif benevole (Pays de la Loire)</p>
+        </article>
+        <article class="testimonial">
+          <p class="testimonial-quote">&quot;Une de nos benevoles s'est faite avoir par un phishing. L'equipe a pris le temps de l'aider a signaler, de changer ses mots de passe, et de prevenir le reste de l'equipe. Gratuitement, sans jugement.&quot;</p>
+          <p class="testimonial-author">-- Coordinatrice, association de lutte contre la precarite numerique</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="lp-cta-final">
+    <div class="container">
+      <h2>On en discute ?</h2>
+      <p>Le plus simple : un echange de 20 minutes avec un membre de l'equipe pour cadrer votre besoin. C'est gratuit, et sans engagement.</p>
+      <div class="lp-cta-buttons">
+        <a href="/rdv" class="btn-primary">Prendre rendez-vous</a>
+        <a href="/contact?sujet=association" class="btn-ghost">Nous ecrire</a>
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .lp-hero {
+    padding: 5rem 1.5rem 3rem;
+    background: linear-gradient(180deg, var(--color-bg) 0%, var(--color-bg-alt) 100%);
+    text-align: center;
+  }
+
+  .lp-hero .container {
+    max-width: 880px;
+    margin: 0 auto;
+  }
+
+  .lp-eyebrow {
+    font-size: 0.85rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--color-secondary);
+    margin-bottom: 0.75rem;
+  }
+
+  .lp-hero h1 {
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 900;
+    margin: 0 0 1rem;
+    color: var(--color-text);
+    line-height: 1.15;
+  }
+
+  .lp-lead {
+    color: var(--color-text-light);
+    font-size: 1.1rem;
+    line-height: 1.6;
+    margin: 0 0 2rem;
+  }
+
+  .lp-cta {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .btn-primary {
+    display: inline-block;
+    padding: 0.85rem 1.5rem;
+    background: var(--color-primary);
+    color: var(--color-bg-elevated);
+    font-weight: 800;
+    border: 2px solid var(--color-border);
+    text-decoration: none;
+  }
+
+  .btn-primary:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 4px 4px 0 var(--color-border);
+    color: var(--color-bg-elevated);
+  }
+
+  .btn-ghost {
+    display: inline-block;
+    padding: 0.85rem 1.5rem;
+    background: transparent;
+    color: var(--color-text);
+    font-weight: 700;
+    border: 2px solid var(--color-border);
+    text-decoration: none;
+  }
+
+  .btn-ghost:hover {
+    background: var(--color-bg-elevated);
+  }
+
+  .lp-problems,
+  .lp-solutions,
+  .lp-testimonials {
+    padding: 4rem 1.5rem;
+  }
+
+  .lp-problems {
+    background: var(--color-bg);
+  }
+
+  .lp-solutions {
+    background: var(--color-bg-alt);
+  }
+
+  .lp-testimonials {
+    background: var(--color-bg);
+  }
+
+  .lp-problems .container,
+  .lp-solutions .container,
+  .lp-testimonials .container {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .lp-problems h2,
+  .lp-solutions h2,
+  .lp-testimonials h2 {
+    text-align: center;
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    color: var(--color-text);
+    margin: 0 0 2rem;
+  }
+
+  .problem-grid,
+  .solution-grid,
+  .testimonial-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr));
+    gap: 1.5rem;
+  }
+
+  .problem-card,
+  .solution-card,
+  .testimonial {
+    background: var(--color-bg-elevated);
+    border: 2px solid var(--color-border);
+    padding: 1.5rem;
+  }
+
+  .problem-card h3,
+  .solution-card h3 {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: var(--color-text);
+    margin: 0 0 0.5rem;
+  }
+
+  .problem-card p,
+  .solution-card p {
+    color: var(--color-text-light);
+    line-height: 1.55;
+    margin: 0 0 0.5rem;
+  }
+
+  .problem-fix {
+    margin-top: 0.85rem;
+    padding-top: 0.85rem;
+    border-top: 1px dashed var(--color-border);
+    font-size: 0.95rem;
+  }
+
+  .problem-fix strong {
+    color: var(--color-secondary);
+  }
+
+  .solution-price {
+    font-size: 0.95rem;
+    color: var(--color-first);
+    font-weight: 700;
+  }
+
+  .solution-cta {
+    display: inline-block;
+    margin-top: 0.5rem;
+    padding: 0.6rem 1.1rem;
+    background: var(--color-bg);
+    color: var(--color-text);
+    font-weight: 700;
+    border: 2px solid var(--color-border);
+    text-decoration: none;
+    font-size: 0.9rem;
+  }
+
+  .solution-cta:hover {
+    background: var(--color-primary);
+    color: var(--color-bg-elevated);
+  }
+
+  .testimonial-quote {
+    color: var(--color-text);
+    font-style: italic;
+    line-height: 1.6;
+    margin: 0 0 0.85rem;
+  }
+
+  .testimonial-author {
+    color: var(--color-text-light);
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin: 0;
+  }
+
+  .lp-cta-final {
+    padding: 4rem 1.5rem 5rem;
+    background: var(--color-bg-alt);
+    text-align: center;
+  }
+
+  .lp-cta-final .container {
+    max-width: 760px;
+    margin: 0 auto;
+  }
+
+  .lp-cta-final h2 {
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    color: var(--color-text);
+    margin: 0 0 0.75rem;
+  }
+
+  .lp-cta-final p {
+    color: var(--color-text-light);
+    line-height: 1.6;
+    margin: 0 0 1.5rem;
+  }
+
+  .lp-cta-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+</style>

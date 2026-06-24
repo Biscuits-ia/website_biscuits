@@ -1,0 +1,587 @@
+﻿---
+// src/pages/anti-pepins.astro
+// Page dediee au service public Anti Pepins. Pilier 4.
+
+export const prerender = true;
+
+import Layout from '@/layouts/Layout.astro';
+import Breadcrumb from '@/components/Breadcrumb.astro';
+
+const schema = {
+  type: 'WebPage' as const,
+  data: {
+    name: 'Anti Pepins - Biscuits IA',
+    description: 'Anti Pepins : service public gratuit pour analyser un message suspect (SMS, e-mail, lien) et obtenir un avis immediat. Edite par Biscuits IA.',
+  },
+};
+---
+
+<Layout
+  title="Anti Pepins : analysez vos messages suspects | Biscuits IA"
+  description="Vous avez recu un SMS, un e-mail ou un lien suspect ? Collez-le dans Anti Pepins, on vous dit en quelques secondes s'il s'agit d'une arnaque. Service public gratuit edite par Biscuits IA."
+  schema={schema}
+>
+  <Breadcrumb />
+
+  <section class="ap-hero">
+    <div class="container">
+      <p class="eyebrow">Pilier 4 - Service public</p>
+      <h1>Anti Pepins</h1>
+      <p class="lead">
+        Un SMS douteux, un mail suspect, un lien inconnu : collez-le dans Anti Pepins, on vous dit en quelques secondes si c'est une arnaque. <strong>Gratuit, anonyme, sans inscription.</strong>
+      </p>
+      <div class="hero-cta">
+        <a href="https://anti-pepins.biscuits-ia.com/" class="btn-primary" rel="noopener noreferrer" target="_blank">
+          Ouvrir Anti Pepins
+          <span class="ext" aria-hidden="true">↗</span>
+        </a>
+        <a href="#comment-ca-marche" class="btn-ghost">Comment ca marche</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="trust">
+    <div class="container">
+      <div class="trust-grid">
+        <div class="trust-item">
+          <span class="trust-number">100%</span>
+          <span class="trust-label">Gratuit, sans pub, sans inscription</span>
+        </div>
+        <div class="trust-item">
+          <span class="trust-number">0</span>
+          <span class="trust-label">Donnee stockee ou revendue</span>
+        </div>
+        <div class="trust-item">
+          <span class="trust-number">5s</span>
+          <span class="trust-label">Temps moyen d'analyse</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="how" id="comment-ca-marche">
+    <div class="container">
+      <h2>Comment ca marche</h2>
+      <div class="how-steps">
+        <article class="how-step">
+          <span class="how-num">1</span>
+          <h3>Vous collez le message</h3>
+          <p>SMS douteux, mail suspect, lien inconnu : copiez-collez le contenu (ou l'URL) dans le champ d'analyse d'Anti Pepins.</p>
+        </article>
+        <article class="how-step">
+          <span class="how-num">2</span>
+          <h3>On analyse les signaux</h3>
+          <p>Anti Pepins verifie : domaine, presence dans la base de signalements, patterns connus (phishing, smishing, fausse livraison, faux support, etc.).</p>
+        </article>
+        <article class="how-step">
+          <span class="how-num">3</span>
+          <h3>On vous dit quoi faire</h3>
+          <p>Resultat clair : arnaque probable, douteux, ou probablement legitime. Et les bons reflexes a adopter (supprimer, signaler, ne pas cliquer).</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="examples">
+    <div class="container">
+      <h2>Ce qu'Anti Pepins detecte</h2>
+      <div class="example-grid">
+        <article class="example-card">
+          <h3>Phishing bancaire</h3>
+          <p>Mail imitant votre banque, votre impots, la CAF, l'Assurance Maladie, avec un lien vers un faux site qui copie la charte graphique officielle.</p>
+        </article>
+        <article class="example-card">
+          <h3>Smishing de livraison</h3>
+          <p>SMS de La Poste, Chronopost, DPD, FedEx vous demandant de payer des frais supplementaires pour un colis que vous n'attendez pas.</p>
+        </article>
+        <article class="example-card">
+          <h3>Faux support technique</h3>
+          <p>Pop-up Windows / Apple / Norton vous signalant un virus et vous demandant d'appeler un numero surtaxe.</p>
+        </article>
+        <article class="example-card">
+          <h3>Fausse offre d'emploi</h3>
+          <p>Mail promettant un job facile et bien paye, demandant de payer une formation ou de fournir des coordonnees bancaires.</p>
+        </article>
+        <article class="example-card">
+          <h3>Hameconnage sentimental</h3>
+          <p>Messages d'un "interesse romantique" qui finit par demander de l'argent, une aide d'urgence, ou des coordonnees.</p>
+        </article>
+        <article class="example-card">
+          <h3>Arnaque au president</h3>
+          <p>Mail d'un "dirigeant" pressant de faire un virement urgent et confidentiel, depuis une adresse presque identique a la vraie.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="privacy">
+    <div class="container">
+      <div class="privacy-card">
+        <h2>Vie privee : ce qu'on ne fait pas</h2>
+        <ul>
+          <li><strong>Aucun message n'est stocke</strong> apres analyse. Ils sont analyses a la volee puis oublies.</li>
+          <li><strong>Aucune donnee envoyee a un tiers.</strong> Ni Google Analytics sur la page d'analyse, ni SDK tiers, rien.</li>
+          <li><strong>Aucun cookie de tracking</strong> n'est pose sur anti-pepins.biscuits-ia.com.</li>
+          <li><strong>Aucun modele IA externe</strong> n'est appele avec vos messages. L'analyse repose sur une base de signaux interne.</li>
+          <li><strong>Aucun compte requis.</strong> Pas d'email, pas de nom, pas de cookie.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="community">
+    <div class="container">
+      <h2>Vous avez recu une nouvelle arnaque ?</h2>
+      <p>
+        Si vous avez detecte un message qui n'est pas encore reference dans la base d'Anti Pepins, vous pouvez nous le signaler. Notre equipe verifie, deduplique avec les cas connus, puis ajoute le pattern a la detection. Vous contribuez ainsi a proteger les autres utilisateurs.
+      </p>
+      <a href="/contact?sujet=signalement-anti-pepins" class="btn-primary">Proposer un signalement</a>
+    </div>
+  </section>
+
+  <section class="white-label">
+    <div class="container">
+      <div class="wl-card">
+        <h2>Anti Pepins en marque blanche pour votre association</h2>
+        <p>
+          Vous etes une association de lutte contre les arnaques, un CCAS, une collectivite ? Vous pouvez deployer Anti Pepins sur votre propre domaine, avec vos couleurs et votre charte. La base de signaux est mise a jour quotidiennement, vous beneficiez du support de notre equipe.
+        </p>
+        <ul class="wl-feats">
+          <li>Deploiement sur votre nom de domaine (votre-asso.fr/anti-pepins)</li>
+          <li>Charte graphique adaptee (logo, couleurs)</li>
+          <li>Statistiques anonymisees sur les arnaques detectees chez vos usagers</li>
+          <li>Maintenance, mises a jour de la base de signaux, support inclus</li>
+        </ul>
+        <p class="wl-price">
+          <strong>Tarif associatif :</strong> 500 € / an (installe, heberge, maintenu). Tarif structure publique : sur devis.
+        </p>
+        <a href="/contact?sujet=anti-pepins-wh" class="btn-primary">Demander un devis marque blanche</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="ressources">
+    <div class="container">
+      <h2>Pour aller plus loin</h2>
+      <ul class="r-list">
+        <li><a href="/aide-victimes">Vous etes victime d'une arnaque ?</a> Procedure pas-a-pas et formulaire d'aide.</li>
+        <li><a href="/ressources">Ressources anti-arnaques</a> : guides, checklists, tutoriels.</li>
+        <li><a href="/blog">Articles du blog</a> sur les arnaques recentes (deepfakes, arnaque au president IA, etc.).</li>
+        <li><a href="/piliers/logiciels">Decouvrir notre pilier Logiciels</a> pour comprendre comment Anti Pepins finance l'association.</li>
+      </ul>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .ap-hero {
+    padding: 5rem 1.5rem 3rem;
+    background: linear-gradient(135deg, var(--color-accent-caramel), var(--color-secondary));
+    color: var(--color-bg-elevated);
+    text-align: center;
+  }
+
+  .ap-hero .container {
+    max-width: 880px;
+    margin: 0 auto;
+  }
+
+  .eyebrow {
+    font-size: 0.85rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--color-bg-elevated);
+    background: rgba(0, 0, 0, 0.18);
+    padding: 0.3rem 0.75rem;
+    display: inline-block;
+    margin-bottom: 1rem;
+  }
+
+  .ap-hero h1 {
+    font-size: clamp(2.5rem, 6vw, 4rem);
+    font-weight: 900;
+    margin: 0 0 1rem;
+    color: var(--color-bg-elevated);
+    line-height: 1.05;
+  }
+
+  .lead {
+    color: var(--color-bg-elevated);
+    font-size: 1.1rem;
+    line-height: 1.6;
+    margin: 0 0 2rem;
+    opacity: 0.95;
+  }
+
+  .lead strong {
+    text-decoration: underline;
+  }
+
+  .hero-cta {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 1rem 1.75rem;
+    background: var(--color-bg-elevated);
+    color: var(--color-text);
+    font-weight: 800;
+    font-size: 1.05rem;
+    border: 2px solid var(--color-border);
+    text-decoration: none;
+    box-shadow: 5px 5px 0 rgba(0, 0, 0, 0.3);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .btn-primary:hover {
+    transform: translate(-3px, -3px);
+    box-shadow: 8px 8px 0 rgba(0, 0, 0, 0.3);
+    color: var(--color-text);
+  }
+
+  .ext {
+    font-size: 0.9em;
+  }
+
+  .btn-ghost {
+    display: inline-block;
+    padding: 1rem 1.75rem;
+    background: transparent;
+    color: var(--color-bg-elevated);
+    font-weight: 700;
+    border: 2px solid var(--color-bg-elevated);
+    text-decoration: none;
+  }
+
+  .btn-ghost:hover {
+    background: rgba(255, 255, 255, 0.15);
+  }
+
+  .trust {
+    padding: 2.5rem 1.5rem;
+    background: var(--color-bg);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .trust .container {
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .trust-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr));
+    gap: 1.5rem;
+    text-align: center;
+  }
+
+  .trust-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .trust-number {
+    font-size: clamp(2rem, 4vw, 2.5rem);
+    font-weight: 900;
+    color: var(--color-accent-caramel);
+    line-height: 1;
+  }
+
+  .trust-label {
+    font-size: 0.9rem;
+    color: var(--color-text-light);
+  }
+
+  .how {
+    padding: 4rem 1.5rem;
+    background: var(--color-bg);
+  }
+
+  .how .container {
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .how h2 {
+    text-align: center;
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    color: var(--color-text);
+    margin: 0 0 2rem;
+  }
+
+  .how-steps {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr));
+    gap: 1.5rem;
+  }
+
+  .how-step {
+    background: var(--color-bg-elevated);
+    border: 2px solid var(--color-border);
+    padding: 1.75rem;
+    position: relative;
+  }
+
+  .how-num {
+    position: absolute;
+    top: -18px;
+    left: 1.5rem;
+    width: 40px;
+    height: 40px;
+    background: var(--color-accent-caramel);
+    color: var(--color-bg-elevated);
+    font-size: 1.2rem;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .how-step h3 {
+    font-size: 1.15rem;
+    font-weight: 800;
+    margin: 0.5rem 0;
+    color: var(--color-text);
+  }
+
+  .how-step p {
+    color: var(--color-text-light);
+    line-height: 1.55;
+    margin: 0;
+  }
+
+  .examples {
+    padding: 4rem 1.5rem;
+    background: var(--color-bg-alt);
+  }
+
+  .examples .container {
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .examples h2 {
+    text-align: center;
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    color: var(--color-text);
+    margin: 0 0 2rem;
+  }
+
+  .example-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr));
+    gap: 1.25rem;
+  }
+
+  .example-card {
+    background: var(--color-bg-elevated);
+    border: 2px solid var(--color-border);
+    padding: 1.5rem;
+  }
+
+  .example-card h3 {
+    font-size: 1.05rem;
+    font-weight: 800;
+    margin: 0 0 0.5rem;
+    color: var(--color-accent-caramel);
+  }
+
+  .example-card p {
+    color: var(--color-text-light);
+    line-height: 1.55;
+    margin: 0;
+    font-size: 0.95rem;
+  }
+
+  .privacy {
+    padding: 4rem 1.5rem;
+    background: var(--color-bg);
+  }
+
+  .privacy .container {
+    max-width: 820px;
+    margin: 0 auto;
+  }
+
+  .privacy-card {
+    background: var(--color-bg-elevated);
+    border: 2px solid var(--color-success);
+    padding: 2rem;
+  }
+
+  .privacy-card h2 {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--color-text);
+    margin: 0 0 1rem;
+  }
+
+  .privacy-card ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+  }
+
+  .privacy-card li {
+    color: var(--color-text);
+    line-height: 1.55;
+    padding-left: 1.5rem;
+    position: relative;
+  }
+
+  .privacy-card li::before {
+    content: '\2713';
+    position: absolute;
+    left: 0;
+    color: var(--color-success);
+    font-weight: 700;
+  }
+
+  .privacy-card strong {
+    color: var(--color-success);
+  }
+
+  .community {
+    padding: 4rem 1.5rem;
+    background: var(--color-bg-alt);
+    text-align: center;
+  }
+
+  .community .container {
+    max-width: 760px;
+    margin: 0 auto;
+  }
+
+  .community h2 {
+    font-size: clamp(1.4rem, 3vw, 1.8rem);
+    color: var(--color-text);
+    margin: 0 0 1rem;
+  }
+
+  .community p {
+    color: var(--color-text-light);
+    line-height: 1.6;
+    margin: 0 0 1.5rem;
+  }
+
+  .white-label {
+    padding: 4rem 1.5rem;
+    background: var(--color-bg);
+  }
+
+  .white-label .container {
+    max-width: 880px;
+    margin: 0 auto;
+  }
+
+  .wl-card {
+    background: linear-gradient(135deg, var(--color-secondary), var(--color-accent-honey));
+    color: var(--color-text);
+    padding: 2rem;
+    border: 2px solid var(--color-border);
+  }
+
+  .wl-card h2 {
+    font-size: 1.5rem;
+    font-weight: 900;
+    margin: 0 0 1rem;
+  }
+
+  .wl-card p {
+    line-height: 1.6;
+    margin: 0 0 1rem;
+  }
+
+  .wl-feats {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .wl-feats li {
+    padding-left: 1.3rem;
+    position: relative;
+    line-height: 1.5;
+  }
+
+  .wl-feats li::before {
+    content: '\2713';
+    position: absolute;
+    left: 0;
+    color: var(--color-bg-elevated);
+    font-weight: 700;
+  }
+
+  .wl-price {
+    font-size: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .wl-price strong {
+    color: var(--color-primary);
+  }
+
+  .white-label .btn-primary {
+    background: var(--color-primary);
+    color: var(--color-bg-elevated);
+  }
+
+  .white-label .btn-primary:hover {
+    color: var(--color-bg-elevated);
+  }
+
+  .ressources {
+    padding: 3rem 1.5rem 5rem;
+    background: var(--color-bg-alt);
+  }
+
+  .ressources .container {
+    max-width: 760px;
+    margin: 0 auto;
+  }
+
+  .ressources h2 {
+    font-size: 1.3rem;
+    color: var(--color-text);
+    margin: 0 0 1rem;
+  }
+
+  .r-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+  }
+
+  .r-list li {
+    padding: 0.75rem 1rem;
+    background: var(--color-bg-elevated);
+    border-left: 4px solid var(--color-accent-caramel);
+  }
+
+  .r-list a {
+    color: var(--color-primary);
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .r-list a:hover {
+    text-decoration: underline;
+  }
+</style>

@@ -1,0 +1,330 @@
+---
+// src/pages/formations/index.astro
+// Page publique listant toutes les formations publiees.
+// Le systeme de "formations" est separe des "ateliers" (gratuits) :
+// il accepte un tarif conscient (sliding scale), un systeme de parrainage,
+// et des demandes d'exoneration validees a la main.
+
+import Layout from '@/layouts/Layout.astro';
+import Breadcrumb from '@/components/Breadcrumb.astro';
+import { createSupabaseAdminClient } from '@/lib/supabase';
+import { formatDate, formatTimeRange, formatSlidingScale, isFreeTraining } from '@/types/formations';
+
+export const prerender = true;
+
+const admin = createSupabaseAdminClient(Astro);
+
+// Recuperation des formations publiees avec leur prochaine session (la plus proche)
+const { data: trainings, error } = await admin
+  .from('trainings')
+  .select(`
+    id, slug, title, short_description, category, level, duration_label,
+    is_paying, min_price_cents, suggested_price_cents, solidarity_price_cents,
+    display_order, cover_image_url,
+    training_sessions (
+      id, starts_at, ends_at, is_published, max_seats
+    )
+  `)
+  .eq('is_published', true)
+  .order('display_order', { ascending: true });
+
+const saved  = Astro.url.searchParams.get('saved') === '1';
+const errorParam = Astro.url.searchParams.get('error') ?? '';
+
+interface TrainingCard {
+  id:               string;
+  slug:             string;
+  title:            string;
+  shortDescription: string;
+  category:         string | null;
+  level:            string | null;
+  duration:         string | null;
+  isPaying:         boolean;
+  priceLabel:       string;
+  nextSession:      { date: string; time: string; id: string } | null;
+}
+
+function findNextSession(sessions: Array<{ id: string; starts_at: string; ends_at: string; is_published: boolean }> | null) {
+  if (!sessions) return null;
+  const now = new Date().toISOString();
+  const upcoming = sessions
+    .filter((s) => s.is_published && s.starts_at > now)
+    .sort((a, b) => a.starts_at.localeCompare(b.starts_at));
+  if (upcoming.length === 0) return null;
+  const first = upcoming[0]!;
+  return {
+    id:    first.id,
+    date:  formatDate(first.starts_at),
+    time:  formatTimeRange(first.starts_at, first.ends_at),
+  };
+}
+
+const cards: TrainingCard[] = (trainings ?? []).map((t) => ({
+  id:               t.id,
+  slug:             t.slug,
+  title:            t.title,
+  shortDescription: t.short_description ?? '',
+  category:         t.category,
+  level:            t.level,
+  duration:         t.duration_label,
+  isPaying:         t.is_paying,
+  priceLabel:       isFreeTraining(t.min_price_cents, t.suggested_price_cents, t.solidarity_price_cents)
+    ? 'Gratuit'
+    : formatSlidingScale(t.min_price_cents, t.suggested_price_cents, t.solidarity_price_cents),
+  nextSession:      findNextSession(t.training_sessions as Array<{ id: string; starts_at: string; ends_at: string; is_published: boolean }> | null),
+}));
+
+const hasCards = cards.length > 0;
+---
+
+<Layout
+  title="Formations IA | Biscuits IA"
+  description="Formations longues accessibles a tous grace au tarif conscient et au systeme de parrainage. Payez ce que vous pouvez, demandez une place gratuite, ou parrainez quelqu'un."
+  noindex={true}
+>
+  <Breadcrumb />
+
+  <section class="formations-hero">
+    <div class="container">
+      <h1>Formations IA accessibles a tous</h1>
+      <p class="hero-subtitle">
+        Des parcours plus longs et approfondis que les ateliers, finances par un systeme de
+        <strong>tarif conscient</strong> et un dispositif de
+        <strong>parrainage</strong> : personne n'est exclu pour des raisons de revenus.
+      </p>
+    </div>
+  </section>
+
+  <section class="modele-section">
+    <div class="container">
+      <div class="modele-grid">
+        <div class="modele-card">
+          <h2>1. Tarif conscient</h2>
+          <p>
+            Chaque formation affiche un prix minimum, un prix suggere et un prix "solidarite".
+            Vous choisissez ce que vous pouvez payer, sans justificatif.
+          </p>
+        </div>
+        <div class="modele-card">
+          <h2>2. Place gratuite sur demande</h2>
+          <p>
+            Si aucun montant ne convient, vous pouvez demander une place offerte.
+            Un admin vous repond sous 48h, avec bienveillance et confidentialite.
+          </p>
+          <a href="#accessibilite" class="link-arrow">Comment demander ?</a>
+        </div>
+        <div class="modele-card">
+          <h2>3. Parrainage</h2>
+          <p>
+            Vous pouvez offrir une place a quelqu'un qui ne pourrait pas se la payer :
+            place libre au pool, ou place nominative pour une personne en particulier.
+          </p>
+          <a href="/formations/parrainer" class="link-arrow">Parrainer une place</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="liste-section">
+    <div class="container">
+      <div class="section-header">
+        <h2>Nos formations</h2>
+        <p>Choisissez un parcours et reservez votre place.</p>
+      </div>
+
+      {saved && (
+        <div class="alert alert-success" role="alert">
+          Votre demande a bien ete prise en compte.
+        </div>
+      )}
+      {errorParam && (
+        <div class="alert alert-error" role="alert">
+          {decodeURIComponent(errorParam)}
+        </div>
+      )}
+
+      {error && (
+        <p class="formations-error" role="alert">
+          Impossible de charger les formations pour le moment. Reessayez plus tard.
+        </p>
+      )}
+
+      {hasCards ? (
+        <div class="formations-grid">
+          {cards.map((c) => (
+            <article class="formation-card">
+              {c.category && <span class="category-badge">{c.category}</span>}
+              {c.level    && <span class="level-badge">{c.level}</span>}
+
+              <h3 class="formation-title">{c.title}</h3>
+              {c.shortDescription && <p class="formation-desc">{c.shortDescription}</p>}
+
+              <ul class="formation-meta">
+                {c.duration && <li><span class="meta-icon">Duree</span> {c.duration}</li>}
+                <li><span class="meta-icon">Tarif</span> {c.priceLabel}</li>
+                {c.nextSession && <li><span class="meta-icon">Prochaine</span> {c.nextSession.date} - {c.nextSession.time}</li>}
+              </ul>
+
+              <div class="formation-actions">
+                <a href={`/formations/${c.slug}`} class="btn btn-primary">Voir la formation</a>
+              </div>
+            </article>
+          ))}
+        </div>
+      ) : (
+        <div class="empty-state">
+          <p>Aucune formation n'est encore ouverte a l'inscription. Revenez bientot !</p>
+        </div>
+      )}
+    </div>
+  </section>
+
+  <section id="accessibilite" class="cta-accessibilite">
+    <div class="container">
+      <div class="cta-content">
+        <h2>Vous ne pouvez pas payer ?</h2>
+        <p>
+          Vous etes benevole, etudiant, demandeur d'emploi, ou simplement dans une periode
+          difficile ? Demandez une place offerte : on vous repond sous 48h, sans justificatif.
+        </p>
+        <p class="muted">
+          Sur chaque page de formation, cliquez sur le bouton
+          <strong>"Demander une place gratuite"</strong> et expliquez votre situation en quelques phrases.
+        </p>
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .formations-hero {
+    padding: 60px 0 40px;
+    background: var(--color-bg-alt);
+    border-bottom: 4px solid var(--color-border);
+  }
+  .formations-hero h1 {
+    font-size: clamp(2rem, 5vw, 3rem);
+    margin-bottom: 12px;
+    color: var(--color-text);
+  }
+  .hero-subtitle {
+    font-size: 1.1rem;
+    max-width: 720px;
+    color: var(--color-text-light);
+  }
+
+  .modele-section { padding: 60px 0; background: var(--color-bg-elevated); }
+  .modele-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+  }
+  .modele-card {
+    border: var(--brutal-border);
+    box-shadow: var(--shadow-md);
+    padding: 24px;
+    background: var(--color-bg);
+  }
+  .modele-card h2 { font-size: 1.25rem; margin-bottom: 12px; color: var(--color-text); }
+  .modele-card p  { color: var(--color-text-light); line-height: 1.6; margin-bottom: 8px; }
+  .link-arrow {
+    display: inline-block;
+    margin-top: 8px;
+    font-weight: 700;
+    color: var(--color-primary);
+    text-decoration: none;
+  }
+  .link-arrow:hover { text-decoration: underline; }
+
+  .liste-section { padding: 60px 0; }
+  .section-header { text-align: center; margin-bottom: 36px; }
+  .section-header h2 { font-size: 2rem; margin-bottom: 8px; }
+  .section-header p  { color: var(--color-text-light); }
+
+  .formations-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 20px;
+  }
+  .formation-card {
+    border: var(--brutal-border);
+    box-shadow: var(--shadow-md);
+    padding: 24px;
+    background: var(--color-bg-elevated);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+  }
+  .formation-card:hover {
+    transform: translate(-3px, -3px);
+    box-shadow: var(--shadow-lg);
+  }
+  .category-badge,
+  .level-badge {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    margin-right: 6px;
+    background: var(--color-accent-honey);
+    color: var(--color-text);
+    border: 2px solid var(--color-border);
+  }
+  .level-badge { background: var(--color-accent-vanilla); }
+
+  .formation-title { font-size: 1.3rem; margin: 4px 0; color: var(--color-text); }
+  .formation-desc  { color: var(--color-text-light); line-height: 1.6; }
+
+  .formation-meta {
+    list-style: none;
+    padding: 12px 0;
+    margin: 0;
+    border-top: var(--brutal-border-thin);
+    border-bottom: var(--brutal-border-thin);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 0.95rem;
+  }
+  .formation-meta li { color: var(--color-text); }
+  .meta-icon {
+    display: inline-block;
+    font-weight: 800;
+    text-transform: uppercase;
+    font-size: 0.7rem;
+    color: var(--color-text-light);
+    margin-right: 6px;
+  }
+
+  .formation-actions { margin-top: auto; padding-top: 8px; }
+  .formation-actions .btn { width: 100%; text-align: center; }
+
+  .alert { padding: 12px 18px; margin-bottom: 20px; border: var(--brutal-border-thin); box-shadow: var(--shadow-sm); }
+  .alert-success { background: var(--color-success-light); color: var(--color-text); border-color: var(--color-success); }
+  .alert-error   { background: var(--color-danger-light);  color: var(--color-text); border-color: var(--color-danger); }
+  .formations-error { color: var(--color-danger); margin-bottom: 20px; }
+  .empty-state { text-align: center; padding: 48px 24px; color: var(--color-text-light); }
+
+  .cta-accessibilite {
+    padding: 60px 0;
+    background: var(--color-primary);
+    color: white;
+  }
+  .cta-content { max-width: 720px; margin: 0 auto; text-align: center; }
+  .cta-content h2 { font-size: 1.75rem; margin-bottom: 16px; color: white; }
+  .cta-content p  { margin-bottom: 12px; line-height: 1.6; }
+  .cta-content .muted { opacity: 0.9; font-size: 0.95rem; }
+
+  .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+  .btn { padding: 12px 24px; font-weight: 700; text-decoration: none; display: inline-block; }
+  .btn-primary { background: var(--color-primary); color: white; border: var(--brutal-border); box-shadow: var(--shadow-md); }
+  .btn-primary:hover { transform: translate(-2px, -2px); box-shadow: var(--shadow-lg); }
+
+  @media (max-width: 768px) {
+    .formations-hero { padding: 40px 0 30px; }
+    .modele-section, .liste-section, .cta-accessibilite { padding: 40px 0; }
+    .formations-grid { grid-template-columns: 1fr; }
+  }
+</style>

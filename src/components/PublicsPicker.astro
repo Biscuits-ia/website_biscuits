@@ -1,0 +1,217 @@
+﻿---
+// src/components/PublicsPicker.astro
+// Bloc de selection du public : 4 cartes (associations, collectivites, TPE/PME, citoyens).
+
+const publics = [
+  {
+    href: '/public/associations',
+    label: 'Associations, ONG, collectifs',
+    accent: 'associations',
+    description: 'Ateliers IA, ressources libres, Suite associative, sensibilisation anti-arnaques de vos benevoles.',
+  },
+  {
+    href: '/public/collectivites',
+    label: 'Collectivites, mairies, CCAS',
+    accent: 'collectivites',
+    description: 'Diagnostics, formation des elu-e-s et des agents, deploiement d\'outils souverains, sensibilisation anti-arnaques pros.',
+  },
+  {
+    href: '/public/tpe-pme',
+    label: 'TPE, PME, entrepreneurs',
+    accent: 'tpe',
+    description: 'Audit IA adapte a votre activite, ateliers pratiques, outils libres, protection contre les arnaques visees aux pros.',
+  },
+  {
+    href: '/public/citoyens',
+    label: 'Citoyens, proches, seniors',
+    accent: 'citoyens',
+    description: 'Anti Pepins (gratuit), procedures d\'aide aux victimes, numeros d\'urgence, ateliers pour les seniors.',
+  },
+];
+---
+
+<section class="pub-section" aria-labelledby="pub-title">
+  <div class="pub-inner">
+    <header class="pub-header">
+      <p class="pub-eyebrow">Trouvez votre entree</p>
+      <h2 id="pub-title">Vous etes...</h2>
+      <p class="pub-intro">
+        Biscuits IA adapte ses accompagnements a chaque type de structure. Cliquez sur la carte qui vous correspond : on vous montre ce qu'on peut faire pour vous, concretement.
+      </p>
+    </header>
+
+    <div class="pub-grid">
+      {publics.map((p) => (
+        <a class={`pub-card pub-${p.accent}`} href={p.href}>
+          <span class="pub-label">{p.label}</span>
+          <p class="pub-desc">{p.description}</p>
+          <span class="pub-arrow">
+            Decouvrir
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </span>
+        </a>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .pub-section {
+    padding: 5rem 1.5rem;
+    background: var(--color-bg);
+  }
+
+  .pub-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .pub-header {
+    text-align: center;
+    margin-bottom: 2.5rem;
+    max-width: 720px;
+    margin-inline: auto;
+  }
+
+  .pub-eyebrow {
+    font-size: 0.85rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--color-primary);
+    margin-bottom: 0.75rem;
+  }
+
+  .pub-header h2 {
+    font-size: clamp(1.6rem, 3.5vw, 2.2rem);
+    font-weight: 900;
+    color: var(--color-text);
+    margin: 0 0 1rem;
+    line-height: 1.15;
+  }
+
+  .pub-intro {
+    color: var(--color-text-light);
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  .pub-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr));
+    gap: 1.25rem;
+  }
+
+  .pub-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+    padding: 1.75rem;
+    background: var(--color-bg-elevated);
+    border: 2px solid var(--color-border);
+    text-decoration: none;
+    color: inherit;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    position: relative;
+  }
+
+  .pub-card:hover,
+  .pub-card:focus-visible {
+    transform: translateY(-4px);
+    box-shadow: 5px 5px 0 var(--color-border);
+  }
+
+  .pub-associations {
+    border-color: var(--color-secondary);
+  }
+
+  .pub-associations:hover {
+    border-color: var(--color-secondary);
+    box-shadow: 5px 5px 0 var(--color-secondary);
+  }
+
+  .pub-collectivites {
+    border-color: #2e5e8a;
+  }
+
+  .pub-collectivites:hover {
+    border-color: #2e5e8a;
+    box-shadow: 5px 5px 0 #2e5e8a;
+  }
+
+  .pub-tpe {
+    border-color: #2e8a4f;
+  }
+
+  .pub-tpe:hover {
+    border-color: #2e8a4f;
+    box-shadow: 5px 5px 0 #2e8a4f;
+  }
+
+  .pub-citoyens {
+    border-color: #c0392b;
+  }
+
+  .pub-citoyens:hover {
+    border-color: #c0392b;
+    box-shadow: 5px 5px 0 #c0392b;
+  }
+
+  .pub-label {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: var(--color-text);
+    line-height: 1.3;
+  }
+
+  .pub-associations .pub-label {
+    color: var(--color-secondary);
+  }
+
+  .pub-collectivites .pub-label {
+    color: #2e5e8a;
+  }
+
+  .pub-tpe .pub-label {
+    color: #2e8a4f;
+  }
+
+  .pub-citoyens .pub-label {
+    color: #c0392b;
+  }
+
+  .pub-desc {
+    color: var(--color-text-light);
+    line-height: 1.55;
+    margin: 0;
+    font-size: 0.95rem;
+  }
+
+  .pub-arrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-top: auto;
+    color: var(--color-text);
+    font-weight: 700;
+    font-size: 0.9rem;
+  }
+
+  .pub-associations .pub-arrow {
+    color: var(--color-secondary);
+  }
+
+  .pub-collectivites .pub-arrow {
+    color: #2e5e8a;
+  }
+
+  .pub-tpe .pub-arrow {
+    color: #2e8a4f;
+  }
+
+  .pub-citoyens .pub-arrow {
+    color: #c0392b;
+  }
+</style>

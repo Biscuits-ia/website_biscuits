@@ -277,5 +277,58 @@
         }
       ]
     }
+  ],
+  "redirects": [
+    {
+      "source": "/utilisateurs",
+      "destination": "/piliers",
+      "statusCode": 301
+    },
+    {
+      "source": "/pourquoi-biscuits-ia",
+      "destination": "/piliers",
+      "statusCode": 301
+    },
+    {
+      "source": "/atelier",
+      "destination": "/ateliers",
+      "statusCode": 301
+    },
+    {
+      "source": "/atelier/:path*",
+      "destination": "/ateliers",
+      "statusCode": 301
+    },
+    {
+      "source": "/projet",
+      "destination": "/dashboard/benevole/projects",
+      "statusCode": 301
+    },
+    {
+      "source": "/login",
+      "destination": "/connexion",
+      "statusCode": 301
+    },
+    {
+      "source": "/aide-victimes",
+      "destination": "/piliers/cyber",
+      "statusCode": 301
+    },
+    {
+      "source": "/logiciels",
+      "destination": "/piliers/logiciels",
+      "statusCode": 301
+    },
+    {
+      "source": "/anti-pepins",
+      "destination": "/piliers/anti-pepins",
+      "statusCode": 301
+    }
+  ],
+  "crons": [
+    {
+      "path": "/api/cron/email-outbox",
+      "schedule": "0/2 * * * *"
+    }
   ]
 }

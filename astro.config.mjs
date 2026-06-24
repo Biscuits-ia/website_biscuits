@@ -1,4 +1,4 @@
-﻿// @ts-check
+// @ts-check
 import { defineConfig } from 'astro/config';
 
 
@@ -58,6 +58,7 @@ export default defineConfig({
             '/admin',
             '/api',
             '/auth',
+          '/formations/parrainer',
             '/dashboard',
             '/connexion',
             '/inscription',
@@ -77,6 +78,7 @@ export default defineConfig({
             '/admin',
             '/api',
             '/auth',
+          '/formations/parrainer',
             '/dashboard',
             '/connexion',
             '/inscription',

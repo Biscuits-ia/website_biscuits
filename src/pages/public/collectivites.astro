@@ -1,0 +1,373 @@
+﻿---
+// src/pages/public/collectivites.astro
+// Landing dediee aux collectivites (mairies, CCAS, EPCI, conseils departementaux).
+
+export const prerender = true;
+
+import Layout from '@/layouts/Layout.astro';
+import Breadcrumb from '@/components/Breadcrumb.astro';
+
+const schema = {
+  type: 'WebPage' as const,
+  data: {
+    name: 'Biscuits IA pour les collectivites',
+    description: 'Biscuits IA accompagne les collectivites (mairies, CCAS, EPCI, conseils departementaux) dans leur transition numerique : IA pour les services publics, outils libres souverains, protection anti-arnaques pour les administrer-e-s.',
+  },
+};
+---
+
+<Layout
+  title="Solutions pour les collectivites | Biscuits IA"
+  description="Vous etes une mairie, un CCAS, un EPCI, un conseil departemental ? Decouvrez comment Biscuits IA vous aide : IA pour les services publics, outils souverains, sensibilisation des agents."
+  schema={schema}
+>
+  <Breadcrumb />
+
+  <section class="lp-hero">
+    <div class="container">
+      <p class="lp-eyebrow lp-eyebrow-collectivite">Vous etes une collectivite</p>
+      <h1>Un numerique souverain, utile et accessible a vos administrer-e-s</h1>
+      <p class="lp-lead">
+        Mairie, CCAS, EPCI, conseil departemental, collectivite d'outre-mer : on vous aide a deployer l'IA dans vos services publics de maniere maitrisee (pas de dependance Big Tech), a proteger vos agents contre les arnaques, et a proposer des services numeriques de proximite a vos administrer-e-s.
+      </p>
+      <div class="lp-cta">
+        <a href="/contact?sujet=collectivite" class="btn-primary">Nous contacter</a>
+        <a href="/rdv" class="btn-ghost">Prendre rendez-vous</a>
+        <a href="/blog/tag/service-public" class="btn-ghost">Voir nos retours d'experience</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="lp-context">
+    <div class="container">
+      <h2>Le contexte que vous connaissez</h2>
+      <div class="context-grid">
+        <article class="context-card">
+          <h3>Souverainete numerique</h3>
+          <p>Vous voulez des outils heberges en France ou en Europe, dont le code est auditable, et qui ne vous enferment pas chez un editeur americain ou chinois.</p>
+        </article>
+        <article class="context-card">
+          <h3>Inclusion numerique</h3>
+          <p>Une partie de vos administrer-e-s n'a pas de smartphone, parle peu francais, ou n'est pas a l'aise avec le numerique. Vos services doivent rester accessibles a tous.</p>
+        </article>
+        <article class="context-card">
+          <h3>RGPD et secret professionnel</h3>
+          <p>Les donnees de vos usagers (CCAS, RSA, demandes de logement, etc.) sont sensibles. Vous ne pouvez pas les confier a un service tiers opaque.</p>
+        </article>
+        <article class="context-card">
+          <h3>Budget contraint</h3>
+          <p>Vous devez faire plus avec moins. Les solutions gratuites cachees (puis payantes) ou les licences par utilisateur qui explosent ne sont pas une option.</p>
+        </article>
+        <article class="context-card">
+          <h3>Sensibilisation des agents</h3>
+          <p>Vos agents sont les premieres cibles des arnaques (fraude au president, phishing). Vous voulez un programme de sensibilisation adapte au secteur public.</p>
+        </article>
+        <article class="context-card">
+          <h3>IA generative : commencer sans se planter</h3>
+          <p>Vous savez que l'IA peut aider (comptes-rendus, reponses aux administrer-e-s, synthese de dossiers) mais vous ne voulez pas faire n'importe quoi.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="lp-solutions">
+    <div class="container">
+      <h2>Ce qu'on vous propose</h2>
+      <div class="solution-grid">
+        <article class="solution-card">
+          <h3>Diagnostic numerique territorial</h3>
+          <p>Un etat des lieux de vos outils actuels, de vos donnees, et de vos processus. Livrable : une feuille de route chiffree sur 12 mois.</p>
+          <p class="solution-price">A partir de 1500 EUR (tarif adaptable aux petites communes).</p>
+          <a href="/contact?sujet=diagnostic-collectivite" class="solution-cta">Demander un devis</a>
+        </article>
+        <article class="solution-card">
+          <h3>Atelier IA pour les agents</h3>
+          <p>Une journee d'atelier pour demystifier l'IA, tester des outils adaptes au service public (Mistral, Open Source), repartir avec une charte d'usage.</p>
+          <p class="solution-price">Sur devis (a partir de 800 EUR la journee pour 15 agents).</p>
+          <a href="/ateliers" class="solution-cta">Voir les ateliers</a>
+        </article>
+        <article class="solution-card">
+          <h3>Sensibilisation anti-arnaques</h3>
+          <p>Programme de sensibilisation des agents et des elu-e-s : fraude au president, phishing, deepfakes vocaux. Atelier + deploiement d'Anti Pepins pour vos services.</p>
+          <p class="solution-price">Atelier : 600 EUR + Anti Pepins marque blanche : 500 EUR/an.</p>
+          <a href="/anti-pepins" class="solution-cta">Decouvrir Anti Pepins</a>
+        </article>
+        <article class="solution-card">
+          <h3>Deploiement d'outils libres</h3>
+          <p>On vous aide a deployer et heberger des outils libres (suite associative, Anti Pepins, Mattermost, Mobilizon) avec formation des agents et support.</p>
+          <p class="solution-price">Sur devis.</p>
+          <a href="/contact?sujet=collectivite" class="solution-cta">Discuter du projet</a>
+        </article>
+        <article class="solution-card">
+          <h3>Formation des elu-e-s</h3>
+          <p>Une session dediee aux elu-e-s et DGS pour comprendre les enjeux (RGPD, souverainete, cyber-menaces, IA) sans jargon technique.</p>
+          <p class="solution-price">Demi-journee : 500 EUR.</p>
+          <a href="/contact?sujet=formation-elus" class="solution-cta">Reserver une session</a>
+        </article>
+        <article class="solution-card">
+          <h3>Conventions pluriannuelles</h3>
+          <p>Pour les collectivites qui veulent un accompagnement dans la duree : 3 a 10 jours par an, planifies selon votre calendrier.</p>
+          <p class="solution-price">Sur devis (a partir de 3000 EUR/an).</p>
+          <a href="/contact?sujet=convention" class="solution-cta">Voir le cadre</a>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="lp-ressources">
+    <div class="container">
+      <h2>Pour aller plus loin</h2>
+      <ul class="res-list">
+        <li><a href="/blog/ia-service-citoyen-mairie">IA comme service public : retour d'experience d'une mairie</a></li>
+        <li><a href="/blog/mistral-rag-chatbot-mairie">Deployer un RAG avec Mistral dans une mairie</a></li>
+        <li><a href="/blog/souverainete">Souverainete numerique : de quoi parle-t-on vraiment ?</a></li>
+        <li><a href="/blog/cybersecurite-associations-2026">Cybersecurite des collectivites en 2026 : les bons reflexes</a></li>
+        <li><a href="/blog/rgpd-petites-structures">RGPD pour les petites structures : l'essentiel</a></li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="lp-cta-final">
+    <div class="container">
+      <h2>Echangeons sur votre projet</h2>
+      <p>Un premier rendez-vous gratuit de 30 minutes pour comprendre votre contexte, vos contraintes, et voir si on peut vous aider. Sans engagement, on vous dit aussi si ce n'est pas le bon interlocuteur.</p>
+      <div class="lp-cta-buttons">
+        <a href="/contact?sujet=collectivite" class="btn-primary">Prendre contact</a>
+        <a href="/rdv" class="btn-ghost">Prendre rendez-vous</a>
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .lp-hero {
+    padding: 5rem 1.5rem 3rem;
+    background: linear-gradient(135deg, var(--color-bg) 0%, var(--color-bg-alt) 100%);
+    text-align: center;
+  }
+
+  .lp-hero .container {
+    max-width: 880px;
+    margin: 0 auto;
+  }
+
+  .lp-eyebrow {
+    font-size: 0.85rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--color-primary);
+    margin-bottom: 0.75rem;
+  }
+
+  .lp-eyebrow-collectivite {
+    color: #2e5e8a;
+  }
+
+  .lp-hero h1 {
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 900;
+    margin: 0 0 1rem;
+    color: var(--color-text);
+    line-height: 1.15;
+  }
+
+  .lp-lead {
+    color: var(--color-text-light);
+    font-size: 1.1rem;
+    line-height: 1.6;
+    margin: 0 0 2rem;
+  }
+
+  .lp-cta {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .btn-primary {
+    display: inline-block;
+    padding: 0.85rem 1.5rem;
+    background: var(--color-primary);
+    color: var(--color-bg-elevated);
+    font-weight: 800;
+    border: 2px solid var(--color-border);
+    text-decoration: none;
+  }
+
+  .btn-primary:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 4px 4px 0 var(--color-border);
+    color: var(--color-bg-elevated);
+  }
+
+  .btn-ghost {
+    display: inline-block;
+    padding: 0.85rem 1.5rem;
+    background: transparent;
+    color: var(--color-text);
+    font-weight: 700;
+    border: 2px solid var(--color-border);
+    text-decoration: none;
+  }
+
+  .btn-ghost:hover {
+    background: var(--color-bg-elevated);
+  }
+
+  .lp-context,
+  .lp-solutions,
+  .lp-ressources {
+    padding: 4rem 1.5rem;
+  }
+
+  .lp-context {
+    background: var(--color-bg);
+  }
+
+  .lp-solutions {
+    background: var(--color-bg-alt);
+  }
+
+  .lp-ressources {
+    background: var(--color-bg);
+  }
+
+  .lp-context .container,
+  .lp-solutions .container,
+  .lp-ressources .container {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .lp-context h2,
+  .lp-solutions h2,
+  .lp-ressources h2 {
+    text-align: center;
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    color: var(--color-text);
+    margin: 0 0 2rem;
+  }
+
+  .context-grid,
+  .solution-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
+    gap: 1.5rem;
+  }
+
+  .context-card,
+  .solution-card {
+    background: var(--color-bg-elevated);
+    border: 2px solid var(--color-border);
+    padding: 1.5rem;
+  }
+
+  .context-card h3,
+  .solution-card h3 {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: #2e5e8a;
+    margin: 0 0 0.5rem;
+  }
+
+  .context-card p,
+  .solution-card p {
+    color: var(--color-text-light);
+    line-height: 1.55;
+    margin: 0 0 0.5rem;
+  }
+
+  .solution-price {
+    font-size: 0.95rem;
+    color: var(--color-first);
+    font-weight: 700;
+  }
+
+  .solution-cta {
+    display: inline-block;
+    margin-top: 0.5rem;
+    padding: 0.6rem 1.1rem;
+    background: var(--color-bg);
+    color: var(--color-text);
+    font-weight: 700;
+    border: 2px solid var(--color-border);
+    text-decoration: none;
+    font-size: 0.9rem;
+  }
+
+  .solution-cta:hover {
+    background: var(--color-primary);
+    color: var(--color-bg-elevated);
+  }
+
+  .res-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    max-width: 760px;
+    margin-inline: auto;
+  }
+
+  .res-list li {
+    padding: 1rem 1.25rem;
+    background: var(--color-bg-elevated);
+    border-left: 4px solid #2e5e8a;
+  }
+
+  .res-list a {
+    color: var(--color-primary);
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .res-list a:hover {
+    text-decoration: underline;
+  }
+
+  .lp-cta-final {
+    padding: 4rem 1.5rem 5rem;
+    background: #2e5e8a;
+    color: #fff;
+    text-align: center;
+  }
+
+  .lp-cta-final .container {
+    max-width: 760px;
+    margin: 0 auto;
+  }
+
+  .lp-cta-final h2 {
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    margin: 0 0 0.75rem;
+    color: #fff;
+  }
+
+  .lp-cta-final p {
+    line-height: 1.6;
+    margin: 0 0 1.5rem;
+    opacity: 0.95;
+  }
+
+  .lp-cta-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .lp-cta-final .btn-primary {
+    background: #fff;
+    color: #2e5e8a;
+  }
+
+  .lp-cta-final .btn-ghost {
+    background: transparent;
+    color: #fff;
+    border-color: #fff;
+  }
+</style>

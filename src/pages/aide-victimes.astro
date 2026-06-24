@@ -1,0 +1,433 @@
+﻿---
+// src/pages/aide-victimes.astro
+// Page d'aide aux victimes de cybercriminalite : procedures, contacts d'urgence,
+// formulaire specialise. Pilier 2 (cyber + victimes).
+
+export const prerender = true;
+
+import Layout from '@/layouts/Layout.astro';
+import Breadcrumb from '@/components/Breadcrumb.astro';
+import VictimForm from '@/components/react/VictimForm';
+
+const schema = {
+  type: 'WebPage' as const,
+  data: {
+    name: 'Aide aux victimes de cybercriminalite - Biscuits IA',
+    description: 'Vous etes victime d\'une arnaque en ligne, d\'une usurpation d\'identite, d\'un chantage ou de contenus impliquant des mineurs ? On vous accompagne gratuitement et en confiance.',
+  },
+};
+---
+
+<Layout
+  title="Aide aux victimes de cybercriminalite | Biscuits IA"
+  description="Victime d'arnaque, d'usurpation d'identite, de chantage ou de contenus pedocriminels ? Biscuits IA vous accompagne : procedures pas-a-pas, contacts d'urgence, formulaire confidentiel gratuit."
+  schema={schema}
+>
+  <Breadcrumb />
+
+  <section class="victim-hero">
+    <div class="container">
+      <p class="eyebrow">Pilier 2 - Lutte contre la cybercriminalite</p>
+      <h1>Vous etes victime, on peut vous aider</h1>
+      <p class="lead">
+        Que vous ayez ete arnaque, usurpe, menace ou choque par un contenu en ligne : vous n'etes pas seul·e, et il y a toujours quelque chose a faire. Cet accompagnement est gratuit, confidentiel et sans jugement.
+      </p>
+    </div>
+  </section>
+
+  <section class="urgence">
+    <div class="container">
+      <h2>Si c'est urgent, commencez par ici</h2>
+      <div class="urgence-grid">
+        <a class="urgence-card" href="tel:3018">
+          <span class="urgence-num">3018</span>
+          <strong>Cyberharcelement et contenus impliquant des mineurs</strong>
+          <span class="urgence-meta">Gratuit, anonyme, 7j/7 - 9h-23h</span>
+        </a>
+        <a class="urgence-card" href="https://www.internet-signalement.gouv.fr" rel="noopener noreferrer" target="_blank">
+          <strong>PHAROS</strong>
+          <span class="urgence-meta">Signalements en ligne (arnaques, contenus illicites)</span>
+        </a>
+        <a class="urgence-card" href="tel:17">
+          <strong>17 ou 112</strong>
+          <span class="urgence-meta">Police / Gendarmerie - urgences</span>
+        </a>
+        <a class="urgence-card" href="https://www.service-public.fr/particuliers/vosdroits/F1435" rel="noopener noreferrer" target="_blank">
+          <strong>Pre-plainte en ligne</strong>
+          <span class="urgence-meta">Pour les infractions dont l'auteur est inconnu</span>
+        </a>
+        <a class="urgence-card" href="https://www.cybermalveillance.gouv.fr" rel="noopener noreferrer" target="_blank">
+          <strong>Cybermalveillance.gouv.fr</strong>
+          <span class="urgence-meta">Assistance et diagnostic pour particuliers & pros</span>
+        </a>
+        <a class="urgence-card" href="tel:3919">
+          <strong>3919</strong>
+          <span class="urgence-meta">Violences conjugales - gratuit, anonyme</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section class="types">
+    <div class="container">
+      <h2>Les situations que nous traitons</h2>
+      <div class="type-grid">
+        <article class="type-card">
+          <h3>Arnaques financieres</h3>
+          <p>Faux supports (Microsoft, CAF, impots, banques), harponnage, escroqueries sentimentales, locations fictives, faux placements crypto, demandes de virement d'un "dirigeant".</p>
+        </article>
+        <article class="type-card">
+          <h3>Usurpation d'identite</h3>
+          <p>Comptes bancaire vide, contrat signe en votre nom, demarches administratives a votre place, faux profil reseaux sociaux imitant un proche.</p>
+        </article>
+        <article class="type-card">
+          <h3>Phishing et smishing</h3>
+          <p>SMS de livraison de colis, mail d'amende, message de l'Assurance Maladie, lien de la CAF, notification d'impots, faux avis de passage.</p>
+        </article>
+        <article class="type-card">
+          <h3>Chantage et extorsion</h3>
+          <p>Sextorsion (chantage a la webcam), menace de publier des contenus, ransonware, demande de paiement en crypto sous pression.</p>
+        </article>
+        <article class="type-card">
+          <h3>Pedocriminalite en ligne</h3>
+          <p>Contenus impliquant des mineurs, sollicitation sexuelle d'un mineur, diffusion d'images. Signalement immediat via PHAROS / 3018 / NCMEC. Aucun signalement n'est inutile.</p>
+        </article>
+        <article class="type-card">
+          <h3>Faux outils IA et malwares</h3>
+          <p>Applications qui pretendent securiser mais installent des virus, faux generateurs d'images, chatbots qui collectent vos donnees.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="process">
+    <div class="container">
+      <h2>Ce qu'on fait avec vous, pas-a-pas</h2>
+      <ol class="process-list">
+        <li>
+          <h3>Premier echange (gratuit)</h3>
+          <p>Vous nous racontez. On evalue l'urgence (compte bancaire vide, chantage en cours, fuite de donnees) et on identifie les premieres actions a faire immediatement.</p>
+        </li>
+        <li>
+          <h3>Mesures d'urgence</h3>
+          <p>Mise en opposition de carte bancaire, changement de mots de passe, mise en opposition des comptes compromis, preservation des preuves, alerte aux proches en cas d'usurpation.</p>
+        </li>
+        <li>
+          <h3>Signalements</h3>
+          <p>On vous aide a constituer les dossiers PHAROS, pre-plainte ou plainte, declaration a la banque, courrier aux operateurs. On vous fournit les modeles de mails et les formulaires.</p>
+        </li>
+        <li>
+          <h3>Suivi</h3>
+          <p>On vous accompagne jusqu'a la resolution. Si votre cas releve d'une structure specialisee (avocat, association d'aide, forces de l'ordre), on vous orientons.</p>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="form-section">
+    <div class="container">
+      <div class="form-wrapper">
+        <h2>Demander de l'aide</h2>
+        <p class="form-intro">
+          Decrivez votre situation en quelques lignes. On vous repond sous 48h ouvrees. Pour les situations d'urgence (compte bancaire vide, menace immediate), appelez directement votre banque, le 17 ou le 3018.
+        </p>
+        <VictimForm client:load />
+      </div>
+    </div>
+  </section>
+
+  <section class="resources">
+    <div class="container">
+      <h2>En autonomie, tout de suite</h2>
+      <p>Avant de nous contacter, vous pouvez deja :</p>
+      <ul class="resource-list">
+        <li>Verifier une URL suspecte avec <a href="https://anti-pepins.biscuits-ia.com/" rel="noopener noreferrer">Anti Pepins</a> (gratuit, immediat).</li>
+        <li>Consulter notre <a href="/ressources">liste de guides pratiques</a> (anti-phishing, protection des comptes, signalement).</li>
+        <li>Lire les articles du <a href="/blog">blog</a> sur les arnaques recentes (deepfakes, arnaque au president, fausses annonces de location).</li>
+      </ul>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .victim-hero {
+    padding: 5rem 1.5rem 3rem;
+    background: linear-gradient(180deg, var(--color-bg) 0%, var(--color-bg-alt) 100%);
+    text-align: center;
+  }
+
+  .victim-hero .container {
+    max-width: 880px;
+    margin: 0 auto;
+  }
+
+  .eyebrow {
+    font-size: 0.85rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: #c0392b;
+    margin-bottom: 0.75rem;
+  }
+
+  .victim-hero h1 {
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 900;
+    margin: 0 0 1rem;
+    color: var(--color-text);
+    line-height: 1.15;
+  }
+
+  .lead {
+    color: var(--color-text-light);
+    font-size: 1.1rem;
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  .urgence {
+    padding: 4rem 1.5rem;
+    background: #fff5f3;
+    border-top: 4px solid #c0392b;
+    border-bottom: 4px solid #c0392b;
+  }
+
+  .urgence .container {
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .urgence h2 {
+    text-align: center;
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    color: var(--color-text);
+    margin: 0 0 2rem;
+  }
+
+  .urgence-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr));
+    gap: 1rem;
+  }
+
+  .urgence-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    padding: 1.25rem;
+    background: var(--color-bg-elevated);
+    border: 2px solid var(--color-border);
+    text-decoration: none;
+    color: inherit;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .urgence-card:hover,
+  .urgence-card:focus-visible {
+    transform: translateY(-2px);
+    box-shadow: 4px 4px 0 var(--color-border);
+  }
+
+  .urgence-num {
+    font-size: 2rem;
+    font-weight: 900;
+    color: #c0392b;
+    line-height: 1;
+  }
+
+  .urgence-card strong {
+    color: var(--color-text);
+    font-size: 1.05rem;
+  }
+
+  .urgence-meta {
+    font-size: 0.85rem;
+    color: var(--color-text-light);
+  }
+
+  .types {
+    padding: 4rem 1.5rem;
+    background: var(--color-bg);
+  }
+
+  .types .container {
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .types h2 {
+    text-align: center;
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    color: var(--color-text);
+    margin: 0 0 2rem;
+  }
+
+  .type-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
+    gap: 1.25rem;
+  }
+
+  .type-card {
+    background: var(--color-bg-elevated);
+    border: 2px solid var(--color-border);
+    padding: 1.5rem;
+  }
+
+  .type-card h3 {
+    font-size: 1.15rem;
+    font-weight: 800;
+    margin: 0 0 0.5rem;
+    color: var(--color-text);
+  }
+
+  .type-card p {
+    color: var(--color-text-light);
+    line-height: 1.55;
+    margin: 0;
+  }
+
+  .process {
+    padding: 4rem 1.5rem;
+    background: var(--color-bg-alt);
+  }
+
+  .process .container {
+    max-width: 880px;
+    margin: 0 auto;
+  }
+
+  .process h2 {
+    text-align: center;
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    color: var(--color-text);
+    margin: 0 0 2rem;
+  }
+
+  .process-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    counter-reset: step;
+  }
+
+  .process-list li {
+    position: relative;
+    padding: 1.25rem 1.5rem 1.25rem 4rem;
+    background: var(--color-bg-elevated);
+    border: 2px solid var(--color-border);
+    counter-increment: step;
+  }
+
+  .process-list li::before {
+    content: counter(step);
+    position: absolute;
+    left: 1rem;
+    top: 1.25rem;
+    width: 36px;
+    height: 36px;
+    background: #c0392b;
+    color: #fff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 1rem;
+  }
+
+  .process-list h3 {
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: var(--color-text);
+    margin: 0 0 0.35rem;
+  }
+
+  .process-list p {
+    color: var(--color-text-light);
+    line-height: 1.55;
+    margin: 0;
+  }
+
+  .form-section {
+    padding: 4rem 1.5rem;
+    background: var(--color-bg);
+  }
+
+  .form-section .container {
+    max-width: 720px;
+    margin: 0 auto;
+  }
+
+  .form-wrapper {
+    background: var(--color-bg-elevated);
+    border: 2px solid var(--color-border);
+    padding: 2rem;
+  }
+
+  .form-wrapper h2 {
+    font-size: 1.5rem;
+    font-weight: 800;
+    margin: 0 0 0.75rem;
+    color: var(--color-text);
+  }
+
+  .form-intro {
+    color: var(--color-text-light);
+    line-height: 1.55;
+    margin: 0 0 1.5rem;
+  }
+
+  .resources {
+    padding: 3rem 1.5rem 5rem;
+    background: var(--color-bg-alt);
+  }
+
+  .resources .container {
+    max-width: 720px;
+    margin: 0 auto;
+  }
+
+  .resources h2 {
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: var(--color-text);
+    margin: 0 0 1rem;
+  }
+
+  .resources p {
+    color: var(--color-text-light);
+    margin: 0 0 1rem;
+  }
+
+  .resource-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .resource-list li {
+    padding-left: 1.25rem;
+    position: relative;
+    color: var(--color-text);
+  }
+
+  .resource-list li::before {
+    content: '\2192';
+    position: absolute;
+    left: 0;
+    color: #c0392b;
+    font-weight: 700;
+  }
+
+  .resource-list a {
+    color: var(--color-primary);
+    font-weight: 700;
+  }
+</style>

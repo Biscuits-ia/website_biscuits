@@ -1,0 +1,287 @@
+﻿---
+// src/pages/piliers/cyber.astro
+// Pilier 2 : lutte contre la cybercriminalite et aide aux victimes.
+
+export const prerender = true;
+
+import Layout from '@/layouts/Layout.astro';
+import Breadcrumb from '@/components/Breadcrumb.astro';
+
+const schema = {
+  type: 'Service' as const,
+  data: {
+    serviceType: 'Aide aux victimes de cybercriminalite',
+    name: 'Lutte contre la cybercriminalite et aide aux victimes',
+    description: 'Accompagnement gratuit des victimes d\'arnaques en ligne, d\'usurpation d\'identite, de harponnage, de chantage et de tout type de cybercriminalite.',
+  },
+};
+---
+
+<Layout
+  title="Lutte contre la cybercriminalite | Pilier 2 | Biscuits IA"
+  description="Vous etes victime d'une arnaque en ligne, d'une usurpation d'identite, d'un chantage numerique ? Biscuits IA vous accompagne gratuitement pour signaler, vous proteger et reprendre la main."
+  schema={schema}
+>
+  <Breadcrumb />
+
+  <section class="pilier-hero">
+    <div class="container">
+      <p class="eyebrow eyebrow-cyber">Pilier 2</p>
+      <h1>Lutter contre les arnaques et accompagner les victimes</h1>
+      <p class="lead">
+        Notre deuxieme pilier de mission : aider les victimes de cybercriminalite (arnaques, usurpation d'identite, harponnage, chantage, faux supports) et lutter contre la pedocriminalite en ligne. Accompagnement gratuit, en confiance, sans jugement.
+      </p>
+      <div class="hero-cta">
+        <a href="/aide-victimes" class="btn-danger">Je suis victime, j'ai besoin d'aide</a>
+        <a href="/contact?sujet=signalement" class="btn-ghost">Signaler un contenu illicite</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="content">
+    <div class="container">
+      <h2>Comment nous aidons les victimes</h2>
+      <div class="grid">
+        <article class="card">
+          <h3>Ecoute et orientation</h3>
+          <p>Premier echange pour comprendre la situation, evaluer l'urgence (compte bancaire vide, chantage en cours, fuite de donnees) et orienter vers les bons interlocuteurs.</p>
+        </article>
+        <article class="card">
+          <h3>Signalements</h3>
+          <p>Nous aidons a constituer les dossiers de signalement (PHAROS pour les contenus illicites, 3018 pour les mineurs, FranceConnect pour les comptes compromises, etablissements bancaires).</p>
+        </article>
+        <article class="card">
+          <h3>Mesures de protection</h3>
+          <p>Procedures pas-a-pas pour reprendre le controle : changement de mots de passe, mise en opposition de carte, plainte, alertes aux proches en cas d'usurpation d'identite.</p>
+        </article>
+        <article class="card">
+          <h3>Sensibilisation</h3>
+          <p>Guides et ateliers pour ne pas retomber dans le piege : detection du phishing, verification des deepfakes, reaction face a un message suspect.</p>
+          <a href="/ressources">Voir nos ressources anti-arnaques</a>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="values">
+    <div class="container">
+      <h2>Les situations que nous traitons</h2>
+      <ul>
+        <li><strong>Arnaques financieres.</strong> Faux supports, harponnage, investissement crypto frauduleux, locations immobilieres fictives.</li>
+        <li><strong>Usurpation d'identite.</strong> Comptes banques vides, contrats signes au nom de la victime, demarches administratives.</li>
+        <li><strong>Faux SMS et mails.</strong> Phishing bancaire, livraisons de colis, amendes,CAF,impots,Securite sociale.</li>
+        <li><strong>Chantage et extorsion.</strong> Sextorsion, chantage a la webcam, menace de publication de photos.</li>
+        <li><strong>Pedocriminalite.</strong> Signalement de contenus impliquant des mineurs (PHAROS, 3018, NCMEC).</li>
+        <li><strong>Faux outils IA.</strong> Applications qui pretendent proteger mais installent des malwares.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="cta-final">
+    <div class="container">
+      <h2>Besoin d'aide maintenant ?</h2>
+      <p>Contactez-nous. La premiere consultation est gratuite, confidentielle et sans engagement. Pour les urgences financieres, appelez votre banque sans delai.</p>
+      <div class="cta-actions">
+        <a href="/aide-victimes" class="btn-danger">Acceder a la page d'aide aux victimes</a>
+        <a href="/contact?sujet=victime" class="btn-ghost">Formulaire confidentiel</a>
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .pilier-hero {
+    padding: 5rem 1.5rem 3rem;
+    background: linear-gradient(180deg, var(--color-bg) 0%, var(--color-bg-alt) 100%);
+    text-align: center;
+  }
+
+  .pilier-hero .container {
+    max-width: 880px;
+    margin: 0 auto;
+  }
+
+  .eyebrow {
+    font-size: 0.85rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--color-primary);
+    margin-bottom: 0.75rem;
+  }
+
+  .eyebrow-cyber {
+    color: #c0392b;
+  }
+
+  .pilier-hero h1 {
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 900;
+    margin: 0 0 1rem;
+    color: var(--color-text);
+    line-height: 1.15;
+  }
+
+  .lead {
+    color: var(--color-text-light);
+    font-size: 1.1rem;
+    line-height: 1.6;
+    margin: 0 0 2rem;
+  }
+
+  .hero-cta {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .btn-danger {
+    display: inline-block;
+    padding: 0.85rem 1.5rem;
+    background: #c0392b;
+    color: #fff;
+    border: 2px solid var(--color-border);
+    font-weight: 800;
+    text-decoration: none;
+  }
+
+  .btn-danger:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 4px 4px 0 var(--color-border);
+    color: #fff;
+  }
+
+  .btn-ghost {
+    display: inline-block;
+    padding: 0.85rem 1.5rem;
+    background: transparent;
+    color: var(--color-text);
+    border: 2px solid var(--color-border);
+    text-decoration: none;
+    font-weight: 700;
+  }
+
+  .btn-ghost:hover {
+    background: var(--color-bg-elevated);
+  }
+
+  .content {
+    padding: 4rem 1.5rem;
+    background: var(--color-bg);
+  }
+
+  .content .container {
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .content h2 {
+    text-align: center;
+    font-size: clamp(1.6rem, 3vw, 2.2rem);
+    margin: 0 0 2rem;
+    color: var(--color-text);
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
+    gap: 1.5rem;
+  }
+
+  .card {
+    background: var(--color-bg-elevated);
+    border: 2px solid var(--color-border);
+    padding: 1.5rem;
+  }
+
+  .card h3 {
+    font-size: 1.15rem;
+    font-weight: 800;
+    margin: 0 0 0.5rem;
+    color: var(--color-text);
+  }
+
+  .card p {
+    color: var(--color-text-light);
+    line-height: 1.55;
+    margin: 0 0 0.75rem;
+  }
+
+  .card a {
+    display: inline-block;
+    color: var(--color-primary);
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .card a:hover {
+    text-decoration: underline;
+  }
+
+  .values {
+    padding: 4rem 1.5rem;
+    background: var(--color-bg-alt);
+  }
+
+  .values .container {
+    max-width: 820px;
+    margin: 0 auto;
+  }
+
+  .values h2 {
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    margin: 0 0 1.5rem;
+    color: var(--color-text);
+  }
+
+  .values ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+  }
+
+  .values li {
+    color: var(--color-text);
+    line-height: 1.55;
+    padding: 0.85rem 1rem;
+    background: var(--color-bg-elevated);
+    border-left: 4px solid #c0392b;
+  }
+
+  .values strong {
+    color: #c0392b;
+  }
+
+  .cta-final {
+    padding: 4rem 1.5rem 5rem;
+    background: var(--color-bg);
+    text-align: center;
+  }
+
+  .cta-final .container {
+    max-width: 720px;
+    margin: 0 auto;
+  }
+
+  .cta-final h2 {
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    margin: 0 0 0.75rem;
+    color: var(--color-text);
+  }
+
+  .cta-final p {
+    color: var(--color-text-light);
+    margin: 0 0 1.5rem;
+  }
+
+  .cta-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+</style>

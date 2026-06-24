@@ -1,25 +1,27 @@
----export const prerender = true;
-
-
+﻿---
+export const prerender = true;
 
 import Layout from '@/layouts/Layout.astro';
 
 const engagements = [
-  { icon: "🔓", titre: "Open Source", description: "Tous nos outils sont open source. Le code est public, auditable par toute personne souhaitant vérifier nos pratiques." },
-  { icon: "🚫", titre: "Zéro revente de données", description: "Nous ne vendons ni ne louons les données de nos utilisateurs. Jamais. Vos données vous appartiennent." },
-  { icon: "🌍", titre: "Intérêt général", description: "Biscuits IA est une association loi 1901. Notre mission est d'ordre public, sans actionnaires à satisfaire." },
-  { icon: "🤝", titre: "Solidarité numérique", description: "Nos outils sont gratuits pour les associations, TPE et petites structures. La fracture numérique, c'est notre combat." },
+  { icon: 'unlock', titre: 'Open Source', description: 'Tous nos outils sont open source. Le code est public, auditable par toute personne souhaitant verifier nos pratiques.' },
+  { icon: 'no-entry', titre: 'Zero revente de donnees', description: 'Nous ne vendons ni ne louons les donnees de nos utilisateurs. Jamais. Vos donnees vous appartiennent.' },
+  { icon: 'earth', titre: 'Interet general', description: 'Biscuits IA est une association loi 1901. Notre mission est d ordre public, sans actionnaires a satisfaire.' },
+  { icon: 'handshake', titre: 'Solidarite numerique', description: 'Nos outils sont gratuits pour les associations, TPE et petites structures. La fracture numerique, c est notre combat.' },
+  { icon: 'shield', titre: 'Protection de l enfance', description: 'Nous cooperons avec le 3018, PHAROS et les forces de l ordre contre la pedocriminalite en ligne. Aucun signalement de notre part n est jamais ignore, et nous accompagnons les mineurs et leurs familles sans condition de moyens.' },
+  { icon: 'hands', titre: 'Aide aux victimes', description: 'L accompagnement des victimes de cybercriminalite (arnaques, usurpation, chantage) est gratuit, confidentiel et sans condition. Nous ne facturons jamais une victime.' },
 ];
+
 ---
 
 <Layout
-  title="Charte Éthique | Biscuits IA"
-  description="Découvrez nos engagements éthiques : open source, zéro revente de données, accessibilité et intérêt général."
+  title="Charte Ethique | Biscuits IA"
+  description="Decouvrez nos engagements ethiques : open source, zero revente de donnees, accessibilite, protection de l'' enfance et aide aux victimes."
 >
   <section class="charte-hero">
     <div class="charte-hero__inner">
-      <h1>Notre Charte Éthique</h1>
-      <p>Transparence, solidarité et responsabilité sont au cœur de chacune de nos décisions. Voici nos engagements concrets.</p>
+      <h1>Notre Charte Ethique</h1>
+      <p>Transparence, solidarite, responsabilite et protection des plus vulnerables. Voici nos engagements concrets, ceux que nous respectons et ceux sur lesquels vous pouvez nous challenger.</p>
     </div>
   </section>
 
@@ -29,12 +31,20 @@ const engagements = [
       <div class="engagements-grid">
         {engagements.map((eng) => (
           <div class="engagement-card">
-            <span class="engagement-icon">{eng.icon}</span>
+            <span class="engagement-icon" aria-hidden="true">{eng.icon}</span>
             <h3>{eng.titre}</h3>
             <p>{eng.description}</p>
           </div>
         ))}
       </div>
+    </div>
+  </section>
+
+  <section class="charte-actions">
+    <div class="charte-container">
+      <h2>Si vous voyez un manquement, dites-le nous</h2>
+      <p>Cette charte n''a de valeur que si elle est respectee et verifiee. Si vous constatez un ecart entre ces principes et ce que vous observez, ecrivez-nous. Chaque signalement est lu et traite.</p>
+      <a href="/contact" class="cta-link">Nous contacter</a>
     </div>
   </section>
 </Layout>
@@ -46,12 +56,14 @@ const engagements = [
   padding: 4rem 1rem 3rem;
   text-align: center;
 }
-.charte-hero__inner { max-width: 700px; margin: 0 auto; padding-top: 2rem;}
+.charte-hero__inner { max-width: 760px; margin: 0 auto; padding-top: 2rem; }
 .charte-hero h1 { font-size: 2.5rem; margin-bottom: 1rem; }
+.charte-hero p { font-size: 1.05rem; opacity: 0.95; }
+
 .charte-engagements {
   padding: 3rem 1rem;
 }
-.charte-container { max-width: 1000px; margin: 0 auto; }
+.charte-container { max-width: 1100px; margin: 0 auto; }
 .charte-container h2 {
   font-size: 2rem;
   color: var(--color-primary);
@@ -75,4 +87,35 @@ const engagements = [
 }
 .engagement-icon { font-size: 2rem; }
 .engagement-card h3 { color: var(--color-secondary); font-size: 1.15rem; }
+
+.charte-actions {
+  padding: 3rem 1rem 4rem;
+  background: var(--color-bg-alt);
+  text-align: center;
+}
+.charte-actions h2 {
+  font-size: 1.4rem;
+  margin: 0 0 0.75rem;
+  color: var(--color-text);
+}
+.charte-actions p {
+  color: var(--color-text-light);
+  max-width: 640px;
+  margin: 0 auto 1.25rem;
+  line-height: 1.6;
+}
+.cta-link {
+  display: inline-block;
+  padding: 0.75rem 1.5rem;
+  background: var(--color-primary);
+  color: var(--color-bg-elevated);
+  font-weight: 700;
+  border: 2px solid var(--color-border);
+  text-decoration: none;
+}
+.cta-link:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 4px 4px 0 var(--color-border);
+  color: var(--color-bg-elevated);
+}
 </style>

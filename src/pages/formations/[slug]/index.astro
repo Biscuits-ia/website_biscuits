@@ -1,0 +1,237 @@
+---
+// src/pages/formations/[slug]/index.astro
+// Page detaillee d'une formation : description longue, programme detaille,
+// sessions a venir avec leurs modalites d'inscription (HelloAsso, virement,
+// demande gratuite, code de parrainage).
+
+import Layout from '@/layouts/Layout.astro';
+import Breadcrumb from '@/components/Breadcrumb.astro';
+import { createSupabaseAdminClient } from '@/lib/supabase';
+import type { TrainingSessionWithSeats } from '@/types/formations';
+import { formatDateLong, formatTimeRange, formatSlidingScale, isFreeTraining } from '@/types/formations';
+
+export const prerender = false;
+
+const admin = createSupabaseAdminClient(Astro);
+const { slug } = Astro.params;
+
+if (!slug) {
+  return Astro.redirect('/formations');
+}
+
+const { data: training, error: trainingError } = await admin
+  .from('trainings')
+  .select('*')
+  .eq('slug', slug)
+  .eq('is_published', true)
+  .maybeSingle();
+
+if (trainingError || !training) {
+  return new Response('Formation introuvable', { status: 404 });
+}
+
+const { data: sessions } = await admin
+  .from('training_sessions_with_seats')
+  .select('*')
+  .eq('training_id', training.id)
+  .eq('is_published', true)
+  .gte('starts_at', new Date().toISOString())
+  .order('starts_at', { ascending: true });
+
+const isFree = isFreeTraining(
+  training.min_price_cents,
+  training.suggested_price_cents,
+  training.solidarity_price_cents,
+);
+const priceLabel = isFree
+  ? 'Formation gratuite'
+  : formatSlidingScale(
+      training.min_price_cents,
+      training.suggested_price_cents,
+      training.solidarity_price_cents,
+    );
+
+const hasSessions = (sessions ?? []).length > 0;
+---
+
+<Layout
+  title={`${training.title} | Formations | Biscuits IA`}
+  description={training.short_description ?? training.description ?? 'Formation IA accessible a tous.'}
+>
+  <Breadcrumb />
+
+  <section class="training-hero">
+    <div class="container">
+      <div class="training-badges">
+        {training.category && <span class="badge badge-info">{training.category}</span>}
+        {training.level    && <span class="badge badge-neutral">{training.level}</span>}
+        {training.duration_label && <span class="badge badge-mono">{training.duration_label}</span>}
+      </div>
+
+      <h1>{training.title}</h1>
+      {training.short_description && <p class="lead">{training.short_description}</p>}
+
+      <div class="training-price">
+        <span class="price-label">{priceLabel}</span>
+        {!isFree && training.is_paying && (
+          <span class="price-hint">Vous choisissez ce que vous pouvez payer.</span>
+        )}
+      </div>
+    </div>
+  </section>
+
+  <section class="training-body">
+    <div class="container">
+      <div class="training-grid">
+        <article class="training-main">
+          {training.description && (
+            <div class="training-description">
+              <h2>Programme</h2>
+              <p>{training.description}</p>
+            </div>
+          )}
+
+          <h2>Sessions a venir</h2>
+
+          {hasSessions ? (
+            <div class="sessions-list">
+              {(sessions ?? []).map((s: TrainingSessionWithSeats) => (
+                <article class="session-row">
+                  <div class="session-row-main">
+                    <h3>{formatDateLong(s.starts_at)}</h3>
+                    <ul class="session-meta">
+                      <li>{formatTimeRange(s.starts_at, s.ends_at)}</li>
+                      {s.online ? (
+                        <li>En ligne</li>
+                      ) : s.location ? (
+                        <li>{s.location}</li>
+                      ) : null}
+                      <li>
+                        {s.seats_left > 0
+                          ? (s.seats_left === 1 ? '1 place restante' : `${s.seats_left} places restantes`)
+                          : 'Complet'}
+                      </li>
+                    </ul>
+                  </div>
+                  <div class="session-row-cta">
+                    <a href={`/formations/${slug}/inscription?session=${s.id}`} class="btn btn-primary">
+                      S&apos;inscrire
+                    </a>
+                  </div>
+                </article>
+              ))}
+            </div>
+          ) : (
+            <p class="empty-note">
+              Aucune session n&apos;est encore ouverte a l&apos;inscription. Revenez bientot !
+            </p>
+          )}
+
+          <div class="accessibilite-banner">
+            <h2>Vous ne pouvez pas payer ?</h2>
+            <p>
+              Vous pouvez demander une place offerte (sans justificatif) ou utiliser un code
+              de parrainage recu d&apos;un proche. L&apos;acces a la formation reste ouvert a tous.
+            </p>
+            <div class="accessibilite-actions">
+              <a href={`/formations/${slug}/inscription?session=&demande=1`} class="btn btn-secondary">
+                Demander une place gratuite
+              </a>
+              <a href={`/formations/${slug}/inscription?session=&parrainage=1`} class="btn btn-secondary">
+                Utiliser un code de parrainage
+              </a>
+            </div>
+          </div>
+        </article>
+
+        <aside class="training-aside">
+          <div class="aside-card">
+            <h3>Le modele tarif conscient</h3>
+            <p>
+              Pour chaque formation, nous affichons un prix minimum, un prix suggere et un
+              prix &laquo; solidarite &raquo;. Vous choisissez le montant qui vous convient, sans
+              justificatif.
+            </p>
+            <a href="/formations#modele" class="link-arrow">En savoir plus</a>
+          </div>
+
+          <div class="aside-card">
+            <h3>Parrainer une place</h3>
+            <p>
+              Si vous pouvez donner plus, vous pouvez offrir une place a quelqu&apos;un qui ne
+              pourrait pas se la payer.
+            </p>
+            <a href="/formations/parrainer" class="link-arrow">Parrainer une place</a>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .training-hero {
+    padding: 50px 0 30px;
+    background: var(--color-bg-alt);
+    border-bottom: 4px solid var(--color-border);
+  }
+  .training-hero h1 {
+    font-size: clamp(2rem, 4vw, 2.8rem);
+    margin: 12px 0;
+    color: var(--color-text);
+  }
+  .lead { font-size: 1.1rem; color: var(--color-text-light); max-width: 720px; }
+  .training-badges { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+  .badge { padding: 4px 10px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; border: 2px solid var(--color-border); }
+  .badge-info    { background: var(--color-accent-honey); }
+  .badge-neutral { background: var(--color-accent-vanilla); }
+  .badge-mono    { background: var(--color-accent-caramel); }
+
+  .training-price { margin-top: 18px; padding: 16px; background: var(--color-bg-elevated); border: var(--brutal-border); box-shadow: var(--shadow-md); display: inline-block; }
+  .price-label { display: block; font-weight: 800; font-size: 1.05rem; color: var(--color-text); }
+  .price-hint  { display: block; font-size: 0.85rem; color: var(--color-text-light); margin-top: 4px; }
+
+  .training-body { padding: 50px 0; }
+  .training-grid { display: grid; grid-template-columns: 1fr 320px; gap: 40px; }
+  .training-main h2 { font-size: 1.5rem; margin: 28px 0 16px; color: var(--color-text); }
+  .training-description p { line-height: 1.7; color: var(--color-text); }
+
+  .sessions-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 30px; }
+  .session-row {
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    padding: 18px; border: var(--brutal-border); background: var(--color-bg-elevated);
+    box-shadow: var(--shadow-sm);
+  }
+  .session-row h3 { font-size: 1.05rem; margin-bottom: 6px; color: var(--color-text); }
+  .session-meta { list-style: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 12px; color: var(--color-text-light); font-size: 0.9rem; }
+  .session-meta li::before { content: '> '; font-weight: 700; }
+  .session-row-cta .btn { white-space: nowrap; }
+
+  .accessibilite-banner {
+    padding: 24px; border: var(--brutal-border); background: var(--color-accent-honey);
+    box-shadow: var(--shadow-md); margin-top: 30px;
+  }
+  .accessibilite-banner h2 { font-size: 1.25rem; margin-bottom: 10px; }
+  .accessibilite-banner p  { line-height: 1.6; margin-bottom: 12px; }
+  .accessibilite-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+
+  .training-aside { display: flex; flex-direction: column; gap: 16px; }
+  .aside-card { padding: 20px; border: var(--brutal-border); background: var(--color-bg-elevated); box-shadow: var(--shadow-sm); }
+  .aside-card h3 { font-size: 1.05rem; margin-bottom: 10px; color: var(--color-text); }
+  .aside-card p  { font-size: 0.9rem; color: var(--color-text-light); line-height: 1.6; }
+  .link-arrow { display: inline-block; margin-top: 8px; font-weight: 700; color: var(--color-primary); text-decoration: none; }
+  .link-arrow:hover { text-decoration: underline; }
+
+  .empty-note { color: var(--color-text-light); padding: 20px; border: var(--brutal-border-thin); border-style: dashed; }
+
+  .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+  .btn { padding: 12px 24px; font-weight: 700; text-decoration: none; display: inline-block; border: var(--brutal-border); }
+  .btn-primary   { background: var(--color-primary); color: white; box-shadow: var(--shadow-md); }
+  .btn-primary:hover   { transform: translate(-2px, -2px); box-shadow: var(--shadow-lg); }
+  .btn-secondary { background: var(--color-bg-elevated); color: var(--color-text); box-shadow: var(--shadow-sm); }
+  .btn-secondary:hover { transform: translate(-2px, -2px); box-shadow: var(--shadow-md); }
+
+  @media (max-width: 900px) {
+    .training-grid { grid-template-columns: 1fr; gap: 24px; }
+  }
+</style>

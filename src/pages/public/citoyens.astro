@@ -1,0 +1,380 @@
+﻿---
+// src/pages/public/citoyens.astro
+// Landing dediee aux citoyens : Anti Pepins, sensibilisation, aide aux victimes.
+
+export const prerender = true;
+
+import Layout from '@/layouts/Layout.astro';
+import Breadcrumb from '@/components/Breadcrumb.astro';
+
+const schema = {
+  type: 'WebPage' as const,
+  data: {
+    name: 'Biscuits IA pour les citoyens',
+    description: 'Biscuits IA propose aux citoyens des outils gratuits pour reconnaitre les arnaques, se proteger en ligne, et signaler les contenus illicites. Anti Pepins, ressources, aide aux victimes.',
+  },
+};
+---
+
+<Layout
+  title="Outils gratuits pour les citoyens | Biscuits IA"
+  description="Vous etes citoyen et vous voulez vous proteger des arnaques en ligne, signaler un contenu illicite, ou aider un proche victime ? Anti Pepins, ressources gratuites, aide aux victimes."
+  schema={schema}
+>
+  <Breadcrumb />
+
+  <section class="lp-hero">
+    <div class="container">
+      <p class="lp-eyebrow lp-eyebrow-citoyen">Vous etes un citoyen, un parent, un proche</p>
+      <h1>Des outils gratuits pour vous proteger en ligne</h1>
+      <p class="lp-lead">
+        Vous avez recu un SMS suspect. Un de vos proches s'est fait avoir. Vous voulez signaler un contenu illicite. Biscuits IA met a votre disposition des outils gratuits, sans publicite, sans revente de vos donnees. Pas de compte requis, pas de tracking.
+      </p>
+      <div class="lp-cta">
+        <a href="https://anti-pepins.biscuits-ia.com/" class="btn-primary" rel="noopener noreferrer" target="_blank">
+          Analyser un message avec Anti Pepins
+          <span class="ext" aria-hidden="true">↗</span>
+        </a>
+        <a href="/aide-victimes" class="btn-ghost">J'ai besoin d'aide</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="lp-context">
+    <div class="container">
+      <h2>Les situations que vous rencontrez peut-etre</h2>
+      <div class="context-grid">
+        <article class="context-card">
+          <h3>Un SMS de livraison bizarre</h3>
+          <p>Colissimo, Chronopost, DPD, FedEx vous demandent de payer des frais pour un colis en attente. Avant de cliquer : collez le message dans Anti Pepins.</p>
+        </article>
+        <article class="context-card">
+          <h3>Un mail de votre banque suspect</h3>
+          <p>"Compte bloque", "verifier votre identite", "operation suspecte". Toujours passe par votre espace client officiel, jamais par le lien dans le mail.</p>
+        </article>
+        <article class="context-card">
+          <h3>Un message de votre enfant</h3>
+          <p>"Maman, j'ai perdu mon telephone, envoie-moi de l'argent sur ce nouveau RIB." Verifiez en l'appelant directement, pas en repondant au SMS.</p>
+        </article>
+        <article class="context-card">
+          <h3>Un pop-up "virus detecte"</h3>
+          <p>Microsoft, Apple, Norton vous demandent d'appeler un numero. Fermez le navigateur sans rien cliquer. Si c'est repetitif, faites-vous aider.</p>
+        </article>
+        <article class="context-card">
+          <h3>Une video troublante de votre proche</h3>
+          <p>Les deepfakes vocaux et video sont de plus en plus realistes. Si une video de votre proche vous demande quelque chose d'inhabituel, verifiez par un autre canal.</p>
+        </article>
+        <article class="context-card">
+          <h3>Un contenu pedopornographique en ligne</h3>
+          <p>Vous avez vu, par accident ou signalement, un contenu impliquant un mineur. Ce n'est jamais de votre faute. Signalez immediatement a PHAROS et au 3018.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="lp-solutions">
+    <div class="container">
+      <h2>Ce qu'on vous propose</h2>
+      <div class="solution-grid">
+        <article class="solution-card">
+          <h3>Anti Pepins</h3>
+          <p>Le service public gratuit pour analyser un SMS, un mail ou un lien suspect. Reponse en 5 secondes. Anonyme, sans inscription.</p>
+          <p class="solution-price">100% gratuit.</p>
+          <a href="https://anti-pepins.biscuits-ia.com/" class="solution-cta" rel="noopener noreferrer" target="_blank">Ouvrir Anti Pepins <span class="ext" aria-hidden="true">↗</span></a>
+        </article>
+        <article class="solution-card">
+          <h3>Aide aux victimes</h3>
+          <p>Vous etes victime d'une arnaque : phishing, usurpation d'identite, chantage, deepfake. On vous accompagne pas a pas, gratuitement et en confidence.</p>
+          <p class="solution-price">100% gratuit.</p>
+          <a href="/aide-victimes" class="solution-cta">Procedure d'aide</a>
+        </article>
+        <article class="solution-card">
+          <h3>Ressources educatives</h3>
+          <p>Guides pratiques, checklists, tutoriels pour comprendre et vous proteger. Tout est en libre acces, adaptable a votre usage.</p>
+          <p class="solution-price">100% gratuit.</p>
+          <a href="/ressources" class="solution-cta">Acceder aux ressources</a>
+        </article>
+        <article class="solution-card">
+          <h3>Numeros d'urgence</h3>
+          <p>3018 (cyberharcelement, mineurs), 17/112 (police), 3919 (violences conjugales), 0 805 805 817 (Cybermalveillance.gouv.fr). A garder prets.</p>
+          <p class="solution-price">Toujours gratuit.</p>
+          <a href="/aide-victimes#contacts-urgence" class="solution-cta">Voir les numeros</a>
+        </article>
+        <article class="solution-card">
+          <h3>Signaler un contenu illicite</h3>
+          <p>Contenu pedopornographique, haine en ligne, escroquerie : on vous explique comment signaler a PHAROS, 3018 ou directement a la plateforme concernee.</p>
+          <p class="solution-price">Procedure officielle, gratuite.</p>
+          <a href="/aide-victimes" class="solution-cta">Procedure de signalement</a>
+        </article>
+        <article class="solution-card">
+          <h3>Ateliers pour les seniors</h3>
+          <p>On intervient gratuitement dans les CCAS, residences autonomie, associations de seniors. Arnaques en ligne, mots de passe, deepfakes : on prend le temps.</p>
+          <p class="solution-price">Gratuit pour les seniors.</p>
+          <a href="/contact?sujet=atelier-seniors" class="solution-cta">Proposer un atelier</a>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="lp-ressources">
+    <div class="container">
+      <h2>Pour aller plus loin</h2>
+      <ul class="res-list">
+        <li><a href="/blog/detecter-arnaque-ia">Comment detecter une arnaque en 30 secondes</a></li>
+        <li><a href="/blog/deepfakes-ia-clone-vos-proches">Les deepfakes : comment reperer une video ou un appel truque</a></li>
+        <li><a href="/blog/phishing-nouvelle-generation-ia">Phishing nouvelle generation : quand l'IA imite parfaitement votre banque</a></li>
+        <li><a href="/blog/ingenierie-sociale-ia-techniques">L'ingenierie sociale en 2026 : les nouvelles techniques</a></li>
+        <li><a href="/blog/legislation-arnaques-ia-2026">Vos droits en cas d'arnaque : ce que dit la loi en 2026</a></li>
+        <li><a href="/blog/ia-accessibilite-numerique">L'IA pour l'accessibilite numerique des seniors</a></li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="lp-cta-final">
+    <div class="container">
+      <h2>Vous etes victime, vous voulez aider un proche ?</h2>
+      <p>Le premier pas est souvent le plus dur. Le formulaire d'aide est confidentiel, on vous repond sous 48h ouvrees, gratuitement. Pour les urgences, les numeros sont sur la page d'aide.</p>
+      <div class="lp-cta-buttons">
+        <a href="/aide-victimes" class="btn-primary">Acceder a l'aide</a>
+        <a href="/contact?sujet=citoyen" class="btn-ghost">Nous ecrire</a>
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .lp-hero {
+    padding: 5rem 1.5rem 3rem;
+    background: linear-gradient(135deg, var(--color-bg) 0%, var(--color-bg-alt) 100%);
+    text-align: center;
+  }
+
+  .lp-hero .container {
+    max-width: 880px;
+    margin: 0 auto;
+  }
+
+  .lp-eyebrow {
+    font-size: 0.85rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--color-primary);
+    margin-bottom: 0.75rem;
+  }
+
+  .lp-eyebrow-citoyen {
+    color: #c0392b;
+  }
+
+  .lp-hero h1 {
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 900;
+    margin: 0 0 1rem;
+    color: var(--color-text);
+    line-height: 1.15;
+  }
+
+  .lp-lead {
+    color: var(--color-text-light);
+    font-size: 1.1rem;
+    line-height: 1.6;
+    margin: 0 0 2rem;
+  }
+
+  .lp-cta {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .btn-primary {
+    display: inline-block;
+    padding: 0.85rem 1.5rem;
+    background: var(--color-primary);
+    color: var(--color-bg-elevated);
+    font-weight: 800;
+    border: 2px solid var(--color-border);
+    text-decoration: none;
+  }
+
+  .btn-primary:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 4px 4px 0 var(--color-border);
+    color: var(--color-bg-elevated);
+  }
+
+  .ext {
+    font-size: 0.85em;
+  }
+
+  .btn-ghost {
+    display: inline-block;
+    padding: 0.85rem 1.5rem;
+    background: transparent;
+    color: var(--color-text);
+    font-weight: 700;
+    border: 2px solid var(--color-border);
+    text-decoration: none;
+  }
+
+  .btn-ghost:hover {
+    background: var(--color-bg-elevated);
+  }
+
+  .lp-context,
+  .lp-solutions,
+  .lp-ressources {
+    padding: 4rem 1.5rem;
+  }
+
+  .lp-context {
+    background: var(--color-bg);
+  }
+
+  .lp-solutions {
+    background: var(--color-bg-alt);
+  }
+
+  .lp-ressources {
+    background: var(--color-bg);
+  }
+
+  .lp-context .container,
+  .lp-solutions .container,
+  .lp-ressources .container {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .lp-context h2,
+  .lp-solutions h2,
+  .lp-ressources h2 {
+    text-align: center;
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    color: var(--color-text);
+    margin: 0 0 2rem;
+  }
+
+  .context-grid,
+  .solution-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
+    gap: 1.5rem;
+  }
+
+  .context-card,
+  .solution-card {
+    background: var(--color-bg-elevated);
+    border: 2px solid var(--color-border);
+    padding: 1.5rem;
+  }
+
+  .context-card h3,
+  .solution-card h3 {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: #c0392b;
+    margin: 0 0 0.5rem;
+  }
+
+  .context-card p,
+  .solution-card p {
+    color: var(--color-text-light);
+    line-height: 1.55;
+    margin: 0 0 0.5rem;
+  }
+
+  .solution-price {
+    font-size: 0.95rem;
+    color: var(--color-first);
+    font-weight: 700;
+  }
+
+  .solution-cta {
+    display: inline-block;
+    margin-top: 0.5rem;
+    padding: 0.6rem 1.1rem;
+    background: var(--color-bg);
+    color: var(--color-text);
+    font-weight: 700;
+    border: 2px solid var(--color-border);
+    text-decoration: none;
+    font-size: 0.9rem;
+  }
+
+  .solution-cta:hover {
+    background: var(--color-primary);
+    color: var(--color-bg-elevated);
+  }
+
+  .res-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    max-width: 760px;
+    margin-inline: auto;
+  }
+
+  .res-list li {
+    padding: 1rem 1.25rem;
+    background: var(--color-bg-elevated);
+    border-left: 4px solid #c0392b;
+  }
+
+  .res-list a {
+    color: var(--color-primary);
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .res-list a:hover {
+    text-decoration: underline;
+  }
+
+  .lp-cta-final {
+    padding: 4rem 1.5rem 5rem;
+    background: #c0392b;
+    color: #fff;
+    text-align: center;
+  }
+
+  .lp-cta-final .container {
+    max-width: 760px;
+    margin: 0 auto;
+  }
+
+  .lp-cta-final h2 {
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    margin: 0 0 0.75rem;
+    color: #fff;
+  }
+
+  .lp-cta-final p {
+    line-height: 1.6;
+    margin: 0 0 1.5rem;
+    opacity: 0.95;
+  }
+
+  .lp-cta-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .lp-cta-final .btn-primary {
+    background: #fff;
+    color: #c0392b;
+  }
+
+  .lp-cta-final .btn-ghost {
+    background: transparent;
+    color: #fff;
+    border-color: #fff;
+  }
+</style>

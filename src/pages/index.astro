@@ -1,15 +1,18 @@
----
-// Page d'accueil : hero + features + derniers articles du blog (maillage interne)
+﻿---
+// Page d'accueil : hero, 4 piliers, publics, victime, logiciels, anti-pepins, soutien, articles, communaute.
 export const prerender = true;
 
 import BaseLayout from '@/layouts/Layout.astro';
 import Hero from '@/components/Hero.astro';
-import AnimatedFeatureGrid from '@/components/AnimatedFeaturesGrid.astro';
-import Confidentialite from '@/components/Confidentialite.astro';
-import Communaute from '@/components/Communaute.astro';
-import AideBenevoleCTA from '@/components/AideBenevoleCTA.astro';
-import NewsletterSocial from '@/components/NewsletterSocial.astro';
+import PillarsGrid from '@/components/PillarsGrid.astro';
+import PublicsPicker from '@/components/PublicsPicker.astro';
+import VictimHighlight from '@/components/VictimHighlight.astro';
+import AntiPepinsShowcase from '@/components/AntiPepinsShowcase.astro';
+import SoftwareShowcase from '@/components/SoftwareShowcase.astro';
 import LatestArticles from '@/components/LatestArticles.astro';
+import SupportCTA from '@/components/SupportCTA.astro';
+import Communaute from '@/components/Communaute.astro';
+import NewsletterSocial from '@/components/NewsletterSocial.astro';
 import { getCollection } from 'astro:content';
 
 const latestArticles = (await getCollection('blog', ({ data }) =>
@@ -20,15 +23,28 @@ const latestArticles = (await getCollection('blog', ({ data }) =>
 ---
 
 <BaseLayout
-  title="Biscuits IA | Agir pour une Intelligence Artificielle éthique et solidaire"
-  description="Association Loi 1901 d'intérêt général. Ateliers IA, accompagnement personnalisé et ressources libres pour associations, collectivités et petites structures."
+  title="Biscuits IA | IA accessible, cybercriminalite combattue, logiciels libres et Anti Pepins"
+  description="Association Loi 1901. Quatre piliers : accompagnement a l'IA, lutte contre la cybercriminalite et aide aux victimes, logiciels pour associations partenaires, et le service public Anti Pepins."
+  schema={{
+    type: 'WebPage',
+    data: {
+      name: 'Biscuits IA - Association Loi 1901',
+      description: 'Quatre piliers, une mission d\'interet general : IA accessible, lutte contre la cybercriminalite, logiciels libres pour associations, Anti Pepins.',
+    },
+  }}
 >
-
   <Hero />
-  <AnimatedFeatureGrid />
-  <Confidentialite />
-  <Communaute />
-  <AideBenevoleCTA />
+  <PillarsGrid
+    layout="home"
+    title="Quatre piliers, une mission d'interet general"
+    intro="Une association Loi 1901 qui agit sur quatre fronts complementaires pour rendre le numerique utile, sur et accessible a tous. Chaque pilier finance et renforce les autres."
+  />
+  <PublicsPicker />
+  <VictimHighlight />
+  <AntiPepinsShowcase />
+  <SoftwareShowcase />
   <LatestArticles articles={latestArticles} />
+  <SupportCTA />
+  <Communaute />
   <NewsletterSocial />
 </BaseLayout>

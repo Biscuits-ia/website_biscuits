@@ -1,6 +1,6 @@
-﻿import { useCallback, useState, type ChangeEvent, type FormEvent } from 'react';
+﻿import { useCallback, useState, type ChangeEvent } from 'react';
 import '@/styles/victim-form.css';
-import { EMAIL_RE, MAX_MESSAGE, MAX_NAME, MAX_SUBJECT, MIN_MESSAGE } from '@/lib/validation';
+import { EMAIL_RE, MAX_MESSAGE, MAX_NAME, MIN_MESSAGE } from '@/lib/validation';
 
 type FieldId = 'name' | 'email' | 'situation_type' | 'message';
 
@@ -106,7 +106,7 @@ export default function VictimForm() {
   }, []);
 
   const handleSubmit = useCallback(
-    async (event: FormEvent<HTMLFormElement>) => {
+    async (event: React.SyntheticEvent<HTMLFormElement>) => {
       event.preventDefault();
       clearAllErrors();
 

@@ -119,7 +119,7 @@ const countLabel    = `${count ?? 0} compte${(count ?? 0) !== 1 ? 's' : ''} enre
       value={search}
       class="filter-input filter-input--wide"
     />
-    <select name="role" class="filter-input" onchange="this.form.submit()">
+    <select name="role" class="filter-input" data-autosubmit="1">
       <option value="">Tous les rôles</option>
       <option value="user"       selected={role === 'user'}>Utilisateur</option>
       <option value="benevole"   selected={role === 'benevole'}>Bénévole</option>

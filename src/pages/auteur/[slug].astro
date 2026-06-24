@@ -1,0 +1,186 @@
+﻿---
+// src/pages/auteur/[slug].astro
+// ----------------------------------------------------------------------------
+// Page auteur dediee pour le signal E-E-A-T (Experience, Expertise,
+// Authoritativeness, Trustworthiness) que les LLM utilisent pour citer.
+// Une page auteur = une fiche schema.org/Person avec memeAs, knowsAbout,
+// affiliation, publications. C\'est ce que ChatGPT, Perplexity et Google
+// AI Overviews consultent pour attribuer une source a un article.
+//
+// Pour l\'instant on a 1 auteur principal (Alexis Gallard, president). La page
+// est prerenduee (statique) pour la perf.
+// ============================================================================
+
+import BaseLayout from "@/layouts/Layout.astro";
+
+export const prerender = true;
+
+interface Author {
+  slug: string;
+  name: string;
+  role: string;
+  bio: string;
+  expertise: string[];
+  affiliation: string;
+  socials?: { label: string; url: string }[];
+  sameAs?: string[];
+  email?: string;
+}
+
+const alexis: Author = {
+  slug: "alexis-gallard",
+  name: "Alexis Gallard",
+  role: "President & fondateur",
+  bio: "President et fondateur de l\'association Biscuits IA. Passionne par l\'IA generative, l\'ethique du numerique et l\'accompagnement des associations. Travail quotidien sur l\'appropriation de l\'IA par les structures a but non lucratif, la formation de benevoles et la mediation numerique.",
+  expertise: [
+    "Intelligence artificielle generative (LLM, GPT, Claude, Mistral)",
+    "Ethique de l\'IA et AI Act europeen",
+    "Open source et logiciels libres",
+    "Mediation numerique et aide aux victimes",
+    "RGPD et protection des donnees",
+  ],
+  affiliation: "Association Biscuits IA (RNA W863012707, SIRET 10151660700013)",
+  email: "contact@biscuits-ia.com",
+  sameAs: [
+    "https://www.linkedin.com/company/biscuits-ia",
+  ],
+};
+
+const collective: Author = {
+  slug: "biscuits-ia",
+  name: "Equipe Biscuits IA",
+  role: "Collectif editorial",
+  bio: "L\'equipe editoriale de Biscuits IA est composee de benevoles et de contributeurs experts (juristes, developpeurs, mediateurs numeriques, formateurs IA). Les contenus publies sur le site sont relus et valides par le comite editorial avant publication.",
+  expertise: [
+    "Intelligence artificielle",
+    "Mediation numerique",
+    "Logiciels libres",
+    "RGPD",
+    "Open source",
+  ],
+  affiliation: "Association Biscuits IA",
+  sameAs: [
+    "https://www.linkedin.com/company/biscuits-ia",
+  ],
+};
+
+const AUTHORS: Author[] = [alexis, collective];
+
+export function getStaticPaths() {
+  return [
+    { params: { slug: "alexis-gallard" } },
+    { params: { slug: "biscuits-ia" } },
+  ];
+}
+
+const { slug } = Astro.params;
+const author = AUTHORS.find((a) => a.slug === slug);
+if (!author) {
+  return Astro.redirect("/404");
+}
+
+const siteUrl = import.meta.env.SITE || "https://biscuits-ia.com";
+const canonical = `${siteUrl}/auteur/${author.slug}`;
+
+const personSchema = {
+  "@context": "https://schema.org",
+  "@type": "Person",
+  "@id": `${canonical}#person`,
+  "name": author.name,
+  "jobTitle": author.role,
+  "description": author.bio,
+  "affiliation": {
+    "@type": "Organization",
+    "@id": `${siteUrl}/#organization`,
+    "name": "Biscuits IA",
+  },
+  "knowsAbout": author.expertise,
+  "sameAs": author.sameAs ?? [],
+  "email": author.email,
+  "url": canonical,
+  "worksFor": {
+    "@type": "NGO",
+    "@id": `${siteUrl}/#organization`,
+  },
+};
+
+const fullTitle = `${author.name} - ${author.role} | Biscuits IA`;
+const description = author.bio.slice(0, 160);
+---
+
+<BaseLayout
+  title={fullTitle}
+  description={description}
+  canonical={`/auteur/${author.slug}`}
+  ogType="article"
+  schema={{ type: "WebPage", data: { name: author.name, description: author.bio, speakableSelectors: ["h1", ".author-bio"] } }}
+  geo={{
+    author: author.name,
+    authorUrl: canonical,
+    contentType: "human",
+    lastReviewed: "2026-06-24",
+    expertise: author.expertise[0],
+  }}
+>
+  <section class="author-page">
+    <div class="container">
+      <header class="author-header">
+        <p class="author-role">{author.role}</p>
+        <h1>{author.name}</h1>
+        <p class="author-affiliation">{author.affiliation}</p>
+      </header>
+
+      <div class="author-body">
+        <p class="author-bio">{author.bio}</p>
+
+        <h2>Domaines d'expertise</h2>
+        <ul class="expertise-list">
+          {author.expertise.map((e) => <li>{e}</li>)}
+        </ul>
+
+        {author.sameAs && author.sameAs.length > 0 && (
+          <>
+            <h2>Retrouvez-moi ailleurs</h2>
+            <ul class="socials-list">
+              {author.sameAs.map((url) => <li><a href={url} rel="me noopener external" target="_blank">{url}</a></li>)}
+            </ul>
+          </>
+        )}
+
+        {author.email && (
+          <p class="author-contact">
+            <strong>Contact :</strong> <a href={`mailto:${author.email}`}>{author.email}</a>
+          </p>
+        )}
+
+        <p class="author-back">
+          <a href="/blog">&larr; Retour au blog</a>
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <script
+    is:inline
+    type="application/ld+json"
+    set:html={JSON.stringify(personSchema)}
+  />
+</BaseLayout>
+
+<style>
+  .author-page { padding: 4rem 0 6rem; background: var(--color-bg, #fdfaf3); min-height: 70vh; }
+  .container { max-width: 760px; margin: 0 auto; padding: 0 24px; }
+  .author-header { margin-bottom: 2rem; border-bottom: 2px solid var(--color-border, #2a2424); padding-bottom: 1.5rem; }
+  .author-role { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-primary-dark, #c98a2a); font-weight: 700; margin: 0 0 0.5rem; }
+  .author-header h1 { font-size: clamp(2rem, 4vw, 2.8rem); margin: 0 0 0.5rem; color: var(--color-text, #2a2424); }
+  .author-affiliation { color: var(--color-text-light, #5c3a1a); font-size: 1rem; margin: 0; }
+  .author-body { line-height: 1.65; color: var(--color-text, #2a2424); }
+  .author-bio { font-size: 1.05rem; margin: 0 0 2rem; }
+  .author-body h2 { font-size: 1.3rem; margin: 2rem 0 0.75rem; color: var(--color-text, #2a2424); }
+  .expertise-list, .socials-list { padding-left: 1.5rem; margin: 0 0 1.5rem; }
+  .expertise-list li, .socials-list li { margin-bottom: 0.4rem; }
+  .socials-list a { color: var(--color-primary-dark, #c98a2a); text-decoration: underline; word-break: break-all; }
+  .author-contact { background: var(--color-bg-elevated, #fdfaf3); padding: 1rem 1.25rem; border: 2px solid var(--color-border, #2a2424); margin: 1.5rem 0; }
+  .author-back { margin-top: 2.5rem; }
+  .author-back a { color: var(--color-primary-dark, #c98a2a); text-decoration: underline; font-weight: 600; }
+</style>

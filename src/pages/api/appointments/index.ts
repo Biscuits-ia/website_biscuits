@@ -33,10 +33,29 @@ export const GET: APIRoute = async ({ request, cookies }) => {
       );
     }
 
-    const { data, error } = await supabase
+    // FIX P1 2.4 : pagination (page/limit) + filtres status/from/to
+    const url = new URL(request.url);
+    const page = Math.max(1, parseInt(url.searchParams.get('page') ?? '1', 10) || 1);
+    const limit = Math.min(200, Math.max(1, parseInt(url.searchParams.get('limit') ?? '50', 10) || 50));
+    const statusFilter = url.searchParams.get('status') ?? '';
+    const fromParam   = url.searchParams.get('from') ?? '';
+    const toParam     = url.searchParams.get('to') ?? '';
+    const offset = (page - 1) * limit;
+
+    let query = supabase
       .from('volunteer_appointments')
-      .select('*')
-      .order('created_at', { ascending: false });
+      .select('*', { count: 'exact' })
+      .order('created_at', { ascending: false })
+      .range(offset, offset + limit - 1);
+    if (statusFilter) query = query.eq('status', statusFilter);
+    if (fromParam)   query = query.gte('created_at', fromParam);
+    if (toParam) {
+      const toDate = new Date(toParam);
+      toDate.setDate(toDate.getDate() + 1);
+      query = query.lt('created_at', toDate.toISOString());
+    }
+
+    const { data, error, count } = await query;
 
     if (error) {
       return new Response(
@@ -46,7 +65,7 @@ export const GET: APIRoute = async ({ request, cookies }) => {
     }
 
     return new Response(
-      JSON.stringify(data),
+      JSON.stringify({ data, total: count ?? 0, page, limit }),
       { status: 200, headers: { 'Content-Type': 'application/json' } }
     );
   } catch (err) {

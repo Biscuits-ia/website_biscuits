@@ -252,7 +252,7 @@ function AdminAppointmentsCalendarInner() {
   };
 
   // ── Ajout d'un créneau ─────────────────────────────────────────────────────
-  const submitNewSlot = async (e: React.FormEvent<HTMLFormElement>) => {
+  const submitNewSlot = async (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!selectedDay) return;
     if (!newSlotStart || !newSlotEnd) {

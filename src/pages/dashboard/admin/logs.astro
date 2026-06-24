@@ -29,25 +29,25 @@ const { data: logs, count } = await query;
 const totalPages = Math.ceil((count ?? 0) / perPage);
 
 // Comptage par niveau
-const { data: levelStats } = await supabase.rpc('log_level_counts');
+await supabase.rpc('log_level_counts'); // eslint-disable-line @typescript-eslint/no-unused-vars
 ---
 
-<DashboardLayout title="Logs système" activePage="logs" userName={userName} authResult={result}>
+<DashboardLayout title="Logs systÃ¨me" activePage="logs" userName={userName} authResult={result}>
 
   <div style="margin-bottom: 24px; display:flex; align-items:center; justify-content:space-between;">
     <div>
       <h1 style="font-size: 1.2rem; font-weight: 400; letter-spacing: -0.02em;">
-        Logs système
+        Logs systÃ¨me
         <span class="badge badge-info" style="font-size:0.62rem; margin-left:8px; vertical-align:middle;">LIVE</span>
       </h1>
-      <p style="color: var(--text-muted); font-size: 0.8rem; margin-top: 3px;">{count ?? 0} entrées</p>
+      <p style="color: var(--text-muted); font-size: 0.8rem; margin-top: 3px;">{count ?? 0} entrÃ©es</p>
     </div>
     <!-- Auto-refresh -->
     <button
-      onclick="location.reload()"
+      data-reload="1"
       class="btn btn-ghost"
       style="font-size:0.78rem;"
-    >⟳ Rafraîchir</button>
+    >âŸ³ RafraÃ®chir</button>
   </div>
 
   <!-- Filtres -->
@@ -60,7 +60,7 @@ const { data: levelStats } = await supabase.rpc('log_level_counts');
       class="filter-input"
       style="min-width:240px;"
     />
-    <select name="level" class="filter-input" onchange="this.form.submit()">
+    <select name="level" class="filter-input" data-autosubmit="1">
       <option value="">Tous les niveaux</option>
       <option value="INFO"  selected={filterLvl === 'INFO'}>INFO</option>
       <option value="WARN"  selected={filterLvl === 'WARN'}>WARN</option>
@@ -69,7 +69,7 @@ const { data: levelStats } = await supabase.rpc('log_level_counts');
     </select>
     <button type="submit" class="btn btn-primary" style="font-size:0.8rem;">Filtrer</button>
     {(filterLvl || search) && (
-      <a href="/dashboard/admin/logs" class="btn btn-ghost" style="font-size:0.78rem;">× Réinitialiser</a>
+      <a href="/dashboard/admin/logs" class="btn btn-ghost" style="font-size:0.78rem;">Ã— RÃ©initialiser</a>
     )}
   </form>
 
@@ -82,7 +82,7 @@ const { data: levelStats } = await supabase.rpc('log_level_counts');
     ].map(({ level, cls }) => (
       <a href={`?level=${level}`} class={`badge badge-${cls}`} style="cursor:pointer; font-size:0.72rem;">
         {level}
-        {filterLvl === level && ' ✓'}
+        {filterLvl === level && ' âœ“'}
       </a>
     ))}
   </div>
@@ -100,14 +100,14 @@ const { data: levelStats } = await supabase.rpc('log_level_counts');
           </span>
           <span class={`log-level ${lvl}`}>{log.level}</span>
           <span style="font-size:0.72rem; color:var(--text-muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
-            {svc || '—'}
+            {svc || 'â€”'}
           </span>
           <span class="log-msg">{log.message}</span>
         </div>
       );
     }) : (
       <div style="text-align:center; padding:40px; color:var(--text-muted); font-size:0.83rem;">
-        Aucun log trouvé.
+        Aucun log trouvÃ©.
       </div>
     )}
   </div>
@@ -116,11 +116,11 @@ const { data: levelStats } = await supabase.rpc('log_level_counts');
   {totalPages > 1 && (
     <div style="display:flex; gap:8px; justify-content:center; margin-top:20px;">
       {page > 1 && (
-        <a href={`?page=${page - 1}&level=${filterLvl}&q=${search}`} class="btn btn-ghost">← Précédent</a>
+        <a href={`?page=${page - 1}&level=${filterLvl}&q=${search}`} class="btn btn-ghost">â† PrÃ©cÃ©dent</a>
       )}
       <span style="padding:7px 14px; font-size:0.82rem; color:var(--text-muted);">{page} / {totalPages}</span>
       {page < totalPages && (
-        <a href={`?page=${page + 1}&level=${filterLvl}&q=${search}`} class="btn btn-ghost">Suivant →</a>
+        <a href={`?page=${page + 1}&level=${filterLvl}&q=${search}`} class="btn btn-ghost">Suivant â†’</a>
       )}
     </div>
   )}

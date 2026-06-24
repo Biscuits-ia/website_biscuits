@@ -173,7 +173,7 @@ const priorityLabel: Record<string, string> = {
       value={search}
       class="input input-sm"
     />
-    <select name="status" class="input input-sm" onchange="this.form.submit()">
+    <select name="status" class="input input-sm" data-autosubmit="1">
       <option value="">Tous les statuts</option>
       <option value="active"    selected={statusFilter === 'active'}>Actif</option>
       <option value="on_hold"   selected={statusFilter === 'on_hold'}>En pause</option>

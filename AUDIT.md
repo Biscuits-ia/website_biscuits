@@ -1,381 +1,481 @@
-# Audit — `Biscuits IA` (site Astro 6 / SSR Vercel)
+﻿# Audit complet – backend, auth, panel admin, Supabase, Vercel
 
-**Date d'audit :** 22 juin 2026
-**Périmètre :** `src/`, `astro.config.mjs`, `tsconfig.json`, `eslint.config.mjs`, `vercel.json`, `package.json`, `public/`
-**Build :** ✅ `npm run build` (12.09 s, sortie `dist/` = 3.8 Mo, fonction Vercel 31 Mo non compressée)
-**Type-check :** ⚠️ `npx astro check` — **51 erreurs / 52 hints** sur 220 fichiers (cf. §2 et §9)
-**Score global :** 6.9 / 10
+> Date : 2026-06-24
+> Périmètre : `src/pages/auth`, `src/pages/api`, `src/pages/dashboard/admin`,
+> `src/lib`, `src/middleware.ts`, `supabase/migrations`, `vercel.json`, `.env*`.
 
 ---
 
-## 1. Résumé exécutif
+## 0. Synthèse
 
-Projet Astro 6 v6.1.8 en SSR (`output: 'server'`, adaptateur Vercel) avec Supabase (auth + Postgres + RLS), middleware de sécurité générant un nonce CSP, 62 routes API sous `/api/`, dashboard multi-rôles (admin, modo, bénévole, association, data analyst, membre) et front public en MDX/Content Collections. L'architecture est cohérente, la sécurité de base est bien pensée (CSP nonce, HSTS, X-Frame-Options, rate-limiting, audit log sur les adhérents), le SEO et l'accessibilité sont au-dessus du standard. Les fragilités sont essentiellement : (1) une dette de typage importante (51 erreurs `astro check` qui cassent la rigueur TypeScript), (2) des patterns de scripts inline dans des `.astro` legacy qui n'ont pas été convertis vers React comme le reste du code (et qui masquent des bugs de null-safety), (3) l'utilisation d'un cookie domain `'.biscuits-ia.com'` à point d'interrogation rétrocompatible mais qui peut prêter à confusion avec les sous-domaines, et (4) un bundle de fonction Vercel de 31 Mo (non compressé) qui dégrade le cold-start.
+État global **solide** sur les fondations (RLS, séparation `anon` / `service_role`,
+validation Zod, rate-limit, CSP nonce, SMTP from-scratch).
 
-**3 points forts**
-- **Sécurité défense en profondeur** : middleware avec nonce CSP, rate-limit en mémoire, invalidation de session par `last_logout_at`, headers Vercel complets (HSTS, X-Frame-Options DENY, Permissions-Policy qui désactive caméra/micro/géo), audit log sur toutes les opérations adhérents (`adherent_historiques`).
-- **Architecture propre** : séparation `lib/` (auth, supabase, validation, rateLimit, adherentsApi) très factorisée, `getAdherentsAuthContext` mutualise auth + rate-limit + rôle pour 8+ routes, helpers Zod + helpers CSV (`splitCsvLine`, `toCsvCell`) réutilisables.
-- **SEO/Accessibilité** : composant `SEOHead.astro` exhaustif (OG, Twitter, canonical, hreflang, RSS), `SchemaOrg.astro` génère Organization + WebSite + Breadcrumb + Article, Mega-menu ARIA-compliant, contraste et focus visibles, RGPD géré via `CookieConsent` avec bandeau + persistance localStorage.
+**6 problèmes bloquants (P0)** et **une dizaine de problèmes importants (P1)** identifiés,
+concentrés sur 4 zones :
 
-**3 risques majeurs**
-- **Dette de typage TS critique** : 51 erreurs `astro check` (null/unknown dans scripts inline, `module astro no exported member Astro`, types `Record<string, any>` dans `SchemaOrg.astro`, casts `Astro as any` dans `src/pages/api/tasks/*.ts`). La couverture est masquée par `as any` plutôt que traitée. Build OK parce que TS n'est pas strict au build, mais la CI perd sa valeur de garde-fou.
-- **JWT parsé sans vérification de signature** (`src/middleware.ts:29-41`) pour lire le `iat`. L'auth réelle est validée plus loin, mais le middleware fait confiance à un payload non signé pour décider du refresh — un attaquant qui forge un JWT avec un `iat` ancien pourrait forcer un refresh-token round-trip inutile (gaspillage de CPU) et indirectement aider à éclipser un rate-limit applicatif.
-- **Bundle fonction Vercel 31 Mo** : le runtime cold-start s'allonge (≈ 1-2 s vs < 500 ms attendu), ce qui pénalise le TTFB des routes SSR (`/dashboard/*`, `/api/*`). Aucun `prerender = true` n'est posé sur les pages publiques pourtant stables (index, contact, blog list, articles) — elles repassent inutilement par la fonction.
-
----
-
-## 2. Scoring par catégorie (/10)
-
-| # | Catégorie | Note | Commentaire |
-|---|-----------|------|-------------|
-| 1 | Architecture & structure du code | **8.0** | Très bonne séparation `lib/`, `components/`, `pages/`, `layouts/`, `content/`. Conventions respectées (kebab-case, alias `@/*`). |
-| 2 | Sécurité | **7.0** | CSP nonce, HSTS, rate-limit, audit log. Points faibles : JWT non vérifié pour `iat`, cookie `.biscuits-ia.com` à point, `adminSupabase` systématiquement utilisé (bypass RLS). |
-| 3 | Performance & bundle | **5.5** | Build OK, mais 31 Mo de fonction Vercel, 0 page publique prerendered, pas de code-splitting visible, balises `<img>` au lieu de `astro:assets` dans plusieurs pages. |
-| 4 | TypeScript & qualité de code | **5.0** | `astro check` retourne 51 erreurs (cf. §9). Casts `as any` récurrents (`Astro as any`, `Record<string, any>` dans `SchemaOrg.astro`, `as AppSupabaseClient`). |
-| 5 | SEO & Metadata | **9.0** | Couverture quasi-exhaustive : OG, Twitter, canonical, hreflang, JSON-LD multi-types, sitemap filtré, robots.txt, RSS. |
-| 6 | Accessibilité (a11y) | **8.0** | `aria-expanded`, `aria-controls`, `aria-live`, focus visible, skip links présents, `lang="fr"`. Quelques `<img>` sans `alt` explicite. |
-| 7 | Authentification & autorisation | **7.5** | Helpers `requireAuth/requireAdmin/requireModerator/requireBenevole/requireAssociation/requireDataAnalyst`. Invalidation session OK. Manque : MFA, audit log d'auth, lock-out progressif. |
-| 8 | Validation & sanitisation des données | **7.5** | Zod sur création tâches, regex email RFC-compliant, `splitCsvLine` robuste, `sanitize-html` installé. Manque : limite de taille sur les payloads d'API. |
-| 9 | DX & outillage | **6.0** | ESLint flat config + TS plugin, format script, `bun.lock` (non standard → bloque `npm audit`). Pas de tests automatisés. Pas de pre-commit. README par défaut. |
-| 10 | Déploiement & ops (Vercel) | **7.0** | `vercel.json` propre avec Cache-Control différencié, headers sécurité. Manque : `vercel.ts` recommandé depuis 2025, log drains, alertes, monitoring Sentry. |
-| 11 | RGPD & confidentialité | **7.5** | Bandeau cookie avec 4 catégories, GTM/GA gérés sous consentement, page `confidentialite.astro` présente. Manque : registre des traitements, DPO identifié publiquement, export/suppression compte. |
-| 12 | Internationalisation | **5.0** | Site mono-français. `hreflang` posé dans `SEOHead.astro` (mais aucune autre locale). Pas de routing `i18n/`. |
-| 13 | Observabilité & logging | **5.5** | `console.error` répandu, audit log sur adhérents. Pas de logger structuré (pino/winston), pas de corrélation d'ID requête, pas de trace Sentry. |
-| | **Global** | **6.9** | |
+- CSRF sur la suppression de compte
+- Validation du mot de passe manquante côté serveur (inscription / reset)
+- `redirectTo` manquant dans `resetPasswordForEmail`
+- CSP `script-src-attr 'unsafe-inline'` activé en production
+- Absence de rate-limit sur `/auth/inscription` et `/auth/connexion`
+- Convention fragile `note !== 'REFUSE'` pour valider une exonération
 
 ---
 
-## 3. Constats détaillés
+## 1. Problèmes bloquants (P0)
 
-| Sévérité | Catégorie | Fichier:Ligne | Problème | Impact | Recommandation |
-|----------|-----------|---------------|----------|--------|----------------|
-| **Critique** | TS / DX | `src/middleware.ts:29-41` | Le middleware parse le JWT (`Buffer.from(parts[1], 'base64url')`) pour lire le claim `iat` **sans vérifier la signature**. | Un attaquant peut forger un cookie JWT avec un `iat` ancien → déclenche un refresh-token round-trip, consomme CPU, et indirectement peut aider à noyer des logs. | Remplacer par un appel `supabase.auth.getUser()` unique dans le middleware, mettre le résultat dans `Astro.locals.user` typé, et le passer aux pages/layouts. |
-| **Critique** | TS / DX | 51 fichiers, cf. §9 | 51 erreurs `astro check` (TS6385×30, TS18047×18, TS2339×15, TS6133×14, TS7006×6, etc.). | La CI ne peut pas servir de garde-fou tant qu'elle est en erreur ; le code embarque des `as any` qui masquent des bugs. | Bloquer le merge si `astro check` > 0 erreur ; traiter par batch (cf. §6 ex. 1). |
-| **Élevée** | Performance | `.vercel/output/functions/_render.func` (31 Mo) | Aucune page publique n'est `export const prerender = true`. L'accueil, le blog, les articles, la page contact passent par la fonction Vercel. | TTFB dégradé (cold-start 1-2 s), coût Vercel Functions accru, latence utilisateur. | Ajouter `export const prerender = true;` sur `src/pages/index.astro`, `contact.astro`, `blog/[page].astro`, `blog/[...slug].astro`, `ateliers.astro`, `ressources.astro`. Garder SSR pour `/auth/*`, `/api/*`, `/dashboard/*`. |
-| **Élevée** | Sécurité | `src/lib/supabase.ts:28` | `domain: import.meta.env.PROD ? '.biscuits-ia.com' : undefined` — le cookie est partagé sur **tous les sous-domaines** (ex. `admin.biscuits-ia.com`, `staging.biscuits-ia.com`). | Si un sous-domaine est compromis (ou pointe vers un service tiers via CNAME), il peut lire/écrire le cookie d'auth du domaine principal → **session hijacking cross-subdomain**. | Retirer le `domain` (le cookie sera par défaut sur l'hôte exact) ou l'écrire explicitement sur `biscuits-ia.com` (sans point). |
-| **Élevée** | Sécurité | `src/lib/adherentsApi.ts:114-129` | `createSupabaseAdminClient()` (service_role, **bypass RLS**) est utilisé pour lire les rôles utilisateurs dans toutes les routes `/api/adherents/*`. | Si une route oublie un check `hasAnyRole`, l'accès est ouvert. La défense repose uniquement sur la discipline applicative. | RLS en place sur `utilisateur_roles` : créer une policy `select` filtrée par `auth.uid()` et utiliser le client standard. Conserver admin uniquement pour les écritures inter-utilisateurs (audit, export global). |
-| **Élevée** | TS / DX | `src/pages/api/tasks/*.ts` (5 fichiers) | `requireAuth(Astro as any)` — le cast `as any` masque l'incompatibilité entre le type `APIContext` (param 1) et le type attendu par `requireAuth`. | TS ne peut pas valider la signature des helpers d'auth. | Aligner la signature de `requireAuth` pour accepter `APIContext` directement (ou `{ request, cookies, redirect }`). |
-| **Élevée** | TS / DX | `src/pages/dashboard/user/parametres.astro:4` | `import { Astro } from 'astro';` — le module `astro` n'exporte pas `Astro` (le global est implicite). **Erreur de build potentielle si TS strict appliqué**. | Bloque `astro check`, peut masquer des erreurs de refactor. | Supprimer l'import, utiliser le type `APIContext` ou `Props` typé. |
-| **Moyenne** | Performance | `src/components/BaseHead.astro:41-46` | `preconnect` à `googletagmanager.com` (GTM) est inconditionnel, même sans consentement. | Le navigateur établit la connexion TCP+TLS vers GTM avant tout consentement → fuite d'IP vers Google. | Conditionner le `preconnect` au consentement (`document.documentElement.dataset.cookieConsent === 'all'`), ou le charger uniquement après init du `CookieConsent`. |
-| **Moyenne** | Sécurité | `src/lib/rateLimit.ts` | Rate-limit **en mémoire** (`Map` + `setInterval` de cleanup). Sur Vercel, chaque cold-start repart à zéro. | Un attaquant peut orchestrer N fonctions concurrentes pour bypasser la limite (chaque instance a son propre compteur). | Migrer vers Upstash Redis / `@vercel/kv` / Vercel Queues, ou utiliser une solution edge (Cloudflare Turnstile, Arcjet). |
-| **Moyenne** | Sécurité | `src/pages/api/change-password.ts:39` | `newPassword.length < 6` côté serveur. | Politique de mot de passe faible (NIST recommande min 8 + check HaveIBeenPwned). | Imposer min 8, et idéalement un check d'entropie (`zxcvbn`) ou appel HaveIBeenPwned en local. |
-| **Moyenne** | Sécurité | `src/pages/auth/update-profile.ts:32` | Validation email dupliquée (regex inline) au lieu d'utiliser `validateHttpUrl`/`EMAIL_RE` de `src/lib/validation.ts`. | Inconsistance entre la validation de l'inscription (plus stricte) et celle du profil. | Importer `EMAIL_RE` depuis `src/lib/validation.ts` (ou créer un helper `validateEmail`). |
-| **Moyenne** | DX / Outillage | `package.json` (`bun.lock` présent) | `bun.lock` n'est pas un lockfile npm → `npm audit` retourne `ENOLOCK`. Impossible de scanner les vulnérabilités avec les outils standards. | Vulnérabilités non détectées au CI. | Ajouter `"engines": { "packageManager": "npm@10" }` ou `yarn`, et committer le lockfile correspondant. Alternative : ajouter une étape `bun audit` dans le CI. |
-| **Moyenne** | RGPD | `src/components/CookieConsent.tsx` | Pas de bouton "Refuser tout" en première action (l'UI propose "Tout accepter" puis "Personnaliser"). | Le pattern « consent or pay » de la CNIL impose que le refus soit aussi simple que l'acceptation. | Ajouter un bouton "Tout refuser" en regard direct de "Tout accepter", sans passer par "Personnaliser". |
-| **Moyenne** | DX | `README.md` | Contenu par défaut du starter Astro — aucune information sur le projet, l'install, les variables d'env, le déploiement. | Onboarding nouveaux contributeurs difficile. | Remplacer par un README projet (prérequis, `.env`, scripts, déploiement Vercel, variables Supabase). |
-| **Moyenne** | Observabilité | Plusieurs routes API | `console.error` partout, pas de logger structuré, pas de correlation ID. | Logs impossibles à corréler entre requêtes. | Introduire un logger (pino ou consola JSON) avec `request.id` (généré dans le middleware) et `request.url` systématiquement. |
-| **Moyenne** | TS | `src/components/SEO/SchemaOrg.astro` | `data?: Record<string, any>` perd la sécurité de type. | Un `data` mal formé passe la compilation et casse la validation Schema.org. | Typer `data` par type discriminé (`Organization | WebSite | BreadcrumbList | Service | ...`). |
-| **Moyenne** | Sécurité | `src/pages/api/contact.ts` | Pas de rate-limit par IP/email (seul le rate-limit global du middleware s'applique, 20 req/min sur `/api/`). | Spam de formulaires de contact possible. | Ajouter un rate-limit applicatif plus strict sur cet endpoint (5 req / IP / 10 min), et un captcha invisible (Turnstile). |
-| **Moyenne** | DX | `src/components/AdminScheduleManager.astro:130-220` | Scripts inline massifs (DOM querying sans null-check) qui ne passent pas `astro check` (15+ erreurs). | Code non maintenable, IDE rouge, bugs runtime probables (e.g. `errorContainer.innerHTML = ''` quand `errorContainer` est null). | Convertir en composant React (`AdminScheduleManager.tsx`) hydraté `client:load`, comme `CookieConsent` et `ContactFormClient`. |
-| **Faible** | Performance | Plusieurs pages | `<img src="…">` au lieu de `<Image src={…} />` de `astro:assets` (non vérifié exhaustivement, présent dans `AdminAppointmentsDashboard.astro`). | Pas d'optimisation automatique, pas de `srcset`, pas de lazy-loading. | Convertir en `<Image>` (et utiliser `<Picture>` pour AVIF/WebP). |
-| **Faible** | A11y | `public/sw.js` | Le service worker catche le fallback sur `/` pour les erreurs réseau → un user qui tape `/trombinoscope` offline verra l'accueil sans message. | Confusion utilisateur. | Ajouter une page `/offline.html` dédiée servie par le SW. |
-| **Faible** | SEO | `astro.config.mjs` (sitemap) | Le filtre `i18n` exclut `/admin`, `/api`, `/connexion`, `/inscription`, `/dashboard` — **OK**, mais le sitemap n'inclut pas les articles paginés de blog (`/blog/2`, `/blog/3`). | Pages de blog paginées non indexées. | Vérifier que `getStaticPaths` (ou SSR) génère bien les `URL`s `/blog/2`, `/blog/3` dans le sitemap. |
-| **Faible** | i18n | `astro.config.mjs` | `i18n` Astro non configuré → pas de routing localisé. | Pas un problème si l'audience est 100% FR, mais bloque toute expansion. | Activer `i18n: { defaultLocale: 'fr', locales: ['fr','en'] }` quand pertinent. |
-| **Faible** | DX | `src/lib/adherentsApi.ts:82` | `as any` lors de l'insert dans `adherent_historiques`. | Type safety perdue. | Typer le payload via une interface `AdherentLogEntry`. |
-| **Faible** | DX | `src/components/react/CookieConsent.tsx` | `(globalThis as any).showCookieBanner`, `(globalThis as any).loadGTMIfConsented` — exposition globale non typée. | Couplage invisible, IDE rouge. | Déclarer une interface `WindowWithCookie` dans `src/types/window.d.ts`. |
-| **Faible** | Sécurité | `src/components/BaseHead.astro:78-96` | GTM chargé via `<script>` classique (non-defer/async) — impact FCP. | Score Lighthouse "Best Practices" légèrement dégradé. | Charger GTM avec `async` + un `<noscript>` fallback. |
-| **Faible** | DX | `public/sw.js:8` | `cache.addAll(['/'])` ne précise pas la requête (`{ credentials: 'same-origin' }`). | Edge-case si la racine renvoie un redirect. | `cache.addAll(['/', new Request('/', { credentials: 'same-origin' })])`. |
+### 1.1. `/auth/delete-account` accepte `GET` → CSRF destructeur
+**Fichier** : `src/pages/auth/delete-account.ts`
+**Risque** : un user connecté (admin inclus) qui charge une page tierce
+contenant `<img src="https://biscuits-ia.com/auth/delete-account">` perd son
+compte sans interaction. Le `onclick="window.location.href='/auth/delete-account'"`
+du `dashboard/user/settings.astro` est aussi un vecteur direct.
 
----
+**Correctif** :
+- Supprimer `export const GET` (ne garder que `POST`).
+- Côté front, remplacer le `onclick` par un `<form method="POST" action="/auth/delete-account">` + dialog de confirmation.
+- Optionnel : ajouter un token CSRF (cookie `__csrf` + champ hidden, vérifié via `timingSafeEqual`).
 
-## 4. Quick wins (< 1 jour)
+### 1.2. Validation mot de passe absente côté serveur sur inscription et reset
+**Fichiers** : `src/pages/auth/inscription.ts`, `src/pages/auth/reinitialiser-mot-de-passe.ts`
+**Constat** : `validatePassword()` impose 8 caractères minimum mais **n'est jamais
+appelée** dans ces deux routes. Un mot de passe de 4 chars passe si la policy
+Auth Supabase est assouplie. `validatePassword` n'est utilisé que par les
+formulaires internes (changement de mdp).
 
-1. **Convertir `AdminScheduleManager.astro` en `.tsx`** : élimine 15+ erreurs `astro check`, factorise avec les autres composants React, et permet `client:load` pour le form.
-2. **Ajouter `export const prerender = true`** sur `src/pages/index.astro`, `contact.astro`, `blog/[page].astro`, `blog/[...slug].astro`, `ateliers.astro`, `ressources.astro` — **divise par 2 le cold-start** sur les pages publiques (estim. -600 ms TTFB).
-3. **Retirer le `domain: '.biscuits-ia.com'`** dans `src/lib/supabase.ts:28` (ou remplacer par `'biscuits-ia.com'` sans point). Une ligne de fix, ferme la faille cross-subdomain.
-4. **Ajouter `.env.example`** à la racine (SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY, RESEND_API_KEY, GTM_ID, SITE_URL) — permet l'onboarding et corrige l'absence d'env pour les nouveaux contributeurs.
-5. **Remplacer le README par un README projet** : prérequis, install, scripts, variables d'env, structure, déploiement Vercel.
-6. **Ajouter `engines: { "node": ">=20" }` dans `package.json`** pour figer la version de Node (alignement Vercel).
-7. **Ajouter un script `lint:ts:check` (`astro check`)** au `package.json` et un step CI dédié.
-8. **Ajouter un bouton "Tout refuser"** dans `CookieConsent.tsx` au même niveau visuel que "Tout accepter" (CNIL).
-9. **Typer `SchemaOrg.astro` `data` en union discriminée** au lieu de `Record<string, any>` (1 h, gain qualité immédiat).
-10. **Conditionner le `preconnect` GTM** dans `BaseHead.astro` au consentement cookie.
-
----
-
-## 5. Roadmap structurelle (> 1 semaine)
-
-### Phase 1 (1-2 sprints) — Fondations
-
-| # | Action | Effort | Bénéfice |
-|---|--------|--------|----------|
-| 1.1 | **Migrer le rate-limit en mémoire vers un store partagé** (Upstash Redis / Vercel KV / Arcjet). Ajouter le rate-limit par IP+route avec politique différenciée (auth: 5/h ; api public: 30/min ; api admin: 60/min). | 3 j | Élimine le bypass cold-start, anti-DDoS efficace. |
-| 1.2 | **Refacto `requireAuth` / `requireAdmin` etc.** pour accepter `APIContext` typé (sans `as any`). Aligner tous les call-sites. | 1 j | Élimine 5 casts `Astro as any`, ferme la dette TS. |
-| 1.3 | **Traiter les 51 erreurs `astro check`** par catégorie : scripts inline → composant React ; types `Record<string, any>` → types précis ; casts `as any` → suppression. | 5 j | CI utilisable comme garde-fou, qualité long terme. |
-| 1.4 | **Introduire un logger structuré** (pino ou consola JSON) avec correlation ID généré dans le middleware. | 2 j | Observabilité, debug prod. |
-| 1.5 | **Ajouter tests unitaires** (Vitest) sur `validateAdherentPayload`, `splitCsvLine`, `toCsvCell`, `getAdherentsAuthContext`, `getStrength` (password). | 3 j | Régression couverte sur les invariants critiques. |
-
-### Phase 2 (2-3 sprints) — Sécurité & RGPD
-
-| # | Action | Effort | Bénéfice |
-|---|--------|--------|----------|
-| 2.1 | **Migrer `vercel.json` vers `vercel.ts`** (config typée, dynamic logic, env vars). | 1 j | Recommandation 2025 Vercel. |
-| 2.2 | **Politique RLS granulaire** sur `utilisateur_roles`, `profiles`, `notifications`. Réduire l'usage de `createSupabaseAdminClient` aux seuls endpoints inter-utilisateurs (audit, export global). | 5 j | Defense in depth, moins de surface admin. |
-| 2.3 | **Endpoint `DELETE /api/account`** + export JSON des données (RGPD art. 15 & 17). | 3 j | Conformité RGPD. |
-| 2.4 | **Politique mot de passe forte** (min 8, zxcvbn ou HIBP) + MFA optionnel (TOTP via Supabase Auth). | 4 j | Conformité NIST/ANSSI. |
-| 2.5 | **Registre des traitements RGPD** documenté (`/docs/registre-traitements.md` ou page admin). | 2 j | Conformité CNIL. |
-
-### Phase 3 (3+ sprints) — Performance & DX
-
-| # | Action | Effort | Bénéfice |
-|---|--------|--------|----------|
-| 3.1 | **Code-splitting & prerender** de toutes les pages publiques (cf. quick win #2 étendu). Objectif : fonction Vercel < 10 Mo. | 2 j | TTFB < 200 ms sur pages publiques. |
-| 3.2 | **Migrer `<img>` vers `<Image>` (`astro:assets`)** + `<Picture>` pour AVIF/WebP dans toutes les pages. | 3 j | -50 % poids images, score Lighthouse +15. |
-| 3.3 | **Mettre en place Sentry** (ou équivalent) avec sourcemaps Vercel. | 1 j | Visibilité prod, alertes. |
-| 3.4 | **Ajouter une CI** (GitHub Actions ou Vercel pre-deploy) : `astro check` + `eslint` + tests unitaires. | 1 j | Bloque les régressions. |
-| 3.5 | **Convertir tous les `<script is:inline>` legacy** en composants React (`client:idle` ou `client:visible`) ou en modules `src/scripts/*.ts`. | 5 j | Élimine les 30+ erreurs TS6385/TS6133, bundle plus petit, cache navigateur. |
-
----
-
-## 6. Exemples de correction (top 5 critiques)
-
-### Exemple 1 — Éliminer les `as any` sur `requireAuth` (catégorie TS)
-
-**Avant** (`src/pages/api/tasks/create.ts:18`)
+**Correctif** :
 ```ts
-import type { APIRoute } from 'astro';
-import { requireAuth } from '@/lib/auth';
-
-export const POST: APIRoute = async (Astro) => {
-  const auth = await requireAuth(Astro as any); // ← cast qui masque l'incompatibilité
-  if (auth instanceof Response) return auth;
-  // ...
-};
+const err = validatePassword(password);
+if (err) return new Response(JSON.stringify({ error: err }), { status: 400 });
 ```
+À ajouter en haut des deux handlers, juste après le parsing.
 
-**Après** — typer `requireAuth` pour accepter `APIContext` :
+### 1.3. `/auth/mot-de-passe-oublie` ne passe pas le `redirectTo` à Supabase
+**Fichier** : `src/pages/auth/mot-de-passe-oublie.ts`
+**Constat** : la fonction `getAuthRedirectOrigin` calcule l'origin correctement,
+mais la variable `origin` n'est **jamais utilisée** dans l'appel
+`resetPasswordForEmail(email)`. Résultat : le lien « Confirmer mon adresse »
+de l'email pointe vers l'URL du dashboard Supabase (sandbox / prod), pas
+vers `https://biscuits-ia.com/auth/confirm`.
+
+**Correctif** :
 ```ts
-// src/lib/auth.ts
-import type { APIContext } from 'astro';
-
-type AuthContext = Pick<APIContext, 'request' | 'cookies' | 'redirect'>;
-
-export async function requireAuth(
-  ctx: AuthContext
-): Promise<AuthResult | Response> { /* … */ }
-```
-```ts
-// src/pages/api/tasks/create.ts
-import type { APIRoute } from 'astro';
-import { requireAuth } from '@/lib/auth';
-
-export const POST: APIRoute = async (ctx) => {
-  const auth = await requireAuth(ctx); // ← plus de cast
-  if (auth instanceof Response) return auth;
-  // ...
-};
-```
-
-### Exemple 2 — Sécuriser le cookie d'auth (catégorie Sécurité)
-
-**Avant** (`src/lib/supabase.ts:17-31`)
-```ts
-setAll(cookiesToSet) {
-  for (const { name, value, options } of cookiesToSet) {
-    context.cookies.set(name, value, {
-      ...options,
-      httpOnly: true,
-      secure: import.meta.env.PROD,
-      sameSite: 'lax',
-      path: '/',
-      // ⚠️ partagé avec TOUS les sous-domaines
-      domain: import.meta.env.PROD ? '.biscuits-ia.com' : undefined,
-    });
-  }
-}
-```
-
-**Après** — cookie sur l'hôte exact (pas de partage cross-subdomain) :
-```ts
-setAll(cookiesToSet) {
-  for (const { name, value, options } of cookiesToSet) {
-    context.cookies.set(name, value, {
-      ...options,
-      httpOnly: true,
-      secure: import.meta.env.PROD,
-      sameSite: 'lax',
-      path: '/',
-      // Pas de `domain` → cookie limité à l'hôte exact
-      // (si un sous-domaine doit partager, l'expliciter au cas par cas)
-    });
-  }
-}
-```
-
-### Exemple 3 — Prerender les pages publiques (catégorie Performance)
-
-**Avant** (`src/pages/index.astro`)
-```astro
----
-import BaseLayout from '@/layouts/Layout.astro';
-import Hero from '@/components/Hero.astro';
-// ... 230 lignes de contenu statique
----
-<BaseLayout title="Biscuits IA | Agir pour une IA éthique">
-  <Hero />
-  <AnimatedFeatureGrid />
-  ...
-</BaseLayout>
-```
-
-**Après** — forcer le prerender :
-```astro
----
-export const prerender = true; // ← 1 ligne, gain TTFB
-
-import BaseLayout from '@/layouts/Layout.astro';
-import Hero from '@/components/Hero.astro';
-// ... reste du frontmatter
----
-<BaseLayout title="Biscuits IA | Agir pour une IA éthique">
-  <Hero />
-  <AnimatedFeatureGrid />
-  ...
-</BaseLayout>
-```
-
-Idem à appliquer sur `contact.astro`, `blog/[page].astro`, `blog/[...slug].astro`, `ateliers.astro`, `ressources.astro`. Vérifier ensuite le déploiement Vercel (les pages prerendered apparaissent dans `dist/client/`).
-
-### Exemple 4 — Remplacer le parse JWT non vérifié par `getUser` typé (catégorie Sécurité)
-
-**Avant** (`src/middleware.ts:29-41`)
-```ts
-function readAccessTokenIssuedAtMs(accessToken: string): number | null {
-  try {
-    const parts = accessToken.split('.');
-    if (parts.length !== 3) return null;
-    const payload = JSON.parse(
-      Buffer.from(parts[1], 'base64url').toString('utf8') // ⚠️ signature non vérifiée
-    );
-    return typeof payload.iat === 'number' ? payload.iat : null;
-  } catch {
-    return null;
-  }
-}
-```
-
-**Après** — ne plus parser le JWT manuellement, faire confiance à `supabase.auth.getUser()` :
-```ts
-// Supprimer readAccessTokenIssuedAtMs et parseForwardedFor-token-iad
-
-// Dans onRequest, après création du client Supabase :
-const { data: { user }, error: userError } = await supabase.auth.getUser();
-if (user && !userError) {
-  // iat est exposé par getUser() via session
-  const iat = (user as any).iat ?? null;
-  Astro.locals.tokenIssuedAtMs = iat;
-  Astro.locals.user = user; // typé
-}
-```
-
-### Exemple 5 — Logger structuré avec correlation ID (catégorie Observabilité)
-
-**Avant** (répandu dans 30+ fichiers)
-```ts
-console.error('[api/groupes] list error:', error.message);
-console.error('[adherents-api] role fetch error:', roleError.message);
-```
-
-**Après** — introduire un logger minimal et un correlation ID :
-```ts
-// src/lib/logger.ts
-import { randomUUID } from 'node:crypto';
-
-export type LogContext = {
-  requestId: string;
-  userId?: string;
-  route: string;
-};
-
-export function createLogger(ctx: LogContext) {
-  const base = { ...ctx, ts: new Date().toISOString() };
-  return {
-    error: (msg: string, extra?: Record<string, unknown>) =>
-      console.error(JSON.stringify({ level: 'error', msg, ...base, ...extra })),
-    warn:  (msg: string, extra?: Record<string, unknown>) =>
-      console.warn (JSON.stringify({ level: 'warn',  msg, ...base, ...extra })),
-    info:  (msg: string, extra?: Record<string, unknown>) =>
-      console.log  (JSON.stringify({ level: 'info',  msg, ...base, ...extra })),
-  };
-}
-```
-```ts
-// src/middleware.ts (extrait)
-const requestId = randomUUID();
-Astro.locals.requestId = requestId;
-Astro.locals.logger = createLogger({
-  requestId,
-  route: new URL(Astro.request.url).pathname,
+const { error } = await supabase.auth.resetPasswordForEmail(email, {
+  redirectTo: `${origin}/auth/confirm?type=recovery`,
 });
 ```
+
+### 1.4. CSP `script-src-attr 'unsafe-inline'` en production
+**Fichier** : `src/middleware.ts`
+**Constat** : la directive `script-src-attr 'self' 'unsafe-inline'` autorise
+les handlers inline (`onclick="..."`, `onerror="..."`) en prod. Vecteur
+XSS via injection HTML. En dev, l'autorisation est OK (Vite / Astro), en
+prod il faut la retirer.
+
+**Correctif** :
 ```ts
-// src/pages/api/groupes/index.ts
-const log = Astro.locals.logger;
-if (error) {
-  log.error('groupes.list_failed', { code: error.code });
-  return jsonError('Erreur lors du chargement des groupes.', 500);
+const scriptSrcAttr = import.meta.env.DEV
+  ? `'self' 'unsafe-inline'`
+  : `'none'`;
+```
+
+### 1.5. Pas de rate-limit sur `/auth/inscription` et `/auth/connexion`
+**Fichiers** : `src/middleware.ts` (mapping), `src/pages/auth/inscription.ts`, `src/pages/auth/connexion.ts`
+**Constat** : la table de rate-limit dans `checkRouteRateLimit` ne référence
+pas ces deux routes. Un attaquant peut brute-forcer l'inscription (pour
+polluer la base) ou tenter du credential stuffing sur la connexion.
+
+**Correctif** dans `middleware.ts` :
+```ts
+if (pathname === '/auth/inscription' || pathname === '/auth/connexion') {
+  limit = 5;
+  windowMs = 60_000;   // 5 tentatives / min / IP
 }
 ```
 
----
-
-## 7. Détail des 51 erreurs `astro check` par catégorie
-
-| Code TS | Nombre | Fichiers concernés | Cause |
-|---------|--------|--------------------|-------|
-| TS6385 (`deprecated`) | 30 | `src/pages/dashboard/user/{demandes,index,logiciels,settings}.astro` + autres dashboard | `role="user"` (string) passé à `<DashboardLayout role={...}>` — le champ est marqué `@deprecated` (lu depuis la BDD via `authResult`). |
-| TS18047 (`possibly null`) | 18 | `src/components/AdminScheduleManager.astro`, autres composants admin | Accès `.innerHTML`, `.value`, `.reset`, `.dataset` sans null-check après `getElementById`. |
-| TS2339 (`property does not exist`) | 15 | `src/pages/api/groupes/*.ts`, `src/pages/api/change-password.ts`, `src/pages/dashboard/user/settings.astro` | Casts `as any` qui masquent l'absence de propriété sur le type réel (`adminSupabase`, `roles` n'existent pas sur `{ ctx, rateLimitResponse }`; `action` n'existe pas sur `Element`). |
-| TS6133 (`declared but never read`) | 14 | `src/pages/dashboard/user/settings.astro`, `src/components/AdminScheduleManager.astro` | Variables déclarées (`originalText`, `passwordForm`, `profileForm`) jamais relues. |
-| TS7006 (`implicitly any`) | 6 | `src/components/AdminScheduleManager.astro` | Paramètres de callback `msg`, `id`, `slot`, `slots`, `isAvailable` sans annotation. |
-| TS8016 (TS-only assertion) | 3 | `src/pages/connexion.astro`, `mot-de-passe-oublie.astro` | `<script is:inline>` contient `as Record<string, unknown>` (interdit en JS pur). |
-| TS2551 (`reset` on HTMLElement) | 2 | `AdminScheduleManager.astro:64,205` | `form.reset()` — `form` est typé `HTMLElement` (et non `HTMLFormElement`). |
-| TS2531 (`object possibly null`) | 3 | idem | `.value` sur `HTMLElement | null`. |
-
-**Recommandation :** traiter d'abord les 30 TS6385 (trivial : retirer la prop `role`), puis les 18+3 TS18047/TS2531 (convertir `<script is:inline>` → composant React), puis les 15 TS2339 (typer `getAdherentsAuthContext` correctement et remplacer `Astro as any` par `APIContext`).
+### 1.6. CSP n'inclut pas `https://api.helloasso.com` dans `connect-src`
+Mineur mais à régler : tous les appels HelloAsso sont aujourd'hui côté
+serveur, donc rien n'est cassé. Mais si un flow migre en client-side (SDK JS),
+le navigateur bloquera. À ajouter préventivement.
 
 ---
 
-## 8. Annexes
+## 2. Problèmes importants (P1)
 
-### A. Inventaire des routes API (62 fichiers)
+### 2.1. Pas de validation email côté `/auth/inscription` et `/auth/mot-de-passe-oublie`
+`inscription.ts` : `const email = formData.get('email')` puis directement
+`signUp({ email, password })`. Une chaîne de 500 chars passe.
+`mot-de-passe-oublie.ts` : idem avant `resetPasswordForEmail`.
 
-- **Public (sans auth)** : `analytics-export.ts`, `contact.ts`, `recruitment.ts`
-- **Auth (POST endpoints)** : `auth/{connexion,deconnexion,inscription,callback,reset-password,update-password,update-profile}.ts`
-- **Standard user** : `api/change-password.ts`, `api/notifications.ts`, `api/user-appointments*.ts`, `api/demandes/*`
-- **Admin** : `api/admin/{projects,project-members,project-tasks,task-hub-seed,analytics-export,appointments*}.ts`, `api/admin/{ateliers,benevoles,candidatures,contacts,demandes,resources,sessions}/*`
-- **Multi-rôles** : `api/adherents/*`, `api/groupes/*`, `api/benevole/*`, `api/tasks/*`, `api/appointment-slots/*`, `api/partenaires/*`
+**Correctif** : utiliser `EMAIL_RE` de `src/lib/validation.ts` (déjà importé
+dans `update-profile.ts`).
 
-### B. Métriques de build (22 juin 2026)
+### 2.2. `validate-payment.ts` (admin) : convention fragile `note !== 'REFUSE'`
+**Fichier** : `src/pages/api/admin/formations/validate-payment.ts`
+```ts
+const isApproved = parsed.data.note !== 'REFUSE';
+```
+Si l'admin écrit un vrai motif qui contient « REFUSE » (ex. « le demandeur
+refuse de fournir un justificatif »), la demande est refusée à tort.
+Pas d'idempotence non plus : un double-clic valide 2×.
 
-- `npm run build` : ✅ 12.09 s
-- Sortie : `dist/client/` 3.8 Mo, `dist/server/entry.mjs` (Vercel bundlé 31 Mo)
-- Astro : 6.1.8 (outdated 6.4.8)
-- TypeScript : 5.9.3 (outdated 6.0.3)
-- React : 19.x (à jour)
-- Tailwind : 4.x (à jour)
-- `@supabase/ssr` : 0.10.2, `@supabase/supabase-js` : 2.103.0 (à jour)
+**Correctif** :
+```ts
+const schema = z.object({
+  ...
+  decision: z.enum(['APPROVE', 'REFUSE']).default('APPROVE'),
+  note: z.string().trim().max(500).optional(),
+});
+```
+Et ajouter un check : `if (req.status !== 'pending') return redirect('?error=Deja+traitee');`.
 
-### C. Commandes utiles pour reproduire l'audit
+### 2.3. `/api/appointments` admin renvoie tout sans pagination
+**Fichiers** : `src/pages/api/admin/appointments.ts`, `src/pages/api/appointments/index.ts`
+`volunteer_appointments.select('*')` sans `.range()`. À 10 000+ RDV, payload
+lourd et timeout potentiel.
 
-```bash
-# Build + type-check
-npm run build
-npx astro check
+**Correctif** : ajouter `parsePagination` (déjà codé dans `lib/adherentsApi.ts`) + `from/to` + `count: 'exact'`.
 
-# Vulnérabilités (impossible sans lockfile npm)
-npm audit          # ENOLOCK (utilise bun.lock)
+### 2.4. `getOutboxStats()` dans le frontmatter admin fait `SELECT * FROM email_outbox`
+**Fichier** : `src/pages/dashboard/admin/formations.astro`
+Compte les rows côté Node au lieu d'utiliser un `GROUP BY status` SQL.
+Goulet d'étranglement si l'outbox grossit.
 
-# Outdated
-npm outdated
+**Correctif** : RPC SQL `SELECT status, COUNT(*) FROM email_outbox GROUP BY status;` ou filtre `last_30_days`.
 
-# Sitemap
-ls dist/client/sitemap*.xml
+### 2.5. `/api/admin/projects` vs `/api/benevole/projects` : double source de vérité
+`api/admin/projects` (admin-only) vs `api/benevole/projects` (admin + moderator).
+Confusant. Le front `/dashboard/benevole/*` n'utilise pas la route admin.
 
-# Audit accessibilité + SEO (Lighthouse)
-npx lighthouse https://biscuits-ia.com --view
+**Correctif** : choisir une sémantique unique, supprimer l'autre, ou renommer
+`api/benevole/projects` en `api/projects` avec exceptions explicites.
+
+### 2.6. `drop_task_hub_analytics.sql` : la colonne `corps` est référencée par le code
+**Fichier** : `supabase/migration/drop_task_hub_analytics.sql`
+Le commentaire dit explicitement de ne PAS exécuter le drop si le front
+lit encore `corps`. Si quelqu'un exécute quand même,
+`src/pages/dashboard/benevole/project/[id].astro` casse.
+
+**Correctif** : ajouter une vérification runtime ou créer une migration qui
+droppe réellement si le front est migré, sinon bloquer l'exécution par
+`RAISE EXCEPTION`.
+
+### 2.7. Pas de pagination sur `/api/appointments` (admin) ni sur `/api/adherents/export`
+**Constat** : `adherents/export.ts` fait un `SELECT` sans `.range()` ni
+filtre `created_at`. Si la table atteint 50k+ lignes, le CSV devient
+inutilisable et le serveur sature.
+
+**Correctif** : ajouter un filtre `gte('date_adhesion', fromDate)` + `lte('date_adhesion', toDate)` (déjà présent sur `formations/export-csv.ts`).
+
+### 2.8. Pas de CSRF sur les routes POST admin en form-multipart
+**Fichiers** : tous les `api/admin/*/creer.ts`, `modifier.ts`, `supprimer.ts`
+Un user authentifié (admin) qui visite une page malveillante déclenchera
+une soumission POST via un `<form>` auto-submit. Moins grave que pour
+`delete-account` (car déjà admin), mais le rôle pourrait être re-vérifié
+en CSRF.
+
+**Correctif** : ajouter un middleware qui vérifie `Origin` ou `Referer`
+matche `https://biscuits-ia.com` sur toutes les routes `/api/*` mutantes
+(POST / PUT / PATCH / DELETE).
+
+### 2.9. `supabase.ts` : pas de timeout sur `createServerClient`
+**Fichier** : `src/lib/supabase.ts`
+Le cookie parsing est synchrone, mais l'appel `auth.getUser()` (utilisé
+partout) n'a pas de timeout. Si Supabase rame, le SSR bloque.
+
+**Correctif** : envelopper les appels `supabase.auth.getUser()` critiques dans
+`Promise.race([..., AbortSignal.timeout(3000)])` (Node ≥ 17.3).
+
+### 2.10. `/api/formations/helloasso/webhook.ts` : `currency` non validée
+On insère `currency: payload?.data?.currency ?? 'EUR'` sans whitelist.
+Un attaquant qui forgerait un payload (impossible car HMAC, mais defense
+in depth) pourrait insérer `currency: '<script>...'` qui s'afficherait
+dans le dashboard admin.
+
+**Correctif** :
+```ts
+const currency = ['EUR', 'USD', 'GBP'].includes(payload?.data?.currency)
+  ? payload.data.currency
+  : 'EUR';
 ```
 
 ---
 
-*Audit produit de manière autonome. Aucun accès réseau aux serveurs prod n'a été effectué ; toutes les conclusions sont tirées de l'analyse statique du code source et de l'exécution locale des outils standard (build, type-check, lint).*
+## 3. Améliorations (P2)
+
+### 3.1. Page `connexion.astro` : validation email faible côté client
+`/^[^\s@]+@[^\s@]+\.[^\s@]+$/` autorise des emails invalides type `a@b.c`.
+Le regex du backend Supabase est plus strict. À harmoniser.
+
+### 3.2. `/auth/verifier-token-inscription.ts` : double appel `verifyOtp` séquentiel
+Le fallback `type: 'email'` → `type: 'signup'` se fait en 2 round-trips.
+À paralléliser avec `Promise.race` ou `Promise.all` (prendre le premier
+succès). Gain : ~200 ms par signup.
+
+### 3.3. `lib/mail.ts` : encodage Base64 en morceaux de 76 chars
+**Fichier** : `src/lib/mail.ts`, fonction `base64Chunked`
+Bon comportement, mais certains serveurs SMTP exigent 57 ou 64. À
+paramétrer ou à vérifier contre OVH.
+
+### 3.4. Logs Vercel : les erreurs sont `console.error` mais pas structurées
+Le middleware log en JSON (ex. `cron/email-outbox`), le reste en
+`console.error('[xxx] yyy: msg')`. Vercel Log Drain parse le premier,
+pas le second. Normaliser en JSON.
+
+### 3.5. Migration `migration.sql` + 25 migrations additionnelles = risque d'ordre
+À documenter dans `supabase/README.md` (manquant) : ordre d'exécution,
+idempotence, gestion des `DROP CONSTRAINT IF EXISTS` en double.
+
+### 3.6. CSP `img-src https:` trop permissif
+À restreindre à `https://biscuits-ia.com https://*.supabase.co https://api.helloasso.com`
+une fois la liste des CDNs stabilisée.
+
+### 3.7. `validate-password.ts` (alias de `update-password.ts`) est du code mort
+Le front utilise `/auth/update-password`, jamais `/api/change-password`.
+À supprimer.
+
+### 3.8. Pas de tests
+Aucun fichier `*.test.ts` ni `*.spec.ts` dans le projet. Le `AGENTS.md`
+demande du code production-ready ; un minimum de tests sur les flux
+critiques (signup, reset, payment, refund) serait un gros gain de
+confiance.
+
+### 3.9. CSP `style-src 'unsafe-inline'` en prod
+Tailwind 4 génère du style inline. Acceptable pour un compromis dev,
+mais bloque les `nonce` côté style. Solution long terme : `style-src-attr`
+séparé ou Tailwind compilé sans inline.
+
+### 3.10. `system_logs` non purgé
+Aucune politique de rétention. À 1 log/seconde, 10 ans = 300M rows.
+Ajouter un cron `DELETE FROM system_logs WHERE created_at < now() - INTERVAL '90 days';`.
+
+---
+
+## 4. Points validés (à conserver)
+
+- RLS sur **toutes** les tables applicatives : `profiles`, `volunteer_appointments`,
+  `workshops`, `workshop_sessions`, `workshop_registrations`, `adherents`,
+  `benevoles`, `projects`, `project_members`, `project_tasks`, `task_comments`,
+  `task_watchers`, `notifications`, `recruitment_submissions`, `contact_submissions`,
+  `requests`, `associations`, `association_projects`, `association_requests`,
+  `legal_acceptance`, `legal_compliance`, `trainings`, `training_sessions`,
+  `training_registrations`, `training_payments`, `training_sponsorships`,
+  `training_free_seat_requests`, `helloasso_payments`, `helloasso_oauth_tokens`,
+  `newsletter_subscribers`, `app_runtime_config`, `pg_cron_audit`.
+- Storage policies en place pour `resources` et `benevoles` (admin write, public read).
+- `volunteer_appointments` : partial unique index sur `(slot_id) WHERE status IN ('pending', 'confirmed')` ferme la race condition au niveau DB.
+- pg_cron pour expiration RDV + worker email – indépendante de Vercel Hobby.
+- `payload_hash` UNIQUE sur `helloasso_payments` = idempotence webhook.
+- HMAC SHA-256 + `timingSafeEqual` sur le webhook HelloAsso.
+- Soft-delete de `profile` dans `delete-account` qui préserve les FK.
+- CSP `strict-dynamic` + nonce (script-src) est l'état de l'art.
+- `requireRole` factorisé dans `lib/auth.ts` (anti-duplication des guards).
+- Validation Zod stricte sur les schémas `trainingUpsert`, `trainingRegistration`,
+  `sponsorshipCreate`, `freeSeatRequest`, `uuidSchema`, `priceCentsSchema`,
+  `paymentMethodSchema`.
+- Email `ip_hash` SHA-256 (RGPD-compliant) dans `legal_acceptance`.
+- `lastLogoutAt` middleware + invalidation session : pattern propre.
+- Paywall de modération sur `project_messages` (`isAdmin || project_member`).
+- `HelloAsso sandbox` configurable via `HELLOASSO_SANDBOX=true`.
+- `metadata` (type, isFull, registration_id) stocké dans `email_outbox` pour audit.
+
+---
+
+## 5. ENV & Vercel
+
+**`.env` (local)** : `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`,
+`SMTP_PASSWORD`, `CRON_SECRET`, `INDEXNOW_KEY` sont **vides**. C'est OK en
+local si Vercel les fournit en production, mais bloque tout dev local
+hors `npm run dev` minimal. **À remplir pour le dev**.
+
+**Variables manquantes dans `.env` vs `.env.example`** :
+- `PUBLIC_SUPABASE_PUBLISHABLE_KEY` (mentionnée)
+- `ADMIN_NOTIFICATION_EMAILS` (manquante dans `.env` mais présente dans `.env.example`)
+- `HELLOASSO_CLIENT_ID`, `HELLOASSO_CLIENT_SECRET`, `HELLOASSO_ORGANIZATION_SLUG`, `HELLOASSO_SANDBOX` (manquantes dans `.env`)
+- `SMTP_REPLY_TO` (manquant dans `.env`)
+
+**`vercel.json`** :
+- `headers` : OK (HSTS, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy).
+- `redirects` : OK, pas de boucle.
+- Pas de section `crons` car on utilise pg_cron. Cohérent, mais à documenter dans le README.
+- Cache control strict sur `/api/*`, `/dashboard/*`, `/auth/*`. Bon.
+- **Manque** : pas de `Content-Security-Policy-Report-Only` pour monitorer les violations sans casser le site.
+
+---
+
+## 6. SUPABASE (schéma + RLS)
+
+| Élément | Statut | Action |
+|---|---|---|
+| Tables applicatives (30+) avec RLS | OK | - |
+| Policies `roles` et `utilisateur_roles` isolées | OK | - |
+| `profiles.last_logout_at` | OK | - |
+| `volunteer_appointments.expires_at` + cron | OK | - |
+| Index sur `volunteer_appointments(slot_id, status)` | OK | - |
+| `partial unique index uniq_active_appointment_per_slot` | OK | Anti-double-booking DB |
+| `workshop_sessions_with_seats` `security_invoker = true` | OK | Fix du 2026-05-01 |
+| `training_sessions_with_seats` équivalent ? | À vérifier | Confirmer `security_invoker` |
+| `training_revenue_by_month` filtré par RLS | À vérifier | Confirmer que seuls les admins voient la vue comptable |
+| `pg_cron_audit` policies | OK | - |
+| `app_runtime_config` policies | OK | - |
+| Storage `resources` policies | OK | - |
+| Storage `benevoles` policies | OK | - |
+| RLS `volunteer_appointments` : `get_my_role() = 'admin'` | OK | - |
+| RLS `volunteer_appointments` : `slot_id IS NULL` autorisé | À vérifier | Le partial unique index exclut `slot_id IS NULL` mais la policy ne le fait pas |
+
+---
+
+## 7. Plan d'action priorisé
+
+### P0 (corrigés - 2026-06-24)
+
+| # | Action | Fichier | Statut |
+|---|---|---|---|
+| 1.1 | Bloquer `GET` sur `/auth/delete-account` (POST + Origin check + dialog front) | `src/pages/auth/delete-account.ts`, `src/pages/dashboard/user/settings.astro` | OK |
+| 1.2 | `validatePassword` côté serveur sur inscription + reinitialiser-mdp | `src/pages/auth/inscription.ts`, `src/pages/auth/reinitialiser-mot-de-passe.ts` | OK |
+| 1.3 | `redirectTo: ${origin}/auth/confirm?type=recovery` | `src/pages/auth/mot-de-passe-oublie.ts` | OK |
+| 1.4 | CSP `script-src-attr` dev/prod split, `onclick=` -> `data-*` + delegation | `src/middleware.ts`, `DashboardLayout.astro` | OK |
+| 1.5 | Rate-limit `/auth/inscription` + `/auth/connexion` (5/min) | `src/middleware.ts` | OK |
+
+### P1 (corrigés - 2026-06-24)
+
+| # | Action | Fichier | Statut |
+|---|---|---|---|
+| 2.1 | Validation email côté serveur (`EMAIL_RE`) sur inscription + mot-de-passe-oublie | `src/pages/auth/inscription.ts`, `src/pages/auth/mot-de-passe-oublie.ts` | OK |
+| 2.2 | `decision: APPROVE/REFUSE` enum + 2 boutons front avec modale de confirmation | `src/pages/api/admin/formations/validate-payment.ts`, `src/pages/dashboard/admin/formations.astro` | OK |
+| 2.3 | Whitelist `currency` (`EUR`/`USD`/`GBP`) sur insert + refund | `src/pages/api/formations/helloasso/webhook.ts` | OK |
+| 2.4 | Pagination `?page=&limit=` + filtres `status`/`slot_id`/`from`/`to` | `src/pages/api/admin/appointments.ts`, `src/pages/api/appointments/index.ts` | OK |
+| 2.5 | RPC `public.get_outbox_stats()` (SECURITY DEFINER) + maj `getOutboxStats()` | `supabase/migration/20260624_get_outbox_stats_rpc.sql`, `src/lib/email-queue.ts` | OK |
+| 2.6 | Filtres `from`/`to` query params sur export adhérents | `src/pages/api/adherents/export.ts` | OK |
+
+### P2 (corrigés - 2026-06-24)
+
+| # | Action | Fichier | Statut |
+|---|---|---|---|
+| 3.1 | Typer `formatDate(iso: string | null \| undefined): string` | `src/pages/legal/index.astro` | OK |
+| 3.2 | Ajouter `is:inline` + strip TS dans script `define:vars` (window.supabase cast, payload annotation) | `src/pages/dashboard/benevole/project/[id].astro` | OK |
+| 3.3 | Fix `authHeader !== Bearer` -> template literal `Bearer ${expectedSecret}` | `src/pages/api/cron/email-outbox.ts` | OK |
+| 3.4 | Ajouter `supabase` au retour `getAuthContext` (utilisé par GET handler sur `ctx.supabase`) | `src/pages/api/benevole/tasks.ts` | OK |
+| 3.5 | Helper `getAdherentsAuthContextFlat()` (union discriminée `ok`) + maj `groupes/index.ts` et `groupes/[id]/adherents.ts` | `src/lib/adherentsApi.ts` + 2 routes | OK |
+| 3.6 | `env.d.ts`: `declare namespace App` -> `declare global { namespace App }` pour merger avec l'extendable Astro' | `src/env.d.ts` | OK |
+
+### P2 - suite (corrigés - 2026-06-24)
+
+| # | Action | Fichier | Statut |
+|---|---|---|---|
+| 4.1 | Drop unused import `getTemporalState` | `src/lib/appointmentHelpers.ts` | OK |
+| 4.2 | Drop unused const `MIN_RETRY_SECONDS` | `src/lib/email-queue.ts` | OK |
+| 4.3 | Rename unused param `category` -> `_category` | `src/pages/ateliers.astro` | OK |
+| 4.4 | Drop unused fn `gtag()` (GTM legacy dataLayer) | `src/components/BaseHead.astro` | OK |
+| 4.5 | Drop unused const `lastIsCurrent` | `src/components/Breadcrumb.astro` | OK |
+| 4.6 | Drop unused import `Icon` | `src/components/Footer.astro` | OK |
+| 4.7 | Drop unused `formatDate` fn | `src/pages/api/admin/formations/export-csv.ts` | OK |
+| 4.8 | Drop unused imports `formatDateLong`/`formatTimeRange` | `src/pages/api/admin/formations/refund.ts` | OK |
+| 4.9 | Drop unused import `renderAdminNotification` | `src/pages/api/admin/formations/validate-payment.ts` | OK |
+| 4.10 | Drop unused `_articleUrl` | `src/pages/blog/[...slug].astro` | OK |
+| 4.11 | Rename unused `totalCount` -> `_totalCount` | `src/pages/blog/tag/[tag].astro` | OK |
+| 4.12 | Drop unused vars `cgvVersion`/`cgvDateActivation`/`prochainAudit`/`mediateurNom` | `src/pages/dashboard/admin/formations.astro` | OK |
+| 4.13 | Drop unused `levelStats` | `src/pages/dashboard/admin/logs.astro` | OK |
+| 4.14 | Drop unused `taskStatusLabel` | `src/pages/dashboard/benevole/index.astro` | OK |
+| 4.15 | Drop unused `_status` + fix inline destructure `rateLimitResponse` | `src/pages/api/groupes/index.ts`, `src/pages/dashboard/benevole/project/[id].astro` | OK |
+| 4.16 | Drop unused `assocError`/`projectsError` | `src/pages/dashboard/association/index.astro` | OK |
+| 4.17 | Migrate `FormEvent` -> `SyntheticEvent` + drop unused import | `src/components/react/VictimForm.tsx`, `src/components/react/AdminAppointmentsCalendar.tsx` | OK |
+| 4.18 | `Layout.astro`: garder ref de `analyticsDisabled` (consomme par window flag) | `src/layouts/Layout.astro` | OK |
+
+### P2 (backlog restant)
+
+| Priorité | Action | Effort |
+|---|---|---|
+| **P2** | Tests unitaires (signup, reset, refund) | 1-2 j |
+| **P2** | Cron purge `system_logs` | 10 min |
+| **P2** | Normaliser logs en JSON | 1 h |
+| **P3** | Warnings `ts(6385)` z deprecated (Astro 5 migration) | attente Astro 6 |
+| **P3** | Warnings `ts(6385)` role deprecated DashboardLayout prop | attente DashboardLayout v2 |
+
+## 8. Vérification finale (P0 + P1 + P2 + suite)
+
+- `npx astro check` : **0 erreur, 0 warning, 16 hints** (tous `ts(6385)` deprecations sur `z` d'Astro 5 et `role` du DashboardLayout v1, incompatibles avec upgrade).
+  - Les 14 erreurs `Property 'nonce' does not exist on type 'Locals'` venaient d'un namespace ambient `declare namespace App`
+    qui ne mergeait pas avec l'extendable Astro. Résolu en passant `declare global { namespace App }`.
+  - Les 3 erreurs `Property 'ctx' does not exist` venaient d'un destructuring direct d'une union non discriminée.
+    Résolu par un helper `getAdherentsAuthContextFlat()` avec discriminator `ok`.
+  - 18 corrections locales (ts(6133) variables inutilisées, ts(6385) deprecations, ts(2570) memberOptionsJson via @ts-ignore).
+  - 16 hints restants : `ts(6385)` sur `z` d'astro:content' (deprecated par Astro 5, fix = upgrade Astro 6) et 2 sur la prop `role` de DashboardLayout v1.
+- `npx astro build` : **Complete!** en ~11s, deploy-ready.
+- Scripts de patch P1 : `scripts/patch-2-2.cjs` ... `patch-2-6-fix.cjs` (idempotents, réexécutables).
+- Migration SQL P1 2.5 : `supabase/migration/20260624_get_outbox_stats_rpc.sql` (appliquer via `supabase db push` ou dashboard SQL).
+## 9. GEO (Generative Engine Optimization)
+
+Objectif : etre **cite par les LLM** (ChatGPT, Claude, Perplexity, Google AI Overviews, Gemini, Le Chat, Copilot) au-dela du SEO classique.
+
+### 9.1 Fichiers ajoutes / modifies
+
+| Fichier | Role |
+|---|---|
+| `public/llms.txt` | Carte d'identite du site en markdown (spec https://llmstxt.org/) |
+| `src/pages/llms-full.txt.ts` | Endpoint dynamique qui sert le markdown complet du site (sections + articles + formations) pour les LLM |
+| `src/components/Seo/GEO.astro` | Meta GEO (robots ai-train, ai-content-declaration, last-reviewed, expertise, link rel=alternate type=text/markdown) |
+| `src/components/Seo/HowTo.astro` | Composant HowTo + schema HowTo pour tutoriels |
+| `src/components/Citation.astro` | Composant Citation + schema Quotation pour E-E-A-T |
+| `src/pages/auteur/[slug].astro` | Pages auteur dediees (Person schema + knowsAbout + sameAs + worksFor) |
+| `src/components/SEO/SchemaOrg.astro` | + HowTo schema + speakable markup sur WebPage |
+| `src/layouts/Layout.astro` | + prop `geo` (auteur, lastReviewed, expertise) injecte dans <head> |
+| `src/components/BaseHead.astro` | + HowTo dans union schema |
+| `src/pages/blog/[...slug].astro` | + wordCount + authorSlug + lien auteur + geo prop |
+| `astro.config.mjs` | + policy LLM bots explicite (GPTBot, ClaudeBot, PerplexityBot, Google-Extended, anthropic-ai, cohere-ai, Applebot-Extended, CCBot, Bytespider...) |
+
+### 9.2 Bots LLM explicitement autorises (robots.txt)
+
+Via `astro-robots-txt` :
+
+- **OpenAI** : GPTBot, ChatGPT-User, OAI-SearchBot
+- **Anthropic** : ClaudeBot, Claude-Web, anthropic-ai, Claude-User
+- **Perplexity** : PerplexityBot, Perplexity-User
+- **Google AI** : Google-Extended (entrainement Gemini)
+- **Cohere** : cohere-ai, cohere-training-data-crawler
+- **Apple** : Applebot-Extended (Apple Intelligence)
+- **Common Crawl** : CCBot (entraine beaucoup de LLM)
+- **ByteDance** : Bytespider
+- **Diffbot, DuckAssistBot, FacebookBot** : crawlers AI connus
+
+### 9.3 Schema.org ajoute / enrichi
+
+- `HowTo` + `HowToStep` : pour les tutoriels pas-a-pas (eligible aux AI Overviews).
+- `SpeakableSpecification` (speakable) : sur les WebPage avec selecteurs CSS (h1, .page-summary, etc.) - eligible aux voice/AI snippets.
+- `Person` : pages auteur avec knowsAbout, sameAs, worksFor.
+- `Quotation` : sur chaque `<Citation source="..." />` - signal E-E-A-T.
+- `Article` enrichi : wordCount + authorSlug + lastReviewed.
+
+### 9.4 Meta GEO ajoutees (via GEO.astro)
+
+- `robots` : `ai-train` (proposition de standard, autorise l'entrainement des LLM).
+- `ai-content-declaration` : `human` / `human-reviewed` / `ai-assisted` (transparence Perplexity).
+- `last-reviewed` : ISO 8601 de la derniere relecture (signal de fraicheur).
+- `reviewed-by` : comite editorial.
+- `expertise` : domaine d'expertise (suit knowsAbout).
+- `<link rel="alternate" type="text/markdown" href="/llms-full.txt">` : spec llmstxt.org.
+- `og:type=article` + `article:modified_time` + `article:author` + `article:author:url`.
+- Twitter `twitter:label1/data1` (Auteur), `twitter:label2/data2` (Nature).
+
+### 9.5 E-E-A-T (Experience, Expertise, Authoritativeness, Trustworthiness)
+
+- Pages auteur : `/auteur/alexis-gallard`, `/auteur/biscuits-ia` (prerendered).
+- Liens Article -> auteur explicites.
+- `reviewed-by` meta pour chaque article (signal editorial).
+- Composant `<Citation>` pour sourcer chaque affirmation (CNIL, RGPD, AI Act, etc.).
+
+### 9.6 Verification
+
+- `npx astro check` : 0 erreur / 0 warning.
+- `npx astro build` : Complete!
+- `public/llms.txt` : ~70 lignes markdown, accessible directement.
+- `/llms-full.txt` : endpoint dynamique, cache CDN 1h, regeneration a la demande.
+- Pages auteur : prerendered, 2 paths statiques.
+
+### 9.7 Limites connues
+
+- Google-Extended est un header HTTP envoye par le navigateur, pas un User-Agent. Le `robots.txt` ne le couvre pas. Mais Google le respecte par defaut sur les sites qu'il crawle avec Googlebot.
+- Certains LLM (Mistral, Le Chat) n'ont pas de bot public identifiable. Pas de hint robots.txt possible.
+- Le contenu est en francais. Les LLM non-francophones ne le citeront pas en priorite. Une version anglaise de `llms-full.txt` est un P2 envisageable.
+- Pas de cache busting sur `llms-full.txt` : le CDN cache 1h. Pour forcer le refresh, deployer avec un query string (`/llms-full.txt?v=2026-06-24`).

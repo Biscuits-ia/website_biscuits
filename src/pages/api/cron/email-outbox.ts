@@ -33,7 +33,7 @@ async function runWorker(request: Request): Promise<Response> {
     );
   }
 
-  if (authHeader !== Bearer ) {
+  if (authHeader !== `Bearer ${expectedSecret}`) {
     return new Response(
       JSON.stringify({ error: 'Unauthorized' }),
       { status: 401, headers: { 'Content-Type': 'application/json' } },

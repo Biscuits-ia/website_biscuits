@@ -46,6 +46,14 @@ const isFeatured = sortedArticles.length > 0 && sortedArticles[0] && entry.id ==
 const { Content, headings } = await render(entry);
 const body = entry.body ?? '';
 
+// GEO : wordCount + estimated reading time (signal E-E-A-T et eligible aux AI Overviews).
+const wordCount = body.split(/\s+/).filter(Boolean).length;
+const readingTimeMin = Math.max(1, Math.ceil(wordCount / 220));
+// Date de derniere relecture. Le comite editorial relit avant publication.
+const lastReviewedDate = entry.data.pubDate.toISOString();
+// GEO : slug auteur (Alexis -> alexis-gallard, sinon collectif).
+const authorSlug = ((entry.data.author || 'Biscuits IA').toLowerCase().includes('alexis')) ? 'alexis-gallard' : 'biscuits-ia';
+
 // Normalisation des tags en slug.
 const slugifyTag = (tag: string): string =>
   tag
@@ -88,7 +96,6 @@ const sameTagArticles = publishedArticles
 
 // SEO : Open Graph specifique a l'article.
 const siteUrl = import.meta.env.SITE || 'https://biscuits-ia.com';
-const articleUrl = `${siteUrl}/blog/${entry.id}`;
 const ogImage = `${siteUrl}/og-default.webp`; // Placeholder : idealement une image generee par article
 const seoTitle = entry.data.title;
 const seoDescription = entry.data.description || entry.data.title;
@@ -103,8 +110,10 @@ const articleSchema = {
     datePublished: entry.data.pubDate.toISOString(),
     dateModified: entry.data.pubDate.toISOString(),
     author: entry.data.author || 'Biscuits IA',
+    authorSlug,
     category: 'Intelligence Artificielle',
     keywords: entryTags,
+    wordCount,
   },
 };
 ---
@@ -116,6 +125,13 @@ const articleSchema = {
   ogType="article"
   ogImage={ogImage}
   schema={articleSchema}
+  geo={{
+    author: entry.data.author || 'Biscuits IA',
+    authorUrl: `/auteur/${authorSlug}`,
+    contentType: 'human-reviewed',
+    lastReviewed: lastReviewedDate,
+    expertise: entryTags[0] || 'intelligence-artificielle',
+  }}
 >
   <Breadcrumb />
 

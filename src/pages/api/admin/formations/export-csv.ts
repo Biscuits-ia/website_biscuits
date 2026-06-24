@@ -45,11 +45,6 @@ function formatEur(cents: number): string {
   return (cents / 100).toFixed(2).replace('.', ',');
 }
 
-function formatDate(iso: string | null | undefined): string {
-  if (!iso) return '';
-  return new Date(iso).toLocaleDateString('fr-FR', { year: 'numeric', month: '2-digit', day: '2-digit' });
-}
-
 export const GET: APIRoute = async ({ request, cookies, url }) => {
   const supabase = createSupabaseClient({ request, cookies });
   const { data: { user } } = await supabase.auth.getUser();

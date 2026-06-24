@@ -3,7 +3,7 @@
 // (cf. src/types/appointments.ts).
 
 import type { AppointmentSlot } from '@/types/appointments';
-import { formatDateLong, toHHmm, getTemporalState, type TemporalState } from '@/lib/dateHelpers';
+import { formatDateLong, toHHmm, type TemporalState } from '@/lib/dateHelpers';
 
 /** Formate un slot en "HH:mm - HH:mm" (UTC, align sur le timestamptz BDD). */
 export function formatSlotTime(slot: Pick<AppointmentSlot, 'start_time' | 'end_time'>): string {

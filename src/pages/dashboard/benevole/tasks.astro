@@ -69,14 +69,14 @@ for (const t of tasks) {
 
   <!-- Filtres -->
   <form method="GET" class="filters mb-5">
-    <select name="status" class="input input-sm" onchange="this.form.submit()">
+    <select name="status" class="input input-sm" data-autosubmit="1">
       <option value="">Tous les statuts</option>
       <option value="todo"        selected={statusFilter === 'todo'}>À faire</option>
       <option value="in_progress" selected={statusFilter === 'in_progress'}>En cours</option>
       <option value="review"      selected={statusFilter === 'review'}>Révision</option>
       <option value="done"        selected={statusFilter === 'done'}>Terminé</option>
     </select>
-    <select name="priority" class="input input-sm" onchange="this.form.submit()">
+    <select name="priority" class="input input-sm" data-autosubmit="1">
       <option value="">Toutes priorités</option>
       <option value="high"   selected={priorityFilter === 'high'}>Haute</option>
       <option value="medium" selected={priorityFilter === 'medium'}>Moyenne</option>

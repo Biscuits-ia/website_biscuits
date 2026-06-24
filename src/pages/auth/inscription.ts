@@ -1,5 +1,6 @@
-import type { APIRoute } from 'astro';
+﻿import type { APIRoute } from 'astro';
 import { createSupabaseClient } from '@/lib/supabase';
+import { EMAIL_RE, validatePassword } from '@/lib/validation';
 
 function mapSignupError(message: string): string {
   const msg = message.toLowerCase();
@@ -23,13 +24,16 @@ function mapSignupError(message: string): string {
   return 'Impossible de creer le compte. Veuillez reessayer.';
 }
 
+const JSON_HDR = { 'Content-Type': 'application/json' } as const;
+
+function jsonError(message: string, status: number): Response {
+  return new Response(JSON.stringify({ error: message }), { status, headers: JSON_HDR });
+}
+
 export const POST: APIRoute = async ({ request, cookies }) => {
   try {
     if (!import.meta.env.SUPABASE_URL || !import.meta.env.SUPABASE_ANON_KEY) {
-      return new Response(
-        JSON.stringify({ error: 'Configuration Supabase manquante (SUPABASE_URL/SUPABASE_ANON_KEY).' }),
-        { status: 500, headers: { 'Content-Type': 'application/json' } },
-      );
+      return jsonError('Configuration Supabase manquante (SUPABASE_URL/SUPABASE_ANON_KEY).', 500);
     }
 
     const formData = await request.formData();
@@ -37,45 +41,44 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     const password = formData.get('password') instanceof File ? null : (formData.get('password') as string | null);
 
     if (!email || !password) {
-      return new Response(
-        JSON.stringify({ error: 'Email et mot de passe requis.' }),
-        { status: 400, headers: { 'Content-Type': 'application/json' } },
-      );
+      return jsonError('Email et mot de passe requis.', 400);
+    }
+
+    // Validation cote serveur (defense in depth : un client contourne
+    // facilement la validation JS du formulaire).
+    const trimmedEmail = email.trim();
+    if (!EMAIL_RE.test(trimmedEmail) || trimmedEmail.length > 255) {
+      return jsonError('Adresse email invalide.', 400);
+    }
+    const passwordError = validatePassword(password);
+    if (passwordError) {
+      return jsonError(passwordError, 400);
     }
 
     const supabase = createSupabaseClient({ request, cookies });
 
     const signupResult = await supabase.auth.signUp({
-      email,
+      email: trimmedEmail,
       password,
     });
 
     if (signupResult.error) {
       console.error('[Auth] signUp error:', signupResult.error.message);
-      return new Response(
-        JSON.stringify({ error: mapSignupError(signupResult.error.message) }),
-        { status: 400, headers: { 'Content-Type': 'application/json' } },
-      );
+      return jsonError(mapSignupError(signupResult.error.message), 400);
     }
 
     // Supabase can mask existing accounts by returning user with empty identities.
     const identities = signupResult.data.user?.identities;
     if (Array.isArray(identities) && identities.length === 0) {
-      return new Response(
-        JSON.stringify({ error: 'Cet email est deja inscrit. Essayez de vous connecter.' }),
-        { status: 409, headers: { 'Content-Type': 'application/json' } },
-      );
+      return jsonError('Cet email est deja inscrit. Essayez de vous connecter.', 409);
     }
 
     return new Response(
       JSON.stringify({ success: true, message: 'Compte cree. Verifiez votre email pour recuperer le code de confirmation.' }),
-      { status: 200, headers: { 'Content-Type': 'application/json' } },
+      { status: 200, headers: JSON_HDR },
     );
   } catch (err) {
     console.error('[Auth] inscription route error:', err);
-    return new Response(
-      JSON.stringify({ error: 'Erreur serveur. Veuillez reessayer.' }),
-      { status: 500, headers: { 'Content-Type': 'application/json' } },
-    );
+    return jsonError('Erreur serveur. Veuillez reessayer.', 500);
   }
 };

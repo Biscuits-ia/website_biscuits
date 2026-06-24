@@ -20,10 +20,24 @@ export const GET: APIRoute = async ({ request, cookies, clientAddress }) => {
     return jsonError('Acces refuse.', 403);
   }
 
-  const { data, error } = await ctx.adminSupabase
+  // FIX P1 2.6 : filtres from/to via query params (?from=YYYY-MM-DD&to=YYYY-MM-DD),
+  // meme pattern que formations/export-csv.ts. Limite dure 10 000 lignes.
+  const url = new URL(request.url);
+  const fromParam = url.searchParams.get('from') ?? '';
+  const toParam   = url.searchParams.get('to') ?? '';
+
+  let query = ctx.adminSupabase
     .from('adherents')
     .select('nom, prenom, email, telephone, adresse, date_adhesion, statut')
-    .order('created_at', { ascending: false });
+    .order('created_at', { ascending: false })
+    .limit(10_000);
+  if (fromParam) query = query.gte('date_adhesion', fromParam);
+  if (toParam) {
+    const toDate = new Date(toParam);
+    toDate.setDate(toDate.getDate() + 1);
+    query = query.lt('date_adhesion', toDate.toISOString().slice(0, 10));
+  }
+  const { data, error } = await query;
 
   if (error) {
     console.error('[api/adherents/export] error:', error.message);

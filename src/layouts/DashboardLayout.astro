@@ -248,6 +248,35 @@ const initials = displayName.split(' ').map((n: string) => n[0]).join('').toUppe
   <Toast />
   <ConfirmDialog />
 </body>
+
+<!-- FIX P0 1.4 : handlers CSP-safe pour les attributs data-* (modal, autosubmit, reload). -->
+<script is:inline nonce={Astro.locals.nonce}>
+  document.addEventListener('click', (e) => {
+    const t = e.target;
+    if (!(t instanceof Element)) return;
+    const openBtn = t.closest('[data-modal-open]');
+    if (openBtn) {
+      const id = openBtn.getAttribute('data-modal-open');
+      const dlg = id ? document.getElementById(id) : null;
+      if (dlg && typeof dlg.showModal === 'function') dlg.showModal();
+      return;
+    }
+    const closeBtn = t.closest('[data-modal-close]');
+    if (closeBtn) {
+      const id = closeBtn.getAttribute('data-modal-close');
+      const dlg = id ? document.getElementById(id) : null;
+      if (dlg && typeof dlg.close === 'function') dlg.close();
+      return;
+    }
+    if (t.closest('[data-reload]')) location.reload();
+  });
+  document.addEventListener('change', (e) => {
+    const t = e.target;
+    if (!(t instanceof Element)) return;
+    const sel = t.closest('[data-autosubmit]');
+    if (sel instanceof HTMLSelectElement) sel.form?.requestSubmit();
+  });
+</script>
 </html>
 
 <style>

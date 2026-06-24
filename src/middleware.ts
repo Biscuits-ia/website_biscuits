@@ -1,12 +1,12 @@
-// src/middleware.ts
+﻿// src/middleware.ts
 import { defineMiddleware } from 'astro:middleware';
 import { rateLimit } from './lib/rateLimit';
 import { getClientIpOrNull } from './lib/http';
 import { createSupabaseAdminClient, createSupabaseClient } from './lib/supabase';
 import crypto from 'node:crypto';
 
-// TTL du cache `lastLogoutAt` : on evite un round-trip Supabase e chaque requete
-// authentifiee (cf. AUDIT-FRESH.md e3.2). 30 s est suffisant e un logout explicite
+// TTL du cache `lastLogoutAt` : on evite un round-trip Supabase a chaque requete
+// authentifiee (cf. AUDIT-FRESH.md e3.2). 30 s est suffisant : un logout explicite
 // ne necessite pas une invalidation infra-milliseconde.
 const LOGOUT_CACHE_TTL_MS = 30_000;
 
@@ -18,8 +18,6 @@ interface LogoutCacheEntry {
 // Module-level cache, partitionne par user.id. Vercel serverless partage ce cache
 // entre toutes les requetes du meme warm container (cold start = cache miss).
 const logoutCache = new Map<string, LogoutCacheEntry>();
-
-// parseForwardedFor supprime : la lib http fait le meme travail.
 
 function readAccessTokenIssuedAtMs(accessToken: string | null | undefined): number | null {
   if (!accessToken) return null;
@@ -49,16 +47,23 @@ function checkRouteRateLimit(
   let limit = 20;
   let windowMs = 60_000;
 
-  // Endpoints RDV : protecs contre les boucles de polling et le scraping.
+  // Endpoints RDV : protection contre les boucles de polling et le scraping.
   if (pathname === '/api/appointment-slots' || pathname === '/api/user-appointments') {
     limit = 30;
     windowMs = 60_000;
   }
 
   if (pathname.startsWith('/auth/')) {
-    if (
-      pathname === '/auth/inscription'
-      || pathname === '/auth/confirm'
+    // FIX P0 1.5 : rate-limit strict sur les endpoints sensibles
+    // (anti credential stuffing sur /connexion, anti pollueur sur /inscription).
+    if (pathname === '/auth/connexion') {
+      limit = 5;
+      windowMs = 60_000; // 5 tentatives / min / IP
+    } else if (pathname === '/auth/inscription') {
+      limit = 5;
+      windowMs = 60_000; // 5 inscriptions / min / IP
+    } else if (
+      pathname === '/auth/confirm'
       || pathname === '/auth/callback'
       || pathname === '/auth/verifier-token-inscription'
     ) {
@@ -96,7 +101,7 @@ async function readLastLogoutAtMs(userId: string): Promise<number | null> {
 
     if (error) {
       if (error.code === '42703') {
-        // Colonne absente e considere comme "pas de logout enregistre".
+        // Colonne absente : considere comme "pas de logout enregistre".
         value = 0;
       } else {
         console.error('[middleware] profile fetch for session invalidation failed:', error.message);
@@ -125,7 +130,7 @@ async function mustInvalidateSession(supabase: ReturnType<typeof createSupabaseC
     // 1. SECURITY: verify the JWT signature against Supabase FIRST.
     //    getUser() fait un round-trip serveur vers Supabase Auth; si le cookie
     //    est forge / non signe / revoque, l'appel echoue et on ne fait confiance
-    //    e aucune claim du payload local.
+    //    a aucune claim du payload local.
     const { data: { user }, error: userError } = await supabase.auth.getUser();
     if (userError || !user) return false;
 
@@ -138,58 +143,29 @@ async function mustInvalidateSession(supabase: ReturnType<typeof createSupabaseC
     const lastLogoutAtMs = await readLastLogoutAtMs(user.id);
     if (lastLogoutAtMs === null || lastLogoutAtMs === 0) return false;
     return accessTokenIssuedAtMs <= lastLogoutAtMs;
-  } catch {
+  } catch (err) {
+    console.error('[middleware] mustInvalidateSession exception:', err);
     return false;
   }
 }
 
 export const onRequest = defineMiddleware(async (context, next) => {
-  const { url } = context;
-  const isDev = import.meta.env.DEV;
-
-  if (url.pathname === '/rss.xml') {
-    return next();
-  }
-
-  // Le client SSR (cookies Supabase) n'est utile que pour les routes qui lisent
-  // ou posent des cookies d'auth. Sur les pages 100% statiques (prerender = true)
-  // le middleware tente sinon de lire Astro.request.headers via parseCookieHeader,
-  // ce qui declenche un warning Astro par page prerendue.
-  // Filet: on ne cree le client Supabase que sur les paths qui en ont besoin.
-  const needsSupabase =
-    url.pathname.startsWith('/api/') ||
-    url.pathname.startsWith('/auth/') ||
-    url.pathname.startsWith('/connexion') ||
-    url.pathname.startsWith('/inscription') ||
-    url.pathname.startsWith('/mot-de-passe-oublie') ||
-    url.pathname.startsWith('/reinitialisation-mot-de-passe') ||
-    url.pathname.startsWith('/verifier-code-') ||
-    url.pathname.startsWith('/dashboard') ||
-    url.pathname.startsWith('/trombinoscope') ||
-    url.pathname.startsWith('/utilisateurs') ||
-    url.pathname.startsWith('/ateliers/inscription') ||
-    url.pathname.startsWith('/rdv');
-
-  // Rate-limit applique uniquement aux routes /api et /auth (les pages publiques
-  // statiques n'en ont pas besoin).
-  if (url.pathname.startsWith('/api/') || url.pathname.startsWith('/auth/')) {
-    const blocked = checkRouteRateLimit(context, isDev, url.pathname);
-    if (blocked) return blocked;
-  }
-
-  if (!needsSupabase) {
-    // Pour les pages prerendered, on pose juste le nonce (utilise par les
-    // <script is:inline> pour la CSP) et on laisse next() faire son travail.
-    const nonce = crypto.randomBytes(16).toString('base64');
-    context.locals.nonce = nonce;
-    return next();
-  }
-
-  const nonce = crypto.randomBytes(16).toString('base64');
+  const isProd = import.meta.env.PROD;
+  const isDev = !isProd;
+  const nonce = crypto.randomBytes(18).toString('base64');
   context.locals.nonce = nonce;
 
   const supabase = createSupabaseClient(context);
+  context.locals.supabase = supabase;
 
+  const url = context.url;
+  const pathname = url.pathname;
+
+  // 1) Rate-limit par IP sur /api/* et /auth/* (avant toute logique metier).
+  const rateLimitResponse = checkRouteRateLimit(context, isDev, pathname);
+  if (rateLimitResponse) return rateLimitResponse;
+
+  // 2) Invalidation de session si last_logout_at > iat du JWT.
   const invalidatedSession = await mustInvalidateSession(supabase);
 
   if (invalidatedSession) {
@@ -211,8 +187,6 @@ export const onRequest = defineMiddleware(async (context, next) => {
     }
   }
 
-  context.locals.supabase = supabase;
-
   const response = await next();
 
   // CSP 3 : strict-dynamic permet aux scripts signes par nonce de charger
@@ -229,6 +203,12 @@ export const onRequest = defineMiddleware(async (context, next) => {
     'https://*.vercel.app',
   ];
 
+  if (isDev) {
+    // Filet de securite dev uniquement : scripts inline injectes apres le
+    // patch HTML (HMR Vite, dev toolbar Astro, error overlay) executes
+    // sans nonce. En prod on garde la CSP stricte nonce + strict-dynamic.
+    scriptSrc.push('unsafe-inline');
+  }
   // connect-src : strict-dynamic ne le couvre PAS, on le maintient a la main.
   const connectSrc = [
     `'self'`,
@@ -238,6 +218,10 @@ export const onRequest = defineMiddleware(async (context, next) => {
     'https://cdn.vercel-insights.com',
     'https://*.vercel.app',
     'https://*.supabase.co',
+    // FIX P0 1.6 : on autorise explicitement l'API HelloAsso pour les
+    // futurs appels client-side. Aujourd'hui tous les appels sont cote
+    // serveur, mais autant preparer le terrain.
+    'https://api.helloasso.com',
     'https://fonts.googleapis.com',
     'https://fonts.gstatic.com',
     // Cloudflare (email-decode + beacon analytics) + domaine site.
@@ -266,7 +250,12 @@ export const onRequest = defineMiddleware(async (context, next) => {
 
   // script-src : inline (nonce + strict-dynamic)
   // script-src-elem : externe (whitelist host, pas de nonce/strict-dynamic)
-  // Cela permet a /sw-register.js, GTM, Vercel Insights d’etre charges.
+  // Cela permet a /sw-register.js, GTM, Vercel Insights d etre charges.
+  // script-src-elem : whitelist explicite des hotes externes.
+  // On NE met PAS strict-dynamic ici car il desactiverait la whitelist.
+  // Le nonce + strict-dynamic dans script-src (au-dessus) suffit pour
+  // permettre aux scripts inline signes de charger d'autres scripts.
+  // Le regex ci-dessous ajoute le nonce aux <script> sans src/nonce.
   const scriptSrcElem = [
     `'self'`,
     'https://www.googletagmanager.com',
@@ -278,10 +267,17 @@ export const onRequest = defineMiddleware(async (context, next) => {
     'https://biscuits-ia.com',
     'https://*.biscuits-ia.com',
   ];
+
+  // FIX P0 1.4 : script-src-attr differencie dev/prod.
+  // En dev, on autorise unsafe-inline (Vite/Astro toolbar/HMR).
+  // En prod, on interdit les handlers inline (XSS defense in depth).
+  const scriptSrcAttr = isDev ? `'self' 'unsafe-inline'` : `'none'`;
+
   const csp = [
     `default-src 'self'`,
     `script-src ${scriptSrc.join(' ')}`,
     `script-src-elem ${scriptSrcElem.join(' ')}`,
+    `script-src-attr ${scriptSrcAttr}`,
     `worker-src 'self' blob:`,
     `style-src 'self' 'unsafe-inline' https://fonts.googleapis.com`,
     `img-src ${imgSrc.join(' ')}`,
@@ -298,9 +294,12 @@ export const onRequest = defineMiddleware(async (context, next) => {
   if (contentType.includes('text/html')) {
     let html = await response.text();
     html = html.replaceAll(/<script\b([^>]*)>/g, (match, attrs: string) => {
-      if (/\bsrc\s*=/.test(attrs) || /\bnonce\s*=/.test(attrs)) {
+      if (/\bnonce\s*=/.test(attrs)) {
         return match;
       }
+      // Ajoute le nonce a TOUS les scripts (inline + externes).
+      // Avec strict-dynamic dans script-src, le nonce est necessaire pour
+      // que les scripts inline puissent charger d'autres scripts dynamiquement.
       return `<script${attrs} nonce="${nonce}">`;
     });
     const headers = new Headers(response.headers);

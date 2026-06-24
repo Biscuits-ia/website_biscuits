@@ -16,8 +16,16 @@ export interface Props {
   ogType?: 'website' | 'article';
   noindex?: boolean;
   schema?: {
-    type: 'Organization' | 'Service' | 'FAQPage' | 'Article' | 'WebPage';
+    type: 'Organization' | 'Service' | 'FAQPage' | 'Article' | 'WebPage' | 'HowTo';
     data?: Record<string, unknown>;
+  };
+  /** Champs GEO (optionnels). Voir composants/Seo/GEO.astro */
+  geo?: {
+    author?: string;
+    authorUrl?: string;
+    contentType?: 'human' | 'human-reviewed' | 'ai-assisted';
+    lastReviewed?: string;
+    expertise?: string;
   };
 }
 
@@ -29,6 +37,7 @@ const {
   ogType = 'website',
   noindex = false,
   schema,
+  geo,
 } = Astro.props;
 
 const siteUrl = import.meta.env.SITE || 'https://biscuits-ia.com';
@@ -42,7 +51,7 @@ const fullTitle = title.includes('|') ? title : `${title} | Biscuits IA`;
 const isProd = import.meta.env.PROD;
 // PUBLIC_ANALYTICS_DISABLED : kill-switch global (utile en preprod, en local, ou en cas d'incident).
 // Expose au client via window.__ANALYTICS_DISABLED__ ; BaseHead et CookieConsent consultent ce flag.
-const analyticsDisabled = import.meta.env.PUBLIC_ANALYTICS_DISABLED === 'true';
+const _analyticsDisabled = import.meta.env.PUBLIC_ANALYTICS_DISABLED === 'true'; if (_analyticsDisabled && typeof window !== "undefined") (window as unknown as { __ANALYTICS_DISABLED__?: boolean }).__ANALYTICS_DISABLED__ = true;
 const nonce = Astro.locals.nonce;
 
 const criticalCSS = `

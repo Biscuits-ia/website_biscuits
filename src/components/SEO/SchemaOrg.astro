@@ -57,6 +57,24 @@ type CourseData = {
 type WebPageData = {
   name?: string;
   description?: string;
+  /** Selecteur CSS des elements a rendre comme speakable pour voice/AI snippets */
+  speakableSelectors?: string[];
+};
+
+type HowToStepData = {
+  name: string;
+  text: string;
+  image?: string;
+  url?: string;
+};
+
+type HowToData = {
+  name: string;
+  description: string;
+  /** Duree totale au format ISO 8601, ex. "PT30M" pour 30 min */
+  totalTime?: string;
+  estimatedCost?: { currency: string; value: number | string };
+  steps: HowToStepData[];
 };
 
 type ProductData = {
@@ -70,11 +88,12 @@ type SchemaData =
   | ArticleData
   | CourseData
   | WebPageData
-  | ProductData;
+  | ProductData
+  | HowToData;
 
 // Props du composant — — le `type` discrimine l'union `data`.
 type Props = {
-  type: 'Organization' | 'NGO' | 'Service' | 'FAQPage' | 'Article' | 'WebPage' | 'Course' | 'Product';
+  type: 'Organization' | 'NGO' | 'Service' | 'FAQPage' | 'Article' | 'WebPage' | 'Course' | 'Product' | 'HowTo';
   data?: SchemaData;
 };
 
@@ -365,6 +384,45 @@ if (type === 'Service') {
     },
     "inLanguage": "fr-FR",
     "dateModified": new Date().toISOString().split('T')[0],
+  };
+} else if (type === 'HowTo') {
+  // GEO : schema HowTo pour les tutoriels et guides pas-a-pas.
+  // Eligible aux Google AI Overviews et aux featured snippets en etapes.
+  const howtoData = data as HowToData;
+  specificSchema = {
+    "@context": "https://schema.org",
+    "@type": "HowTo",
+    "@id": Astro.url.href + "#howto",
+    "name": howtoData.name,
+    "description": howtoData.description,
+    "image": {
+      "@type": "ImageObject",
+      "url": siteUrl + "/og-default.webp",
+      "width": 1200,
+      "height": 630
+    },
+    "totalTime": howtoData.totalTime,
+    "estimatedCost": howtoData.estimatedCost ? {
+      "@type": "MonetaryAmount",
+      "currency": howtoData.estimatedCost.currency,
+      "value": howtoData.estimatedCost.value
+    } : undefined,
+    "author": {
+      "@type": "Organization",
+      "@id": siteUrl + "/#organization"
+    },
+    "publisher": {
+      "@id": siteUrl + "/#organization"
+    },
+    "inLanguage": "fr-FR",
+    "step": howtoData.steps.map((step, index) => ({
+      "@type": "HowToStep",
+      "position": index + 1,
+      "name": step.name,
+      "text": step.text,
+      "image": step.image,
+      "url": step.url ? step.url + "#step" + (index + 1) : undefined
+    }))
   };
 } else if (type === 'Product') {
   // Réservé pour usage futur (e.g. page de don ou de formation payante).

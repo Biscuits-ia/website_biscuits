@@ -1,12 +1,13 @@
 import type { APIRoute } from 'astro';
-import { getAdherentsAuthContext, hasAnyRole, jsonError, jsonOk, normalizeString } from '@/lib/adherentsApi';
+import { getAdherentsAuthContextFlat, hasAnyRole, jsonError, jsonOk, normalizeString } from '@/lib/adherentsApi';
 
 export const prerender = false;
 
 export const GET: APIRoute = async ({ request, cookies }) => {
-  const { ctx, rateLimitResponse } = await getAdherentsAuthContext(request, cookies);
-  if (rateLimitResponse) return rateLimitResponse;
-  if (!ctx) return jsonError('Non autorise.', 401);
+  const flat = await getAdherentsAuthContextFlat(request, cookies);
+  if (!flat.ok) return jsonError('Non autorise.', flat.status);
+  if (flat.rateLimitResponse) return flat.rateLimitResponse;
+  const { ctx } = flat;
   if (!hasAnyRole(ctx.roles, ['admin', 'tresorier', 'lecture_seule'])) {
     return jsonError('Acces refuse.', 403);
   }
@@ -25,9 +26,10 @@ export const GET: APIRoute = async ({ request, cookies }) => {
 };
 
 export const POST: APIRoute = async ({ request, cookies }) => {
-  const { ctx, rateLimitResponse } = await getAdherentsAuthContext(request, cookies);
-  if (rateLimitResponse) return rateLimitResponse;
-  if (!ctx) return jsonError('Non autorise.', 401);
+  const flat = await getAdherentsAuthContextFlat(request, cookies);
+  if (!flat.ok) return jsonError('Non autorise.', flat.status);
+  if (flat.rateLimitResponse) return flat.rateLimitResponse;
+  const { ctx } = flat;
   if (!hasAnyRole(ctx.roles, ['admin', 'tresorier'])) {
     return jsonError('Acces refuse.', 403);
   }

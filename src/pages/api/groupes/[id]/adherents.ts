@@ -1,12 +1,14 @@
 import type { APIRoute } from 'astro';
-import { getAdherentsAuthContext, hasAnyRole, jsonError, jsonOk } from '@/lib/adherentsApi';
+import { getAdherentsAuthContextFlat, hasAnyRole, jsonError, jsonOk } from '@/lib/adherentsApi';
 
 export const prerender = false;
 
 export const GET: APIRoute = async ({ request, cookies, params }) => {
-  const { ctx, rateLimitResponse } = await getAdherentsAuthContext(request, cookies);
+  const flat = await getAdherentsAuthContextFlat(request, cookies);
+  const { rateLimitResponse } = flat;
+  if (!flat.ok) return jsonError('Non autorise.', flat.status);
+  const { ctx } = flat;
   if (rateLimitResponse) return rateLimitResponse;
-  if (!ctx) return jsonError('Non autorise.', 401);
   if (!hasAnyRole(ctx.roles, ['admin', 'tresorier', 'lecture_seule'])) {
     return jsonError('Acces refuse.', 403);
   }

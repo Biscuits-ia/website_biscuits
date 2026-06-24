@@ -21,7 +21,7 @@ function levelClass(level: string | null): string {
   return 'level-beginner';
 }
 
-function levelIcon(level: string | null, category: string | null): string {
+function levelIcon(level: string | null, _category: string | null): string {
   if (!level) return '📥';
   const l = level.toLowerCase();
   if (l.includes('inter')) return '🧠';

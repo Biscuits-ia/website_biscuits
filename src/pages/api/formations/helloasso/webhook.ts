@@ -82,7 +82,10 @@ export const POST: APIRoute = async ({ request }) => {
     intent_id:       intentId || `evt-${Date.now()}`,
     registration_id: registrationId,
     amount_cents:    amountCents,
-    currency:        payload?.data?.currency ?? 'EUR',
+    currency:        (() => {
+      const raw = payload?.data?.currency ?? payload?.currency;
+      return raw === "EUR" || raw === "USD" || raw === "GBP" ? raw : "EUR";
+    })(),
     status:          mappedStatus,
     paid_at:         paidAt,
     payer_email:     payerEmail,
@@ -149,7 +152,10 @@ export const POST: APIRoute = async ({ request }) => {
         .upsert({
           helloasso_payment_id: existingPayment.id,
           amount_cents:         refundAmount,
-          currency:             payload?.data?.currency ?? 'EUR',
+          currency:             (() => {
+            const raw = payload?.data?.currency ?? payload?.currency;
+            return raw === "EUR" || raw === "USD" || raw === "GBP" ? raw : "EUR";
+          })(),
           refund_type:          refundType,
           reason:               payload?.data?.reason ?? payload?.reason ?? null,
           raw_payload:          payload,

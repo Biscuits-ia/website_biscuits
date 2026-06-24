@@ -111,6 +111,24 @@ export type AdherentAuthResult =
   | { ok: true; ctx: ApiAuthContext }
   | { ok: false; status: 401 | 403 };
 
+/**
+ * Variante flat : retourne { ctx, rateLimitResponse } ou { status, rateLimitResponse }.
+ * Evite aux call-sites de tester `result.ok` puis `result.ctx` (drill-down lourd).
+ */
+export type AdherentAuthFlat =
+  | { ok: true; ctx: ApiAuthContext; rateLimitResponse: Response | null }
+  | { ok: false; status: 401 | 403; rateLimitResponse: Response | null };
+
+export async function getAdherentsAuthContextFlat(
+  request: Request,
+  cookies: any,
+  clientIp?: string,
+): Promise<AdherentAuthFlat> {
+  const { result, rateLimitResponse } = await getAdherentsAuthContext(request, cookies, clientIp);
+  if (result.ok) return { ok: true, ctx: result.ctx, rateLimitResponse };
+  return { ok: false, status: result.status, rateLimitResponse };
+}
+
 export async function getAdherentsAuthContext(
   request: Request,
   cookies: any,

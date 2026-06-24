@@ -1,7 +1,7 @@
-// ============================================================================
+﻿// ============================================================================
 // src/pages/api/admin/formations/validate-payment.ts
 // ----------------------------------------------------------------------------
-// Valide un paiement manuellement (virement recu, exoneration approuvee).
+// Valide un paiement manuellement (virement recu, exoneration approuvee/refusee).
 // Envoie les emails appropries (user + admin).
 // ============================================================================
 
@@ -12,7 +12,7 @@ import { fetchRoleSecure } from '@/lib/auth';
 import { getFormString } from '@/types/formations';
 import { uuidSchema } from '@/lib/formations';
 import { enqueueEmail } from '@/lib/email-queue';
-import { renderFreeRequestDecision, renderAdminNotification, type MailAddress } from '@/lib/mail';
+import { renderFreeRequestDecision, type MailAddress } from '@/lib/mail';
 import { formatDateLong, formatTimeRange, formatPriceCents } from '@/types/formations';
 
 const schema = z.object({
@@ -20,7 +20,10 @@ const schema = z.object({
   registration_id: uuidSchema.optional(),
   sponsorship_id:  uuidSchema.optional(),
   free_request_id: uuidSchema.optional(),
-  note:            z.string().trim().max(500).optional(),
+  // FIX P1 2.2 : on remplace la convention fragile `note !== 'REFUSE'` par un
+  // champ dedie `decision` (enum). Le `note` reste libre pour le motif texte.
+  decision: z.enum(['APPROVE', 'REFUSE']).default('APPROVE'),
+  note:     z.string().trim().max(500).optional(),
 }).refine(
   (data) => !!data.payment_id || !!data.registration_id || !!data.sponsorship_id || !!data.free_request_id,
   { message: 'Aucun identifiant fourni.' },
@@ -40,6 +43,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     registration_id: getFormString(form, 'registration_id') ?? undefined,
     sponsorship_id:  getFormString(form, 'sponsorship_id') ?? undefined,
     free_request_id: getFormString(form, 'free_request_id') ?? undefined,
+    decision:        getFormString(form, 'decision') ?? 'APPROVE',
     note:            getFormString(form, 'note') ?? undefined,
   });
 
@@ -123,16 +127,30 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     }
   }
 
-  // --- Cas 3 : approuver une demande d'exoneration ----------------------------
+  // --- Cas 3 : approuver ou refuser une demande d'exoneration ---------------
   if (parsed.data.free_request_id) {
+    // FIX P1 2.2 : on utilise maintenant le champ `decision` dedie.
+    const isApproved = parsed.data.decision === 'APPROVE';
+
+    // Idempotence : on verifie qu'une decision n'a pas deja ete prise.
+    const { data: existing } = await admin
+      .from('training_free_seat_requests')
+      .select('id, status')
+      .eq('id', parsed.data.free_request_id)
+      .maybeSingle();
+    if (!existing) {
+      return redirect('/dashboard/admin/formations?error=' + encodeURIComponent('Demande introuvable.'));
+    }
+    if (existing.status !== 'pending') {
+      return redirect('/dashboard/admin/formations?error=' + encodeURIComponent('Cette demande a deja ete traitee.'));
+    }
+
     const { data: req } = await admin
       .from('training_free_seat_requests')
       .select('id, user_id, session_id, reason')
       .eq('id', parsed.data.free_request_id)
       .single();
     if (req) {
-      const isApproved = parsed.data.note !== 'REFUSE'; // simple convention
-
       await admin
         .from('training_free_seat_requests')
         .update({
@@ -201,7 +219,11 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     await sendPaymentConfirmationEmail(parsed.data.registration_id, admin, fromAddress);
   }
 
-  return redirect('/dashboard/admin/formations?saved=1');
+  const successMessage = parsed.data.free_request_id
+    ? (parsed.data.decision === 'APPROVE' ? 'Demande d exoneration approuvee.' : 'Demande d exoneration refusee.')
+    : 'Paiement valide.';
+
+  return redirect(`/dashboard/admin/formations?saved=1&msg=${encodeURIComponent(successMessage)}`);
 };
 
 // ---------------------------------------------------------------------------

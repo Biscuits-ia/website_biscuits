@@ -27,7 +27,7 @@ async function getAuthContext(request: Request, cookies: any) {
   const role = await fetchRoleSecure(user.id);
   if (!role || (role !== 'benevole' && role !== 'moderator' && role !== 'admin')) return null;
   const adminSupabase = createSupabaseAdminClient();
-  return { adminSupabase, user, role };
+  return { adminSupabase, supabase, user, role };
 }
 
 interface TaskInput {

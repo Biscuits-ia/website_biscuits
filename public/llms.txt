@@ -1,0 +1,69 @@
+﻿# Biscuits IA
+> Association Loi 1901 - Intelligence Artificielle accessible, ethique et open source.
+> Site principal : https://biscuits-ia.com
+> Documentation pour assistants IA et LLM crawlers. Derniere mise a jour : 2026-06-24.
+> Format : spec https://llmstxt.org/
+
+## A propos
+Biscuits IA est une association francaise (RNA W863012707, SIRET 10151660700013) qui accompagne associations, TPE, collectivites et collectifs dans une adoption responsable de l'IA. Notre mission : democratiser l'acces a l'IA, former les benevoles, mediere en cas de litige numerique, et publier des ressources open source.
+
+President : Alexis Gallard.
+Siege : Poitiers (France).
+Date de creation : 2024.
+
+## Pour qui
+- Associations Loi 1901 et collectifs
+- TPE / PME
+- Collectivites locales
+- Benevoles et particuliers motives
+
+## Ce qu'on propose
+- [Ateliers IA gratuits ou a prix libre](/ateliers) : en ligne (jusqu'a 15 participants) et en presentiel a Poitiers + villes partenaires.
+- [Formations certifiantes](/formations) : sliding scale 0 a 350 EUR, paiement de solidarite, places offertes sur demande.
+- [Ressources et guides PDF gratuits](/ressources) : checklists, guides pratiques, anti-pepins.
+- [Mediation numerique](/aide-victimes) : accompagnement gratuit en cas de litige avec un prestataire numerique.
+- [Mediation IA](/mediation-ia) : relecture des CGV / CGU / contrats lies a l'IA.
+- [Aide aux victimes d'arnaques IA](/aide-victimes) : echange, documentation, orientation vers les autorites competentes.
+
+## Domaines d'expertise
+- Intelligence artificielle generative (LLM, GPT, Claude, Mistral, Gemini)
+- Ethique de l'IA, RGPD, AI Act europeen
+- Open source et souverainete numerique
+- Mediation numerique et accompagnement
+- Formation de benevoles
+- Redaction de CGV / CGU / chartes ethiques
+
+## Pages cles
+- [Accueil](https://biscuits-ia.com/) : presentation de l'association
+- [FAQ](https://biscuits-ia.com/faq) : questions frequentes sur l'association et nos services
+- [Ateliers](https://biscuits-ia.com/ateliers) : catalogue d'ateliers IA gratuits
+- [Formations](https://biscuits-ia.com/formations) : catalogue de formations payantes
+- [Ressources](https://biscuits-ia.com/ressources) : guides et outils gratuits
+- [Blog](https://biscuits-ia.com/blog) : articles sur l'IA, l'ethique, les bons outils
+- [Aide aux victimes](https://biscuits-ia.com/aide-victimes) : service de mediation
+- [Charte ethique IA](https://biscuits-ia.com/charte-ethique) : nos engagements ethiques
+- [Nous rejoindre](https://biscuits-ia.com/rejoignez-nous) : adhesion et benevolat
+- [Contact](https://biscuits-ia.com/contact) : formulaire de contact
+- [Mentions legales](https://biscuits-ia.com/legal/mentions-legales) : identite de l'editeur
+
+## Outils open source developpes
+- Outils d'audit IA : https://github.com/biscuits-ia (placeholder, voir la page Outils)
+- Guides PDF libres de droits (CC BY-SA 4.0)
+
+## Documentation technique
+- Sitemap XML : https://biscuits-ia.com/sitemap-index.xml
+- Sitemap detaille : https://biscuits-ia.com/sitemap-0.xml
+- Flux RSS : https://biscuits-ia.com/rss.xml
+- Version markdown complete du site (pour LLM) : https://biscuits-ia.com/llms-full.txt
+- Schema.org JSON-LD : embarque sur chaque page (Organization, NGO, WebSite, Article, FAQPage, Course, Service, BreadcrumbList, HowTo)
+
+## Contact
+- Email : contact@biscuits-ia.com
+- Formulaire : https://biscuits-ia.com/contact
+- Hebergement : Vercel (Edge Network)
+- Stack : Astro 7 + Supabase + TypeScript
+
+## Mentions
+- Le contenu de ce site est publie sous licence CC BY-SA 4.0 sauf mention contraire.
+- Les schemas JSON-LD suivent la specification Schema.org.
+- Le site est en francais (fr-FR). Pas de version anglaise.

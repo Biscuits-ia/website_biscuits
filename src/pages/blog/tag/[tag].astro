@@ -57,11 +57,7 @@ export const getStaticPaths = (async () => {
 }) satisfies GetStaticPaths;
 
 const { tag: tagParam } = Astro.params;
-const { tagDisplay, tagSlug, totalCount } = Astro.props as {
-  tagDisplay: string;
-  tagSlug: string;
-  totalCount: number;
-};
+const { tagDisplay, tagSlug, totalCount: _totalCount } = Astro.props as { tagDisplay: string; tagSlug: string; totalCount: number };
 
 if (!tagParam) {
   return Astro.redirect('/blog');

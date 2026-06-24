@@ -18,7 +18,7 @@ import { fetchRoleSecure } from '@/lib/auth';
 import { getFormString } from '@/types/formations';
 import { uuidSchema } from '@/lib/formations';
 import { enqueueEmail } from '@/lib/email-queue';
-import { formatDateLong, formatTimeRange, formatPriceCents } from '@/types/formations';
+import { formatPriceCents } from '@/types/formations';
 
 const schema = z.object({
   payment_id:      uuidSchema,

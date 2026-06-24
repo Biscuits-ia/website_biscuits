@@ -723,9 +723,11 @@ const memberOptionsJson = JSON.stringify(memberOptions);
   .mt-6               { margin-top: var(--space-xl); }
 </style>
 
-<script define:vars={{ projectId, memberOptionsJson, userId, isMember, isStaff, userName }}>
+<script is:inline define:vars={{ projectId, memberOptionsJson, userId, isMember, isStaff, userName }}>
   /* ── Helpers ──────────────────────────────────────────────────────────────── */
-  const memberOptions = JSON.parse(memberOptionsJson);
+  // memberOptionsJson is injected by <script is:inline define:vars>
+  // eslint-disable-next-line @typescript-eslint/no-undef
+  const _memberOptions = JSON.parse(memberOptionsJson);
 
   function esc(str) {
     return String(str ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -802,7 +804,6 @@ const memberOptionsJson = JSON.stringify(memberOptions);
 
   function updateColCounts() {
     document.querySelectorAll('.kanban-col').forEach(col => {
-      const status = col.getAttribute('data-status');
       const count  = col.querySelectorAll('.task-card').length;
       const badge  = col.querySelector('.kanban-col-count');
       if (badge) badge.textContent = String(count);
@@ -1158,7 +1159,7 @@ const memberOptionsJson = JSON.stringify(memberOptions);
       }
 
       const query = mentionMatch[1].toLowerCase();
-      const filtered = memberOptions.filter(m =>
+      const filtered = _memberOptions.filter(m =>
         m.name.toLowerCase().includes(query)
       ).slice(0, 5);
 
@@ -1307,14 +1308,14 @@ const memberOptionsJson = JSON.stringify(memberOptions);
       // pour Realtime dans Supabase (cf. supabase/config.toml `[realtime]`).
       // Fallback polling 30s uniquement si window.supabase est indispo
       // (vieux nav, CSP stricte désactivant WS).
-      const supabaseRealtime = (window as { supabase?: { channel: Function } }).supabase;
+      const supabaseRealtime = (window).supabase;
       if (supabaseRealtime) {
         supabaseRealtime
           .channel(`project-${projectId}`)
           .on(
             'postgres_changes',
             { event: 'INSERT', schema: 'public', table: 'project_messages', filter: `project_id=eq.${projectId}` },
-            (payload: { new: { created_at: string; [k: string]: unknown } }) => {
+            (payload) => {
               const placeholder = container.querySelector('.chat-placeholder');
               if (placeholder) placeholder.remove();
               container.insertAdjacentHTML('beforeend', renderChatMsg(payload.new));

@@ -11,7 +11,7 @@ export interface Props {
   ogType?: 'website' | 'article';
   noindex?: boolean;
   schema?: {
-    type: 'Organization' | 'Service' | 'FAQPage' | 'Article' | 'WebPage';
+    type: 'Organization' | 'Service' | 'FAQPage' | 'Article' | 'WebPage' | 'HowTo';
     data?: Record<string, any>;
   };
   isProd: boolean;
@@ -100,7 +100,6 @@ const {
   <script is:inline nonce={nonce}>
     // Definition du dataLayer pour GTM (charge dynamiquement par CookieConsent)
     window.dataLayer = window.dataLayer || [];
-    function gtag() { dataLayer.push(arguments); }
 
     // Cooldown pour eviter le spam de tentatives si le reseau est instable
     // ou si un bloqueur de pub rejette systematiquement la requete.

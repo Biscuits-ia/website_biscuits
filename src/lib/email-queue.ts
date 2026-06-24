@@ -25,7 +25,6 @@ import type { MailMessage, MailSendResult } from './mail';
 // --------------------------------------------------------------------------
 
 /** Delai minimum entre 2 tentatives (en secondes). */
-const MIN_RETRY_SECONDS = 60;
 
 /** Nombre maximum de tentatives avant de marquer l'email comme 'dead'. */
 const MAX_ATTEMPTS_DEFAULT = 8;
@@ -297,21 +296,27 @@ export interface OutboxStats {
 }
 
 export async function getOutboxStats(): Promise<OutboxStats> {
+  // FIX P1 2.5 : appel de la RPC SQL get_outbox_stats() au lieu de SELECT *.
+  // Voir migration 20260624_get_outbox_stats_rpc.sql. Retourne 6 entiers.
   const admin = createSupabaseAdminClient();
-  const { data, error } = await admin
-    .from('email_outbox')
-    .select('status');
-  if (error || !data) {
+  try {
+    const { data, error } = await admin.rpc('get_outbox_stats');
+    if (error || !data) {
+      console.warn('[email-queue] get_outbox_stats RPC failed, fallback empty:', error?.message);
+      return { pending: 0, sending: 0, sent: 0, failed: 0, dead: 0, total: 0 };
+    }
+    const row = (Array.isArray(data) ? data[0] : data) as Partial<OutboxStats> | undefined;
+    if (!row) return { pending: 0, sending: 0, sent: 0, failed: 0, dead: 0, total: 0 };
+    return {
+      pending: Number(row.pending ?? 0),
+      sending: Number(row.sending ?? 0),
+      sent:    Number(row.sent ?? 0),
+      failed:  Number(row.failed ?? 0),
+      dead:    Number(row.dead ?? 0),
+      total:   Number(row.total ?? 0),
+    };
+  } catch (err) {
+    console.error('[email-queue] getOutboxStats unexpected error:', err);
     return { pending: 0, sending: 0, sent: 0, failed: 0, dead: 0, total: 0 };
   }
-  const counts: OutboxStats = { pending: 0, sending: 0, sent: 0, failed: 0, dead: 0, total: 0 };
-  for (const r of data) {
-    counts.total += 1;
-    if (r.status === 'pending') counts.pending += 1;
-    else if (r.status === 'sending') counts.sending += 1;
-    else if (r.status === 'sent') counts.sent += 1;
-    else if (r.status === 'failed') counts.failed += 1;
-    else if (r.status === 'dead') counts.dead += 1;
-  }
-  return counts;
 }

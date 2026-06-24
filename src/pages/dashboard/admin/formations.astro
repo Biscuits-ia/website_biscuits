@@ -103,10 +103,6 @@ const { data: compliance } = await admin
   .eq('id', 1)
   .maybeSingle();
 const cgvActivees = compliance?.cgv_activees ?? false;
-const cgvVersion = compliance?.cgv_version ?? null;
-const cgvDateActivation = compliance?.cgv_date_activation ?? null;
-const prochainAudit = compliance?.prochain_audit ?? null;
-const mediateurNom = compliance?.mediateur_nom ?? null;
 const hasTrainings = trainingList.length > 0;
 const hasPendingFree = (pendingFreeRequests ?? []).length > 0;
 const hasPendingSponsorship = (pendingSponsorships ?? []).length > 0;
@@ -130,8 +126,8 @@ const hasPendingSponsorship = (pendingSponsorships ?? []).length > 0;
 
   {!cgvActivees && (
     <div class="alert alert-warn">
-      <strong>⚠️ CGV non activées.</strong>
-      Les Conditions Générales de Vente doivent être validées par le bureau et activées
+      <strong>âš ï¸ CGV non activÃ©es.</strong>
+      Les Conditions GÃ©nÃ©rales de Vente doivent Ãªtre validÃ©es par le bureau et activÃ©es
       avant d'autoriser la vente de formations.
       <ul style="margin:8px 0 0 0;padding-left:24px;list-style:disc">
         <li><a href="/legal/cgv">Consulter les CGV</a></li>
@@ -196,10 +192,19 @@ const hasPendingSponsorship = (pendingSponsorships ?? []).length > 0;
                   <td>{session ? `${formatDate(session.starts_at)} - ${session.training_title}` : 'Session inconnue'}</td>
                   <td class="cell-reason">{req.reason}</td>
                   <td>
-                    <form method="POST" action="/api/admin/formations/validate-payment" style="display:inline;">
-                      <input type="hidden" name="free_request_id" value={req.id} />
-                      <button type="submit" class="btn btn-primary btn-xs">Approuver</button>
-                    </form>
+                    <div class="workshop-actions">
+                      <form method="POST" action="/api/admin/formations/validate-payment" style="display:inline;">
+                        <input type="hidden" name="free_request_id" value={req.id} />
+                        <input type="hidden" name="decision" value="APPROVE" />
+                        <button type="submit" class="btn btn-primary btn-xs" data-confirm={`Approuver la demande d exoneration de ${req.profiles?.full_name ?? "cet utilisateur"} ?`}>Approuver</button>
+                      </form>
+                      <form method="POST" action="/api/admin/formations/validate-payment" style="display:inline;">
+                        <input type="hidden" name="free_request_id" value={req.id} />
+                        <input type="hidden" name="decision" value="REFUSE" />
+                        <input type="hidden" name="note" value="Demande d exoneration refusee" />
+                        <button type="submit" class="btn btn-ghost btn-xs" data-confirm={`Refuser la demande d exoneration de ${req.profiles?.full_name ?? "cet utilisateur"} ?`}>Refuser</button>
+                      </form>
+                    </div>
                   </td>
                 </tr>
               );
@@ -554,11 +559,22 @@ const hasPendingSponsorship = (pendingSponsorships ?? []).length > 0;
       dialog?.close();
     }
   });
-  document.addEventListener('click', (e) => {
-    const btn = (e.target as HTMLElement).closest('[data-confirm]');
-    if (btn) {
+    // FIX P0 1.4 : Confirmation via la modale globale (CSP-safe) plutot que
+    // window.confirm, en evitant les attributs onclick= qui violent la CSP stricte.
+    document.addEventListener('click', async (e) => {
+      const btn = (e.target as HTMLElement).closest('[data-confirm]') as HTMLElement | null;
+      if (!btn) return;
+      const form = btn.closest('form');
+      if (!form) return;
       const msg = btn.getAttribute('data-confirm') ?? 'Confirmer ?';
-      if (!window.confirm(msg)) e.preventDefault();
-    }
-  });
+      e.preventDefault();
+      const ok = await (window as any).showConfirm({
+        title: 'Confirmation requise',
+        message: msg,
+        confirmLabel: 'Confirmer',
+        cancelLabel: 'Annuler',
+        danger: btn.classList.contains('btn-danger'),
+      });
+      if (ok) form.submit();
+    });
 </script>

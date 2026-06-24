@@ -47,12 +47,17 @@ interface ImportMeta {
   readonly env: ImportMetaEnv;
 }
 
-declare namespace App {
-  interface Locals {
-    nonce: string;
-    supabase: import('@supabase/supabase-js').SupabaseClient;
+declare global {
+  namespace App {
+    interface Locals {
+      /** CSP nonce genere par le middleware, injecte dans les <script> inline. */
+      nonce: string;
+      /** Client Supabase reauthentifiable partage par toutes les requetes du middleware. */
+      supabase: import('@supabase/supabase-js').SupabaseClient;
+    }
   }
 }
+export {};
 
 // Garde-fou de typage : sert a documenter que la cle service_role
 // ne doit pas etre lue depuis un bundle client. Voir lib/supabase.ts.

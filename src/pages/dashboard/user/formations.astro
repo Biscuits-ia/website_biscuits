@@ -328,11 +328,22 @@ const hasPast     = pastRows.length > 0;
 </style>
 
 <script>
-  document.addEventListener('click', (e) => {
-    const btn = (e.target as HTMLElement).closest('[data-confirm]');
-    if (btn) {
-      const msg = btn.getAttribute('data-confirm') ?? 'Confirmer ?';
-      if (!window.confirm(msg)) e.preventDefault();
-    }
+  // FIX P0 1.4 : Confirmation via la modale globale (CSP-safe) plutot que
+  // window.confirm, en evitant les attributs onclick= qui violent la CSP stricte.
+  document.addEventListener('click', async (e) => {
+  const btn = (e.target as HTMLElement).closest('[data-confirm]') as HTMLElement | null;
+  if (!btn) return;
+  const form = btn.closest('form');
+  if (!form) return;
+  const msg = btn.getAttribute('data-confirm') ?? 'Confirmer ?';
+  e.preventDefault();
+  const ok = await (window as any).showConfirm({
+    title: 'Confirmation requise',
+    message: msg,
+    confirmLabel: 'Confirmer',
+    cancelLabel: 'Annuler',
+    danger: btn.classList.contains('btn-danger'),
   });
+  if (ok) form.submit();
+    });
 </script>

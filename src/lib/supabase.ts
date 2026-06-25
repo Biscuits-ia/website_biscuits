@@ -1,3 +1,21 @@
+// src/lib/supabase.ts
+//
+// Clients Supabase : SSR (utilisateur) et Admin (service_role).
+//
+// RÈGLE D'OR (doc officielle Supabase SSR) :
+// → Côté serveur : UNIQUEMENT getUser(). Jamais getSession().
+// → autoRefreshToken: false : on empêche tout refresh de background timer.
+//
+// ROOT CAUSE de "refresh_token_not_found" :
+// Supabase utilise la "token rotation" : chaque refresh génère un nouveau
+// refresh_token et RÉVOQUE immédiatement l'ancien. Si deux acteurs
+// (browser SDK + serveur, ou deux lambdas Vercel) lisent le même
+// refresh_token et essaient de le consommer quasi-simultanément,
+// le second reçoit 400 refresh_token_not_found.
+//
+// Doc officielle :
+// https://supabase.com/docs/guides/auth/server-side/creating-a-client?queryGroups=framework&framework=astro
+
 import { createServerClient, parseCookieHeader } from '@supabase/ssr';
 import { createClient } from '@supabase/supabase-js';
 

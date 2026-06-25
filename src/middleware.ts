@@ -1,4 +1,18 @@
 ﻿// src/middleware.ts
+//
+// Middleware Astro : rate-limit, guard de session, CSP.
+//
+// RÈGLE D'OR : côté serveur, on n'appelle QUE getUser(). Jamais getSession().
+//
+// getSession() lit le refresh_token depuis le cookie et PEUT déclencher
+// un refresh si l'access_token est expiré — même avec autoRefreshToken: false.
+// Si le browser SDK a fait la même chose 50ms avant, le token est révoqué
+// → refresh_token_not_found.
+//
+// getUser() fait un appel réseau à Supabase Auth avec l'access_token.
+// Si l'access_token est valide → retour immédiat, refresh_token non touché.
+// Si l'access_token est expiré → Supabase Auth refuse → erreur → on déconnecte.
+// Dans les deux cas, le refresh_token n'est JAMAIS consommé côté serveur.
 
 import { defineMiddleware } from 'astro:middleware';
 import { rateLimit } from './lib/rateLimit';
@@ -6,12 +20,16 @@ import { getClientIpOrNull } from './lib/http';
 import { createSupabaseClient, createSupabaseAdminClient } from './lib/supabase';
 import crypto from 'node:crypto';
 
+// ─── Cache logout (30 s) ──────────────────────────────────────────────────────
+
 const LOGOUT_CACHE_TTL_MS = 30_000;
 interface LogoutCacheEntry {
   lastLogoutAtMs: number | null;
   expiresAt: number;
 }
 const logoutCache = new Map<string, LogoutCacheEntry>();
+
+// ─── Routes publiques ─────────────────────────────────────────────────────────
 
 const PUBLIC_AUTH_PATHS = new Set([
   '/connexion',
@@ -30,6 +48,8 @@ function isPublicPath(pathname: string): boolean {
   if (pathname.startsWith('/_astro/') || pathname.startsWith('/favicon')) return true;
   return false;
 }
+
+// ─── Rate-limit ───────────────────────────────────────────────────────────────
 
 function checkRouteRateLimit(
   context: { request: Request; clientAddress?: string },
@@ -65,6 +85,8 @@ function checkRouteRateLimit(
   return rateLimit(`${ip}:${pathname}`, limit, windowMs);
 }
 
+// ─── Lecture last_logout_at (cache 30 s) ──────────────────────────────────────
+
 async function readLastLogoutAtMs(userId: string): Promise<number | null> {
   const cached = logoutCache.get(userId);
   if (cached && cached.expiresAt > Date.now()) return cached.lastLogoutAtMs;
@@ -94,39 +116,35 @@ async function readLastLogoutAtMs(userId: string): Promise<number | null> {
   return value;
 }
 
+// ─── Guard de session ─────────────────────────────────────────────────────────
+
 /**
- * Guard de session avec gestion de refresh_token_not_found.
- * 
- * CORRECTIONS :
- * - Catch de refresh_token_not_found dans getUser()
- * - Si erreur → déconnexion propre via signOut()
- * - Suppression du code mort (void cookieHeader, etc.)
+ * Vérifie que la session est valide et non invalidée par un logout récent.
+ *
+ * ✅ RÈGLE D'OR : UNIQUEMENT getUser() côté serveur.
+ * getUser() = validation JWT réseau. Pas de refresh token consommé.
+ * Si erreur ou pas d'utilisateur → 'unauthenticated'.
+ * Si last_logout_at > now - 5min → 'invalidated' (logout récent).
+ * Sinon → 'ok'.
  */
 async function handleSessionGuard(
   supabase: ReturnType<typeof createSupabaseClient>,
   pathname: string,
 ): Promise<'ok' | 'invalidated' | 'unauthenticated'> {
   try {
-    const { data: { user }, error } = await supabase.auth.getUser();
-    
-    // ✅ Gestion de refresh_token_not_found
-    if (error) {
-      if (error.code === 'refresh_token_not_found' || error.status === 400) {
-        console.warn('[middleware] refresh_token_not_found → déconnexion');
-        try {
-          await supabase.auth.signOut();
-        } catch {
-          /* ignore */
-        }
-        return 'invalidated';
-      }
-      return 'unauthenticated';
-    }
-    
-    if (!user) {
+    // ✅ getUser() = validation JWT réseau. Pas de refresh token consommé.
+    const {
+      data: { user },
+      error,
+    } = await supabase.auth.getUser();
+    if (error || !user) {
+      // AuthApiError ici = access token invalide ou expiré.
+      // On retourne 'unauthenticated' — pas d'erreur à logger, c'est normal.
       return 'unauthenticated';
     }
 
+    // Vérification last_logout_at : si un logout a eu lieu dans les 5 dernières
+    // minutes, on invalide la session par sécurité.
     const lastLogoutAtMs = await readLastLogoutAtMs(user.id);
     if (lastLogoutAtMs === null || lastLogoutAtMs === 0) return 'ok';
 
@@ -134,21 +152,13 @@ async function handleSessionGuard(
     if (lastLogoutAtMs > fiveMinAgo) return 'invalidated';
 
     return 'ok';
-  } catch (err: any) {
-    // ✅ Catch des erreurs non gérées
-    if (err?.code === 'refresh_token_not_found' || err?.status === 400) {
-      console.warn('[middleware] refresh_token_not_found (catch) → déconnexion');
-      try {
-        await supabase.auth.signOut();
-      } catch {
-        /* ignore */
-      }
-      return 'invalidated';
-    }
+  } catch (err) {
     console.error('[middleware] handleSessionGuard exception:', err);
-    return 'ok';
+    return 'ok'; // Fail-open.
   }
 }
+
+// ─── CSP ──────────────────────────────────────────────────────────────────────
 
 function buildCsp(nonce: string, isDev: boolean): string {
   const EXTERNAL_SCRIPTS = [
@@ -225,6 +235,8 @@ function injectNonce(html: string, nonce: string): string {
   });
 }
 
+// ─── Middleware ───────────────────────────────────────────────────────────────
+
 export const onRequest = defineMiddleware(async (context, next) => {
   const isDev = !import.meta.env.PROD;
   const nonce = crypto.randomBytes(18).toString('base64');
@@ -235,12 +247,19 @@ export const onRequest = defineMiddleware(async (context, next) => {
 
   const { pathname } = context.url;
 
+  // 1. Rate-limit.
   const rl = checkRouteRateLimit(context, isDev, pathname);
   if (rl) return rl;
 
+  // 2. Guard de session (skip routes publiques).
   if (!isPublicPath(pathname)) {
     const guard = await handleSessionGuard(supabase, pathname);
     if (guard === 'invalidated') {
+      try {
+        await supabase.auth.signOut();
+      } catch {
+        /* ignore */
+      }
       if (pathname.startsWith('/api/')) {
         return new Response(JSON.stringify({ error: 'Session invalidée.' }), {
           status: 401,
@@ -249,10 +268,13 @@ export const onRequest = defineMiddleware(async (context, next) => {
       }
       if (pathname !== '/connexion') return context.redirect('/connexion?session=invalidee');
     }
+    // 'unauthenticated' → les pages protégées gèrent via requireAuth().
   }
 
+  // 3. Requête.
   const response = await next();
 
+  // 4. CSP.
   const csp = buildCsp(nonce, isDev);
   const contentType = response.headers.get('content-type') ?? '';
   if (contentType.includes('text/html')) {

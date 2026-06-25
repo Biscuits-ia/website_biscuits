@@ -233,12 +233,24 @@ function buildCsp(nonce: string, isDev: boolean): string {
     );
   }
 
+  // GTM enregistre un Service Worker depuis googletagmanager.com.
+  // worker-src doit autoriser ce domaine sinon ERR_FAILED sur le SW GTM.
+  // Les fetch() émis depuis ce SW sont aussi couverts par connect-src
+  // (un SW hérite de l'origin du document pour la CSP, donc connect-src
+  // principal s'applique, mais on ajoute les domaines GTM/GA explicitement).
+  const workerSrc = [
+    `'self'`,
+    'blob:',
+    'https://www.googletagmanager.com',
+    'https://*.googletagmanager.com',
+  ];
+
   const directives: string[] = [
     `default-src 'self'`,
     `script-src ${scriptSrc.join(' ')}`,
     `script-src-elem ${scriptSrcElem.join(' ')}`,
     `script-src-attr ${scriptSrcAttr}`,
-    `worker-src 'self' blob:`,
+    `worker-src ${workerSrc.join(' ')}`,
     `style-src 'self' 'unsafe-inline' https://fonts.googleapis.com`,
     `img-src 'self' data: blob: https:`,
     `font-src 'self' https://fonts.gstatic.com`,

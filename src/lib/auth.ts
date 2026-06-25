@@ -18,6 +18,14 @@ export interface AuthResult {
 
 // ─── Helper safe pour getUser() ──────────────────────────────────────────────
 
+/**
+ * Wrapper autour de getUser() qui gère proprement refresh_token_not_found.
+ * 
+ * Pourquoi : getUser() peut déclencher un refresh si l'access token est expiré.
+ * Si le refresh_token a été révoqué (par le browser SDK ou une autre lambda),
+ * on obtient refresh_token_not_found. On catch cette erreur et on retourne
+ * user: null pour forcer une déconnexion propre.
+ */
 async function safeGetUser(supabase: SupabaseClient): Promise<{ user: User | null; error: any }> {
   try {
     const { data: { user }, error } = await supabase.auth.getUser();

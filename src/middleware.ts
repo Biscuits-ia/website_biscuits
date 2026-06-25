@@ -149,3 +149,122 @@ async function handleSessionGuard(
     return 'ok';
   }
 }
+
+function buildCsp(nonce: string, isDev: boolean): string {
+  const EXTERNAL_SCRIPTS = [
+    'https://www.googletagmanager.com',
+    'https://*.googletagmanager.com',
+    'https://cdn.vercel-insights.com',
+    'https://*.vercel.app',
+    'https://vercel.live',
+    'https://*.vercel.live',
+    'https://biscuits-ia.com',
+    'https://*.biscuits-ia.com',
+  ];
+
+  const scriptSrc = [`'self'`, `'nonce-${nonce}'`, `'strict-dynamic'`];
+  const scriptSrcElem = [
+    `'self'`,
+    `'nonce-${nonce}'`,
+    `'sha256-3bzWVxQE32IZQKH9eh8KzyHuhXOlMrboDVVBRd0fWTU='`,
+    ...EXTERNAL_SCRIPTS,
+  ];
+
+  if (isDev) {
+    scriptSrc.push(`'unsafe-inline'`);
+    scriptSrcElem.push(`'unsafe-inline'`);
+  }
+
+  const connectSrc = [
+    `'self'`,
+    'https://www.googletagmanager.com',
+    'https://*.google-analytics.com',
+    'https://analytics.google.com',
+    'https://cdn.vercel-insights.com',
+    'https://*.vercel.app',
+    'https://*.supabase.co',
+    'https://api.helloasso.com',
+    'https://fonts.googleapis.com',
+    'https://fonts.gstatic.com',
+    'https://*.cloudflare.com',
+    'https://biscuits-ia.com',
+    'https://*.biscuits-ia.com',
+  ];
+
+  if (isDev) {
+    connectSrc.push(
+      'http://localhost:4321',
+      'ws://localhost:4321',
+      'http://127.0.0.1:4321',
+      'ws://127.0.0.1:4321',
+    );
+  }
+
+  return [
+    `default-src 'self'`,
+    `script-src ${scriptSrc.join(' ')}`,
+    `script-src-elem ${scriptSrcElem.join(' ')}`,
+    `script-src-attr ${isDev ? `'self' 'unsafe-inline'` : `'none'`}`,
+    `worker-src 'self' blob: https://www.googletagmanager.com https://*.googletagmanager.com`,
+    `style-src 'self' 'unsafe-inline' https://fonts.googleapis.com`,
+    `img-src 'self' data: blob: https:`,
+    `font-src 'self' https://fonts.gstatic.com`,
+    `connect-src ${connectSrc.join(' ')}`,
+    `frame-src https://www.googletagmanager.com https://vercel.live`,
+    `object-src 'none'`,
+    `base-uri 'self'`,
+    `form-action 'self'`,
+    `frame-ancestors 'none'`,
+  ].join('; ');
+}
+
+function injectNonce(html: string, nonce: string): string {
+  return html.replaceAll(/<script\b([^>]*)>/g, (match, attrs: string) => {
+    if (/\bnonce\s*=/.test(attrs)) return match;
+    return `<script${attrs} nonce="${nonce}">`;
+  });
+}
+
+export const onRequest = defineMiddleware(async (context, next) => {
+  const isDev = !import.meta.env.PROD;
+  const nonce = crypto.randomBytes(18).toString('base64');
+  context.locals.nonce = nonce;
+
+  const supabase = createSupabaseClient(context);
+  context.locals.supabase = supabase;
+
+  const { pathname } = context.url;
+
+  const rl = checkRouteRateLimit(context, isDev, pathname);
+  if (rl) return rl;
+
+  if (!isPublicPath(pathname)) {
+    const guard = await handleSessionGuard(supabase, pathname);
+    if (guard === 'invalidated') {
+      if (pathname.startsWith('/api/')) {
+        return new Response(JSON.stringify({ error: 'Session invalidée.' }), {
+          status: 401,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+      if (pathname !== '/connexion') return context.redirect('/connexion?session=invalidee');
+    }
+  }
+
+  const response = await next();
+
+  const csp = buildCsp(nonce, isDev);
+  const contentType = response.headers.get('content-type') ?? '';
+  if (contentType.includes('text/html')) {
+    const html = injectNonce(await response.text(), nonce);
+    const headers = new Headers(response.headers);
+    headers.set('Content-Security-Policy', csp);
+    return new Response(html, {
+      status: response.status,
+      statusText: response.statusText,
+      headers,
+    });
+  }
+  response.headers.set('Content-Security-Policy', csp);
+  return response;
+});

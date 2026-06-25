@@ -248,24 +248,15 @@ export const onRequest = defineMiddleware(async (context, next) => {
     connectSrc.push('http://localhost:4321', 'ws://localhost:4321', 'http://127.0.0.1:4321', 'ws://127.0.0.1:4321');
   }
 
-  // script-src : inline (nonce + strict-dynamic)
-  // script-src-elem : externe (whitelist host, pas de nonce/strict-dynamic)
-  // Cela permet a /sw-register.js, GTM, Vercel Insights d etre charges.
-  // script-src-elem : whitelist explicite des hotes externes.
-  // On NE met PAS strict-dynamic ici car il desactiverait la whitelist.
-  // Le nonce + strict-dynamic dans script-src (au-dessus) suffit pour
-  // permettre aux scripts inline signes de charger d'autres scripts.
-  // Le regex ci-dessous ajoute le nonce aux <script> sans src/nonce.
   const scriptSrcElem = [
     `'self'`,
-    'https://www.googletagmanager.com',
-    'https://cdn.vercel-insights.com',
-    'https://*.vercel.app',
-    'https://*.googletagmanager.com',
-    // Cloudflare email-decode.min.js (auto-injected sur les pages contenant
-    // des adresses email) + sous-domaines du site.
-    'https://biscuits-ia.com',
-    'https://*.biscuits-ia.com',
+    `'nonce-${nonce}'`,
+  'https://www.googletagmanager.com',
+  'https://cdn.vercel-insights.com',
+  'https://*.vercel.app',
+  'https://*.googletagmanager.com',
+  'https://biscuits-ia.com',
+  'https://*.biscuits-ia.com',
   ];
 
   // FIX P0 1.4 : script-src-attr differencie dev/prod.

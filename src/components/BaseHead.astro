@@ -100,11 +100,19 @@ const {
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link
+  id="font-zalando"
   rel="stylesheet"
   href="https://fonts.googleapis.com/css2?family=Zalando+Sans+SemiExpanded:ital,wght@0,200..900;1,200..900&display=swap"
   media="print"
-  onload="this.media='all'"
 >
+<noscript>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zalando+Sans+SemiExpanded:ital,wght@0,200..900;1,200..900&display=swap">
+</noscript>
+
+<script is:inline nonce={nonce}>
+  var fontLink = document.getElementById('font-zalando');
+  if (fontLink) fontLink.addEventListener('load', function () { fontLink.media = 'all'; }, { once: true });
+</script>
 <noscript>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zalando+Sans+SemiExpanded:ital,wght@0,200..900;1,200..900&display=swap">
 </noscript>

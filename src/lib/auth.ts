@@ -1,31 +1,16 @@
 // src/lib/auth.ts
-//
-// Helpers d'authentification pour les pages Astro et les routes API.
-// Source de vérité du rôle = table `profiles` (lecture via service_role).
-//
-// RÈGLE D'OR (doc officielle Supabase SSR) :
-// → Côté serveur : UNIQUEMENT getUser(). Jamais getSession().
-// → getSession() peut déclencher un refresh interne si l'access token
-//   est expiré → cause directe de "refresh_token_not_found" sur Vercel.
-
 import { createSupabaseClient, createSupabaseAdminClient } from './supabase';
 import type { AstroGlobal, APIContext } from 'astro';
 import type { SupabaseClient, User, Session } from '@supabase/supabase-js';
 import type { VolunteerAppointment } from '@/types/appointments';
 
-// AstroGlobal (contexte page .astro) et APIContext (contexte route API)
-// exposent la même surface utilisée par les guards ci-dessous
-// (locals, request, cookies, redirect). L'union évite les casts en
-// `as any` / `as unknown as AstroGlobal` dans les 18+ call-sites.
 type AuthContext = AstroGlobal | APIContext;
-
-// ─── Types ────────────────────────────────────────────────────────────────────
 
 export type UserRole = 'user' | 'moderator' | 'admin' | 'benevole' | 'association';
 
 export interface AuthResult {
   user: User;
-  session: Session | null; // Toujours null côté serveur (pas de getSession())
+  session: Session | null; // Toujours null côté serveur
   supabase: SupabaseClient;
   role: UserRole;
 }
@@ -40,12 +25,6 @@ function isUserRole(value: unknown): value is UserRole {
   );
 }
 
-// ─── Helpers Admin ────────────────────────────────────────────────────────────
-
-/**
- * Supprime un utilisateur de Supabase Auth via l'API Admin.
- * Nécessite la clé service_role (jamais côté client).
- */
 export async function deleteUserFromSupabase(userId: string): Promise<boolean> {
   try {
     const adminClient = createSupabaseAdminClient();
@@ -61,10 +40,6 @@ export async function deleteUserFromSupabase(userId: string): Promise<boolean> {
   }
 }
 
-/**
- * Retire le rôle "benevole" à l'utilisateur (le passe à "user").
- * Utilise le client admin pour bypass les RLS.
- */
 export async function stopBeingBenevole(userId: string): Promise<boolean> {
   const adminClient = createSupabaseAdminClient();
   const { error } = await adminClient
@@ -78,10 +53,6 @@ export async function stopBeingBenevole(userId: string): Promise<boolean> {
   return true;
 }
 
-/**
- * Crée un profil association pour l'utilisateur connecté.
- * Utilise le client admin pour bypass les RLS.
- */
 export async function createAssociation(
   userId: string,
   data: {
@@ -92,11 +63,10 @@ export async function createAssociation(
     phone_number: string;
     contact_email: string;
     description?: string | null;
-  },
+  }
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const adminClient = createSupabaseAdminClient();
-
     const { data: existingAssoc } = await adminClient
       .from('associations')
       .select('id')
@@ -146,16 +116,6 @@ export async function createAssociation(
   }
 }
 
-// ─── Fetch rôle sécurisé ──────────────────────────────────────────────────────
-
-/**
- * Helper interne : fetch du rôle via le service role (bypass RLS).
- *
- * SÉCURITÉ : on utilise le client admin (service_role) pour lire le rôle.
- * Cela garantit que même si les RLS policies sur `profiles` sont mal
- * configurées, la vérification du rôle ne peut pas être contournée côté
- * client. Le client anon ne peut pas lever ses propres privilèges.
- */
 export async function fetchRoleSecure(userId: string): Promise<UserRole | null> {
   const adminClient = createSupabaseAdminClient();
   const { data, error } = await adminClient
@@ -171,98 +131,52 @@ export async function fetchRoleSecure(userId: string): Promise<UserRole | null> 
   return isUserRole(role) ? role : 'user';
 }
 
-// ─── Guards ───────────────────────────────────────────────────────────────────
-
-/**
- * Vérifie que l'utilisateur est connecté.
- * Retourne un AuthResult ou une Response de redirection.
- *
- * SÉCURITÉ :
- * - getUser() valide le JWT auprès du serveur Supabase Auth (pas de lecture
- *   locale du token) → résistant au token forgé.
- * - Le rôle est lu via le client service_role, insensible aux RLS policies.
- * - PAS de getSession() : éviterait refresh_token_not_found sur Vercel.
- *   Le client `supabase` contient déjà la session via les cookies.
- */
 export async function requireAuth(Astro: AuthContext): Promise<AuthResult | Response> {
-  // Réutiliser le client stocké par le middleware (même instance = même session
-  // en mémoire, avec le token rafraîchi si nécessaire), sinon en créer un.
   const supabase = Astro.locals.supabase ?? createSupabaseClient(Astro);
-
-  // ✅ RÈGLE D'OR : UNIQUEMENT getUser() côté serveur
-  const {
-    data: { user },
-    error,
-  } = await supabase.auth.getUser();
+  const { data: { user }, error } = await supabase.auth.getUser();
   if (error || !user) {
     return Astro.redirect('/connexion');
   }
-
   const role = (await fetchRoleSecure(user.id)) ?? 'user';
-
-  // ❌ PAS de getSession() ici — cause directe de refresh_token_not_found
+  
+  // ✅ CORRECTION : session: null au lieu de getSession()
   return { user, session: null, supabase, role };
 }
 
-/**
- * Garde générique paramétré par les rôles autorisés.
- * Source de vérité pour toutes les guards basées sur le rôle.
- *
- * @param Astro   contexte Astro (page .astro ou route API)
- * @param allowed rôles autorisés (ex : ['admin'])
- */
 export async function requireRole(
   Astro: AuthContext,
   allowed: ReadonlyArray<UserRole>,
 ): Promise<AuthResult | Response> {
   const supabase = Astro.locals.supabase ?? createSupabaseClient(Astro);
-
-  // ✅ RÈGLE D'OR : UNIQUEMENT getUser() côté serveur
-  const {
-    data: { user },
-    error,
-  } = await supabase.auth.getUser();
+  const { data: { user }, error } = await supabase.auth.getUser();
   if (error || !user) {
     return Astro.redirect('/connexion');
   }
-
   const role = await fetchRoleSecure(user.id);
   if (!role || !allowed.includes(role)) {
-    // Ne pas révéler l'existence du dashboard cible → redirection neutre.
     return Astro.redirect('/dashboard/user');
   }
-
-  // ❌ PAS de getSession() ici — cause directe de refresh_token_not_found
+  
+  // ✅ CORRECTION : session: null au lieu de getSession()
   return { user, session: null, supabase, role };
 }
 
-/** Garde admin — équivalente à requireRole(Astro, ['admin']). */
 export function requireAdmin(Astro: AuthContext): Promise<AuthResult | Response> {
   return requireRole(Astro, ['admin']);
 }
 
-/** Garde moderator — équivalente à requireRole(Astro, ['moderator', 'admin']). */
 export function requireModerator(Astro: AuthContext): Promise<AuthResult | Response> {
   return requireRole(Astro, ['moderator', 'admin']);
 }
 
-/** Garde bénévole — équivalente à requireRole(Astro, ['benevole', 'moderator', 'admin']). */
 export function requireBenevole(Astro: AuthContext): Promise<AuthResult | Response> {
   return requireRole(Astro, ['benevole', 'moderator', 'admin']);
 }
 
-/** Garde association — équivalente à requireRole(Astro, ['association', 'moderator', 'admin']). */
 export function requireAssociation(Astro: AuthContext): Promise<AuthResult | Response> {
   return requireRole(Astro, ['association', 'moderator', 'admin']);
 }
 
-// ─── Vérification propriétaire RDV ────────────────────────────────────────────
-
-/**
- * Vérifie que `apptId` existe et que le caller est autorisé à le manipuler :
- *   - admin / moderator → tous les RDV ;
- *   - user             → uniquement les RDV dont il est `user_id`.
- */
 export async function requireAppointmentOwner(
   supabase: SupabaseClient,
   apptId: string,

@@ -249,15 +249,17 @@ export const onRequest = defineMiddleware(async (context, next) => {
   }
 
   const scriptSrcElem = [
-    `'self'`,
-    `'nonce-${nonce}'`,
+  `'self'`,
+  `'nonce-${nonce}'`,
   'https://www.googletagmanager.com',
   'https://cdn.vercel-insights.com',
   'https://*.vercel.app',
   'https://*.googletagmanager.com',
+  'https://vercel.live',
+  'https://*.vercel.live',
   'https://biscuits-ia.com',
   'https://*.biscuits-ia.com',
-  ];
+];
 
   // FIX P0 1.4 : script-src-attr differencie dev/prod.
   // En dev, on autorise unsafe-inline (Vite/Astro toolbar/HMR).

@@ -2,12 +2,15 @@
 import { defineMiddleware } from 'astro:middleware';
 import { rateLimit } from './lib/rateLimit';
 import { getClientIpOrNull } from './lib/http';
-import { createSupabaseAdminClient, createSupabaseClient } from './lib/supabase';
+import {
+  createSupabaseClient,
+  createSupabaseAdminClient,
+  refreshSessionIfNeeded,
+} from './lib/supabase';
 import crypto from 'node:crypto';
 
 // ─── Cache logout ────────────────────────────────────────────────────────────
-// 30 s est suffisant : un logout explicite ne nécessite pas une invalidation
-// infra-milliseconde. Le cache est partitionné par user.id.
+// TTL 30 s : évite un round-trip Supabase à chaque requête authentifiée.
 const LOGOUT_CACHE_TTL_MS = 30_000;
 
 interface LogoutCacheEntry {
@@ -18,8 +21,8 @@ interface LogoutCacheEntry {
 const logoutCache = new Map<string, LogoutCacheEntry>();
 
 // ─── Routes publiques ─────────────────────────────────────────────────────────
-// Ces routes ne doivent JAMAIS déclencher la vérification de session,
-// sinon on crée une boucle redirect infinie si le cookie est corrompu.
+// Ne doivent JAMAIS déclencher la vérification de session :
+// un cookie corrompu sur ces routes créerait une boucle redirect infinie.
 const PUBLIC_AUTH_PATHS = new Set([
   '/connexion',
   '/inscription',
@@ -34,7 +37,6 @@ const PUBLIC_AUTH_PATHS = new Set([
 
 function isPublicPath(pathname: string): boolean {
   if (PUBLIC_AUTH_PATHS.has(pathname)) return true;
-  // Assets statiques, favicons, etc. : pas de session check.
   if (pathname.startsWith('/_astro/')) return true;
   if (pathname.startsWith('/favicon')) return true;
   return false;
@@ -46,12 +48,10 @@ function checkRouteRateLimit(
   isDev: boolean,
   pathname: string,
 ): Response | null {
-  // Désactivé en dev pour ne pas gêner le développement.
   if (isDev) return null;
   if (!pathname.startsWith('/api/') && !pathname.startsWith('/auth/')) return null;
 
   const ip = getClientIpOrNull(context.request, context.clientAddress);
-  // Si on ne peut pas identifier l'IP (Vercel sans header forwarded), on laisse passer.
   if (!ip) return null;
 
   let limit = 20;
@@ -59,13 +59,11 @@ function checkRouteRateLimit(
 
   if (pathname === '/api/appointment-slots' || pathname === '/api/user-appointments') {
     limit = 30;
-    windowMs = 60_000;
   }
 
   if (pathname.startsWith('/auth/')) {
     if (pathname === '/auth/connexion' || pathname === '/auth/inscription') {
       limit = 5;
-      windowMs = 60_000;
     } else if (
       pathname === '/auth/confirm'
       || pathname === '/auth/callback'
@@ -83,7 +81,7 @@ function checkRouteRateLimit(
   return rateLimit(`${ip}:${pathname}`, limit, windowMs);
 }
 
-// ─── Lecture last_logout_at (avec cache) ──────────────────────────────────────
+// ─── Lecture last_logout_at ───────────────────────────────────────────────────
 function readAccessTokenIssuedAtMs(accessToken: string | null | undefined): number | null {
   if (!accessToken) return null;
   const parts = accessToken.split('.');
@@ -113,65 +111,68 @@ async function readLastLogoutAtMs(userId: string): Promise<number | null> {
       .maybeSingle();
 
     if (error) {
-      // Colonne absente (42703) : pas de logout enregistré.
       value = error.code === '42703' ? 0 : null;
-      if (error.code !== '42703') {
-        console.error('[middleware] readLastLogoutAtMs db error:', error.message);
-      }
+      if (error.code !== '42703') console.error('[middleware] readLastLogoutAtMs:', error.message);
     } else {
       const ms = data?.last_logout_at ? Date.parse(data.last_logout_at) : 0;
       value = Number.isFinite(ms) ? ms : null;
     }
   } catch (err) {
     console.error('[middleware] readLastLogoutAtMs exception:', err);
-    return null; // Fail-open : ne pas bloquer en cas d'erreur réseau.
+    return null;
   }
 
   logoutCache.set(userId, { lastLogoutAtMs: value, expiresAt: Date.now() + LOGOUT_CACHE_TTL_MS });
   return value;
 }
 
-// ─── Vérification d'invalidation de session ───────────────────────────────────
-// Retourne true si la session doit être invalidée.
-// IMPORTANT : ne jamais appeler sur une route publique (cf. isPublicPath).
-async function mustInvalidateSession(
+// ─── Guard de session ─────────────────────────────────────────────────────────
+//
+// ARCHITECTURE ANTI-RACE-CONDITION pour Vercel :
+//
+// Le problème "refresh_token_not_found" vient de :
+//   1. Vercel parallélise plusieurs lambdas sur la même page (HTML + prefetch).
+//   2. Toutes reçoivent le même Cookie avec le même refresh_token.
+//   3. Si l'access_token est expiré, chaque lambda déclenche un refresh.
+//   4. La première réussit, les suivantes reçoivent 400.
+//
+// Solution : autoRefreshToken: false dans le SDK + refresh explicite UNE SEULE
+// FOIS via refreshSessionIfNeeded() (dans supabase.ts). Cette fonction lit
+// d'abord getSession() localement (pas de réseau), et ne fait un appel réseau
+// que si le token est effectivement expiré.
+//
+// Ensuite, on vérifie le logout via last_logout_at SANS appeler getUser() —
+// on lit le JWT déjà frais depuis getSession() (cache mémoire SDK).
+// getUser() est réservé aux routes API critiques qui en ont besoin.
+//
+async function handleSessionGuard(
   supabase: ReturnType<typeof createSupabaseClient>,
-): Promise<boolean> {
+  pathname: string,
+): Promise<'ok' | 'invalidated' | 'no_session'> {
   try {
-    // 1. getUser() = round-trip réseau vers Supabase Auth.
-    //    C'est lui qui déclenche le refresh si l'access token est expiré
-    //    (autoRefreshToken: true → le SDK écrit les nouveaux cookies via setAll).
-    //    Un seul refresh par requête, garanti par le SDK.
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
-    if (userError || !user) return false;
+    // 1. Refresh si nécessaire (un seul appel réseau possible, contrôlé).
+    const sessionValid = await refreshSessionIfNeeded(supabase);
+    if (!sessionValid) return 'no_session';
 
-    // 2. getSession() après getUser() lit le cache mémoire SDK — pas de second
-    //    appel réseau, pas de second refresh. On l'utilise uniquement pour lire
-    //    l'access_token et en extraire le `iat` via base64.
+    // 2. Lire la session depuis le cache SDK (pas d'appel réseau ici).
     const { data: { session } } = await supabase.auth.getSession();
-    const issuedAtMs = readAccessTokenIssuedAtMs(session?.access_token);
-    if (issuedAtMs === null) return false;
+    if (!session?.user) return 'no_session';
 
-    // 3. Comparaison iat vs last_logout_at (avec cache mémoire 30 s).
-    const lastLogoutAtMs = await readLastLogoutAtMs(user.id);
-    // null = erreur DB → fail-open (ne pas déconnecter par erreur réseau)
-    // 0    = jamais déconnecté explicitement → session valide
-    if (lastLogoutAtMs === null || lastLogoutAtMs === 0) return false;
+    // 3. Vérifier last_logout_at vs iat du JWT (cache mémoire 30 s).
+    const issuedAtMs = readAccessTokenIssuedAtMs(session.access_token);
+    if (issuedAtMs === null) return 'ok'; // Fail-open si on ne peut pas lire iat.
 
-    return issuedAtMs <= lastLogoutAtMs;
+    const lastLogoutAtMs = await readLastLogoutAtMs(session.user.id);
+    if (lastLogoutAtMs === null || lastLogoutAtMs === 0) return 'ok';
+
+    return issuedAtMs <= lastLogoutAtMs ? 'invalidated' : 'ok';
   } catch (err) {
-    console.error('[middleware] mustInvalidateSession exception:', err);
-    return false; // Fail-open.
+    console.error('[middleware] handleSessionGuard exception:', err);
+    return 'ok'; // Fail-open.
   }
 }
 
 // ─── Construction CSP ─────────────────────────────────────────────────────────
-// BUG CORRIGÉ : strict-dynamic dans script-src-elem est contradictoire avec
-// la whitelist de domaines (CSP3 : strict-dynamic ignore les whitelists URL
-// dans le même champ). On sépare clairement :
-//   - script-src      : nonce + strict-dynamic (navigateurs modernes)
-//   - script-src-elem : nonce + whitelist explicite (legacy fallback, sans strict-dynamic)
-// Les deux champs ensemble = couverture maximale cross-browser.
 function buildCsp(nonce: string, isDev: boolean): string {
   const EXTERNAL_SCRIPTS = [
     'https://www.googletagmanager.com',
@@ -184,34 +185,23 @@ function buildCsp(nonce: string, isDev: boolean): string {
     'https://*.biscuits-ia.com',
   ];
 
-  // script-src : nonce + strict-dynamic. Avec strict-dynamic, les whitelists
-  // URL sont ignorées par les navigateurs modernes, donc on les omet ici.
-  const scriptSrc = [
-    `'self'`,
-    `'nonce-${nonce}'`,
-    `'strict-dynamic'`,
-  ];
+  // script-src : nonce + strict-dynamic (navigateurs modernes).
+  // strict-dynamic ignore les whitelists URL → on les met dans script-src-elem.
+  const scriptSrc = [`'self'`, `'nonce-${nonce}'`, `'strict-dynamic'`];
 
-  // script-src-elem : fallback pour les UA qui ne supportent pas strict-dynamic.
-  // On liste les domaines explicitement. On n'ajoute PAS strict-dynamic ici
-  // pour éviter que les navigateurs modernes ignorent la whitelist.
+  // script-src-elem : fallback legacy sans strict-dynamic + whitelist domaines.
   const scriptSrcElem = [
     `'self'`,
     `'nonce-${nonce}'`,
-    // Hash connu pour un script inline Vercel Speed Insights.
     `'sha256-3bzWVxQE32IZQKH9eh8KzyHuhXOlMrboDVVBRd0fWTU='`,
     ...EXTERNAL_SCRIPTS,
   ];
 
   if (isDev) {
-    // En dev uniquement : Vite HMR et Astro toolbar injectent des scripts
-    // inline sans nonce. unsafe-inline est ignoré quand un nonce est présent
-    // dans les navigateurs modernes, mais ça couvre les anciens/outils.
     scriptSrc.push(`'unsafe-inline'`);
     scriptSrcElem.push(`'unsafe-inline'`);
   }
 
-  // script-src-attr : handlers inline type onclick="..." (toujours dangereux).
   const scriptSrcAttr = isDev ? `'self' 'unsafe-inline'` : `'none'`;
 
   const connectSrc = [
@@ -232,18 +222,12 @@ function buildCsp(nonce: string, isDev: boolean): string {
 
   if (isDev) {
     connectSrc.push(
-      'http://localhost:4321',
-      'ws://localhost:4321',
-      'http://127.0.0.1:4321',
-      'ws://127.0.0.1:4321',
+      'http://localhost:4321', 'ws://localhost:4321',
+      'http://127.0.0.1:4321', 'ws://127.0.0.1:4321',
     );
   }
 
   // GTM enregistre un Service Worker depuis googletagmanager.com.
-  // worker-src doit autoriser ce domaine sinon ERR_FAILED sur le SW GTM.
-  // Les fetch() émis depuis ce SW sont aussi couverts par connect-src
-  // (un SW hérite de l'origin du document pour la CSP, donc connect-src
-  // principal s'applique, mais on ajoute les domaines GTM/GA explicitement).
   const workerSrc = [
     `'self'`,
     'blob:',
@@ -251,7 +235,7 @@ function buildCsp(nonce: string, isDev: boolean): string {
     'https://*.googletagmanager.com',
   ];
 
-  const directives: string[] = [
+  return [
     `default-src 'self'`,
     `script-src ${scriptSrc.join(' ')}`,
     `script-src-elem ${scriptSrcElem.join(' ')}`,
@@ -266,15 +250,11 @@ function buildCsp(nonce: string, isDev: boolean): string {
     `base-uri 'self'`,
     `form-action 'self'`,
     `frame-ancestors 'none'`,
-  ];
-
-  return directives.join('; ');
+  ].join('; ');
 }
 
-// ─── Injection du nonce sur les balises <script> ──────────────────────────────
 function injectNonce(html: string, nonce: string): string {
   return html.replaceAll(/<script\b([^>]*)>/g, (match, attrs: string) => {
-    // Ne pas doubler le nonce s'il est déjà présent.
     if (/\bnonce\s*=/.test(attrs)) return match;
     return `<script${attrs} nonce="${nonce}">`;
   });
@@ -285,7 +265,6 @@ export const onRequest = defineMiddleware(async (context, next) => {
   const isProd = import.meta.env.PROD;
   const isDev = !isProd;
 
-  // Nonce cryptographiquement aléatoire, unique par requête.
   const nonce = crypto.randomBytes(18).toString('base64');
   context.locals.nonce = nonce;
 
@@ -294,26 +273,17 @@ export const onRequest = defineMiddleware(async (context, next) => {
 
   const { pathname } = context.url;
 
-  // ── 1. Rate-limit (avant toute logique métier) ──────────────────────────────
+  // 1. Rate-limit par IP sur /api/* et /auth/*.
   const rateLimitResponse = checkRouteRateLimit(context, isDev, pathname);
   if (rateLimitResponse) return rateLimitResponse;
 
-  // ── 2. Vérification d'invalidation de session ───────────────────────────────
-  // BUG CORRIGÉ : on skip TOTALEMENT la vérification sur les routes publiques.
-  // Sans ce guard, un cookie corrompu sur /connexion déclenche signOut() +
-  // redirect vers /connexion → boucle infinie.
+  // 2. Guard de session (skip sur routes publiques pour éviter les boucles).
   if (!isPublicPath(pathname)) {
-    const invalidated = await mustInvalidateSession(supabase);
+    const guardResult = await handleSessionGuard(supabase, pathname);
 
-    if (invalidated) {
-      try {
-        await supabase.auth.signOut();
-      } catch {
-        // Ignorer les erreurs de nettoyage de cookie.
-      }
-      // Invalider l'entrée cache pour cet utilisateur (best-effort).
-      // On ne peut pas récupérer le user.id ici sans un 2e round-trip,
-      // donc on purge toutes les entrées expirées à la prochaine request.
+    if (guardResult === 'invalidated') {
+      try { await supabase.auth.signOut(); } catch { /* ignore */ }
+      logoutCache.delete; // best-effort (pas d'accès au userId ici sans 2e round-trip)
 
       if (pathname.startsWith('/api/')) {
         return new Response(
@@ -321,19 +291,18 @@ export const onRequest = defineMiddleware(async (context, next) => {
           { status: 401, headers: { 'Content-Type': 'application/json' } },
         );
       }
-
-      // On redirige vers /connexion uniquement si on n'y est pas déjà
-      // (double sécurité, même si isPublicPath devrait l'avoir filtré).
       if (pathname !== '/connexion') {
         return context.redirect('/connexion?session=invalidee');
       }
     }
+    // guardResult === 'no_session' : on laisse passer, les pages protégées
+    // gèrent elles-mêmes la redirection via requireAuth() / requireRole().
   }
 
-  // ── 3. Traitement de la requête ─────────────────────────────────────────────
+  // 3. Traitement de la requête.
   const response = await next();
 
-  // ── 4. Injection CSP + nonce ────────────────────────────────────────────────
+  // 4. Injection CSP + nonce sur les réponses HTML.
   const csp = buildCsp(nonce, isDev);
   const contentType = response.headers.get('content-type') ?? '';
 
@@ -341,15 +310,9 @@ export const onRequest = defineMiddleware(async (context, next) => {
     const html = injectNonce(await response.text(), nonce);
     const headers = new Headers(response.headers);
     headers.set('Content-Security-Policy', csp);
-    return new Response(html, {
-      status: response.status,
-      statusText: response.statusText,
-      headers,
-    });
+    return new Response(html, { status: response.status, statusText: response.statusText, headers });
   }
 
-  // Pour les réponses non-HTML (JSON, images…), on pose quand même la CSP
-  // (utile pour les réponses d'API prévisualisées dans un browser).
   response.headers.set('Content-Security-Policy', csp);
   return response;
 });

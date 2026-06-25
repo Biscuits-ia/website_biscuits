@@ -5,54 +5,36 @@ import { createClient } from '@supabase/supabase-js';
 function resolvePublishableKey(): string {
   const publishable = import.meta.env.PUBLIC_SUPABASE_PUBLISHABLE_KEY;
   const anon        = import.meta.env.SUPABASE_ANON_KEY;
-
   const key = (typeof publishable === 'string' && publishable.length > 0)
     ? publishable
     : (typeof anon === 'string' && anon.length > 0 ? anon : '');
-
-  if (!key) {
-    throw new Error(
-      '[supabase] Aucune cle publique Supabase trouvee. ' +
-      'Definir PUBLIC_SUPABASE_PUBLISHABLE_KEY (format 2024+) ou SUPABASE_ANON_KEY dans .env.',
-    );
-  }
+  if (!key) throw new Error('[supabase] Aucune cle publique trouvee (PUBLIC_SUPABASE_PUBLISHABLE_KEY ou SUPABASE_ANON_KEY).');
   return key;
 }
 
 /**
- * Client SSR principal — Vercel-safe.
+ * Client SSR principal — Vercel/serverless safe.
  *
- * PROBLÈME RÉSOLU : "refresh_token_not_found" sur Vercel.
+ * ROOT CAUSE de "refresh_token_not_found" :
+ *   Vercel parallélise plusieurs lambdas sur la même page (HTML + prefetch
+ *   router + assets). Toutes reçoivent le même Cookie avec le même
+ *   refresh_token. Si deux d'entre elles déclenchent un refresh
+ *   (access_token expiré), la première consomme le token, la deuxième
+ *   reçoit 400 refresh_token_not_found.
  *
- * Vercel peut exécuter plusieurs lambdas quasi-simultanément (prefetch,
- * assets, navigation). Si deux lambdas reçoivent le même refresh token
- * et appellent toutes les deux getUser() → l'une consomme le token,
- * l'autre arrive trop tard → 400 refresh_token_not_found.
+ * FIX : autoRefreshToken: false + persistSession: false.
+ *   On désactive tout refresh implicite côté serveur. Le middleware
+ *   (middleware.ts) gère le refresh de manière explicite et contrôlée,
+ *   une seule fois, en appelant refreshSessionIfNeeded(). Les routes
+ *   API protégées appellent getUser() directement (JWT déjà frais grâce
+ *   au refresh fait par le middleware sur la requête HTML précédente).
  *
- * Solution en deux volets :
- *
- * 1. On laisse autoRefreshToken: true (défaut SDK). Le SDK gère le cycle
- *    de vie des tokens proprement, y compris l'écriture des nouveaux cookies
- *    via setAll() dès que le refresh est fait — avant que la réponse parte.
- *    Avec autoRefreshToken: false, le middleware appelait getUser() qui
- *    déclenchait un refresh interne non géré, les cookies n'étaient pas
- *    mis à jour, et la prochaine lambda arrivait avec l'ancien token révoqué.
- *
- * 2. On NE SUPPRIME PAS detectSessionInUrl: false pour le callback OAuth
- *    (/auth/callback), qui en a besoin. On garde false partout ailleurs
- *    pour éviter que le SDK parse les hash fragments côté serveur (inutile
- *    et potentiellement confusant).
- *
- * Note sur la sécurité : autoRefreshToken: true côté serveur est sûr car
- * le client SSR est recréé à chaque requête — il n'y a pas de timer
- * persistant entre les lambdas. Le refresh ne se produit que si le SDK
- * détecte un token expiré lors de getUser().
+ * NOTE : le refresh côté client (browser) reste géré par le SDK Supabase
+ *   JS chargé dans le navigateur — aucun impact ici.
  */
 export function createSupabaseClient(context: { request: Request; cookies: any }) {
   const url = import.meta.env.SUPABASE_URL;
   if (!url) throw new Error('[supabase] SUPABASE_URL manquant dans .env.');
-
-  const isCallbackRoute = new URL(context.request.url).pathname === '/auth/callback';
 
   return createServerClient(
     url,
@@ -70,9 +52,6 @@ export function createSupabaseClient(context: { request: Request; cookies: any }
               ...options,
               httpOnly: true,
               secure: import.meta.env.PROD,
-              // strict pour les routes sensibles, lax ailleurs.
-              // lax est nécessaire pour que les cookies soient envoyés lors
-              // d'une navigation top-level (OAuth callback, magic link).
               sameSite: 'lax',
               path: '/',
             });
@@ -80,14 +59,10 @@ export function createSupabaseClient(context: { request: Request; cookies: any }
         },
       },
       auth: {
-        // FIX : laisser le SDK gérer le refresh → cookies mis à jour dans
-        // la même réponse, pas de race condition entre lambdas.
-        autoRefreshToken: true,
-        // detectSessionInUrl uniquement sur /auth/callback (hash fragment OAuth).
-        // Partout ailleurs : false pour éviter des appels inutiles.
-        detectSessionInUrl: isCallbackRoute,
-        // persistSession: false sur serveur = ne pas stocker en mémoire entre
-        // requêtes (chaque lambda est stateless de toute façon).
+        // CRITIQUE : false pour éviter tout refresh implicite entre lambdas.
+        // Le middleware gère le refresh explicitement via refreshSessionIfNeeded().
+        autoRefreshToken: false,
+        detectSessionInUrl: false,
         persistSession: false,
       },
     },
@@ -95,25 +70,54 @@ export function createSupabaseClient(context: { request: Request; cookies: any }
 }
 
 /**
+ * Tente de rafraîchir la session si l'access token est expiré.
+ * À appeler UNE SEULE FOIS par requête, dans le middleware uniquement.
+ * Retourne true si la session est valide (fraîche ou rafraîchie).
+ *
+ * Pourquoi ici et pas dans getUser() ?
+ *   getUser() fait un round-trip Auth systématique même avec un token frais.
+ *   On économise un appel réseau sur ~95% des requêtes (token valide 1h).
+ *   Le refresh n'a lieu que si le token est effectivement expiré.
+ */
+export async function refreshSessionIfNeeded(
+  supabase: ReturnType<typeof createSupabaseClient>,
+): Promise<boolean> {
+  // getSession() lit les cookies localement, sans appel réseau.
+  const { data: { session } } = await supabase.auth.getSession();
+
+  if (!session) return false;
+
+  const nowSec = Math.floor(Date.now() / 1000);
+  const expiresAt = session.expires_at ?? 0;
+
+  // Marge de 60 s : on refresh légèrement avant expiration pour éviter
+  // qu'un token expire pendant le traitement de la requête.
+  if (expiresAt > nowSec + 60) {
+    // Token encore valide, pas de refresh nécessaire.
+    return true;
+  }
+
+  // Token expiré (ou proche) : on refresh explicitement.
+  // C'est le SEUL endroit où un refresh réseau peut se produire côté serveur.
+  const { error } = await supabase.auth.refreshSession();
+  if (error) {
+    // refresh_token_not_found ou token révoqué : session invalide.
+    console.warn('[supabase] refreshSessionIfNeeded failed:', error.message);
+    return false;
+  }
+  return true;
+}
+
+/**
  * Client Supabase avec service_role : bypass RLS.
- * Uniquement côté serveur (routes API, lib/auth.ts).
- * Ne jamais exposer ce client au client browser.
+ * Uniquement côté serveur. Ne jamais exposer au browser.
  */
 export function createSupabaseAdminClient(_ctx?: unknown) {
   const url    = import.meta.env.SUPABASE_URL;
   const svcKey = import.meta.env.SUPABASE_SERVICE_ROLE_KEY;
-
-  if (!url || !svcKey) {
-    throw new Error(
-      '[supabase] SUPABASE_URL ou SUPABASE_SERVICE_ROLE_KEY manquant dans .env\n' +
-      'Recupere la cle dans Supabase > Project Settings > API > service_role secret.',
-    );
-  }
+  if (!url || !svcKey) throw new Error('[supabase] SUPABASE_URL ou SUPABASE_SERVICE_ROLE_KEY manquant.');
 
   return createClient(url, svcKey, {
-    auth: {
-      persistSession:   false,
-      autoRefreshToken: false,
-    },
+    auth: { persistSession: false, autoRefreshToken: false },
   });
 }

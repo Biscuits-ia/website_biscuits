@@ -138,18 +138,24 @@ async function mustInvalidateSession(
   supabase: ReturnType<typeof createSupabaseClient>,
 ): Promise<boolean> {
   try {
-    // getUser() fait un round-trip vers Supabase Auth — seule source de vérité
-    // pour la validité du JWT. Si le cookie est forgé ou révoqué, ça échoue ici.
+    // 1. getUser() = round-trip réseau vers Supabase Auth.
+    //    C'est lui qui déclenche le refresh si l'access token est expiré
+    //    (autoRefreshToken: true → le SDK écrit les nouveaux cookies via setAll).
+    //    Un seul refresh par requête, garanti par le SDK.
     const { data: { user }, error: userError } = await supabase.auth.getUser();
     if (userError || !user) return false;
 
+    // 2. getSession() après getUser() lit le cache mémoire SDK — pas de second
+    //    appel réseau, pas de second refresh. On l'utilise uniquement pour lire
+    //    l'access_token et en extraire le `iat` via base64.
     const { data: { session } } = await supabase.auth.getSession();
     const issuedAtMs = readAccessTokenIssuedAtMs(session?.access_token);
     if (issuedAtMs === null) return false;
 
+    // 3. Comparaison iat vs last_logout_at (avec cache mémoire 30 s).
     const lastLogoutAtMs = await readLastLogoutAtMs(user.id);
-    // null = erreur DB → fail-open (ne pas déconnecter par erreur)
-    // 0    = jamais déconnecté explicitement → valid
+    // null = erreur DB → fail-open (ne pas déconnecter par erreur réseau)
+    // 0    = jamais déconnecté explicitement → session valide
     if (lastLogoutAtMs === null || lastLogoutAtMs === 0) return false;
 
     return issuedAtMs <= lastLogoutAtMs;

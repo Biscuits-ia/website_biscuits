@@ -1,44 +1,26 @@
-// src/lib/supabase.ts
 import { createServerClient, parseCookieHeader } from '@supabase/ssr';
 import { createClient } from '@supabase/supabase-js';
 
 function resolvePublishableKey(): string {
   const publishable = import.meta.env.PUBLIC_SUPABASE_PUBLISHABLE_KEY;
-  const anon        = import.meta.env.SUPABASE_ANON_KEY;
-  const key = (typeof publishable === 'string' && publishable.length > 0)
-    ? publishable
-    : (typeof anon === 'string' && anon.length > 0 ? anon : '');
-  if (!key) throw new Error('[supabase] Clé publique manquante (PUBLIC_SUPABASE_PUBLISHABLE_KEY ou SUPABASE_ANON_KEY).');
+  const anon = import.meta.env.SUPABASE_ANON_KEY;
+  const key =
+    typeof publishable === 'string' && publishable.length > 0
+      ? publishable
+      : typeof anon === 'string' && anon.length > 0
+        ? anon
+        : '';
+  if (!key) {
+    throw new Error(
+      '[supabase] Clé publique manquante (PUBLIC_SUPABASE_PUBLISHABLE_KEY ou SUPABASE_ANON_KEY).',
+    );
+  }
   return key;
 }
 
 /**
  * Client SSR — seule source de vérité côté serveur.
- *
- * ROOT CAUSE définitive de "refresh_token_not_found" :
- *
- *   Supabase utilise la "token rotation" : chaque refresh génère un nouveau
- *   refresh_token et RÉVOQUE immédiatement l'ancien. Si deux acteurs
- *   (browser SDK + serveur, ou deux lambdas Vercel) lisent le même
- *   refresh_token et essaient de le consommer quasi-simultanément,
- *   le second reçoit 400 refresh_token_not_found.
- *
- *   Les appels à getSession() côté serveur sont dangereux : si l'access
- *   token est expiré, le SDK PEUT déclencher un refresh interne — même
- *   avec autoRefreshToken: false, getSession() tente un refresh si le
- *   token local est expiré (comportement interne du SDK @supabase/auth-js).
- *
- * RÈGLE D'OR (doc officielle Supabase SSR) :
- *   → Côté serveur : UNIQUEMENT getUser(). Jamais getSession().
- *   → getUser() valide le JWT via un appel réseau à Supabase Auth,
- *     sans toucher au refresh token si l'access token est encore valide.
- *   → Si l'access token est expiré, getUser() refresh proprement et écrit
- *     les nouveaux cookies via setAll() dans la même réponse.
- *   → autoRefreshToken: false : on empêche tout refresh de background timer.
- *     Le refresh n'a lieu que dans getUser(), de manière synchrone et tracée.
- *
- * Ce pattern est exactement celui de la doc officielle :
- * https://supabase.com/docs/guides/auth/server-side/creating-a-client?queryGroups=framework&framework=astro
+ * Utilisé par le middleware et les guards d'authentification.
  */
 export function createSupabaseClient(context: { request: Request; cookies: any }) {
   const url = import.meta.env.SUPABASE_URL;
@@ -64,9 +46,9 @@ export function createSupabaseClient(context: { request: Request; cookies: any }
       },
     },
     auth: {
-      autoRefreshToken: false,   // Pas de timer background dans une lambda.
+      autoRefreshToken: false, // Pas de timer background dans une lambda.
       detectSessionInUrl: false, // Inutile côté serveur (pas de hash fragment).
-      persistSession: false,     // Stateless : chaque lambda repart de zéro.
+      persistSession: false, // Stateless : chaque lambda repart de zéro.
     },
   });
 }
@@ -76,9 +58,12 @@ export function createSupabaseClient(context: { request: Request; cookies: any }
  * Uniquement côté serveur. Ne jamais exposer au browser.
  */
 export function createSupabaseAdminClient(_ctx?: unknown) {
-  const url    = import.meta.env.SUPABASE_URL;
+  const url = import.meta.env.SUPABASE_URL;
   const svcKey = import.meta.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !svcKey) throw new Error('[supabase] SUPABASE_URL ou SUPABASE_SERVICE_ROLE_KEY manquant.');
+  if (!url || !svcKey) {
+    throw new Error('[supabase] SUPABASE_URL ou SUPABASE_SERVICE_ROLE_KEY manquant.');
+  }
+
   return createClient(url, svcKey, {
     auth: { persistSession: false, autoRefreshToken: false },
   });

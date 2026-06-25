@@ -53,7 +53,7 @@ interface MembreRow {
 }
 
 const ROLE_LABELS: Record<BenevolRole, string> = {
-  benevole:      'BÃ©nÃ©vole',
+  benevole:      'Bénévole',
   membre_ca:     'Membre CA',
   membre_bureau: 'Bureau',
 };
@@ -88,18 +88,18 @@ const hasFilter  = filter !== '';
     </button>
   </div>
 
-  {saved && <div class="flash flash-ok" role="alert">âœ“ OpÃ©ration rÃ©ussie.</div>}
+  {saved && <div class="flash flash-ok" role="alert">âœ“ Opération réussie.</div>}
   {error  && <div class="flash flash-err" role="alert">âœ— {decodeURIComponent(error)}</div>}
 
   <!-- Filtres -->
   <form method="get" class="filters-bar">
     <select name="role" id="role-filter" class="filter-input">
-      <option value="">Tous les rÃ´les</option>
-      <option value="benevole"      selected={filter === 'benevole'}>BÃ©nÃ©voles</option>
+      <option value="">Tous les rôles</option>
+      <option value="benevole"      selected={filter === 'benevole'}>Bénévoles</option>
       <option value="membre_ca"     selected={filter === 'membre_ca'}>Membres CA</option>
       <option value="membre_bureau" selected={filter === 'membre_bureau'}>Bureau</option>
     </select>
-    {hasFilter && <a href="/dashboard/admin/trombinoscope" class="btn btn-ghost btn-sm">Ã— RÃ©initialiser</a>}
+    {hasFilter && <a href="/dashboard/admin/trombinoscope" class="btn btn-ghost btn-sm">Ã— Réinitialiser</a>}
   </form>
 
   <!-- Table -->
@@ -109,11 +109,11 @@ const hasFilter  = filter !== '';
         <thead>
           <tr>
             <th>Membre</th>
-            <th>RÃ´le</th>
-            <th>CompÃ©tences</th>
+            <th>Rôle</th>
+            <th>Compétences</th>
             <th>Ordre</th>
             <th>Statut</th>
-            <th>AjoutÃ© le</th>
+            <th>Ajouté le</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -161,7 +161,7 @@ const hasFilter  = filter !== '';
                     <input type="hidden" name="id"    value={m.id} />
                     <input type="hidden" name="actif" value={String(!m.actif)} />
                     <button type="submit" class="btn btn-ghost btn-xs">
-                      {m.actif ? 'DÃ©sactiver' : 'Activer'}
+                      {m.actif ? 'Désactiver' : 'Activer'}
                     </button>
                   </form>
                   <form method="POST" action="/api/admin/benevoles/supprimer">
@@ -169,7 +169,7 @@ const hasFilter  = filter !== '';
                     <button
                       type="submit"
                       class="btn btn-danger btn-xs"
-                      data-confirm="Supprimer ce membre dÃ©finitivement ?"
+                      data-confirm="Supprimer ce membre définitivement ?"
                     >âœ•</button>
                   </form>
                 </div>
@@ -178,7 +178,7 @@ const hasFilter  = filter !== '';
           )) : (
             <tr>
               <td colspan="7" class="empty-row">
-                {hasFilter ? 'Aucun membre pour ce rÃ´le.' : 'Aucun membre pour le moment.'}
+                {hasFilter ? 'Aucun membre pour ce rôle.' : 'Aucun membre pour le moment.'}
               </td>
             </tr>
           )}
@@ -197,7 +197,7 @@ const hasFilter  = filter !== '';
       <form method="POST" action="/api/admin/benevoles/create" enctype="multipart/form-data" class="modal-form">
         <div class="field-row">
           <div class="field">
-            <label>PrÃ©nom *</label>
+            <label>Prénom *</label>
             <input type="text" name="prenom" required maxlength="100" placeholder="Marie" />
           </div>
           <div class="field">
@@ -206,20 +206,20 @@ const hasFilter  = filter !== '';
           </div>
         </div>
         <div class="field">
-          <label>RÃ´le *</label>
+          <label>Rôle *</label>
           <select name="role" required>
-            <option value="benevole">BÃ©nÃ©vole</option>
+            <option value="benevole">Bénévole</option>
             <option value="membre_ca">Membre CA</option>
             <option value="membre_bureau">Bureau</option>
           </select>
         </div>
         <div class="field">
-          <label>CompÃ©tences <span class="field-hint">(sÃ©parÃ©es par des virgules)</span></label>
-          <input type="text" name="competences" placeholder="Python, RÃ©daction, Animation" />
+          <label>Compétences <span class="field-hint">(séparées par des virgules)</span></label>
+          <input type="text" name="competences" placeholder="Python, Rédaction, Animation" />
         </div>
         <div class="field">
-          <label>Bio <span class="field-hint">(facultatif, max 300 caractÃ¨res)</span></label>
-          <textarea name="bio" rows={3} maxlength="300" placeholder="Courte prÃ©sentationâ€¦"></textarea>
+          <label>Bio <span class="field-hint">(facultatif, max 300 caractères)</span></label>
+          <textarea name="bio" rows={3} maxlength="300" placeholder="Courte présentationâ€¦"></textarea>
         </div>
         <div class="field">
           <label>Lien <span class="field-hint">(portfolio, LinkedIn, site persoâ€¦)</span></label>
@@ -240,7 +240,7 @@ const hasFilter  = filter !== '';
           <label for="actif-add" class="label-sm">Membre actif (visible sur le trombinoscope)</label>
         </div>
         <div class="form-actions">
-          <button type="submit" class="btn btn-primary">CrÃ©er</button>
+          <button type="submit" class="btn btn-primary">Créer</button>
           <button type="button" class="btn btn-ghost" data-close-modal="modal-add">Annuler</button>
         </div>
       </form>
@@ -258,7 +258,7 @@ const hasFilter  = filter !== '';
         <input type="hidden" id="edit-id" name="id" />
         <div class="field-row">
           <div class="field">
-            <label>PrÃ©nom *</label>
+            <label>Prénom *</label>
             <input type="text" id="edit-prenom" name="prenom" required maxlength="100" />
           </div>
           <div class="field">
@@ -267,19 +267,19 @@ const hasFilter  = filter !== '';
           </div>
         </div>
         <div class="field">
-          <label>RÃ´le *</label>
+          <label>Rôle *</label>
           <select id="edit-role" name="role" required>
-            <option value="benevole">BÃ©nÃ©vole</option>
+            <option value="benevole">Bénévole</option>
             <option value="membre_ca">Membre CA</option>
             <option value="membre_bureau">Bureau</option>
           </select>
         </div>
         <div class="field">
-          <label>CompÃ©tences <span class="field-hint">(sÃ©parÃ©es par des virgules)</span></label>
+          <label>Compétences <span class="field-hint">(séparées par des virgules)</span></label>
           <input type="text" id="edit-competences" name="competences" />
         </div>
         <div class="field">
-          <label>Bio <span class="field-hint">(facultatif, max 300 caractÃ¨res)</span></label>
+          <label>Bio <span class="field-hint">(facultatif, max 300 caractères)</span></label>
           <textarea id="edit-bio" name="bio" rows={3} maxlength="300"></textarea>
         </div>
         <div class="field">

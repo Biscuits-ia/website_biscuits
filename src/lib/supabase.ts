@@ -1,4 +1,4 @@
-﻿// src/lib/supabase.ts
+// src/lib/supabase.ts
 //
 // Clients Supabase : SSR (utilisateur) et Admin (service_role).
 //

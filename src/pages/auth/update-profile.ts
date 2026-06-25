@@ -1,4 +1,4 @@
-﻿import type { APIRoute } from 'astro';
+import type { APIRoute } from 'astro';
 import { createSupabaseClient, createSupabaseAdminClient } from '@/lib/supabase';
 import { EMAIL_RE, MAX_EMAIL, MAX_NAME } from '@/lib/validation';
 

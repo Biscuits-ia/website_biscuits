@@ -32,22 +32,22 @@ const totalPages = Math.ceil((count ?? 0) / perPage);
 await supabase.rpc('log_level_counts'); // eslint-disable-line @typescript-eslint/no-unused-vars
 ---
 
-<DashboardLayout title="Logs systÃ¨me" activePage="logs" userName={userName} authResult={result}>
+<DashboardLayout title="Logs système" activePage="logs" userName={userName} authResult={result}>
 
   <div style="margin-bottom: 24px; display:flex; align-items:center; justify-content:space-between;">
     <div>
       <h1 style="font-size: 1.2rem; font-weight: 400; letter-spacing: -0.02em;">
-        Logs systÃ¨me
+        Logs système
         <span class="badge badge-info" style="font-size:0.62rem; margin-left:8px; vertical-align:middle;">LIVE</span>
       </h1>
-      <p style="color: var(--text-muted); font-size: 0.8rem; margin-top: 3px;">{count ?? 0} entrÃ©es</p>
+      <p style="color: var(--text-muted); font-size: 0.8rem; margin-top: 3px;">{count ?? 0} entrées</p>
     </div>
     <!-- Auto-refresh -->
     <button
       data-reload="1"
       class="btn btn-ghost"
       style="font-size:0.78rem;"
-    >âŸ³ RafraÃ®chir</button>
+    >âŸ³ Rafraîchir</button>
   </div>
 
   <!-- Filtres -->
@@ -69,7 +69,7 @@ await supabase.rpc('log_level_counts'); // eslint-disable-line @typescript-eslin
     </select>
     <button type="submit" class="btn btn-primary" style="font-size:0.8rem;">Filtrer</button>
     {(filterLvl || search) && (
-      <a href="/dashboard/admin/logs" class="btn btn-ghost" style="font-size:0.78rem;">Ã— RÃ©initialiser</a>
+      <a href="/dashboard/admin/logs" class="btn btn-ghost" style="font-size:0.78rem;">Ã— Réinitialiser</a>
     )}
   </form>
 
@@ -107,7 +107,7 @@ await supabase.rpc('log_level_counts'); // eslint-disable-line @typescript-eslin
       );
     }) : (
       <div style="text-align:center; padding:40px; color:var(--text-muted); font-size:0.83rem;">
-        Aucun log trouvÃ©.
+        Aucun log trouvé.
       </div>
     )}
   </div>
@@ -116,7 +116,7 @@ await supabase.rpc('log_level_counts'); // eslint-disable-line @typescript-eslin
   {totalPages > 1 && (
     <div style="display:flex; gap:8px; justify-content:center; margin-top:20px;">
       {page > 1 && (
-        <a href={`?page=${page - 1}&level=${filterLvl}&q=${search}`} class="btn btn-ghost">â† PrÃ©cÃ©dent</a>
+        <a href={`?page=${page - 1}&level=${filterLvl}&q=${search}`} class="btn btn-ghost">â† Précédent</a>
       )}
       <span style="padding:7px 14px; font-size:0.82rem; color:var(--text-muted);">{page} / {totalPages}</span>
       {page < totalPages && (

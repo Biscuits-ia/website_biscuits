@@ -1,4 +1,4 @@
-﻿---
+---
 // src/pages/dashboard/admin/candidatures.astro
 import DashboardLayout from '../../../layouts/DashboardLayout.astro';
 import { requireAdmin } from '../../../lib/auth';
@@ -30,8 +30,8 @@ const { count: declinedCount }  = await supabase.from('recruitment_submissions')
 const statusLabel: Record<string, string> = {
   new:       'Nouvelle',
   reviewing: 'En examen',
-  accepted:  'AcceptÃ©e',
-  declined:  'RefusÃ©e',
+  accepted:  'Acceptée',
+  declined:  'Refusée',
 };
 
 const statusBadge: Record<string, string> = {
@@ -42,22 +42,22 @@ const statusBadge: Record<string, string> = {
 };
 
 const availabilityLabel: Record<string, string> = {
-  immediat: 'ImmÃ©diate',
+  immediat: 'Immédiate',
   '1mois':  'Dans 1 mois',
   '3mois':  'Dans 3 mois',
   '6mois':  'Dans 6 mois',
-  autre:    'Ã€ discuter',
+  autre:    '€ discuter',
 };
 ---
 
 <DashboardLayout title="Candidatures" activePage="candidatures" userName={userName} authResult={result}>
 
   <div style="margin-bottom: 28px;">
-    <h1>Candidatures bÃ©nÃ©voles</h1>
-    <p style="margin-top: 6px;">GÃ©rez les candidatures reÃ§ues via le formulaire de recrutement.</p>
+    <h1>Candidatures bénévoles</h1>
+    <p style="margin-top: 6px;">Gérez les candidatures reçues via le formulaire de recrutement.</p>
   </div>
 
-  {saved && <div class="flash flash-ok" role="alert">âœ“ Modifications sauvegardÃ©es.</div>}
+  {saved && <div class="flash flash-ok" role="alert">âœ“ Modifications sauvegardées.</div>}
   {error  && <div class="flash flash-err" role="alert">âœ— {decodeURIComponent(error)}</div>}
 
   <!-- Stats rapides -->
@@ -71,11 +71,11 @@ const availabilityLabel: Record<string, string> = {
       <div class="stat-value" style="color: var(--info);">{reviewingCount ?? 0}</div>
     </div>
     <div class="stat-card">
-      <div class="stat-label">AcceptÃ©es</div>
+      <div class="stat-label">Acceptées</div>
       <div class="stat-value" style="color: var(--ok);">{acceptedCount ?? 0}</div>
     </div>
     <div class="stat-card">
-      <div class="stat-label">RefusÃ©es</div>
+      <div class="stat-label">Refusées</div>
       <div class="stat-value" style="color: var(--err, #e53935);">{declinedCount ?? 0}</div>
     </div>
   </div>
@@ -113,8 +113,8 @@ const availabilityLabel: Record<string, string> = {
               <div style="font-size: 1.05rem; font-weight: 700; color: var(--text-primary);">{fullName}</div>
               <div style="font-size: var(--text-xs); font-family: var(--font-mono); color: var(--text-muted); margin-top: 3px;">
                 <a href={`mailto:${s.email}`} style="color: var(--accent);">{s.email}</a>
-                Â· {date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
-                {s.availability && ` Â· Dispo : ${availabilityLabel[s.availability] ?? s.availability}`}
+                · {date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
+                {s.availability && ` · Dispo : ${availabilityLabel[s.availability] ?? s.availability}`}
               </div>
             </div>
             <span class={`badge ${badgeClass}`}>{label}</span>
@@ -122,7 +122,7 @@ const availabilityLabel: Record<string, string> = {
 
           {s.skills && (
             <div class="recruit-section">
-              <div class="recruit-section-label">CompÃ©tences</div>
+              <div class="recruit-section-label">Compétences</div>
               <div class="recruit-section-body">{s.skills}</div>
             </div>
           )}
@@ -152,8 +152,8 @@ const availabilityLabel: Record<string, string> = {
               <select name="status" class="filter-input" style="min-height: unset; padding: 6px 10px;">
                 <option value="new"       selected={s.status === 'new'}>Nouvelle</option>
                 <option value="reviewing" selected={s.status === 'reviewing'}>En examen</option>
-                <option value="accepted"  selected={s.status === 'accepted'}>AcceptÃ©e</option>
-                <option value="declined"  selected={s.status === 'declined'}>RefusÃ©e</option>
+                <option value="accepted"  selected={s.status === 'accepted'}>Acceptée</option>
+                <option value="declined"  selected={s.status === 'declined'}>Refusée</option>
               </select>
             </div>
 
@@ -189,7 +189,7 @@ const availabilityLabel: Record<string, string> = {
                 type="submit"
                 class="btn btn-danger"
                 style="font-size: 0.85rem;"
-                data-confirm="'Supprimer dÃ©finitivement cette candidature ?'"
+                data-confirm="'Supprimer définitivement cette candidature ?'"
               >
                 Supprimer
               </button>

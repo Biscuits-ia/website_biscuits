@@ -1,4 +1,4 @@
-﻿---
+---
 import DashboardLayout from '../../../layouts/DashboardLayout.astro';
 import { requireAuth } from '../../../lib/auth';
 
@@ -20,22 +20,22 @@ const assoc   = Astro.url.searchParams.get('assoc')  ?? '';
 const assocMsg = Astro.url.searchParams.get('msg')   ?? '';
 ---
 
-<DashboardLayout title="ParamÃ¨tres" activePage="settings" userName={userName} userEmail={userEmail} authResult={result}>
+<DashboardLayout title="Paramètres" activePage="settings" userName={userName} userEmail={userEmail} authResult={result}>
 
   <div class="container w-full mb-6 text-center">
     <h1 class="text-xl font-bold tracking-tight text-primary">
-      ParamÃ¨tres du compte
+      Paramètres du compte
     </h1>
     <p class="text-muted text-lg mt-1">
-      GÃ©rez vos informations personnelles et la sÃ©curitÃ© de votre compte.
+      Gérez vos informations personnelles et la sécurité de votre compte.
     </p>
   </div>
 
-  {saved   && <div class="flash flash-ok"  role="alert">âœ“ Profil mis Ã  jour avec succÃ¨s.</div>}
-  {pwSaved && <div class="flash flash-ok" role="alert">âœ“ Mot de passe mis Ã  jour.</div>}
+  {saved   && <div class="flash flash-ok"  role="alert">âœ“ Profil mis à jour avec succès.</div>}
+  {pwSaved && <div class="flash flash-ok" role="alert">âœ“ Mot de passe mis à jour.</div>}
   {error   && <div class="flash flash-err" role="alert">âœ— {decodeURIComponent(error)}</div>}
-  {assoc === 'ok'  && <div class="flash flash-ok"  role="alert">âœ“ {decodeURIComponent(assocMsg) || 'Profil association crÃ©Ã© avec succÃ¨s.'}</div>}
-  {assoc === 'err' && <div class="flash flash-err" role="alert">âœ— {decodeURIComponent(assocMsg) || 'Erreur lors de la crÃ©ation du profil association.'}</div>}
+  {assoc === 'ok'  && <div class="flash flash-ok"  role="alert">âœ“ {decodeURIComponent(assocMsg) || 'Profil association créé avec succès.'}</div>}
+  {assoc === 'err' && <div class="flash flash-err" role="alert">âœ— {decodeURIComponent(assocMsg) || 'Erreur lors de la création du profil association.'}</div>}
 
   <div class="flex flex-row gap-5 flex-wrap justify-between">
 
@@ -44,7 +44,7 @@ const assocMsg = Astro.url.searchParams.get('msg')   ?? '';
       <div class="card-header">
         <span class="card-title">Informations personnelles</span>
         <span class={`badge ${emailConfirmed ? 'badge-ok' : 'badge-warn'}`}>
-          {emailConfirmed ? 'âœ“ Email vÃ©rifiÃ©' : 'âš  Email non vÃ©rifiÃ©'}
+          {emailConfirmed ? 'âœ“ Email vérifié' : 'âš  Email non vérifié'}
         </span>
       </div>
 
@@ -76,13 +76,13 @@ const assocMsg = Astro.url.searchParams.get('msg')   ?? '';
           />
           {!emailConfirmed && (
             <span class="text-xs text-warn mt-1 font-mono">
-              âš  VÃ©rifiez votre boÃ®te mail pour confirmer cette adresse.
+              âš  Vérifiez votre boîte mail pour confirmer cette adresse.
             </span>
           )}
         </div>
 
         <div class="field">
-          <label for="phone">TÃ©lÃ©phone <span class="text-muted font-normal">(optionnel)</span></label>
+          <label for="phone">Téléphone <span class="text-muted font-normal">(optionnel)</span></label>
           <input
             type="tel"
             id="phone"
@@ -120,7 +120,7 @@ const assocMsg = Astro.url.searchParams.get('msg')   ?? '';
         <span class="card-title">Association/TPE</span>
       </div>
       <p class="text-muted text-sm mb-4">
-        Configurez votre profil association ou TPE pour accÃ©der aux fonctionnalitÃ©s dÃ©diÃ©es.
+        Configurez votre profil association ou TPE pour accéder aux fonctionnalités dédiées.
       </p>
 
       <form method="POST" action="/auth/create-association" class="flex flex-col gap-4">
@@ -136,7 +136,7 @@ const assocMsg = Astro.url.searchParams.get('msg')   ?? '';
         </div>
 
         <div class="field">
-          <label for="assoc_siret">NumÃ©ro SIRET <span class="text-muted font-normal">(optionnel)</span></label>
+          <label for="assoc_siret">Numéro SIRET <span class="text-muted font-normal">(optionnel)</span></label>
           <input
             type="text"
             id="assoc_siret"
@@ -147,7 +147,7 @@ const assocMsg = Astro.url.searchParams.get('msg')   ?? '';
         </div>
 
         <div class="field">
-          <label for="assoc_rna">NumÃ©ro RNA <span class="text-muted font-normal">(optionnel)</span></label>
+          <label for="assoc_rna">Numéro RNA <span class="text-muted font-normal">(optionnel)</span></label>
           <input
             type="text"
             id="assoc_rna"
@@ -169,7 +169,7 @@ const assocMsg = Astro.url.searchParams.get('msg')   ?? '';
         </div>
 
         <div class="field">
-          <label for="assoc_phone">NumÃ©ro de tÃ©lÃ©phone</label>
+          <label for="assoc_phone">Numéro de téléphone</label>
           <input
             type="tel"
             id="assoc_phone"
@@ -195,14 +195,14 @@ const assocMsg = Astro.url.searchParams.get('msg')   ?? '';
           <textarea
             id="assoc_description"
             name="description"
-            placeholder="PrÃ©sentez briÃ¨vement votre structure..."
+            placeholder="Présentez brièvement votre structure..."
             class="border border-border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             style="min-height: 80px; resize: vertical;"
           ></textarea>
         </div>
 
         <div>
-          <button type="submit" class="btn btn-primary">CrÃ©er mon profil association</button>
+          <button type="submit" class="btn btn-primary">Créer mon profil association</button>
         </div>
       </form>
     </div>
@@ -210,7 +210,7 @@ const assocMsg = Astro.url.searchParams.get('msg')   ?? '';
     <!-- Mot de passe -->
     <div class="card flex-1">
       <div class="card-header">
-        <span class="card-title">SÃ©curitÃ©</span>
+        <span class="card-title">Sécurité</span>
       </div>
 
       <form method="POST" action="/auth/update-password" class="flex flex-col gap-4">
@@ -238,7 +238,7 @@ const assocMsg = Astro.url.searchParams.get('msg')   ?? '';
             class="border border-border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
           <span class="text-sm text-muted mt-1 font-mono">
-            Minimum 8 caractÃ¨res.
+            Minimum 8 caractères.
           </span>
         </div>
 
@@ -255,7 +255,7 @@ const assocMsg = Astro.url.searchParams.get('msg')   ?? '';
         </div>
 
         <div>
-          <button type="submit" class="btn btn-primary">Mettre Ã  jour le mot de passe</button>
+          <button type="submit" class="btn btn-primary">Mettre à jour le mot de passe</button>
         </div>
 
       </form>
@@ -269,7 +269,7 @@ const assocMsg = Astro.url.searchParams.get('msg')   ?? '';
       <span class="card-title text-err">Zone de danger</span>
     </div>
     <p class="text-lg text-secondary mb-4">
-      La suppression de votre compte est irrÃ©versible. Toutes vos donnÃ©es seront effacÃ©es dÃ©finitivement.
+      La suppression de votre compte est irréversible. Toutes vos données seront effacées définitivement.
     </p>
     <form
       id="delete-account-form"
@@ -289,7 +289,7 @@ const assocMsg = Astro.url.searchParams.get('msg')   ?? '';
 
   <script>
     /* Helper : intercepte la soumission d'un form en AJAX et redirige vers
-       `response.redirect` (ou un fallback) selon le rÃ©sultat. */
+       `response.redirect` (ou un fallback) selon le résultat. */
     function bindAjaxForm(formSelector: string, fallbackRedirect: string): void {
       const form = document.querySelector(formSelector);
       if (!(form instanceof HTMLFormElement)) return;
@@ -356,8 +356,8 @@ const assocMsg = Astro.url.searchParams.get('msg')   ?? '';
           const data = await res.json().catch(() => ({}));
           const status = res.ok ? 'ok' : 'err';
           const msg    = res.ok
-            ? (data.message ?? 'Profil association crÃ©Ã© avec succÃ¨s.')
-            : (data.error   ?? 'Erreur lors de la crÃ©ation du profil.');
+            ? (data.message ?? 'Profil association créé avec succès.')
+            : (data.error   ?? 'Erreur lors de la création du profil.');
           window.location.href =
             `/dashboard/user/settings?assoc=${status}&msg=${encodeURIComponent(msg)}`;
         } catch (err) {

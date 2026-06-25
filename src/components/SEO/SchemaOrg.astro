@@ -367,7 +367,7 @@ if (type === 'Service') {
 } else if (type === 'WebPage') {
   // Branche manquante avant l'audit : `WebPage` était déclaré dans Props.type
   // mais jamais géré ici — — `data` passé par `blog/[page].astro` était silencieusement
-  // abandonné. Cf. AUDIT.md Â§3.
+  // abandonné. Cf. AUDIT.md §3.
   const webPageData = data as WebPageData;
   specificSchema = {
     "@context": "https://schema.org",

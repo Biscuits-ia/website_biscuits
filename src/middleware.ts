@@ -1,4 +1,4 @@
-﻿// src/middleware.ts
+// src/middleware.ts
 //
 // Middleware Astro : rate-limit, guard de session, CSP.
 //

@@ -1,4 +1,4 @@
-﻿// src/pages/auth/deconnexion.ts
+// src/pages/auth/deconnexion.ts
 //
 // IMPORTANT : on marque `last_logout_at` AVANT `signOut()`.
 // Sinon, un user multi-onglets peut rester connecte sur onglet 2 :

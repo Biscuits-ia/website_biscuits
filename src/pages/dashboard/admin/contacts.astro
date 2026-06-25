@@ -1,4 +1,4 @@
-﻿---
+---
 // src/pages/dashboard/admin/contacts.astro
 import DashboardLayout from '../../../layouts/DashboardLayout.astro';
 import { requireAdmin } from '../../../lib/auth';
@@ -30,8 +30,8 @@ const { count: archivedCount } = await supabase.from('contact_submissions').sele
 const statusLabel: Record<string, string> = {
   new:      'Nouveau',
   read:     'Lu',
-  replied:  'RÃ©pondu',
-  archived: 'ArchivÃ©',
+  replied:  'Répondu',
+  archived: 'Archivé',
 };
 
 const statusBadge: Record<string, string> = {
@@ -57,15 +57,15 @@ const typedContacts: Contact[] = (contacts ?? []) as Contact[];
 
 <DashboardLayout title="Contacts" activePage="contacts" userName={userName} authResult={result}>
 
-  <!-- En-tÃªte -->
+  <!-- En-tête -->
   <div class="page-header">
     <div>
       <h1 class="page-title">Messages de contact</h1>
-      <p class="page-subtitle">GÃ©rez les messages reÃ§us via le formulaire de contact.</p>
+      <p class="page-subtitle">Gérez les messages reçus via le formulaire de contact.</p>
     </div>
   </div>
 
-  {saved && <div class="flash flash-ok" role="alert">âœ“ Modifications sauvegardÃ©es.</div>}
+  {saved && <div class="flash flash-ok" role="alert">âœ“ Modifications sauvegardées.</div>}
   {error  && <div class="flash flash-err" role="alert">âœ— {decodeURIComponent(error)}</div>}
 
   <!-- Stats -->
@@ -80,11 +80,11 @@ const typedContacts: Contact[] = (contacts ?? []) as Contact[];
     </div>
     <div class="stat-card stat-ok">
       <div class="stat-value">{repliedCount ?? 0}</div>
-      <div class="stat-label">RÃ©pondus</div>
+      <div class="stat-label">Répondus</div>
     </div>
     <div class="stat-card stat-neutral">
       <div class="stat-value">{archivedCount ?? 0}</div>
-      <div class="stat-label">ArchivÃ©s</div>
+      <div class="stat-label">Archivés</div>
     </div>
   </div>
 
@@ -121,7 +121,7 @@ const typedContacts: Contact[] = (contacts ?? []) as Contact[];
       return (
         <div class="contact-card">
 
-          <!-- Bandeau supÃ©rieur : sujet + badge -->
+          <!-- Bandeau supérieur : sujet + badge -->
           <div class="card-top">
             <div class="card-subject-wrap">
               <span class={`status-dot dot-${status}`}></span>
@@ -130,12 +130,12 @@ const typedContacts: Contact[] = (contacts ?? []) as Contact[];
             <span class={`badge ${badgeClass}`}>{label}</span>
           </div>
 
-          <!-- Meta : nom Â· email Â· date -->
+          <!-- Meta : nom · email · date -->
           <div class="card-meta">
             <span class="meta-name">ðŸ‘¤ {name}</span>
-            <span class="meta-sep">Â·</span>
+            <span class="meta-sep">·</span>
             <a href={`mailto:${email}`} class="meta-email">{email}</a>
-            <span class="meta-sep">Â·</span>
+            <span class="meta-sep">·</span>
             <span class="meta-date">
               {date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
             </span>
@@ -163,8 +163,8 @@ const typedContacts: Contact[] = (contacts ?? []) as Contact[];
                   <select name="status" class="status-select">
                     <option value="new"      selected={status === 'new'}>ðŸ”µ Nouveau</option>
                     <option value="read"     selected={status === 'read'}>ðŸ‘ Lu</option>
-                    <option value="replied"  selected={status === 'replied'}>âœ… RÃ©pondu</option>
-                    <option value="archived" selected={status === 'archived'}>ðŸ“¦ ArchivÃ©</option>
+                    <option value="replied"  selected={status === 'replied'}>âœ… Répondu</option>
+                    <option value="archived" selected={status === 'archived'}>ðŸ“¦ Archivé</option>
                   </select>
                 </div>
 
@@ -174,7 +174,7 @@ const typedContacts: Contact[] = (contacts ?? []) as Contact[];
                   <textarea
                     name="admin_notes"
                     rows="2"
-                    placeholder="Notes internes (non visibles par l'expÃ©diteur)â€¦"
+                    placeholder="Notes internes (non visibles par l'expéditeur)â€¦"
                     class="notes-textarea"
                   >{adminNotes ?? ''}</textarea>
                 </div>
@@ -189,18 +189,18 @@ const typedContacts: Contact[] = (contacts ?? []) as Contact[];
                   href={`mailto:${email}?subject=Re: ${encodeURIComponent(subject)}`}
                   class="action-btn btn-reply"
                 >
-                  âœ‰ RÃ©pondre
+                  âœ‰ Répondre
                 </a>
               </div>
             </form>
 
-            {/* Suppression : form indÃ©pendant (HTML n'autorise pas les forms imbriquÃ©s) */}
+            {/* Suppression : form indépendant (HTML n'autorise pas les forms imbriqués) */}
             <form method="POST" action="/api/admin/contacts/delete" class="delete-form">
               <input type="hidden" name="contact_id" value={id} />
               <button
                 type="submit"
                 class="action-btn btn-delete"
-                data-confirm="'Supprimer dÃ©finitivement ce message ?'"
+                data-confirm="'Supprimer définitivement ce message ?'"
               >
                 ðŸ—‘ Supprimer
               </button>

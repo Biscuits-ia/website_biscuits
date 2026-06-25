@@ -1,4 +1,4 @@
-﻿// src/pages/auth/delete-account.ts
+// src/pages/auth/delete-account.ts
 //
 // Supprime le compte de l'utilisateur courant via Supabase Auth Admin API.
 // POST uniquement (le GET etait un vecteur CSRF : un <img src=...> pouvait

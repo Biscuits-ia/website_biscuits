@@ -1,4 +1,4 @@
-﻿// Service Worker pour Biscuits IA
+// Service Worker pour Biscuits IA
 // Version: 4.0.0
 // Strategie: stale-while-revalidate pour les pages publiques, bypass strict
 // pour les extensions navigateur, les schemes non http(s), les API, l'auth

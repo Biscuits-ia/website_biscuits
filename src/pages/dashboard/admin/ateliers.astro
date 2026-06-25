@@ -32,37 +32,37 @@ const { data: workshopsRaw } = await supabase
   `)
   .order('created_at', { ascending: false });
 
-// Cast strict aprÃ¨s rÃ©cupÃ©ration Supabase
+// Cast strict après récupération Supabase
 const workshops  = (workshopsRaw ?? []) as Workshop[];
 const count      = workshops.length;
-// PrÃ©-calculÃ© ici pour Ã©viter l'opÃ©rateur > dans le template
+// Pré-calculé ici pour éviter l'opérateur > dans le template
 const countLabel = count > 1 ? `${count} ateliers` : `${count} atelier`;
 
-// â”€â”€ PrÃ©-calcul des valeurs dÃ©rivÃ©es â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// â”€â”€ Pré-calcul des valeurs dérivées â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 //
-// RÃˆGLE ASTRO : les opÃ©rateurs < et > dans un template JSX sont interprÃ©tÃ©s
+// RÃˆGLE ASTRO : les opérateurs < et > dans un template JSX sont interprétés
 // comme des balises Fragment <> et provoquent l'erreur :
 //   "Unable to assign attributes when using <> Fragment shorthand syntax"
 //
-// Solution : toute logique conditionnelle avec < / > est rÃ©solue ici,
-// dans le frontmatter (---), et transmise au template via des propriÃ©tÃ©s
-// de type string ou number dÃ©jÃ  calculÃ©es.
+// Solution : toute logique conditionnelle avec < / > est résolue ici,
+// dans le frontmatter (---), et transmise au template via des propriétés
+// de type string ou number déjà calculées.
 
 interface SessionRow {
   session:    WorkshopSession;
   registered: number;
   seatBadge:  string;  // classe CSS : badge-err | badge-warn | badge-ok
-  seatLabel:  string;  // texte affichÃ© : "Complet" | "N restante(s)"
-  dateStr:    string;  // date formatÃ©e fr-FR
+  seatLabel:  string;  // texte affiché : "Complet" | "N restante(s)"
+  dateStr:    string;  // date formatée fr-FR
   timeRange:  string;  // "HH:MM â†’ HH:MM"
-  toggleVal:  string;  // String(!s.is_published) â€” Ã©vite l'opÃ©rateur ! dans le template
-  priceStr:   string;  // prix affichÃ©
+  toggleVal:  string;  // String(!s.is_published) â€” évite l'opérateur ! dans le template
+  priceStr:   string;  // prix affiché
 }
 
 interface WorkshopRow {
   workshop: Workshop;
   sessions: SessionRow[];
-  hasSessions: boolean; // length !== 0 â€” Ã©vite > dans le template
+  hasSessions: boolean; // length !== 0 â€” évite > dans le template
 }
 
 function seatBadgeClass(left: number): string {
@@ -82,7 +82,7 @@ const workshopRows: WorkshopRow[] = workshops.map((w: Workshop) => {
     (s: WorkshopSession): SessionRow => {
       const registered = getRegistrationCount(s);
       const left       = s.max_seats - registered;
-      // Prix de la session : override ou hÃ©ritÃ© de l'atelier
+      // Prix de la session : override ou hérité de l'atelier
       const sessionPrice = s.price_cents ?? w.price_cents;
       const sessionPriceLabel = s.price_label ?? w.price_label;
       return {
@@ -113,14 +113,14 @@ const workshopRows: WorkshopRow[] = workshops.map((w: Workshop) => {
     </button>
   </div>
 
-  {saved && <div class="flash flash-ok" role="alert">âœ“ Modifications sauvegardÃ©es.</div>}
+  {saved && <div class="flash flash-ok" role="alert">âœ“ Modifications sauvegardées.</div>}
   {error  && <div class="flash flash-err" role="alert">âœ— {decodeURIComponent(error)}</div>}
 
   <div class="workshops-list">
     {workshopRows.map(({ workshop: w, sessions, hasSessions }) => (
       <div class="card">
 
-        <!-- En-tÃªte de l'atelier -->
+        <!-- En-tête de l'atelier -->
         <div class="workshop-header">
           <div>
             <div class="workshop-title">{w.title}</div>
@@ -149,7 +149,7 @@ const workshopRows: WorkshopRow[] = workshops.map((w: Workshop) => {
           </div>
         </div>
 
-        <!-- Sessions â€” hasSessions prÃ©-calculÃ© dans le frontmatter (Ã©vite length > 0) -->
+        <!-- Sessions â€” hasSessions pré-calculé dans le frontmatter (évite length > 0) -->
         {hasSessions ? (
           <div class="table-wrap">
             <table>
@@ -177,7 +177,7 @@ const workshopRows: WorkshopRow[] = workshops.map((w: Workshop) => {
                     <td><span class={`badge ${seatBadge}`}>{seatLabel}</span></td>
                     <td>
                       <span class={`badge ${s.is_published ? 'badge-ok' : 'badge-neutral'}`}>
-                        {s.is_published ? 'PubliÃ©' : 'Brouillon'}
+                        {s.is_published ? 'Publié' : 'Brouillon'}
                       </span>
                     </td>
                     <td>
@@ -186,7 +186,7 @@ const workshopRows: WorkshopRow[] = workshops.map((w: Workshop) => {
                           <input type="hidden" name="session_id"  value={s.id} />
                           <input type="hidden" name="is_published" value={toggleVal} />
                           <button type="submit" class="btn btn-ghost btn-xs">
-                            {s.is_published ? 'DÃ©publier' : 'Publier'}
+                            {s.is_published ? 'Dépublier' : 'Publier'}
                           </button>
                         </form>
                         <form method="POST" action="/api/admin/sessions/supprimer">
@@ -221,7 +221,7 @@ const workshopRows: WorkshopRow[] = workshops.map((w: Workshop) => {
             <form method="POST" action="/api/admin/sessions/creer" class="modal-form">
               <input type="hidden" name="workshop_id" value={w.id} />
               <div class="field">
-                <label>Date et heure de dÃ©but *</label>
+                <label>Date et heure de début *</label>
                 <input type="datetime-local" name="starts_at" required />
               </div>
               <div class="field">
@@ -242,10 +242,10 @@ const workshopRows: WorkshopRow[] = workshops.map((w: Workshop) => {
               </div>
               <div class="checkbox-row">
                 <input type="checkbox" id={`pub-${w.id}`} name="is_published" value="true" />
-                <label for={`pub-${w.id}`} class="label-sm">Publier immÃ©diatement</label>
+                <label for={`pub-${w.id}`} class="label-sm">Publier immédiatement</label>
               </div>
               <div class="form-actions">
-                <button type="submit" class="btn btn-primary">CrÃ©er la session</button>
+                <button type="submit" class="btn btn-primary">Créer la session</button>
                 <button
                   type="button"
                   class="btn btn-ghost"
@@ -278,27 +278,27 @@ const workshopRows: WorkshopRow[] = workshops.map((w: Workshop) => {
               </div>
               <div class="field-group">
                 <div class="field">
-                  <label>CatÃ©gorie</label>
-                  <input type="text" name="category" value={w.category ?? ''} placeholder="Ex : IA gÃ©nÃ©rative" />
+                  <label>Catégorie</label>
+                  <input type="text" name="category" value={w.category ?? ''} placeholder="Ex : IA générative" />
                 </div>
                 <div class="field">
                   <label>Niveau</label>
                   <select name="level">
-                    <option value="" selected={!w.level}>â€” Non dÃ©fini â€”</option>
-                    <option value="DÃ©butant" selected={w.level === 'DÃ©butant'}>DÃ©butant</option>
-                    <option value="IntermÃ©diaire" selected={w.level === 'IntermÃ©diaire'}>IntermÃ©diaire</option>
-                    <option value="AvancÃ©" selected={w.level === 'AvancÃ©'}>AvancÃ©</option>
+                    <option value="" selected={!w.level}>â€” Non défini â€”</option>
+                    <option value="Débutant" selected={w.level === 'Débutant'}>Débutant</option>
+                    <option value="Intermédiaire" selected={w.level === 'Intermédiaire'}>Intermédiaire</option>
+                    <option value="Avancé" selected={w.level === 'Avancé'}>Avancé</option>
                   </select>
                 </div>
               </div>
               <div class="field-group">
                 <div class="field">
-                  <label>Prix par dÃ©faut (centimes, 0 = gratuit)</label>
+                  <label>Prix par défaut (centimes, 0 = gratuit)</label>
                   <input type="number" name="price_cents" value={w.price_cents} min="0" step="1" />
                   <span class="field-hint">Ex : 3500 = 35,00 â‚¬</span>
                 </div>
                 <div class="field">
-                  <label>LibellÃ© affichÃ© (optionnel)</label>
+                  <label>Libellé affiché (optionnel)</label>
                   <input type="text" name="price_label" value={w.price_label ?? ''} placeholder='Ex: "35 â‚¬", "Gratuit", "Sur devis"' />
                 </div>
               </div>
@@ -318,7 +318,7 @@ const workshopRows: WorkshopRow[] = workshops.map((w: Workshop) => {
     ))}
   </div>
 
-  <!-- Modal : crÃ©er atelier -->
+  <!-- Modal : créer atelier -->
   <dialog id="modal-atelier" class="modal">
     <div class="modal-box">
       <div class="modal-header">
@@ -336,16 +336,16 @@ const workshopRows: WorkshopRow[] = workshops.map((w: Workshop) => {
         </div>
         <div class="field-group">
           <div class="field">
-            <label>CatÃ©gorie</label>
-            <input type="text" name="category" placeholder="Ex : IA gÃ©nÃ©rative" />
+            <label>Catégorie</label>
+            <input type="text" name="category" placeholder="Ex : IA générative" />
           </div>
           <div class="field">
             <label>Niveau</label>
             <select name="level">
-              <option value="">â€” Non dÃ©fini â€”</option>
-              <option value="DÃ©butant">DÃ©butant</option>
-              <option value="IntermÃ©diaire">IntermÃ©diaire</option>
-              <option value="AvancÃ©">AvancÃ©</option>
+              <option value="">â€” Non défini â€”</option>
+              <option value="Débutant">Débutant</option>
+              <option value="Intermédiaire">Intermédiaire</option>
+              <option value="Avancé">Avancé</option>
             </select>
           </div>
         </div>
@@ -356,12 +356,12 @@ const workshopRows: WorkshopRow[] = workshops.map((w: Workshop) => {
             <span class="field-hint">Ex : 3500 = 35,00 â‚¬</span>
           </div>
           <div class="field">
-            <label>LibellÃ© affichÃ© (optionnel)</label>
+            <label>Libellé affiché (optionnel)</label>
             <input type="text" name="price_label" placeholder='Ex: "35 â‚¬", "Sur devis"' />
           </div>
         </div>
         <div class="form-actions">
-          <button type="submit" class="btn btn-primary">CrÃ©er l'atelier</button>
+          <button type="submit" class="btn btn-primary">Créer l'atelier</button>
           <button type="button" class="btn btn-ghost" data-modal-close="modal-atelier">Annuler</button>
         </div>
       </form>

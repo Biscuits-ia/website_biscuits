@@ -30,7 +30,7 @@ const { data: softwares } = await supabase
     </button>
   </div>
 
-  {saved && <div class="flash flash-ok" role="alert">âœ“ Modifications sauvegardÃ©es.</div>}
+  {saved && <div class="flash flash-ok" role="alert">âœ“ Modifications sauvegardées.</div>}
   {error  && <div class="flash flash-err" role="alert">âœ— {decodeURIComponent(error)}</div>}
 
   <!-- Tableau -->
@@ -40,7 +40,7 @@ const { data: softwares } = await supabase
         <thead>
           <tr>
             <th>Nom</th>
-            <th>CatÃ©gorie</th>
+            <th>Catégorie</th>
             <th>Gratuit</th>
             <th>Visible</th>
             <th>Actions</th>
@@ -68,7 +68,7 @@ const { data: softwares } = await supabase
                   <input type="hidden" name="software_id" value={sw.id} />
                   <input type="hidden" name="is_visible"  value={String(!sw.is_visible)} />
                   <button type="submit" class={`badge ${sw.is_visible ? 'badge-ok' : 'badge-err'}`} style="cursor: pointer; border: none; background: none; padding: 3px 10px;">
-                    {sw.is_visible ? 'Visible' : 'MasquÃ©'}
+                    {sw.is_visible ? 'Visible' : 'Masqué'}
                   </button>
                 </form>
               </td>
@@ -119,7 +119,7 @@ const { data: softwares } = await supabase
             <textarea name="description" rows="3" style="resize: vertical;">{sw.description ?? ''}</textarea>
           </div>
           <div class="field">
-            <label>CatÃ©gorie</label>
+            <label>Catégorie</label>
             <input type="text" name="category" value={sw.category ?? ''} placeholder="Ex : Bureautique" />
           </div>
           <div class="field">
@@ -127,7 +127,7 @@ const { data: softwares } = await supabase
             <input type="url" name="logo_url" value={sw.logo_url ?? ''} placeholder="https://â€¦" />
           </div>
           <div class="field">
-            <label>URL de tÃ©lÃ©chargement</label>
+            <label>URL de téléchargement</label>
             <input type="url" name="download_url" value={sw.download_url ?? ''} placeholder="https://â€¦" />
           </div>
           <div class="field">
@@ -170,7 +170,7 @@ const { data: softwares } = await supabase
           <textarea name="description" rows="3" style="resize: vertical;" placeholder="Courte descriptionâ€¦"></textarea>
         </div>
         <div class="field">
-          <label>CatÃ©gorie</label>
+          <label>Catégorie</label>
           <input type="text" name="category" placeholder="Ex : Bureautique" />
         </div>
         <div class="field">
@@ -178,7 +178,7 @@ const { data: softwares } = await supabase
           <input type="url" name="logo_url" placeholder="https://â€¦" />
         </div>
         <div class="field">
-          <label>URL de tÃ©lÃ©chargement</label>
+          <label>URL de téléchargement</label>
           <input type="url" name="download_url" placeholder="https://â€¦" />
         </div>
         <div class="field">
@@ -190,7 +190,7 @@ const { data: softwares } = await supabase
             <input type="checkbox" name="is_free" value="true" checked /> Gratuit
           </label>
           <label style="display: flex; align-items: center; gap: 8px; font-size: var(--text-sm); cursor: pointer;">
-            <input type="checkbox" name="is_visible" value="true" checked /> Visible immÃ©diatement
+            <input type="checkbox" name="is_visible" value="true" checked /> Visible immédiatement
           </label>
         </div>
         <div style="display: flex; gap: 10px; margin-top: 4px;">

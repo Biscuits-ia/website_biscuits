@@ -19,7 +19,7 @@ const userName = user.user_metadata?.full_name ?? user.email?.split('@')[0] ?? '
 const saved  = Astro.url.searchParams.get('saved') === '1';
 const error  = Astro.url.searchParams.get('error') ?? '';
 
-// Filtre par catÃ©gorie
+// Filtre par catégorie
 const filterCat = Astro.url.searchParams.get('category') ?? '';
 
 let query = supabase
@@ -32,7 +32,7 @@ if (filterCat) query = query.eq('category', filterCat);
 const { data: resourcesRaw } = await query;
 const resources = (resourcesRaw ?? []) as Resource[];
 
-// â”€â”€ PrÃ©-calcul (aucun < > dans le template) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// â”€â”€ Pré-calcul (aucun < > dans le template) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 interface ResourceRow {
   r:            Resource;
@@ -53,7 +53,7 @@ const rows: ResourceRow[] = resources.map((r: Resource): ResourceRow => ({
   dateLabel:    new Date(r.created_at).toLocaleDateString('fr-FR'),
   toggleVal:    String(!r.is_published),
   publishBadge: r.is_published ? 'badge-ok' : 'badge-neutral',
-  publishLabel: r.is_published ? 'PubliÃ©' : 'Brouillon',
+  publishLabel: r.is_published ? 'Publié' : 'Brouillon',
 }));
 
 const hasResources   = rows.length !== 0;
@@ -73,19 +73,19 @@ const totalLabel     = `${resources.length} ressource${resources.length !== 1 ? 
     </button>
   </div>
 
-  {saved && <div class="flash flash-ok" role="alert">âœ“ OpÃ©ration rÃ©ussie.</div>}
+  {saved && <div class="flash flash-ok" role="alert">âœ“ Opération réussie.</div>}
   {error  && <div class="flash flash-err" role="alert">âœ— {decodeURIComponent(error)}</div>}
 
-  <!-- Filtre par catÃ©gorie -->
+  <!-- Filtre par catégorie -->
   <form method="get" class="filters-bar">
     <select name="category" class="filter-input" data-autosubmit="1">
-      <option value="">Toutes les catÃ©gories</option>
+      <option value="">Toutes les catégories</option>
       {RESOURCE_CATEGORIES.map((cat) => (
         <option value={cat} selected={filterCat === cat}>{cat}</option>
       ))}
     </select>
     {hasFilter && (
-      <a href="/dashboard/admin/resources" class="btn btn-ghost btn-sm">Ã— RÃ©initialiser</a>
+      <a href="/dashboard/admin/resources" class="btn btn-ghost btn-sm">Ã— Réinitialiser</a>
     )}
   </form>
 
@@ -96,11 +96,11 @@ const totalLabel     = `${resources.length} ressource${resources.length !== 1 ? 
         <thead>
           <tr>
             <th>Fichier</th>
-            <th>CatÃ©gorie</th>
+            <th>Catégorie</th>
             <th>Taille</th>
-            <th>TÃ©lÃ©chargements</th>
+            <th>Téléchargements</th>
             <th>Statut</th>
-            <th>AjoutÃ© le</th>
+            <th>Ajouté le</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -112,7 +112,7 @@ const totalLabel     = `${resources.length} ressource${resources.length !== 1 ? 
                   <span class="file-icon">{icon}</span>
                   <div>
                     <div class="file-name">{r.title}</div>
-                    <div class="file-meta">{r.file_name} Â· {typeLabel}</div>
+                    <div class="file-meta">{r.file_name} · {typeLabel}</div>
                   </div>
                 </div>
               </td>
@@ -127,7 +127,7 @@ const totalLabel     = `${resources.length} ressource${resources.length !== 1 ? 
                     <input type="hidden" name="resource_id"  value={r.id} />
                     <input type="hidden" name="is_published"  value={toggleVal} />
                     <button type="submit" class="btn btn-ghost btn-xs">
-                      {r.is_published ? 'DÃ©publier' : 'Publier'}
+                      {r.is_published ? 'Dépublier' : 'Publier'}
                     </button>
                   </form>
                   <form method="POST" action="/api/admin/resources/supprimer">
@@ -135,7 +135,7 @@ const totalLabel     = `${resources.length} ressource${resources.length !== 1 ? 
                     <button
                       type="submit"
                       class="btn btn-danger btn-xs"
-                      data-confirm="'Supprimer cette ressource dÃ©finitivement ?'"
+                      data-confirm="'Supprimer cette ressource définitivement ?'"
                     >âœ•</button>
                   </form>
                 </div>
@@ -144,7 +144,7 @@ const totalLabel     = `${resources.length} ressource${resources.length !== 1 ? 
           )) : (
             <tr>
               <td colspan="7" class="empty-row">
-                {hasFilter ? 'Aucune ressource dans cette catÃ©gorie.' : 'Aucune ressource pour le moment.'}
+                {hasFilter ? 'Aucune ressource dans cette catégorie.' : 'Aucune ressource pour le moment.'}
               </td>
             </tr>
           )}
@@ -175,21 +175,21 @@ const totalLabel     = `${resources.length} ressource${resources.length !== 1 ? 
           <textarea name="description" rows={3} placeholder="Courte description de la ressourceâ€¦"></textarea>
         </div>
         <div class="field">
-          <label>CatÃ©gorie *</label>
+          <label>Catégorie *</label>
           <select name="category" required>
-            <option value="">Choisir une catÃ©gorieâ€¦</option>
+            <option value="">Choisir une catégorieâ€¦</option>
             {RESOURCE_CATEGORIES.map((cat) => (
               <option value={cat}>{cat}</option>
             ))}
           </select>
         </div>
         <div class="field">
-          <label>Fichier * <span class="field-hint">(PDF, image, zip, vidÃ©o â€” max 50 Mo)</span></label>
+          <label>Fichier * <span class="field-hint">(PDF, image, zip, vidéo â€” max 50 Mo)</span></label>
           <input type="file" name="file" required accept=".pdf,.png,.jpg,.jpeg,.gif,.webp,.svg,.zip,.docx,.xlsx,.pptx,.txt,.md,.csv,.mp4,.webm" />
         </div>
         <div class="checkbox-row">
           <input type="checkbox" id="pub-resource" name="is_published" value="true" />
-          <label for="pub-resource" class="label-sm">Publier immÃ©diatement</label>
+          <label for="pub-resource" class="label-sm">Publier immédiatement</label>
         </div>
         <div class="form-actions">
           <button type="submit" class="btn btn-primary">Uploader</button>

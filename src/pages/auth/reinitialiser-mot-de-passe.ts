@@ -1,4 +1,4 @@
-﻿import type { APIRoute } from 'astro';
+import type { APIRoute } from 'astro';
 import { createSupabaseClient } from '@/lib/supabase';
 import { validatePassword } from '@/lib/validation';
 

@@ -1,4 +1,4 @@
-﻿import { useCallback, useState, type ChangeEvent } from 'react';
+import { useCallback, useState, type ChangeEvent } from 'react';
 import '@/styles/victim-form.css';
 import { EMAIL_RE, MAX_MESSAGE, MAX_NAME, MIN_MESSAGE } from '@/lib/validation';
 

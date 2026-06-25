@@ -1,4 +1,4 @@
-// src/pages/auth/deconnexion.ts
+﻿// src/pages/auth/deconnexion.ts
 //
 // IMPORTANT : on marque `last_logout_at` AVANT `signOut()`.
 // Sinon, un user multi-onglets peut rester connecte sur onglet 2 :
@@ -14,7 +14,8 @@ import type { APIRoute } from 'astro';
 import { createSupabaseAdminClient, createSupabaseClient } from '@/lib/supabase';
 
 export const POST: APIRoute = async (context) => {
-  const supabase = createSupabaseClient(context);
+  // Reutiliser le client du middleware (meme session en memoire).
+  const supabase = context.locals.supabase ?? createSupabaseClient(context);
 
   // 1) Lecture user + ecriture du timestamp AVANT signOut.
   try {
@@ -34,8 +35,15 @@ export const POST: APIRoute = async (context) => {
     console.error('[auth/deconnexion] failed to mark logout timestamp:', error);
   }
 
-  // 2) Puis signOut. Si l'etape 1 a echoue, on deconnecte quand meme.
-  await supabase.auth.signOut({ scope: 'global' });
+  // 2) Puis signOut cote serveur pour revoquer le refresh et supprimer
+  //    les cookies via setAll(). Cote browser SDK, les autres onglets
+  //    detecteront la revocation via le middleware (last_logout_at) et
+  //    seront rediriges vers /connexion sans nouvelle requete Auth.
+  try {
+    await supabase.auth.signOut({ scope: 'global' });
+  } catch (e) {
+    console.error('[auth/deconnexion] signOut failed:', e);
+  }
 
   return context.redirect('/connexion');
 };

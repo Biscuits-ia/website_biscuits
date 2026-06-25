@@ -1,4 +1,4 @@
-import type { APIRoute } from 'astro';
+﻿import type { APIRoute } from 'astro';
 import { createSupabaseClient } from '@/lib/supabase';
 
 export const POST: APIRoute = async ({ request, cookies }) => {
@@ -33,20 +33,16 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 
     const supabase = createSupabaseClient({ request, cookies });
 
-    // Supabase signup OTP may use either `email` or `signup` depending on template/action type.
-    const firstTry = await supabase.auth.verifyOtp({
+    // Un seul appel verifyOtp avec type: 'signup'.
+    // Avant, le code essayait 'email' PUIS 'signup' sur le meme client,
+    // ce qui declenchait _useSession() 2x (donc 2 lectures du cookie) et
+    // pouvait consommer le refresh_token avant la confirmation.
+    // Le template d'inscription Supabase envoie le mail avec type=signup.
+    const { error } = await supabase.auth.verifyOtp({
       email: normalizedEmail,
       token: normalizedToken,
-      type: 'email',
+      type: 'signup',
     });
-
-    const error = firstTry.error
-      ? (await supabase.auth.verifyOtp({
-        email: normalizedEmail,
-        token: normalizedToken,
-        type: 'signup',
-      })).error
-      : null;
 
     if (error) {
       console.error('[signup] verifyOtp error:', error.message, '| code:', error.code);

@@ -1,4 +1,4 @@
-import type { APIRoute } from 'astro';
+﻿import type { APIRoute } from 'astro';
 import { createSupabaseClient } from '@/lib/supabase';
 import { validatePassword } from '@/lib/validation';
 
@@ -22,19 +22,18 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
   }
 
   try {
-    // Réutiliser le client Supabase du middleware pour éviter de créer un second client
-    // qui lirait les anciens cookies de la requête (potentiellement obsolètes si le token
-    // a été rafraîchi par le middleware). Le client locals.supabase a déjà le token
-    // en mémoire après le getUser() du middleware.
-    const supabase = locals.supabase ?? createSupabaseClient({ request, cookies });
+    // Reutiliser le client Supabase du middleware pour eviter de creer un
+    // second client qui relirait d'anciens cookies et detruirait le
+    // refresh_token en concurrence avec le browser SDK.
+    const supabase = locals.supabase ?? createSupabaseClient({ request, cookies, locals });
 
-    // Vérifier que l'utilisateur est bien authentifié avant de mettre à jour
+    // Verifier que l'utilisateur est bien authentifie avant de mettre a jour
     const { data: { user }, error: userError } = await supabase.auth.getUser();
 
     if (userError || !user) {
       console.error('[reset-password] User not authenticated:', userError?.message);
       return new Response(
-        JSON.stringify({ error: 'Session invalide. Veuillez demander un nouveau lien de réinitialisation.' }),
+        JSON.stringify({ error: 'Session invalide. Veuillez demander un nouveau lien de reinitialisation.' }),
         { status: 401, headers: { 'Content-Type': 'application/json' } },
       );
     }
@@ -44,28 +43,29 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
     if (error) {
       console.error('[Auth] updateUser (reset password) SUPABASE ERROR:', error.message, '| status:', error.status, '| code:', (error as any).code);
 
-      // Déconnecter immédiatement — ne jamais laisser un utilisateur connecté
-      // avec une session recovery si la mise à jour a échoué (risque de session
-      // orpheline permettant l'accès au compte sans avoir changé le mot de passe).
-      await supabase.auth.signOut({ scope: 'global' });
+      // IMPORTANT : on NE signe PAS out cote serveur apres une erreur
+      // d'updateUser. signOut() consomme le refresh_token et declenche
+      // la rotation -- c'est ce qui produit les "refresh_token_not_found"
+      // en cascade sur les autres onglets/lambda. La session recovery
+      // expire d'elle-meme cote Supabase Auth.
 
-      // Distinguer les erreurs de session (lien expiré) des erreurs de mise à jour
+      // Distinguer les erreurs de session (lien expire) des erreurs de mise a jour
       const isSessionError = error.status === 401
         || error.status === 403
         || /session|jwt|token|not authenticated|unauthorized/i.test(error.message);
 
       if (isSessionError) {
         return new Response(
-          JSON.stringify({ error: 'Lien invalide ou expiré. Veuillez demander un nouveau lien de réinitialisation.' }),
+          JSON.stringify({ error: 'Lien invalide ou expire. Veuillez demander un nouveau lien de reinitialisation.' }),
           { status: 401, headers: { 'Content-Type': 'application/json' } },
         );
       }
 
-      // Transmettre un message spécifique pour les politiques de mot de passe
+      // Transmettre un message specifique pour les politiques de mot de passe
       const isPolicyError = /password|same|reuse|weak|strength|character/i.test(error.message);
       const clientMessage = isPolicyError
-        ? 'Mot de passe refusé par la politique de sécurité. Essayez un mot de passe différent et plus complexe.'
-        : 'Impossible de mettre à jour le mot de passe. Veuillez réessayer.';
+        ? 'Mot de passe refuse par la politique de securite. Essayez un mot de passe different et plus complexe.'
+        : 'Impossible de mettre a jour le mot de passe. Veuillez reessayer.';
 
       return new Response(
         JSON.stringify({ error: clientMessage }),
@@ -80,7 +80,7 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
   } catch (err) {
     console.error('[Auth] reinitialiser-mot-de-passe error:', err);
     return new Response(
-      JSON.stringify({ error: 'Erreur serveur. Veuillez réessayer.' }),
+      JSON.stringify({ error: 'Erreur serveur. Veuillez reessayer.' }),
       { status: 500, headers: { 'Content-Type': 'application/json' } },
     );
   }

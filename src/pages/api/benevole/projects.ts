@@ -1,4 +1,4 @@
-// src/pages/api/benevole/projects.ts
+﻿// src/pages/api/benevole/projects.ts
 import type { APIRoute } from 'astro';
 import { createSupabaseClient, createSupabaseAdminClient } from '@/lib/supabase';
 import { fetchRoleSecure } from '@/lib/auth';
@@ -17,7 +17,7 @@ function jsonOk(data: unknown, status = 200) {
   });
 }
 
-async function getAuthContext(request: Request, cookies: unknown) {
+async function getAuthContext(request: Request, cookies: { get: (n: string) => unknown; set: (n: string, v: string, o?: Record<string, unknown>) => void; delete: (n: string, o?: Record<string, unknown>) => void }) {
   const supabase = createSupabaseClient({ request, cookies });
   const { data: { user }, error } = await supabase.auth.getUser();
   if (error || !user) return null;
@@ -26,24 +26,24 @@ async function getAuthContext(request: Request, cookies: unknown) {
   return { supabase, user, role };
 }
 
-// ── POST /api/benevole/projects — créer un projet ─────────────────────────────
+// â”€â”€ POST /api/benevole/projects â€” crÃ©er un projet â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export const POST: APIRoute = async ({ request, cookies }) => {
   const ctx = await getAuthContext(request, cookies);
-  if (!ctx) return jsonError('Non autorisé.', 401);
+  if (!ctx) return jsonError('Non autorisÃ©.', 401);
 
   const { user, role } = ctx;
   const adminSupabase = createSupabaseAdminClient();
 
-  // Seuls le staff peut créer un projet
+  // Seuls le staff peut crÃ©er un projet
   if (role !== 'admin' && role !== 'moderator') {
-    return jsonError('Réservé au staff.', 403);
+    return jsonError('RÃ©servÃ© au staff.', 403);
   }
 
   let body: Record<string, unknown>;
   try {
     body = await request.json();
   } catch {
-    return jsonError('Corps de requête JSON invalide.');
+    return jsonError('Corps de requÃªte JSON invalide.');
   }
 
   const title       = typeof body.title       === 'string' ? body.title.trim()       : '';
@@ -53,8 +53,8 @@ export const POST: APIRoute = async ({ request, cookies }) => {
   const deadline    = typeof body.deadline === 'string' && body.deadline ? body.deadline : null;
 
   if (!title) return jsonError('Le titre est requis.');
-  if (title.length > 120) return jsonError('Le titre ne doit pas dépasser 120 caractères.');
-  if (description && description.length > 800) return jsonError('La description ne doit pas dépasser 800 caractères.');
+  if (title.length > 120) return jsonError('Le titre ne doit pas dÃ©passer 120 caractÃ¨res.');
+  if (description && description.length > 800) return jsonError('La description ne doit pas dÃ©passer 800 caractÃ¨res.');
 
   const { data, error } = await adminSupabase
     .from('projects')
@@ -72,10 +72,10 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 
   if (error) {
     console.error('[api/benevole/projects] insert error:', error.message);
-    return jsonError('Erreur lors de la création.', 500);
+    return jsonError('Erreur lors de la crÃ©ation.', 500);
   }
 
-  // Associer automatiquement le créateur au projet pour la visibilité membre.
+  // Associer automatiquement le crÃ©ateur au projet pour la visibilitÃ© membre.
   const { error: memberError } = await adminSupabase
     .from('project_members')
     .upsert({ project_id: data.id, user_id: user.id }, { onConflict: 'project_id,user_id' });
@@ -99,18 +99,18 @@ export const POST: APIRoute = async ({ request, cookies }) => {
   return jsonOk({ id: data.id }, 201);
 };
 
-// ── PATCH /api/benevole/projects?id=… — modifier un projet ───────────────────
+// â”€â”€ PATCH /api/benevole/projects?id=â€¦ â€” modifier un projet â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function buildProjectUpdates(body: Record<string, unknown>): { updates: Record<string, unknown>; error?: string } {
   const updates: Record<string, unknown> = {};
   if (typeof body.title === 'string') {
     const t = body.title.trim();
     if (!t)             return { updates, error: 'Le titre est requis.' };
-    if (t.length > 120) return { updates, error: 'Le titre ne doit pas dépasser 120 caractères.' };
+    if (t.length > 120) return { updates, error: 'Le titre ne doit pas dÃ©passer 120 caractÃ¨res.' };
     updates.title = t;
   }
   if (typeof body.description === 'string') {
     const d = body.description.trim();
-    if (d.length > 800) return { updates, error: 'La description ne doit pas dépasser 800 caractères.' };
+    if (d.length > 800) return { updates, error: 'La description ne doit pas dÃ©passer 800 caractÃ¨res.' };
     updates.description = d || null;
   }
   if (['low', 'medium', 'high'].includes(body.priority as string))              updates.priority = body.priority;
@@ -119,12 +119,12 @@ function buildProjectUpdates(body: Record<string, unknown>): { updates: Record<s
   if (typeof body.start_date  === 'string') updates.start_date  = body.start_date  || null;
   if (typeof body.objective   === 'string') {
     const v = body.objective.trim();
-    if (v.length > 600) return { updates, error: "L'objectif ne doit pas dépasser 600 caractères." };
+    if (v.length > 600) return { updates, error: "L'objectif ne doit pas dÃ©passer 600 caractÃ¨res." };
     updates.objective = v || null;
   }
   if (typeof body.expected_deliverables === 'string') {
     const v = body.expected_deliverables.trim();
-    if (v.length > 600) return { updates, error: 'Les livrables ne doivent pas dépasser 600 caractères.' };
+    if (v.length > 600) return { updates, error: 'Les livrables ne doivent pas dÃ©passer 600 caractÃ¨res.' };
     updates.expected_deliverables = v || null;
   }
   if (typeof body.tech_stack === 'string') {
@@ -151,13 +151,13 @@ function buildProjectUpdates(body: Record<string, unknown>): { updates: Record<s
 
 export const PATCH: APIRoute = async ({ request, cookies, url }) => {
   const ctx = await getAuthContext(request, cookies);
-  if (!ctx) return jsonError('Non autorisé.', 401);
+  if (!ctx) return jsonError('Non autorisÃ©.', 401);
 
   const { user, role } = ctx;
   const adminSupabase = createSupabaseAdminClient();
 
   const projectId = url.searchParams.get('id');
-  if (!projectId) return jsonError('Paramètre id manquant.');
+  if (!projectId) return jsonError('ParamÃ¨tre id manquant.');
 
   const { data: proj } = await adminSupabase
     .from('projects')
@@ -168,37 +168,37 @@ export const PATCH: APIRoute = async ({ request, cookies, url }) => {
   if (!proj) return jsonError('Projet introuvable.', 404);
 
   const isStaff  = role === 'admin' || role === 'moderator';
-  if (proj.leader_id !== user.id && !isStaff) return jsonError('Non autorisé.', 403);
+  if (proj.leader_id !== user.id && !isStaff) return jsonError('Non autorisÃ©.', 403);
 
   let body: Record<string, unknown>;
   try { body = await request.json(); }
-  catch { return jsonError('Corps de requête JSON invalide.'); }
+  catch { return jsonError('Corps de requÃªte JSON invalide.'); }
 
   const { updates, error: valErr } = buildProjectUpdates(body);
   if (valErr) return jsonError(valErr);
-  if (Object.keys(updates).length === 0) return jsonError('Aucune donnée à mettre à jour.');
+  if (Object.keys(updates).length === 0) return jsonError('Aucune donnÃ©e Ã  mettre Ã  jour.');
 
   const { error } = await adminSupabase.from('projects').update(updates).eq('id', projectId);
   if (error) {
     console.error('[api/benevole/projects] update error:', error.message);
-    return jsonError('Erreur lors de la mise à jour.', 500);
+    return jsonError('Erreur lors de la mise Ã  jour.', 500);
   }
 
   return jsonOk({ ok: true });
 };
 
-// ── DELETE /api/benevole/projects?id=… — supprimer un projet ─────────────────
+// â”€â”€ DELETE /api/benevole/projects?id=â€¦ â€” supprimer un projet â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export const DELETE: APIRoute = async ({ request, cookies, url }) => {
   const ctx = await getAuthContext(request, cookies);
-  if (!ctx) return jsonError('Non autorisé.', 401);
+  if (!ctx) return jsonError('Non autorisÃ©.', 401);
 
   const { role } = ctx;
   const adminSupabase = createSupabaseAdminClient();
 
-  if (role !== 'admin') return jsonError('Réservé aux admins.', 403);
+  if (role !== 'admin') return jsonError('RÃ©servÃ© aux admins.', 403);
 
   const projectId = url.searchParams.get('id');
-  if (!projectId) return jsonError('Paramètre id manquant.');
+  if (!projectId) return jsonError('ParamÃ¨tre id manquant.');
 
   const { error } = await adminSupabase.from('projects').delete().eq('id', projectId);
 

@@ -1,7 +1,7 @@
 ﻿// src/pages/auth/delete-account.ts
 //
 // Supprime le compte de l'utilisateur courant via Supabase Auth Admin API.
-// POST uniquement (le GET était un vecteur CSRF : un <img src=...> pouvait
+// POST uniquement (le GET etait un vecteur CSRF : un <img src=...> pouvait
 // detruire un compte sans interaction de l'utilisateur).
 // Protection CSRF : on verifie que le header `Origin` matche le site publie.
 import type { APIRoute } from 'astro';
@@ -22,6 +22,35 @@ function isSameOrigin(request: Request, url: URL): boolean {
   return secFetchSite === 'same-origin';
 }
 
+/**
+ * Supprime les cookies de session Supabase poses par @supabase/ssr.
+ *
+ * Avec `cookies.encode: 'tokens-only'` (cf. lib/supabase.ts), les cookies
+ * poses par @supabase/ssr sont `supabase.auth.token` et ses chunks
+ * `.0`, `.1`, ... Les anciens cookies `sb-access-token` / `sb-refresh-token`
+ * ne sont plus utilises : on les purge uniquement s'ils existent, par
+ * securite (transitions).
+ */
+function purgeSupabaseAuthCookies(
+  cookies: {
+    delete: (name: string, options?: Record<string, unknown>) => void;
+  },
+): void {
+  const names = ['supabase.auth.token'];
+  for (let i = 0; i < 10; i++) {
+    names.push(`supabase.auth.token.${i}`);
+  }
+  // Anciens cookies (compat ascendante)
+  names.push('sb-access-token', 'sb-refresh-token');
+  for (const name of names) {
+    try {
+      cookies.delete(name, { path: '/' });
+    } catch {
+      // ignore
+    }
+  }
+}
+
 async function handleDelete(Astro: Parameters<APIRoute>[0]): Promise<Response> {
   // 1) CSRF check : la requete POST doit venir du meme origine.
   if (!isSameOrigin(Astro.request, Astro.url)) {
@@ -31,15 +60,17 @@ async function handleDelete(Astro: Parameters<APIRoute>[0]): Promise<Response> {
     );
   }
 
-  const supabase = createSupabaseClient(Astro);
+  // 2) Reutiliser le client du middleware (meme session, pas de relecture
+  //    concurrente des cookies).
+  const supabase = Astro.locals.supabase ?? createSupabaseClient(Astro);
 
-  // 2) Verifier que l'utilisateur est connecte
+  // 3) Verifier que l'utilisateur est connecte
   const { data: { user }, error: userError } = await supabase.auth.getUser();
   if (userError || !user) {
     return Astro.redirect('/connexion?error=' + encodeURIComponent('Vous devez etre connecte pour supprimer votre compte.'));
   }
 
-  // 3) Anonymiser la trace cote profiles (RGPD) AVANT de supprimer le user
+  // 4) Anonymiser la trace cote profiles (RGPD) AVANT de supprimer le user
   //    Si l'auth admin echoue, on garde au moins la coherence fonctionnelle.
   try {
     const adminDb = createSupabaseAdminClient();
@@ -55,26 +86,20 @@ async function handleDelete(Astro: Parameters<APIRoute>[0]): Promise<Response> {
     console.error('[auth/delete-account] anonymization failed:', e);
   }
 
-  // 4) Deconnecter les sessions actives (cookies)
-  try {
-    await supabase.auth.signOut({ scope: 'global' });
-  } catch (e) {
-    console.error('[auth/delete-account] signOut failed:', e);
-  }
+  // 5) La suppression du user via auth.admin.deleteUser() invalide
+  //    implicitement toutes ses sessions (les refresh_tokens lies sont
+  //    revoques en cascade par Supabase Auth). On ne fait PAS de signOut()
+  //    cote serveur ici -- ca consommerait un refresh_token en plus et
+  //    peut creer une race condition avec d'autres onglets.
 
-  // 5) Supprimer le user de Supabase Auth (cascades via FK vers profiles)
+  // 6) Supprimer le user de Supabase Auth (cascades via FK vers profiles)
   const deleted = await deleteUserFromSupabase(user.id);
   if (!deleted) {
     return Astro.redirect('/?error=' + encodeURIComponent('La suppression a echoue. Reessaie ou contacte le support.'));
   }
 
-  // 6) Purge cookies Supabase (best effort)
-  try {
-    Astro.cookies.delete('sb-access-token', { path: '/' });
-    Astro.cookies.delete('sb-refresh-token', { path: '/' });
-  } catch {
-    // ignore
-  }
+  // 7) Purge des cookies de session (best effort).
+  purgeSupabaseAuthCookies(Astro.cookies);
 
   return Astro.redirect('/?deleted=1');
 }

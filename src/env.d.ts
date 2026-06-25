@@ -1,4 +1,4 @@
-// src/env.d.ts
+﻿// src/env.d.ts
 ///<reference types="astro/client" />
 
 declare module '*.css';
@@ -7,7 +7,7 @@ interface ImportMetaEnv {
   readonly SUPABASE_URL: string;
   readonly SUPABASE_ANON_KEY: string;
   /**
-   * SUPABASE_SERVICE_ROLE_KEY (DANGEREUSE — bypass RLS).
+   * SUPABASE_SERVICE_ROLE_KEY (DANGEREUSE -- bypass RLS).
    * Uniquement lisible cote serveur. Ne JAMAIS l'utiliser dans un composant
    * client (frontmatter .astro avec client:load, fichier .tsx importe par
    * un composant client). Le consommateur doit etre dans une API route,
@@ -27,7 +27,7 @@ interface ImportMetaEnv {
    */
   readonly PUBLIC_SUPABASE_PUBLISHABLE_KEY?: string;
   /**
-   * PUBLIC_SITE_URL — URL absolue du site.
+   * PUBLIC_SITE_URL -- URL absolue du site.
    * Utilisee par IndexNow, sitemap, og:url, schema.org.
    * Le prefixe PUBLIC_ permet l'usage cote client si besoin.
    */
@@ -54,6 +54,13 @@ declare global {
       nonce: string;
       /** Client Supabase reauthentifiable partage par toutes les requetes du middleware. */
       supabase: import('@supabase/supabase-js').SupabaseClient;
+      /**
+       * Headers no-cache emis par @supabase/ssr lors d'un setAll (cf.
+       * lib/supabase.ts). Le middleware les recopie sur la reponse finale
+       * pour empecher un CDN de cacher une reponse contenant un cookie
+       * de session.
+       */
+      __extraResponseHeaders?: Record<string, string>;
     }
   }
 }

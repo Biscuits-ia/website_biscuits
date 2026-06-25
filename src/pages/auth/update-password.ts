@@ -1,8 +1,33 @@
-import type { APIRoute } from 'astro';
-import { createSupabaseClient } from '@/lib/supabase';
+﻿import type { APIRoute } from 'astro';
+import { createClient } from '@supabase/supabase-js';
+import { createSupabaseClient, createSupabaseAdminClient } from '@/lib/supabase';
 import { validatePassword } from '@/lib/validation';
 
-export const POST: APIRoute = async ({ request, cookies }) => {
+/**
+ * Client ephemere utilise UNIQUEMENT pour verifier le mot de passe
+ * actuel de l'utilisateur. Il n'utilise PAS les cookies de la requete,
+ * il ne persiste rien et n'auto-refresh pas : aucun risque de toucher
+ * au refresh_token partage avec le browser SDK.
+ */
+function createSupabaseClientForLogin() {
+  const url = import.meta.env.SUPABASE_URL;
+  const key =
+    import.meta.env.PUBLIC_SUPABASE_PUBLISHABLE_KEY ??
+    import.meta.env.SUPABASE_ANON_KEY;
+  if (!url || !key) {
+    throw new Error('[auth] Configuration Supabase manquante.');
+  }
+  return createClient(url, key, {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+      skipAutoInitialize: true,
+      detectSessionInUrl: false,
+    },
+  });
+}
+
+export const POST: APIRoute = async ({ request, cookies, locals }) => {
   try {
     if (!import.meta.env.SUPABASE_URL || !import.meta.env.SUPABASE_ANON_KEY) {
       return new Response(
@@ -39,20 +64,26 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       );
     }
 
-    const supabase = createSupabaseClient({ request, cookies });
+    // Reutiliser le client du middleware pour ne pas relire les
+    // cookies en concurrence avec le browser SDK.
+    const supabase = locals.supabase ?? createSupabaseClient({ request, cookies, locals });
 
-    // Récupérer l'utilisateur connecté
+    // Recuperer l'utilisateur connecte
     const { data: { user }, error: userError } = await supabase.auth.getUser();
 
     if (userError || !user) {
       return new Response(
-        JSON.stringify({ error: 'Vous devez être connecté.' }),
+        JSON.stringify({ error: 'Vous devez etre connecte.' }),
         { status: 401, headers: { 'Content-Type': 'application/json' } },
       );
     }
 
-    // Vérifier le mot de passe actuel
-    const { error: loginError } = await supabase.auth.signInWithPassword({
+    // Verifier le mot de passe actuel via un client ephemere isole
+    // (aucun cookie, aucune persistance, aucun refresh). On evite ainsi
+    // que signInWithPassword consomme le refresh_token partage et
+    // detruise la session en cours dans le navigateur.
+    const loginClient = createSupabaseClientForLogin();
+    const { error: loginError } = await loginClient.auth.signInWithPassword({
       email: user.email!,
       password: currentPassword,
     });
@@ -64,30 +95,33 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       );
     }
 
-    // Mettre à jour le mot de passe
-    const { error: updateError } = await supabase.auth.updateUser({
+    // Mettre a jour le mot de passe via l'API Admin (pas de rotation
+    // cote client -> pas de rafraichissement -> pas de risque de
+    // 'refresh_token_not_found' sur les autres onglets).
+    const adminClient = createSupabaseAdminClient();
+    const { error: updateError } = await adminClient.auth.admin.updateUserById(user.id, {
       password: newPassword,
     });
 
     if (updateError) {
       console.error('[Auth] update-password error:', updateError.message);
       return new Response(
-        JSON.stringify({ error: 'Erreur lors de la mise à jour du mot de passe.' }),
+        JSON.stringify({ error: 'Erreur lors de la mise a jour du mot de passe.' }),
         { status: 500, headers: { 'Content-Type': 'application/json' } },
       );
     }
 
     return new Response(
-      JSON.stringify({ 
-        success: true, 
-        message: 'Mot de passe mis à jour avec succès.' 
+      JSON.stringify({
+        success: true,
+        message: 'Mot de passe mis a jour avec succes.',
       }),
       { status: 200, headers: { 'Content-Type': 'application/json' } },
     );
   } catch (err) {
     console.error('[Auth] update-password route error:', err);
     return new Response(
-      JSON.stringify({ error: 'Erreur serveur. Veuillez réessayer.' }),
+      JSON.stringify({ error: 'Erreur serveur. Veuillez reessayer.' }),
       { status: 500, headers: { 'Content-Type': 'application/json' } },
     );
   }

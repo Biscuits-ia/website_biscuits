@@ -2,17 +2,16 @@
 //
 // Middleware Astro : rate-limit, guard de session, CSP.
 //
-// RÈGLE D'OR : côté serveur, on n'appelle QUE getUser(). Jamais getSession().
+// REGLE D'OR : cote serveur, on n'appelle QUE getUser(). Jamais getSession().
+// On n'appelle SURTOUT PAS signOut()/refreshSession() cote serveur : ces
+// methodes declenchent la token rotation et revoquent immediatement le
+// refresh_token, ce qui produit les erreurs "refresh_token_not_found" des
+// qu'un autre acteur (browser SDK, autre lambda) lit le meme cookie.
 //
-// getSession() lit le refresh_token depuis le cookie et PEUT déclencher
-// un refresh si l'access_token est expiré — même avec autoRefreshToken: false.
-// Si le browser SDK a fait la même chose 50ms avant, le token est révoqué
-// → refresh_token_not_found.
-//
-// getUser() fait un appel réseau à Supabase Auth avec l'access_token.
-// Si l'access_token est valide → retour immédiat, refresh_token non touché.
-// Si l'access_token est expiré → Supabase Auth refuse → erreur → on déconnecte.
-// Dans les deux cas, le refresh_token n'est JAMAIS consommé côté serveur.
+// getUser() fait un appel reseau a Supabase Auth avec l'access_token.
+// Si l'access_token est valide -> retour immediat, refresh_token non touche.
+// Si l'access_token est expire -> Supabase Auth refuse -> erreur -> on
+// considere la session comme invalidee SANS toucher au refresh.
 
 import { defineMiddleware } from 'astro:middleware';
 import { rateLimit } from './lib/rateLimit';
@@ -119,32 +118,32 @@ async function readLastLogoutAtMs(userId: string): Promise<number | null> {
 // ─── Guard de session ─────────────────────────────────────────────────────────
 
 /**
- * Vérifie que la session est valide et non invalidée par un logout récent.
+ * Verifie que la session est valide et non invalidee par un logout recent.
  *
- * ✅ RÈGLE D'OR : UNIQUEMENT getUser() côté serveur.
- * getUser() = validation JWT réseau. Pas de refresh token consommé.
- * Si erreur ou pas d'utilisateur → 'unauthenticated'.
- * Si last_logout_at > now - 5min → 'invalidated' (logout récent).
- * Sinon → 'ok'.
+ * REGLE D'OR : UNIQUEMENT getUser() cote serveur.
+ * getUser() = validation JWT reseau. Pas de refresh token consomme.
+ * Si erreur ou pas d'utilisateur -> 'unauthenticated'.
+ *
+ * Si une deconnexion a eu lieu dans les 5 dernieres minutes, on considere
+ * la session comme invalidee et on force la redirection vers /connexion
+ * (SANS appeler signOut cote serveur -- celui-ci revoquerait le refresh).
  */
 async function handleSessionGuard(
   supabase: ReturnType<typeof createSupabaseClient>,
-  pathname: string,
 ): Promise<'ok' | 'invalidated' | 'unauthenticated'> {
   try {
-    // ✅ getUser() = validation JWT réseau. Pas de refresh token consommé.
     const {
       data: { user },
       error,
     } = await supabase.auth.getUser();
     if (error || !user) {
-      // AuthApiError ici = access token invalide ou expiré.
-      // On retourne 'unauthenticated' — pas d'erreur à logger, c'est normal.
+      // AuthApiError ici = access token invalide ou expire.
+      // On retourne 'unauthenticated' -- pas d'erreur a logger, c'est normal.
       return 'unauthenticated';
     }
 
-    // Vérification last_logout_at : si un logout a eu lieu dans les 5 dernières
-    // minutes, on invalide la session par sécurité.
+    // Verification last_logout_at : si un logout a eu lieu dans les 5 dernieres
+    // minutes, on invalide la session par securite.
     const lastLogoutAtMs = await readLastLogoutAtMs(user.id);
     if (lastLogoutAtMs === null || lastLogoutAtMs === 0) return 'ok';
 
@@ -253,28 +252,37 @@ export const onRequest = defineMiddleware(async (context, next) => {
 
   // 2. Guard de session (skip routes publiques).
   if (!isPublicPath(pathname)) {
-    const guard = await handleSessionGuard(supabase, pathname);
+    const guard = await handleSessionGuard(supabase);
     if (guard === 'invalidated') {
-      try {
-        await supabase.auth.signOut();
-      } catch {
-        /* ignore */
-      }
+      // IMPORTANT : on ne fait PAS de signOut() cote serveur.
+      // signOut() consomme le refresh_token et declenche la rotation,
+      // ce qui peut revoquer la session d'un autre onglet / onduleur.
+      // On laisse simplement le navigateur rediriger vers /connexion.
       if (pathname.startsWith('/api/')) {
-        return new Response(JSON.stringify({ error: 'Session invalidée.' }), {
+        return new Response(JSON.stringify({ error: 'Session invalidee.' }), {
           status: 401,
           headers: { 'Content-Type': 'application/json' },
         });
       }
       if (pathname !== '/connexion') return context.redirect('/connexion?session=invalidee');
     }
-    // 'unauthenticated' → les pages protégées gèrent via requireAuth().
+    // 'unauthenticated' -> les pages protegees gerent via requireAuth().
   }
 
-  // 3. Requête.
+  // 3. Requete.
   const response = await next();
 
-  // 4. CSP.
+  // 4. Headers no-cache emis par @supabase/ssr lors d'un setAll (cf.
+  // lib/supabase.ts). On les recopie sur la reponse finale pour empecher
+  // un CDN / proxy de cacher une reponse contenant un cookie de session.
+  const extra = context.locals.__extraResponseHeaders;
+  if (extra) {
+    for (const [k, v] of Object.entries(extra)) {
+      response.headers.set(k, v);
+    }
+  }
+
+  // 5. CSP.
   const csp = buildCsp(nonce, isDev);
   const contentType = response.headers.get('content-type') ?? '';
   if (contentType.includes('text/html')) {

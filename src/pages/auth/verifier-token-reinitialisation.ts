@@ -1,4 +1,4 @@
-import type { APIRoute } from 'astro';
+﻿import type { APIRoute } from 'astro';
 import { createSupabaseClient } from '@/lib/supabase';
 
 export const POST: APIRoute = async ({ request, cookies }) => {
@@ -26,7 +26,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 
     if (!/^[0-9A-Za-z]{6,10}$/.test(normalizedToken)) {
       return new Response(
-        JSON.stringify({ error: 'Code invalide. Vérifiez le code reçu par email.' }),
+        JSON.stringify({ error: 'Code invalide. Verifiez le code recu par email.' }),
         { status: 400, headers: { 'Content-Type': 'application/json' } },
       );
     }
@@ -42,7 +42,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     if (error) {
       console.error('[reset-password] verifyOtp error:', error.message, '| code:', error.code);
       return new Response(
-        JSON.stringify({ error: 'Code invalide ou expiré. Demandez un nouveau code.' }),
+        JSON.stringify({ error: 'Code invalide ou expire. Demandez un nouveau code.' }),
         { status: 400, headers: { 'Content-Type': 'application/json' } },
       );
     }
@@ -54,7 +54,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
   } catch (err) {
     console.error('[reset-password] verify token route error:', err);
     return new Response(
-      JSON.stringify({ error: 'Erreur serveur. Veuillez réessayer.' }),
+      JSON.stringify({ error: 'Erreur serveur. Veuillez reessayer.' }),
       { status: 500, headers: { 'Content-Type': 'application/json' } },
     );
   }

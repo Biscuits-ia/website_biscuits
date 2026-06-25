@@ -184,8 +184,15 @@ import AdminAppointmentsCalendar from './react/AdminAppointmentsCalendar.tsx';
         const errText = await response.text();
         throw new Error(`Erreur ${response.status}: ${errText}`);
       }
-      const data = await response.json();
-      renderAppointments(data);
+      const data: unknown = await response.json();
+      // /api/admin/appointments renvoie { data: [...], total, page, limit }
+      // depuis le patch pagination. On normalise pour accepter les deux formes.
+      const list: unknown[] = Array.isArray(data)
+        ? data
+        : (data && typeof data === "object" && Array.isArray((data as { data?: unknown[] }).data)
+            ? (data as { data: unknown[] }).data
+            : []);
+      renderAppointments(list as RenderedAppt[]);
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Erreur inconnue';
       showError(msg);

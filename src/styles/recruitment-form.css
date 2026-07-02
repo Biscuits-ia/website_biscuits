@@ -11,7 +11,7 @@
 }
 
 .form {
-  background: var(--color-bg-elevated);
+  background: var(--color-bg-alt);
   border: var(--brutal-border);
   box-shadow: var(--shadow-lg);
   max-width: 800px;

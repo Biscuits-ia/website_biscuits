@@ -264,14 +264,14 @@ const trainingOptions: TrainingOption[] = (trainings ?? [])
   .alert-error   { background: var(--color-danger-light);  }
   .code-block {
     display: inline-block; padding: 4px 10px; margin: 6px 0;
-    background: var(--color-bg-elevated); border: 2px solid var(--color-border);
+    background: var(--color-bg-alt); border: 2px solid var(--color-border);
     font-family: var(--font-mono); font-weight: 700;
   }
   .empty-note { padding: 24px; border: var(--brutal-border-thin); border-style: dashed; color: var(--color-text-light); }
 
   .parrain-form { display: flex; flex-direction: column; gap: 24px; }
   .form-block {
-    padding: 20px; border: var(--brutal-border); background: var(--color-bg-elevated);
+    padding: 20px; border: var(--brutal-border); background: var(--color-bg-alt);
     box-shadow: var(--shadow-sm);
   }
   .form-block legend { font-weight: 800; font-size: 1.05rem; padding: 0 8px; color: var(--color-text); }
@@ -307,7 +307,7 @@ const trainingOptions: TrainingOption[] = (trainings ?? [])
   .btn { padding: 12px 24px; font-weight: 700; text-decoration: none; display: inline-block; border: var(--brutal-border); cursor: pointer; }
   .btn-primary { background: var(--color-primary); color: white; box-shadow: var(--shadow-md); }
   .btn-primary:hover { transform: translate(-2px, -2px); box-shadow: var(--shadow-lg); }
-  .btn-ghost { background: var(--color-bg-elevated); color: var(--color-text); }
+  .btn-ghost { background: var(--color-bg-alt); color: var(--color-text); }
 
   @media (max-width: 600px) {
     .field-grid { grid-template-columns: 1fr; }

@@ -1,8 +1,55 @@
 ---export const prerender = true;
 
-
-
 import BaseLayout from '@/layouts/Layout.astro';
+
+// Les 3 offres principales : Outils, Accompagnement, Ressources
+const offres = [
+  {
+    id: 'outils',
+    icon: '🤖',
+    title: 'Outils IA',
+    subtitle: 'Assistants, automatisations, génération de documents',
+    description: 'Des outils IA prêts à l\'emploi pour automatiser vos tâches quotidiennes. Assistants conversationnels, scripts d\'automatisation, génération de rapports.',
+    features: [
+      'Assistants IA personnalisés pour vos bénévoles',
+      'Automatisations de workflows (emails, formulaires)',
+      'Génération de documents (lettres, rapports, courriers)',
+      'Intégration avec vos outils existants'
+    ],
+    cta: 'Voir nos outils',
+    href: '/logiciels'
+  },
+  {
+    id: 'accompagnement',
+    icon: '🤝',
+    title: 'Accompagnement',
+    subtitle: 'Mise en place, formation, aide aux structures',
+    description: 'Un accompagnement humain pour mettre en place l\'IA dans votre structure. Sans jargon, avec un focus sur l\'utilité concrète pour votre mission.',
+    features: [
+      'Diagnostic IA de votre structure',
+      'Feuille de route sur mesure',
+      'Formation des équipes',
+      'Suivi post-mise en place'
+    ],
+    cta: 'Prendre rendez-vous',
+    href: '/contact'
+  },
+  {
+    id: 'ressources',
+    icon: '📚',
+    title: 'Ressources',
+    subtitle: 'Guides, templates, cas d\'usage',
+    description: 'Des ressources libres et téléchargeables pour démarrer seul·e. Guides pratiques, templates, checklists — tout ce dont vous avez besoin.',
+    features: [
+      'Guides téléchargeables (RGPD, cybersécurité, IA)',
+      'Templates prêts à l\'emploi',
+      'Checklists et procédures type',
+      'Cas d\'usage partagés'
+    ],
+    cta: 'Accéder aux ressources',
+    href: '/ressources'
+  }
+];
 ---
 
 <BaseLayout
@@ -52,6 +99,29 @@ import BaseLayout from '@/layouts/Layout.astro';
           <h3>Veille et alerte citoyenne</h3>
           <p>On surveille les arnaques et dérives numériques pour vous tenir informé·e — avant que ça vous touche, et pour vous aider à réagir.</p>
         </div>
+      </div>
+    </div>
+  </section>
+
+  <offres-section class="offres-section">
+    <div class="container">
+      <div class="offres-grid">
+        {offres.map((offre) => (
+          <article class="offre-card">
+            <div class="offre-icon" aria-hidden="true">{offre.icon}</div>
+            <div class="offre-content">
+              <h2>{offre.title}</h2>
+              <p class="offre-subtitle">{offre.subtitle}</p>
+              <p class="offre-desc">{offre.description}</p>
+              <ul class="offre-features">
+                {offre.features.map((feature) => (
+                  <li>{feature}</li>
+                ))}
+              </ul>
+              <a href={offre.href} class="offre-cta">{offre.cta}</a>
+            </div>
+          </article>
+        ))}
       </div>
     </div>
   </section>
@@ -416,7 +486,7 @@ import BaseLayout from '@/layouts/Layout.astro';
   }
 
   .btn-secondary:hover {
-    background: var(--color-bg-elevated);
+    background: var(--color-bg-alt);
     border-color: var(--color-primary);
   }
 

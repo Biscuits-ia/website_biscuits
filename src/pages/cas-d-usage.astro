@@ -1,0 +1,421 @@
+---
+export const prerender = true;
+
+import BaseLayout from '@/layouts/Layout.astro';
+
+// Cas d'usage concrets avec probleme/solution/resultat - version pour associations
+const useCases = [
+  {
+    title: "Gagner 10h/mois sur la gestion administrative",
+    category: "Gain de temps",
+    problem: "Un bénévole passait 3h/semaine à ressaisir des formulaires et répondre aux demandes répétitives par email. Le reste de l'équipe en avait marre de ces tâches qui n'apportaient rien à la mission.",
+    solution: "Nous avons mis en place un assistant IA conversationnel répondant aux questions fréquentes (horaires, tarifs, inscriptions) et un flux automatique pour la saisie des formulaires. Tout ça sans coder, simplement en configurant.",
+    result: "- 10h/mois gagnés\n- 90% des demandes traitées automatiquement\n- Bénévoles plus satisfaits, libérés des tâches répétitives",
+    image: "⏱️",
+    featured: true
+  },
+  {
+    title: "Automatiser les relances de paiement",
+    category: "Finance",
+    problem: "Les relances de paiement prenaient 5h/semaine. Beaucoup de dons étaient retardés par des oublis. L'équipe n'avait pas le temps de suivre ça correctement.",
+    solution: "Mise en place d'une automatisation qui détecte les paiements en attente et envoie des relances personnalisées par email après 3, 7 et 14 jours. Plus besoin de garder une liste à jour.",
+    result: "- 85% des relances automatiques\n- 30% d'amélioration du délai de paiement\n- 0h/semaine sur cette tâche",
+    image: "💰",
+    featured: false
+  },
+  {
+    title: "Simplifier l'administration pour les petits clubs",
+    category: "Association",
+    problem: "Un club de 15 bénévoles n'avait pas de système centralisé pour gérer les inscriptions et les réunions. Chacun perdait du temps à chercher les bonnes informations.",
+    solution: "Création d'un outil sur mesure avec gestion des profils, programmation des réunions, et envois automatiques de rappels. Tout le monde voit l'actualité en un coup d'œil.",
+    result: "- 100% des membres inscrits en ligne\n- 80% de réduction des oublis de réunion\n- 15 minutes pour préparer une réunion",
+    image: "📝",
+    featured: false
+  },
+  {
+    title: "Créer des rapports mensuels en 10 minutes",
+    category: "Reporting",
+    problem: "Les rapports mensuels prenaient 3h chaque mois avec copier-coller entre plusieurs outils. Le bureau ne les voyait qu'à la dernière minute.",
+    solution: "Automatisation avec extraction automatique des données, génération de rapports formatés et envoi par email aux membres. Les chiffres sont à jour en permanence.",
+    result: "- 10 minutes vs 3h par mois\n- Rapports plus réguliers et complets\n- Moins d'erreurs de saisie",
+    image: "📊",
+    featured: false
+  },
+  {
+    title: "Améliorer l'accès à l'information pour les seniors",
+    category: "Inclusion",
+    problem: "Les seniors bénéficiaires n'arrivaient pas à trouver les informations sur le site ou à apprécier les documents PDF. L'aide était nécessaire à chaque fois.",
+    solution: "Création d'assistants conversationnels simples avec interface vocale, envoi d'information par SMS, et documents simplifiés en images. Les bénéficiaires sont plus autonomes.",
+    result: "- 60% d'amélioration du taux de lecture\n- 50% de plus d'appels réponses aux questions\n- Seniors plus autonomes",
+    image: "👵",
+    featured: false
+  },
+  {
+    title: "Detecter et signaler les arnaques plus vite",
+    category: "Securite",
+    problem: "Les membres étaient parfois arnaqués avant que l'association puisse alerter. Le lien de confiance avec les bénéficiaires était mis à mal.",
+    solution: "Mise en place d'un système de signalement automatisé avec Telegram et analyse IA des messages suspects. Les alertes arrivent en temps réel.",
+    result: "- Detection en moins de 30 minutes\n- 15 signalements actionnes\n- Aide directe aux victimes",
+    image: "🛡️",
+    featured: false
+  }
+];
+---
+
+<BaseLayout
+  title="Cas d'usage - Biscuits IA"
+  description="Découvrez comment les associations et collectivités utilisent nos outils IA pour automatiser leurs tâches, gagner du temps et améliorer leur service au public."
+  schema={{
+    type: 'WebPage',
+    data: {
+      name: 'Cas d\'usage Biscuits IA',
+      description: 'Exemples concrets d\'utilisation de l\'IA pour les associations : gain de temps, automatisation, simplification administrative.',
+    },
+  }}
+>
+  <!-- Hero -->
+  <section class="cas-hero">
+    <div class="container">
+      <h1>Cas d'usage concrets</h1>
+      <p class="hero-subtitle">Comment les associations, ONG et collectivités utilisent l'IA pour faire plus avec moins — sans compétences techniques requises.</p>
+    </div>
+  </section>
+
+  <!-- Cases grid -->
+  <section class="cas-grid">
+    <div class="container">
+      <div class="cas-grid-inner">
+        {useCases.map((c) => (
+          <article class={`cas-card${c.featured ? ' featured' : ''}`} data-category={c.category}>
+            <div class="cas-icon" aria-hidden="true">{c.image}</div>
+            <div class="cas-header">
+              <h2>{c.title}</h2>
+              <span class="cas-category">{c.category}</span>
+            </div>
+
+            <div class="cas-content">
+              <div class="cas-section">
+                <h3>Le problème du terrain</h3>
+                <p>{c.problem}</p>
+              </div>
+
+              <div class="cas-section">
+                <h3>La solution IA</h3>
+                <p>{c.solution}</p>
+              </div>
+
+              <div class="cas-section cas-result">
+                <h3>Les résultats concrets</h3>
+                <ul>
+                  {c.result.split('\n').filter(r => r.trim()).map((r) => (
+                    <li>{r.replace(/^-\s*/, '')}</li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cas-cta">
+    <div class="container">
+      <div class="cta-box">
+        <h2>Votre structure pourrait faire pareil</h2>
+        <p class="cta-text">Une automatisation simple, c'est souvent 5 à 10 heures gagnées chaque mois. Découvrez ce qui est possible pour vous.</p>
+        <div class="cta-actions">
+          <a href="/contact" class="btn-primary">Découvrir mon cas</a>
+          <a href="/nos-missions" class="btn-secondary">Voir nos services</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .container {
+    width: min(1100px, 92vw);
+    margin: 0 auto;
+  }
+
+  /* Hero */
+  .cas-hero {
+    padding: 6rem 0 4rem;
+    text-align: center;
+    background: var(--color-bg);
+  }
+
+  .cas-hero h1 {
+    font-size: clamp(2.4rem, 5vw, 3.5rem);
+    font-weight: 900;
+    margin: 0 0 1rem;
+    color: var(--color-text);
+    line-height: 1.15;
+  }
+
+  .hero-subtitle {
+    font-size: clamp(1rem, 2vw, 1.25rem);
+    color: var(--color-text-light);
+    max-width: 700px;
+    margin: 0 auto;
+    line-height: 1.65;
+  }
+
+  /* Filters */
+  .cas-filters {
+    padding: 2rem 0 3rem;
+    background: var(--color-bg-alt);
+  }
+
+  .filter-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: center;
+  }
+
+  .filter-btn {
+    padding: 0.5rem 1rem;
+    background: var(--color-bg-elevated);
+    border: 1px solid var(--color-border-second);
+    border-radius: 999px;
+    font-size: 0.9rem;
+    color: var(--color-text-light);
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .filter-btn:hover {
+    border-color: var(--color-primary);
+    color: var(--color-text);
+  }
+
+  .filter-btn.active {
+    background: var(--color-primary);
+    color: var(--color-bg);
+    border-color: var(--color-primary);
+  }
+
+  /* Grid */
+  .cas-grid {
+    padding: 3rem 0 5rem;
+    background: var(--color-bg);
+  }
+
+  .cas-grid-inner {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+  }
+
+  .cas-card {
+    background: var(--color-bg-alt);
+    border: 2px solid var(--color-border);
+    border-radius: 16px;
+    padding: 2rem;
+    transition: all 0.2s ease;
+  }
+
+  .cas-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-xl);
+    border-color: var(--color-primary);
+  }
+
+  .cas-card.featured {
+    border-color: var(--color-primary);
+    box-shadow: var(--shadow-lg);
+    background: var(--color-bg-alt);
+  }
+
+  .cas-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+  }
+
+  .cas-header {
+    margin-bottom: 1.5rem;
+  }
+
+  .cas-header h2 {
+    font-size: 1.35rem;
+    font-weight: 800;
+    margin: 0 0 0.5rem;
+    color: var(--color-text);
+  }
+
+  .cas-category {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--color-primary);
+    background: var(--color-accent-honey);
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+  }
+
+  .cas-section {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--color-border-second);
+  }
+
+  .cas-section:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+  }
+
+  .cas-section h3 {
+    font-size: 0.85rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--color-primary);
+    margin: 0 0 0.75rem;
+  }
+
+  .cas-section p {
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: var(--color-text-light);
+    margin: 0;
+  }
+
+  .cas-result h3 {
+    color: var(--color-secondary);
+  }
+
+  .cas-result ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .cas-result li {
+    padding: 0.3rem 0 0.3rem 1rem;
+    position: relative;
+    font-size: 0.9rem;
+    color: var(--color-text);
+    line-height: 1.5;
+  }
+
+  .cas-result li::before {
+    content: '✓';
+    position: absolute;
+    left: 0;
+    color: var(--color-secondary);
+    font-weight: 700;
+  }
+
+  /* CTA */
+  .cas-cta {
+    padding: 5rem 0 6rem;
+    background: var(--color-bg-alt);
+  }
+
+  .cta-box {
+    background: var(--color-primary);
+    color: var(--color-bg);
+    border: 2px solid var(--color-border);
+    border-radius: 20px;
+    padding: 3rem;
+    text-align: center;
+    max-width: 700px;
+    margin: 0 auto;
+  }
+
+  .cta-box h2 {
+    font-size: clamp(1.6rem, 3vw, 2.2rem);
+    font-weight: 900;
+    margin: 0 0 1rem;
+  }
+
+  .cta-text {
+    font-size: 1.05rem;
+    line-height: 1.65;
+    opacity: 0.9;
+    margin: 0 0 2rem;
+  }
+
+  .cta-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.9rem 1.8rem;
+    background: var(--color-bg);
+    color: var(--color-primary);
+    font-weight: 800;
+    font-size: 1rem;
+    text-decoration: none;
+    border-radius: 10px;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.9rem 1.8rem;
+    background: transparent;
+    color: var(--color-bg);
+    font-weight: 800;
+    font-size: 1rem;
+    text-decoration: none;
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    border-radius: 10px;
+    transition: all 0.15s ease;
+  }
+
+  .btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: var(--color-bg);
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .cas-hero {
+      padding: 4rem 0 2rem;
+    }
+
+    .cas-grid-inner {
+      grid-template-columns: 1fr;
+    }
+
+    .cas-card {
+      padding: 1.5rem;
+    }
+
+    .cas-section h3 {
+      font-size: 0.75rem;
+    }
+
+    .cta-box {
+      padding: 2rem 1.5rem;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cas-card {
+      transition: none;
+    }
+    .cas-card:hover {
+      transform: none;
+    }
+  }
+</style>

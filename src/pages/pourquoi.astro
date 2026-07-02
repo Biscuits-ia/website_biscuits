@@ -1,0 +1,490 @@
+---
+export const prerender = true;
+
+import BaseLayout from '@/layouts/Layout.astro';
+
+// Pourquoi Biscuits IA - Nos valeurs différenciantes
+const values = [
+  {
+    title: "Pas une agence classique",
+    description: "Nous ne vendons pas de prestations éphémères. Nous accompagnons vos structures à l'écoute de leur mission, sur le long terme.",
+    image: "🤝"
+  },
+  {
+    title: "Pas un SaaS fermé",
+    description: "Aucun abonnement mensuel, aucune dépendance à un éditeur. Nos outils sont open source, auditables, et vous appartenez pleinement.",
+    image: "🔒"
+  },
+  {
+    title: "Pas une startup classique",
+    description: "Pas de levée de fonds, pas de pression de croissance. Une association Loi 1901, à mission d'intérêt général, qui ne cherche pas à maximiser le profit.",
+    image: "🌱"
+  },
+  {
+    title: "Approche open + public",
+    description: "Tout ce que nous créons est public. Nos guides, nos outils, nos cas d'usage — téléchargeables, modifiables, réutilisables par tous.",
+    image: "🌐"
+  },
+  {
+    title: "Modulaire et adaptable",
+    description: "Pas de solutions toutes faites. Chaque outil est conçu pour être modulaire, afin de s'adapter précisément au contexte de votre structure.",
+    image: "🧩"
+  },
+  {
+    title: "Transparence totale",
+    description: "Pas de boîte noire. Vous savez exactement comment fonctionnent vos outils, ce que deviennent vos données, et comment les modifier si besoin.",
+    image: "🔍"
+  }
+];
+
+const keyDifferences = [
+  {
+    aspect: "Coût",
+    biscuits: "Gratuit ou très faible coût (adhésion associative)",
+    autre: "Abonnements mensuels ou tarifs professionnels élevés"
+  },
+  {
+    aspect: "Données",
+    biscuits: "Vos données vous appartiennent, jamais externalisées",
+    autre: "Données hébergées par un éditeur, selon ses conditions"
+  },
+  {
+    aspect: "Source",
+    biscuits: "Code open source, auditable et modifiable",
+    autre: "Code propriétaire, boîte noire pour l'utilisateur"
+  },
+  {
+    aspect: "Objectif",
+    biscuits: "Mission d'intérêt général, pas de profit",
+    autre: "Recherche de croissance et de rentabilité"
+  },
+  {
+    aspect: "Support",
+    biscuits: "Communauté et bénévoles disponibles",
+    autre: "Service client commercial, avec temps de réponse variable"
+  }
+];
+---
+
+<BaseLayout
+  title="Pourquoi Biscuits IA ? | Différenciation"
+  description="Pourquoi choisir Biscuits IA plutôt qu'une agence ou un SaaS ? Notre approche open source, publique, modulaire et association à mission d'intérêt général."
+  schema={{
+    type: 'WebPage',
+    data: {
+      name: 'Pourquoi Biscuits IA',
+      description: 'Notre différenciation : une approche open source, publique, modulaire et associatif pour l\'IA utile.',
+    },
+  }}
+>
+  <section class="hero">
+    <div class="container">
+      <h1>Pourquoi Biscuits IA ?</h1>
+      <p class="subtitle">Notre positionnement unique : pas une agence, pas un SaaS, pas une startup — mais une association pour le service public du numérique.</p>
+    </div>
+  </section>
+
+  <section class="intro-section">
+    <div class="container">
+      <div class="intro-grid">
+        <div class="intro-text">
+          <p class="lead">
+            Beaucoup d'acteurs prétendent aider les associations avec l'IA : agences digitales, startups, éditeurs SaaS...
+          </p>
+          <p class="lead">
+            Mais rares sont ceux qui partagent réellement leur savoir-faire, leurs outils, et leur temps — gratuitement.
+          </p>
+        </div>
+        <div class="intro-image">
+          <div class="image-placeholder">
+            <div class="image-placeholder-content">💡</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="values-section">
+    <div class="container">
+      <h2>Notre positionnement unique</h2>
+      <div class="values-grid">
+        {values.map((value) => (
+          <div class="value-card">
+            <div class="value-icon">{value.image}</div>
+            <h3>{value.title}</h3>
+            <p>{value.description}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="differences-section">
+    <div class="container">
+      <h2>En pratique, ça change quoi ?</h2>
+      <div class="differences-table">
+        <div class="table-header">
+          <span></span>
+          <span class="biscuits-col">Biscuits IA</span>
+          <span class="autre-col">Agences / SaaS</span>
+        </div>
+        {keyDifferences.map((diff, idx) => (
+          <div class={`table-row${idx % 2 === 0 ? ' even' : ''}`}>
+            <span class="aspect-name">{diff.aspect}</span>
+            <span class="biscuits-col">{diff.biscuits}</span>
+            <span class="autre-col">{diff.autre}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="cta-section">
+    <div class="container">
+      <div class="cta-box">
+        <h2>Prêt à découvrir une autre approche de l'IA ?</h2>
+        <p>Rejoignez une communauté qui partage ses outils, son savoir-faire, et son temps — sans attendre de contrepartie.</p>
+        <div class="cta-actions">
+          <a href="/contact" class="btn-primary">Parler à un membre</a>
+          <a href="/nos-missions" class="btn-secondary">Voir nos services</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .container {
+    width: min(1100px, 92vw);
+    margin: 0 auto;
+  }
+
+  /* Hero */
+  .hero {
+    padding: 6rem 0 4rem;
+    text-align: center;
+    background: var(--color-bg);
+  }
+
+  .hero h1 {
+    font-size: clamp(2.4rem, 5vw, 3.5rem);
+    font-weight: 900;
+    margin: 0 0 1.5rem;
+    color: var(--color-text);
+    line-height: 1.15;
+  }
+
+  .subtitle {
+    font-size: clamp(1rem, 2vw, 1.25rem);
+    color: var(--color-text-light);
+    max-width: 700px;
+    margin: 0 auto;
+    line-height: 1.65;
+  }
+
+  /* Intro */
+  .intro-section {
+    padding: 4rem 0;
+    background: var(--color-bg-alt);
+  }
+
+  .intro-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
+    align-items: center;
+  }
+
+  .intro-text {
+    font-size: clamp(1.05rem, 1.5vw, 1.25rem);
+    line-height: 1.7;
+    color: var(--color-text-light);
+  }
+
+  .intro-text .lead {
+    margin-bottom: 1.25rem;
+  }
+
+  .intro-text .lead.highlight {
+    color: var(--color-primary);
+    font-weight: 600;
+    background: rgba(0, 0, 0, 0.03);
+    padding: 1.25rem;
+    border-radius: 12px;
+    border-left: 4px solid var(--color-primary);
+  }
+
+  .intro-image {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .image-placeholder {
+    width: 100%;
+    max-width: 300px;
+    aspect-ratio: 1;
+    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 5rem;
+    color: var(--color-bg);
+    box-shadow: var(--shadow-lg);
+  }
+
+  /* Values */
+  .values-section {
+    padding: 5rem 0;
+    background: var(--color-bg);
+  }
+
+  .values-section h2 {
+    text-align: center;
+    font-size: clamp(1.8rem, 3.5vw, 2.4rem);
+    font-weight: 900;
+    margin: 0 0 3rem;
+    color: var(--color-text);
+  }
+
+  .values-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
+  }
+
+  .value-card {
+    background: var(--color-bg-alt);
+    border: 2px solid var(--color-border);
+    border-radius: 16px;
+    padding: 2rem;
+    transition: all 0.2s ease;
+  }
+
+  .value-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--color-primary);
+  }
+
+  .value-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+  }
+
+  .value-card h3 {
+    font-size: 1.25rem;
+    font-weight: 800;
+    margin: 0 0 0.75rem;
+    color: var(--color-text);
+  }
+
+  .value-card p {
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: var(--color-text-light);
+    margin: 0;
+  }
+
+  /* Differences */
+  .differences-section {
+    padding: 5rem 0;
+    background: var(--color-bg-alt);
+  }
+
+  .differences-section h2 {
+    text-align: center;
+    font-size: clamp(1.8rem, 3.5vw, 2.4rem);
+    font-weight: 900;
+    margin: 0 0 2rem;
+    color: var(--color-text);
+  }
+
+  .differences-table {
+    background: var(--color-bg-alt);
+    border: 2px solid var(--color-border);
+    border-radius: 16px;
+    overflow: hidden;
+  }
+
+  .table-header {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    background: var(--color-primary);
+    color: var(--color-bg);
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-size: 0.8rem;
+  }
+
+  .table-header span {
+    padding: 1rem;
+  }
+
+  .biscuits-col, .autre-col {
+    text-align: center;
+  }
+
+  .table-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    padding: 1.25rem;
+    border-bottom: 1px solid var(--color-border-second);
+    font-size: 0.95rem;
+    line-height: 1.6;
+  }
+
+  .table-row.even {
+    background: rgba(0, 0, 0, 0.02);
+  }
+
+  .table-row:last-child {
+    border-bottom: none;
+  }
+
+  .aspect-name {
+    font-weight: 700;
+    color: var(--color-text);
+  }
+
+  .biscuits-col {
+    color: var(--color-secondary);
+    font-weight: 600;
+  }
+
+  .autre-col {
+    color: var(--color-text-light);
+  }
+
+  /* CTA */
+  .cta-section {
+    padding: 5rem 0 6rem;
+    background: var(--color-bg);
+  }
+
+  .cta-box {
+    background: var(--color-primary);
+    color: var(--color-bg);
+    border: 2px solid var(--color-border);
+    border-radius: 20px;
+    padding: 3rem;
+    text-align: center;
+    max-width: 700px;
+    margin: 0 auto;
+  }
+
+  .cta-box h2 {
+    font-size: clamp(1.6rem, 3vw, 2.2rem);
+    font-weight: 900;
+    margin: 0 0 1rem;
+  }
+
+  .cta-box p {
+    font-size: 1.05rem;
+    line-height: 1.65;
+    opacity: 0.9;
+    margin: 0 0 2rem;
+  }
+
+  .cta-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.9rem 1.8rem;
+    background: var(--color-bg);
+    color: var(--color-primary);
+    font-weight: 800;
+    font-size: 1rem;
+    text-decoration: none;
+    border-radius: 10px;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.9rem 1.8rem;
+    background: transparent;
+    color: var(--color-bg);
+    font-weight: 800;
+    font-size: 1rem;
+    text-decoration: none;
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    border-radius: 10px;
+    transition: all 0.15s ease;
+  }
+
+  .btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: var(--color-bg);
+  }
+
+  /* Responsive */
+  @media (max-width: 900px) {
+    .intro-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .values-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .differences-table {
+      overflow-x: auto;
+    }
+
+    .table-header, .table-row {
+      display: flex;
+      flex-wrap: wrap;
+    }
+
+    .table-row span {
+      width: 100%;
+      padding: 0.5rem 0;
+    }
+
+    .aspect-name {
+      width: 100%;
+      font-weight: 800;
+      margin-bottom: 0.5rem;
+    }
+
+    .table-row.even {
+      background: none;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .hero {
+      padding: 4rem 0 2rem;
+    }
+
+    .cta-box {
+      padding: 2rem 1.5rem;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .value-card {
+      transition: none;
+    }
+    .value-card:hover {
+      transform: none;
+    }
+  }
+</style>

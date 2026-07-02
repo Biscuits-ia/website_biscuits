@@ -4,7 +4,7 @@ dialog[open] {
   right: 24px;
   max-width: 400px;
   width: min(90vw, 400px);
-  background: var(--color-bg-elevated);
+  background: var(--color-bg-alt);
   border: var(--brutal-border);
   box-shadow: var(--shadow-xl);
   z-index: 10000;
@@ -23,7 +23,7 @@ dialog::backdrop {
   right: 24px;
   max-width: 400px;
   width: min(90vw, 400px);
-  background: var(--color-bg-elevated);
+  background: var(--color-bg-alt);
   border: var(--brutal-border);
   box-shadow: var(--shadow-xl);
   z-index: 10000;

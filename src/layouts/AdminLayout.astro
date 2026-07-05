@@ -9,7 +9,6 @@ export interface Props {
   canonical?: string;
   ogImage?: string;
   ogType?: 'website' | 'article';
-  noindex?: boolean;
   schema?: {
     type: 'Organization' | 'Service' | 'FAQPage' | 'Article' | 'WebPage';
     data?: Record<string, unknown>;
@@ -22,7 +21,6 @@ const {
   canonical,
   ogImage = '/og-default.webp',
   ogType = 'website',
-  noindex = false,
   schema,
 } = Astro.props;
 
@@ -45,7 +43,6 @@ const nonce = Astro.locals.nonce;
       siteUrl={siteUrl}
       ogImage={ogImage}
       ogType={ogType}
-      noindex={noindex}
       schema={schema}
       isProd={isProd}
       nonce={nonce}

@@ -9,7 +9,6 @@ export interface Props {
   siteUrl: string;
   ogImage?: string;
   ogType?: 'website' | 'article';
-  noindex?: boolean;
   schema?: {
     type: 'Organization' | 'Service' | 'FAQPage' | 'Article' | 'WebPage' | 'HowTo';
     data?: Record<string, any>;
@@ -25,7 +24,6 @@ const {
   siteUrl,
   ogImage = '/og-default.webp',
   ogType = 'website',
-  noindex = false,
   schema,
   isProd,
   nonce,
@@ -59,7 +57,6 @@ const {
   canonical={fullCanonical}
   ogImage={ogImage}
   ogType={ogType}
-  noindex={noindex}
 />
 
 {schema && <SchemaOrg type={schema.type} data={schema.data} />}

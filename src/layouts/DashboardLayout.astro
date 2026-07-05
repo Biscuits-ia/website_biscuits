@@ -140,7 +140,6 @@ const initials = displayName.split(' ').map((n: string) => n[0]).join('').toUppe
     description={`Espace ${isAdmin ? 'administrateur' : isBenevole ? 'bénévole' : isAssociation ? 'association/TPE' : 'membre'} Biscuits IA`}
     fullCanonical={`${siteUrl}/dashboard/${dashRole}`}
     siteUrl={siteUrl}
-    noindex={true}
     isProd={isProd}
     nonce={Astro.locals.nonce}
   />

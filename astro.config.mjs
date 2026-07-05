@@ -47,8 +47,7 @@ export default defineConfig({
     }),
     robotsTxt({
       sitemap: [
-        'https://biscuits-ia.com/sitemap-index.xml',
-        'https://biscuits-ia.com/sitemap-0.xml',
+        'https://biscuits-ia.com/sitemap.xml',
       ],
       policy: [
         {

@@ -95,16 +95,18 @@ Les places offertes sont financees par les paiements a tarif plein et par les do
 - Scripts Python d'audit RGPD (GitHub).`,
   },
   {
-    title: 'Aide aux victimes',
+    title: 'Associations d\'aide aux victimes',
     slug: '/aide-victimes',
-    summary: 'Service gratuit de mediation numerique et d\'aide aux victimes d\'arnaques.',
-    body: `Si vous etes victime d'une arnaque numerique (hameconnage, ransonlogiciel, IA utilisee contre vous, etc.) ou en litige avec un prestataire :
-1. Documentez : captures d'ecran, factures, echanges.
-2. Contactez-nous via le formulaire /contact.
-3. Nous analysons sous 48h ouvrlees.
-4. Si le dossier releve de notre perimetre, nous contactons le prestataire ou vous orientons vers les autorites (CNIL, DGCCRF, police, mediateur).
-
-Service 100% gratuit. Confidentialite garantie.`,
+    summary: 'Annuaire d\'associations specialisees dans l\'aide aux victimes de cybercriminalite, harcelement en ligne et arnaques.',
+    body: `Biscuits IA n'accompagne plus directement les victimes. Nous referencons les associations specialisees :
+  - France Victimes (116 006) : aide generale aux victimes, 130 bureaux en France.
+  - e-Enfance / 3018 : cyberharcelement et protection des mineurs (9h-23h, gratuit, anonyme).
+  - AVEC : Aide aux Victimes d'Escroqueries et de Cybermalveillance.
+  - INAVEM : federation des associations d'aide aux victimes.
+  - 119 : Allo Enfance en danger (24h/24, gratuit).
+  - Action Innocence : protection de l'enfance sur internet.
+  - Internet Sans Crainte (CNIL) : education numerique des jeunes.
+  Pour une analyse immediate d'un message suspect, utilisez Anti Pepins (gratuit, anonyme, sans inscription).`,
   },
   {
     title: 'Nous rejoindre',

@@ -1,0 +1,95 @@
+---
+// src/components/VictimShortNotice.astro
+// Bandeau sobre d'orientation : Biscuits IA n'est plus le point d'entree d'urgence
+// pour les victimes. On renvoie vers l'annuaire d'associations specialisees.
+
+interface Props {
+  variant?: 'full' | 'compact';
+}
+
+const { variant = 'full' } = Astro.props;
+---
+
+<section class={`victim-short-notice ${variant}`} aria-labelledby="victim-short-notice-title">
+  <div class="notice-inner">
+    <span class="notice-eyebrow">Vous etes victime d'une arnaque ou d'un harcelement en ligne ?</span>
+    <h2 id="victim-short-notice-title">Nous n'accompagnons plus les victimes en direct</h2>
+    <p>
+      Biscuits IA n'accompagne plus les victimes en direct, mais nous avons reference les associations specialisees qui peuvent vous aider.
+    </p>
+    <div class="notice-actions">
+      <a href="/aide-victimes" class="btn-primary">Voir l'annuaire d'associations</a>
+    </div>
+  </div>
+</section>
+
+<style>
+  .victim-short-notice {
+    padding: 2.5rem 1.5rem;
+    background: var(--color-bg-alt);
+    border-left: 4px solid #c0392b;
+  }
+
+  .notice-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+  }
+
+  .notice-eyebrow {
+    display: inline-block;
+    padding: 0.3rem 0.75rem;
+    background: transparent;
+    color: #c0392b;
+    font-size: 0.78rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    align-self: flex-start;
+  }
+
+  .victim-short-notice h2 {
+    font-size: clamp(1.3rem, 3vw, 1.8rem);
+    font-weight: 800;
+    color: var(--color-text);
+    margin: 0;
+    line-height: 1.2;
+  }
+
+  .victim-short-notice p {
+    color: var(--color-text-light);
+    line-height: 1.6;
+    margin: 0;
+    max-width: 720px;
+  }
+
+  .notice-actions {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-top: 0.5rem;
+  }
+
+  .btn-primary {
+    display: inline-block;
+    padding: 0.85rem 1.5rem;
+    background: var(--color-text);
+    color: #fff;
+    font-weight: 800;
+    border: 2px solid var(--color-border);
+    text-decoration: none;
+  }
+
+  .btn-primary:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 4px 4px 0 var(--color-border);
+    color: #fff;
+    background: var(--color-text);
+  }
+
+  .compact {
+    padding: 1.5rem;
+  }
+</style>

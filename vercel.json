@@ -319,11 +319,6 @@
       "statusCode": 301
     },
     {
-      "source": "/aide-victimes",
-      "destination": "/piliers/cyber",
-      "statusCode": 301
-    },
-    {
       "source": "/logiciels",
       "destination": "/piliers/logiciels",
       "statusCode": 301

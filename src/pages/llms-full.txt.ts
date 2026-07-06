@@ -37,7 +37,7 @@ Mission : democratiser l'acces a l'intelligence artificielle, former les benevol
 
 Quatre piliers d'action :
 1. Accompagnement a l'IA : ateliers, formations, mediation IA.
-2. Lutte contre la cybercriminalite : aide aux victimes d'arnaques, mediation numerique.
+2. Lutte contre la cybercriminalite : sensibilisation aux arnaques, mediation numerique.
 3. Logiciels libres : developpement d'outils open source pour associations.
 4. Anti Pepins : service public de signalement de problemes numeriques.
 

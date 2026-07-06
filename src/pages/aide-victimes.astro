@@ -1,26 +1,121 @@
 ---
 // src/pages/aide-victimes.astro
-// Page d'aide aux victimes de cybercriminalite : procedures, contacts d'urgence,
-// formulaire specialise. Pilier 2 (cyber + victimes).
+// Annuaire d'orientation pour les victimes de cybercriminalite, harcelement en
+// ligne et arnaques. Biscuits IA n'accompagne plus directement les victimes :
+// on refere vers les associations et services publics specialises.
+// Pilier 2 (lutte contre la cybercriminalite).
 
 export const prerender = true;
 
 import Layout from '@/layouts/Layout.astro';
 import Breadcrumb from '@/components/Breadcrumb.astro';
-import VictimForm from '@/components/react/VictimForm';
 
 const schema = {
   type: 'WebPage' as const,
   data: {
-    name: 'Aide aux victimes de cybercriminalite - Biscuits IA',
-    description: 'Vous etes victime d\'une arnaque en ligne, d\'une usurpation d\'identite, d\'un chantage ou de contenus impliquant des mineurs ? On vous accompagne gratuitement et en confiance.',
+    name: "Annuaire d'associations d'aide aux victimes | Biscuits IA",
+    description:
+      "Annuaire d'associations specialisees dans l'aide aux victimes de cybercriminalite, harcelement en ligne et arnaques. Biscuits IA n'accompagne plus directement les victimes, mais refere les structures competentes.",
   },
 };
+
+interface Assoc {
+  name: string;
+  short: string;
+  desc: string;
+  phone?: string;
+  url?: string;
+}
+
+const assosGeneralistes: Assoc[] = [
+  {
+    name: 'France Victimes',
+    short: '116 006',
+    phone: '116006',
+    url: 'https://www.france-victimes.fr/',
+    desc: "Numero gratuit d'aide aux victimes, ouvert 7j/7. Accueil, ecoute, accompagnement juridique et orientation vers le bureau d'aide aux victimes le plus proche (130 associations locales en France).",
+  },
+  {
+    name: 'INAVEM',
+    short: 'Federation',
+    url: 'https://www.inavem.org/',
+    desc: "Federation nationale des associations d'aide aux victimes. Represente 130 structures locales, forme les professionnels, publie des guides.",
+  },
+  {
+    name: 'AVEC',
+    short: 'Aide aux Victimes d\'Escroqueries',
+    url: 'https://www.avecfrance.fr/',
+    desc: "Association specialisee dans l'aide aux victimes d'escroqueries bancaires, d'usurpation d'identite et de cybermalveillance. Accompagnement administratif, juridique et psychologique.",
+  },
+  {
+    name: 'Cybermalveillance.gouv.fr',
+    short: '0 805 805 817',
+    phone: '0805805817',
+    url: 'https://www.cybermalveillance.gouv.fr/',
+    desc: "Dispositif national d'assistance aux victimes de cybermalveillance : diagnostic en ligne, mise en relation avec des prestataires agrees, guides de securite.",
+  },
+];
+
+const assosMineurs: Assoc[] = [
+  {
+    name: 'e-Enfance / 3018',
+    short: '3018',
+    phone: '3018',
+    url: 'https://www.e-enfance.org/',
+    desc: "Numero national contre le cyberharcelement et les violences numeriques touchant les mineurs. Gratuit, anonyme, 7j/7 de 9h a 23h.",
+  },
+  {
+    name: '119 - Allo Enfance en Danger',
+    short: '119',
+    phone: '119',
+    url: 'https://www.allo119.gouv.fr/',
+    desc: "Service public gratuit, joignable 24h/24, pour signaler une situation d'enfant en danger ou en risque de l'etre.",
+  },
+  {
+    name: 'Action Innocence',
+    short: 'ONG',
+    url: 'https://www.actioninnocence.org/',
+    desc: "ONG dediee a la protection de l'enfance sur internet. Sensibilisation en milieu scolaire, ressources educatives, accompagnement des familles.",
+  },
+  {
+    name: 'Point de Contact',
+    short: 'Signalement',
+    url: 'https://www.pointdecontact.net/',
+    desc: "Plateforme de signalement de contenus illicites en ligne (pedopornographie, haine, incitation a la violence). Les signalements sont transmis aux services de police.",
+  },
+];
+
+const assosParents: Assoc[] = [
+  {
+    name: 'Internet Sans Crainte (CNIL)',
+    short: 'Programme national',
+    url: 'https://www.internetsanscrainte.fr/',
+    desc: "Programme national d'education numerique des jeunes pilote par la CNIL. Kits pedagogiques, videos, serious games pour les ecoles et les familles.",
+  },
+  {
+    name: 'CNIL Junior',
+    short: '7-12 ans',
+    url: 'https://www.cnil.fr/fr/junior',
+    desc: "Espace dedie aux 7-12 ans : videos, BD interactives et quizzes pour comprendre la vie privee, les traces numeriques et le droit a l'image.",
+  },
+  {
+    name: 'e-Enfance - Guides Parents',
+    short: 'Guides',
+    url: 'https://www.e-enfance.org/parents',
+    desc: "Guides pratiques pour les parents sur les ecrans, les reseaux sociaux, les regles de partage et la reaction en cas de cyberharcelement.",
+  },
+  {
+    name: 'Action Innocence - Sensibilisation',
+    short: 'Scolaire',
+    url: 'https://www.actioninnocence.org/',
+    desc: "Interventions en milieu scolaire, formations pour les enseignants et outils pour ouvrir le dialogue avec les enfants sur leur vie numerique.",
+  },
+];
 ---
 
 <Layout
-  title="Aide aux victimes de cybercriminalite | Biscuits IA"
-  description="Victime d'arnaque, d'usurpation d'identite, de chantage ou de contenus pedocriminels ? Biscuits IA vous accompagne : procedures pas-a-pas, contacts d'urgence, formulaire confidentiel gratuit."
+  title="Annuaire d'aide aux victimes | Biscuits IA"
+  description="Vous etes victime d'arnaque, d'usurpation d'identite ou de harcelement en ligne ? Consultez notre annuaire d'associations specialisees (France Victimes 116 006, e-Enfance 3018, etc.) et les numeros d'urgence."
   schema={schema}
 >
   <Breadcrumb />
@@ -28,123 +123,167 @@ const schema = {
   <section class="victim-hero">
     <div class="container">
       <p class="eyebrow">Pilier 2 - Lutte contre la cybercriminalite</p>
-      <h1>Vous etes victime, on peut vous aider</h1>
+      <h1>Vous etes victime, voici qui peut vous aider.</h1>
       <p class="lead">
-        Que vous ayez ete arnaque, usurpe, menace ou choque par un contenu en ligne : vous n'etes pas seul·e, et il y a toujours quelque chose a faire. Cet accompagnement est gratuit, confidentiel et sans jugement.
+        Biscuits IA n'accompagne plus directement les victimes. En revanche, on a
+        repertorie pour vous les numeros d'urgence, les associations specialisees
+        et les services publics capables de prendre le relais, gratuitement et
+        sans jugement.
       </p>
     </div>
   </section>
 
-  <section class="urgence">
+  <section id="contacts-urgence" class="urgence">
     <div class="container">
-      <h2>Si c'est urgent, commencez par ici</h2>
+      <h2>Numeros d'urgence</h2>
+      <p class="urgence-intro">
+        Si vous etes en danger immediat ou si l'argent a deja commence a bouger,
+        appelez en priorite. Ce sont des services publics, pas une aide interne.
+      </p>
       <div class="urgence-grid">
         <a class="urgence-card" href="tel:3018">
           <span class="urgence-num">3018</span>
-          <strong>Cyberharcelement et contenus impliquant des mineurs</strong>
+          <strong>Cyberharcelement et mineurs</strong>
           <span class="urgence-meta">Gratuit, anonyme, 7j/7 - 9h-23h</span>
+        </a>
+        <a class="urgence-card" href="tel:17">
+          <span class="urgence-num">17</span>
+          <strong>Police / Gendarmerie</strong>
+          <span class="urgence-meta">Urgences en cours - appel direct</span>
+        </a>
+        <a class="urgence-card" href="tel:3919">
+          <span class="urgence-num">3919</span>
+          <strong>Violences conjugales</strong>
+          <span class="urgence-meta">Gratuit, anonyme - appel direct</span>
+        </a>
+        <a class="urgence-card" href="tel:0805805817">
+          <span class="urgence-num">0 805 805 817</span>
+          <strong>Cybermalveillance.gouv.fr</strong>
+          <span class="urgence-meta">Diagnostic et assistance - gratuit</span>
         </a>
         <a class="urgence-card" href="https://www.internet-signalement.gouv.fr" rel="noopener noreferrer" target="_blank">
           <strong>PHAROS</strong>
-          <span class="urgence-meta">Signalements en ligne (arnaques, contenus illicites)</span>
-        </a>
-        <a class="urgence-card" href="tel:17">
-          <strong>17 ou 112</strong>
-          <span class="urgence-meta">Police / Gendarmerie - urgences</span>
+          <span class="urgence-meta">Signalement en ligne (arnaques, contenus illicites)</span>
         </a>
         <a class="urgence-card" href="https://www.service-public.fr/particuliers/vosdroits/F1435" rel="noopener noreferrer" target="_blank">
           <strong>Pre-plainte en ligne</strong>
           <span class="urgence-meta">Pour les infractions dont l'auteur est inconnu</span>
         </a>
-        <a class="urgence-card" href="https://www.cybermalveillance.gouv.fr" rel="noopener noreferrer" target="_blank">
-          <strong>Cybermalveillance.gouv.fr</strong>
-          <span class="urgence-meta">Assistance et diagnostic pour particuliers & pros</span>
-        </a>
-        <a class="urgence-card" href="tel:3919">
-          <strong>3919</strong>
-          <span class="urgence-meta">Violences conjugales - gratuit, anonyme</span>
-        </a>
       </div>
     </div>
   </section>
 
-  <section class="types">
+  <section class="annuaire">
     <div class="container">
-      <h2>Les situations que nous traitons</h2>
-      <div class="type-grid">
-        <article class="type-card">
-          <h3>Arnaques financieres</h3>
-          <p>Faux supports (Microsoft, CAF, impots, banques), harponnage, escroqueries sentimentales, locations fictives, faux placements crypto, demandes de virement d'un "dirigeant".</p>
-        </article>
-        <article class="type-card">
-          <h3>Usurpation d'identite</h3>
-          <p>Comptes bancaire vide, contrat signe en votre nom, demarches administratives a votre place, faux profil reseaux sociaux imitant un proche.</p>
-        </article>
-        <article class="type-card">
-          <h3>Phishing et smishing</h3>
-          <p>SMS de livraison de colis, mail d'amende, message de l'Assurance Maladie, lien de la CAF, notification d'impots, faux avis de passage.</p>
-        </article>
-        <article class="type-card">
-          <h3>Chantage et extorsion</h3>
-          <p>Sextorsion (chantage a la webcam), menace de publier des contenus, ransonware, demande de paiement en crypto sous pression.</p>
-        </article>
-        <article class="type-card">
-          <h3>Pedocriminalite en ligne</h3>
-          <p>Contenus impliquant des mineurs, sollicitation sexuelle d'un mineur, diffusion d'images. Signalement immediat via PHAROS / 3018 / NCMEC. Aucun signalement n'est inutile.</p>
-        </article>
-        <article class="type-card">
-          <h3>Faux outils IA et malwares</h3>
-          <p>Applications qui pretendent securiser mais installent des virus, faux generateurs d'images, chatbots qui collectent vos donnees.</p>
-        </article>
+      <h2>Associations generalistes cyber / arnaques</h2>
+      <p class="annuaire-intro">
+        Structures specialisees dans l'aide aux victimes de cybercriminalite,
+        d'escroqueries bancaires ou d'usurpation d'identite.
+      </p>
+      <div class="annuaire-grid">
+        {assosGeneralistes.map((a) => (
+          <article class="annuaire-card">
+            <h3>{a.name}</h3>
+            <p class="annuaire-short">{a.short}</p>
+            <p class="annuaire-desc">{a.desc}</p>
+            <div class="annuaire-actions">
+              {a.phone && <a class="btn-ghost btn-phone" href={`tel:${a.phone}`}>{a.short}</a>}
+              {a.url && <a class="btn-ghost btn-site" href={a.url} rel="noopener noreferrer" target="_blank">Site officiel</a>}
+            </div>
+          </article>
+        ))}
       </div>
     </div>
   </section>
 
-  <section class="process">
+  <section class="annuaire annuaire-alt">
     <div class="container">
-      <h2>Ce qu'on fait avec vous, pas-a-pas</h2>
-      <ol class="process-list">
-        <li>
-          <h3>Premier echange (gratuit)</h3>
-          <p>Vous nous racontez. On evalue l'urgence (compte bancaire vide, chantage en cours, fuite de donnees) et on identifie les premieres actions a faire immediatement.</p>
-        </li>
-        <li>
-          <h3>Mesures d'urgence</h3>
-          <p>Mise en opposition de carte bancaire, changement de mots de passe, mise en opposition des comptes compromis, preservation des preuves, alerte aux proches en cas d'usurpation.</p>
-        </li>
-        <li>
-          <h3>Signalements</h3>
-          <p>On vous aide a constituer les dossiers PHAROS, pre-plainte ou plainte, declaration a la banque, courrier aux operateurs. On vous fournit les modeles de mails et les formulaires.</p>
-        </li>
-        <li>
-          <h3>Suivi</h3>
-          <p>On vous accompagne jusqu'a la resolution. Si votre cas releve d'une structure specialisee (avocat, association d'aide, forces de l'ordre), on vous orientons.</p>
-        </li>
-      </ol>
-    </div>
-  </section>
-
-  <section class="form-section">
-    <div class="container">
-      <div class="form-wrapper">
-        <h2>Demander de l'aide</h2>
-        <p class="form-intro">
-          Decrivez votre situation en quelques lignes. On vous repond sous 48h ouvrees. Pour les situations d'urgence (compte bancaire vide, menace immediate), appelez directement votre banque, le 17 ou le 3018.
-        </p>
-        <VictimForm client:load />
+      <h2>Specialisees mineurs / harcelement</h2>
+      <p class="annuaire-intro">
+        Pour les situations impliquant un enfant ou un adolescent : harcelement
+        scolaire, cyberharcelement, exposition a des contenus choquants.
+      </p>
+      <div class="annuaire-grid">
+        {assosMineurs.map((a) => (
+          <article class="annuaire-card">
+            <h3>{a.name}</h3>
+            <p class="annuaire-short">{a.short}</p>
+            <p class="annuaire-desc">{a.desc}</p>
+            <div class="annuaire-actions">
+              {a.phone && <a class="btn-ghost btn-phone" href={`tel:${a.phone}`}>{a.short}</a>}
+              {a.url && <a class="btn-ghost btn-site" href={a.url} rel="noopener noreferrer" target="_blank">Site officiel</a>}
+            </div>
+          </article>
+        ))}
       </div>
     </div>
   </section>
 
-  <section class="resources">
+  <section class="annuaire">
     <div class="container">
-      <h2>En autonomie, tout de suite</h2>
-      <p>Avant de nous contacter, vous pouvez deja :</p>
-      <ul class="resource-list">
-        <li>Verifier une URL suspecte avec <a href="https://anti-pepins.biscuits-ia.com/" rel="noopener noreferrer">Anti Pepins</a> (gratuit, immediat).</li>
-        <li>Consulter notre <a href="/ressources">liste de guides pratiques</a> (anti-phishing, protection des comptes, signalement).</li>
-        <li>Lire les articles du <a href="/blog">blog</a> sur les arnaques recentes (deepfakes, arnaque au president, fausses annonces de location).</li>
+      <h2>Parents / education numerique</h2>
+      <p class="annuaire-intro">
+        Pour prevenir, dialoguer et accompagner les plus jeunes dans leur vie
+        numerique, en dehors de toute situation d'urgence.
+      </p>
+      <div class="annuaire-grid">
+        {assosParents.map((a) => (
+          <article class="annuaire-card">
+            <h3>{a.name}</h3>
+            <p class="annuaire-short">{a.short}</p>
+            <p class="annuaire-desc">{a.desc}</p>
+            <div class="annuaire-actions">
+              {a.phone && <a class="btn-ghost btn-phone" href={`tel:${a.phone}`}>{a.short}</a>}
+              {a.url && <a class="btn-ghost btn-site" href={a.url} rel="noopener noreferrer" target="_blank">Site officiel</a>}
+            </div>
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="biscuits-role">
+    <div class="container">
+      <h2>Ce que Biscuits IA peut encore faire pour vous</h2>
+      <p class="biscuits-intro">
+        On n'accompagne plus les victimes en direct, mais on garde quelques
+        outils gratuits qui peuvent servir immediatement.
+      </p>
+      <ul class="biscuits-list">
+        <li>
+          <a href="https://anti-pepins.biscuits-ia.com/" rel="noopener noreferrer">Anti Pepins</a>
+          - analysez tout de suite un SMS, un mail ou un lien suspect. Verdict en moins d'une minute, sans transmettre le contenu a un humain.
+        </li>
+        <li>
+          <a href="/ressources">Ressources et guides pratiques</a>
+          - fiches telechargeables sur le phishing, la protection des comptes, les demarches de signalement et le RGPD.
+        </li>
+        <li>
+          <a href="/blog">Blog</a>
+          - articles sur les arnaques recentes (deepfakes, arnaque au president, fausses annonces de location) pour apprendre a les reperer.
+        </li>
+        <li>
+          <a href="/contact?sujet=orientation-victime">Contact general</a>
+          - une question non-urgente ? Notre formulaire de contact standard vous repond. Ce n'est pas un service d'urgence, comptez quelques jours ouvres.
+        </li>
       </ul>
+    </div>
+  </section>
+
+  <section class="rgpd">
+    <div class="container">
+      <h2>Confidentialite et RGPD</h2>
+      <p>
+        Cette page ne collecte aucune donnee. Les liens vers des services tiers
+        (PHAROS, pre-plainte en ligne, associations) renvoient vers des sites
+        qui appliquent leur propre politique de confidentialite. Biscuits IA ne
+        revend aucun de vos renseignements et n'a aucun acces aux echanges que
+        vous pouvez avoir avec ces structures.
+      </p>
+      <p>
+        Pour en savoir plus, consultez notre
+        <a href="/legal/confidentialite">politique de confidentialite</a>.
+      </p>
     </div>
   </section>
 </Layout>
@@ -201,7 +340,17 @@ const schema = {
     text-align: center;
     font-size: clamp(1.5rem, 3vw, 2rem);
     color: var(--color-text);
-    margin: 0 0 2rem;
+    margin: 0 0 0.75rem;
+  }
+
+  .urgence-intro,
+  .annuaire-intro,
+  .biscuits-intro {
+    text-align: center;
+    color: var(--color-text-light);
+    max-width: 720px;
+    margin: 0 auto 2rem;
+    line-height: 1.55;
   }
 
   .urgence-grid {
@@ -245,188 +394,166 @@ const schema = {
     color: var(--color-text-light);
   }
 
-  .types {
+  .annuaire {
     padding: 4rem 1.5rem;
     background: var(--color-bg);
   }
 
-  .types .container {
+  .annuaire-alt {
+    background: var(--color-bg-alt);
+  }
+
+  .annuaire .container {
     max-width: 1100px;
     margin: 0 auto;
   }
 
-  .types h2 {
+  .annuaire h2 {
     text-align: center;
     font-size: clamp(1.5rem, 3vw, 2rem);
     color: var(--color-text);
-    margin: 0 0 2rem;
+    margin: 0 0 1rem;
   }
 
-  .type-grid {
+  .annuaire-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
     gap: 1.25rem;
   }
 
-  .type-card {
+  .annuaire-card {
     background: var(--color-bg-elevated);
     border: 2px solid var(--color-border);
     padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
   }
 
-  .type-card h3 {
-    font-size: 1.15rem;
+  .annuaire-card h3 {
+    font-size: 1.2rem;
     font-weight: 800;
-    margin: 0 0 0.5rem;
+    margin: 0;
     color: var(--color-text);
   }
 
-  .type-card p {
+  .annuaire-short {
+    margin: 0;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #c0392b;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .annuaire-desc {
+    margin: 0;
     color: var(--color-text-light);
     line-height: 1.55;
-    margin: 0;
   }
 
-  .process {
+  .annuaire-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: auto;
+    padding-top: 0.5rem;
+  }
+
+  .btn-ghost {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    border: 2px solid var(--color-border);
+    background: transparent;
+    text-decoration: none;
+    color: var(--color-text);
+    font-weight: 700;
+    font-size: 0.9rem;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+  }
+
+  .btn-ghost:hover,
+  .btn-ghost:focus-visible {
+    background: var(--color-bg);
+    transform: translateY(-2px);
+    box-shadow: 3px 3px 0 var(--color-border);
+  }
+
+  .btn-phone {
+    background: #c0392b;
+    color: #fff;
+    border-color: #c0392b;
+  }
+
+  .btn-phone:hover,
+  .btn-phone:focus-visible {
+    background: #a3311f;
+    color: #fff;
+  }
+
+  .biscuits-role {
     padding: 4rem 1.5rem;
-    background: var(--color-bg-alt);
+    background: var(--color-bg);
   }
 
-  .process .container {
+  .biscuits-role .container {
     max-width: 880px;
     margin: 0 auto;
   }
 
-  .process h2 {
+  .biscuits-role h2 {
     text-align: center;
     font-size: clamp(1.5rem, 3vw, 2rem);
     color: var(--color-text);
-    margin: 0 0 2rem;
+    margin: 0 0 1rem;
   }
 
-  .process-list {
+  .biscuits-list {
     list-style: none;
     padding: 0;
     margin: 0;
     display: flex;
     flex-direction: column;
-    gap: 1.25rem;
-    counter-reset: step;
+    gap: 0.85rem;
   }
 
-  .process-list li {
-    position: relative;
-    padding: 1.25rem 1.5rem 1.25rem 4rem;
+  .biscuits-list li {
+    padding: 1rem 1.25rem;
     background: var(--color-bg-elevated);
     border: 2px solid var(--color-border);
-    counter-increment: step;
-  }
-
-  .process-list li::before {
-    content: counter(step);
-    position: absolute;
-    left: 1rem;
-    top: 1.25rem;
-    width: 36px;
-    height: 36px;
-    background: #c0392b;
-    color: #fff;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 800;
-    font-size: 1rem;
-  }
-
-  .process-list h3 {
-    font-size: 1.05rem;
-    font-weight: 800;
     color: var(--color-text);
-    margin: 0 0 0.35rem;
-  }
-
-  .process-list p {
-    color: var(--color-text-light);
     line-height: 1.55;
-    margin: 0;
   }
 
-  .form-section {
-    padding: 4rem 1.5rem;
-    background: var(--color-bg);
+  .biscuits-list a {
+    color: var(--color-primary);
+    font-weight: 700;
   }
 
-  .form-section .container {
-    max-width: 720px;
-    margin: 0 auto;
-  }
-
-  .form-wrapper {
-    background: var(--color-bg-elevated);
-    border: 2px solid var(--color-border);
-    padding: 2rem;
-  }
-
-  .form-wrapper h2 {
-    font-size: 1.5rem;
-    font-weight: 800;
-    margin: 0 0 0.75rem;
-    color: var(--color-text);
-  }
-
-  .form-intro {
-    color: var(--color-text-light);
-    line-height: 1.55;
-    margin: 0 0 1.5rem;
-  }
-
-  .resources {
-    padding: 3rem 1.5rem 5rem;
+  .rgpd {
+    padding: 3rem 1.5rem 4rem;
     background: var(--color-bg-alt);
   }
 
-  .resources .container {
-    max-width: 720px;
+  .rgpd .container {
+    max-width: 880px;
     margin: 0 auto;
   }
 
-  .resources h2 {
+  .rgpd h2 {
     font-size: 1.3rem;
     font-weight: 800;
     color: var(--color-text);
     margin: 0 0 1rem;
   }
 
-  .resources p {
+  .rgpd p {
     color: var(--color-text-light);
-    margin: 0 0 1rem;
+    line-height: 1.6;
+    margin: 0 0 0.75rem;
   }
 
-  .resource-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-
-  .resource-list li {
-    padding-left: 1.25rem;
-    position: relative;
-    color: var(--color-text);
-  }
-
-  .resource-list li::before {
-    content: '\2192';
-    position: absolute;
-    left: 0;
-    color: #c0392b;
-    font-weight: 700;
-  }
-
-  .resource-list a {
+  .rgpd a {
     color: var(--color-primary);
     font-weight: 700;
   }

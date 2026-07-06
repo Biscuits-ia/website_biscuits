@@ -1,7 +1,7 @@
 ﻿# Biscuits IA
 > Association Loi 1901 - Intelligence Artificielle accessible, ethique et open source.
 > Site principal : https://biscuits-ia.com
-> Documentation pour assistants IA et LLM crawlers. Derniere mise a jour : 2026-06-24.
+> Documentation pour assistants IA et LLM crawlers. Derniere mise a jour : 2026-07-06.
 > Format : spec https://llmstxt.org/
 
 ## A propos
@@ -21,9 +21,9 @@ Date de creation : 2024.
 - [Ateliers IA gratuits ou a prix libre](/ateliers) : en ligne (jusqu'a 15 participants) et en presentiel a Poitiers + villes partenaires.
 - [Formations certifiantes](/formations) : sliding scale 0 a 350 EUR, paiement de solidarite, places offertes sur demande.
 - [Ressources et guides PDF gratuits](/ressources) : checklists, guides pratiques, anti-pepins.
-- [Mediation numerique](/aide-victimes) : accompagnement gratuit en cas de litige avec un prestataire numerique.
+- [Annuaire d'associations d'aide aux victimes](/aide-victimes) : France Victimes, e-Enfance, assos specialisees cyber, mineurs et parents.
 - [Mediation IA](/mediation-ia) : relecture des CGV / CGU / contrats lies a l'IA.
-- [Aide aux victimes d'arnaques IA](/aide-victimes) : echange, documentation, orientation vers les autorites competentes.
+- [Associations specialisees cyber](/aide-victimes) : annuaire des assos qui accompagnent les victimes d'arnaques, harcelement et cybermalveillance.
 
 ## Domaines d'expertise
 - Intelligence artificielle generative (LLM, GPT, Claude, Mistral, Gemini)
@@ -40,7 +40,7 @@ Date de creation : 2024.
 - [Formations](https://biscuits-ia.com/formations) : catalogue de formations payantes
 - [Ressources](https://biscuits-ia.com/ressources) : guides et outils gratuits
 - [Blog](https://biscuits-ia.com/blog) : articles sur l'IA, l'ethique, les bons outils
-- [Aide aux victimes](https://biscuits-ia.com/aide-victimes) : service de mediation
+- [Annuaire d'aide aux victimes](https://biscuits-ia.com/aide-victimes) : associations specialisees (France Victimes, e-Enfance, etc.)
 - [Charte ethique IA](https://biscuits-ia.com/charte-ethique) : nos engagements ethiques
 - [Nous rejoindre](https://biscuits-ia.com/rejoignez-nous) : adhesion et benevolat
 - [Contact](https://biscuits-ia.com/contact) : formulaire de contact

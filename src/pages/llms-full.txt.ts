@@ -35,11 +35,12 @@ const STATIC_SECTIONS: Section[] = [
 
 Mission : democratiser l'acces a l'intelligence artificielle, former les benevoles, mediere en cas de litige numerique, publier des ressources open source et developper des outils libres.
 
-Quatre piliers d'action :
+Cinq piliers d'action :
 1. Accompagnement a l'IA : ateliers, formations, mediation IA.
 2. Lutte contre la cybercriminalite : sensibilisation aux arnaques, mediation numerique.
 3. Logiciels libres : developpement d'outils open source pour associations.
 4. Anti Pepins : service public de signalement de problemes numeriques.
+5. Recherche participative et modeles ouverts : recherches co-construites et modeles open source au service de l'agriculture et de la sante.
 
 President : Alexis Gallard.
 Siege social : Poitiers, France.

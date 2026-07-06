@@ -1,6 +1,6 @@
 ---
 // src/components/PillarsGrid.astro
-// Grille des 4 piliers de l'association, reutilisable sur la home et la page /piliers.
+// Grille des 5 piliers de l'association, reutilisable sur la home et la page /piliers.
 // Props: title, intro (optionnels) ; layout='home' (compact) | 'hub' (detaille).
 
 interface Props {
@@ -11,8 +11,8 @@ interface Props {
 }
 
 const {
-  title = 'Quatre piliers, une mission',
-  intro = 'Association Loi 1901, Biscuits IA agit sur quatre fronts complementaires pour rendre le numerique utile, sur et accessible a toutes les structures d\u0027interet general.',
+  title = 'Cinq piliers, une mission',
+  intro = 'Association Loi 1901, Biscuits IA agit sur cinq fronts complementaires pour rendre le numerique utile, sur et accessible a toutes les structures d\u0027interet general, et faire emerger des solutions par la recherche participative.',
   layout = 'home',
   showCta = true,
 } = Astro.props;
@@ -84,6 +84,21 @@ const pillars: Pillar[] = [
     ],
     cta: 'Essayer Anti Pepins',
     accent: 'anti-pepins',
+  },
+  {
+    id: 'recherche',
+    href: '/piliers/recherche',
+    label: 'Pilier 5',
+    title: 'Recherche et modeles ouverts',
+    description: "On mene des recherches participatives et on concoit des modeles ouverts (agronomie, nutrition, sante) co-construits avec les agriculteurs, soignants et beneficiaires.",
+    bullets: [
+      "Recherche-action en agroecologie et sante communautaire",
+      "Modeles ouverts documentes, en libre acces",
+      "Partenariats avec universites, instituts et acteurs locaux",
+      "Diffusion des resultats en francais et en langues locales",
+    ],
+    cta: 'Decouvrir le pilier Recherche',
+    accent: 'recherche',
   },
 ];
 ---
@@ -197,6 +212,7 @@ const pillars: Pillar[] = [
   .pillar-card[data-accent="cyber"] .pillar-badge { background: #c0392b; color: #fff; }
   .pillar-card[data-accent="logiciels"] .pillar-badge { background: var(--color-first); }
   .pillar-card[data-accent="anti-pepins"] .pillar-badge { background: var(--color-accent-caramel); color: var(--color-gray-900); }
+  .pillar-card[data-accent="recherche"] .pillar-badge { background: #2e7d32; color: #fff; }
 
   .pillar-badge {
     display: inline-flex;

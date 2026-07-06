@@ -1,0 +1,398 @@
+---
+// src/pages/soutenir.astro
+// Page Soutenir l'association : don, adhesion, benevolat.
+// Le sujet de la page peut etre precise via ?sujet=soutenir-recherche
+// (utilise depuis le pilier 5 pour orienter le formulaire contact).
+// Le sujet est lu cote client (page prerendered, donc pas de searchParams
+// cote serveur sans SSR).
+
+export const prerender = true;
+
+import Layout from '@/layouts/Layout.astro';
+import Breadcrumb from '@/components/Breadcrumb.astro';
+
+const sujetAfficheDefaut = 'Soutenir Biscuits IA';
+
+const schema = {
+  type: 'WebPage' as const,
+  data: {
+    name: 'Soutenir Biscuits IA',
+    description:
+      "Trois facons de soutenir Biscuits IA : faire un don, adherer a l'association, ou donner du temps en benevolat. Association Loi 1901, recu fiscal des 10 EUR.",
+  },
+};
+
+const facons = [
+  {
+    icon: '❤',
+    titre: 'Faire un don',
+    description:
+      "Votre don finance directement la sensibilisation, les ateliers IA pour les associations, le developpement d'Anti Pepins, et nos programmes de recherche participative. HelloAsso, 100% securise, recu fiscal des 10 EUR.",
+    href: 'https://www.helloasso.com/associations/biscuits-ia',
+    externe: true,
+    cta: 'Donner sur HelloAsso',
+  },
+  {
+    icon: '✍',
+    titre: "Adherer a l'association",
+    description:
+      "A partir de 10 EUR/an, vous soutenez la mission et vous beneficiez des ressources membres en avant-premiere. L'adhesion donne aussi voix au chapitre lors de l'assemblee generale.",
+    href: '/rejoignez-nous',
+    externe: false,
+    cta: 'Adherer',
+  },
+  {
+    icon: '⚡',
+    titre: 'Donner du temps',
+    description:
+      "Benevolat technique, juridique, communication, evenementiel, terrain (agriculture, sante). Quelques heures par mois suffisent. On vous forme et on vous accompagne.",
+    href: '/rejoignez-nous',
+    externe: false,
+    cta: 'Voir les besoins',
+  },
+];
+---
+
+<Layout
+  title="Soutenir Biscuits IA | Association Loi 1901"
+  description="Trois facons de soutenir Biscuits IA : faire un don, adherer a l'association, ou donner du temps en benevolat. Recu fiscal des 10 EUR."
+  schema={schema}
+>
+  <Breadcrumb />
+
+  <section class="sout-hero">
+    <div class="container">
+      <p class="eyebrow">Soutenir l'association</p>
+      <h1>Une association Loi 1901, financee par ceux qui l'utilisent</h1>
+      <p class="lead">
+        Biscuits IA est une association d'interet general. Nous ne cherchons pas la
+        croissance : nous cherchons l'impact. Nos tarifs (logiciels, ateliers,
+        accompagnements) sont calcules au plus juste pour financer la mission, pas pour
+        remunerer des actionnaires. Vos dons et votre temps completent ce financement
+        pour ce que le marche ne couvre pas : la recherche participative, l'acces
+        gratuit pour les publics vulnerables, et les ressources libres.
+      </p>
+    </div>
+  </section>
+
+  <section class="ways">
+    <div class="container">
+      <h2>Trois facons de nous aider</h2>
+      <div class="ways-grid">
+        {facons.map((f) => (
+          <article class="way-card">
+            <span class="way-icon" aria-hidden="true">{f.icon}</span>
+            <h3>{f.titre}</h3>
+            <p>{f.description}</p>
+            <a
+              href={f.href}
+              class="way-cta"
+              {...(f.externe ? { rel: 'noopener noreferrer', target: '_blank' } : {})}
+            >
+              {f.cta}
+              {f.externe && <span class="way-ext" aria-hidden="true">↗</span>}
+            </a>
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="why-research">
+    <div class="container">
+      <h2>Pourquoi la recherche a besoin de vous</h2>
+      <p>
+        Le 5e pilier de Biscuits IA, c'est la recherche participative et les modeles
+        ouverts au service de l'agriculture et de la sante. C'est aussi celui que le
+        marche finance le moins : pas de SaaS a vendre, pas de client direct a facturer.
+        Un modele ouvert, documente en francais, ne rapporte rien a court terme - mais
+        il peut aider des milliers de personnes a prendre de meilleures decisions.
+      </p>
+      <ul>
+        <li>
+          <strong>Co-financer une etude.</strong> Une parcelle pilote, une enquete de
+          terrain, un prototype de modele : comptez 500 a 5000 EUR par projet selon
+          l'ampleur.
+        </li>
+        <li>
+          <strong>Financer une these ou un stage.</strong> 6 a 12 mois de travail
+          encadre sur une question de recherche concrete, avec livrables libres.
+        </li>
+        <li>
+          <strong>Mettre a disposition une donnee ou un terrain.</strong> Pas
+          d'argent, mais un acces a des donnees reelles : c'est parfois plus
+          precieux qu'un cheque.
+        </li>
+      </ul>
+      <p class="why-foot">
+        Vous etre une structure (collectivite, fondation, laboratoire, association
+        soeur) ? On etablit ensemble un partenariat structure. <a href="/contact?sujet=partenariat">Discutons-en</a>.
+      </p>
+    </div>
+  </section>
+
+  <section class="contact-cta">
+    <div class="container">
+      <h2>Une autre idee ? Un coup de main en nature ?</h2>
+      <p>
+        Un echange de 20 minutes suffit pour voir ensemble comment contribuer. C'est
+        gratuit, sans engagement, et on repond a tout le monde.
+      </p>
+      <div class="contact-actions">
+        <a href="/contact?sujet=soutenir" class="btn-primary" data-contact-sujet>
+          Nous ecrire (<span data-sujet-label>{sujetAfficheDefaut}</span>)
+        </a>
+        <a href="/contact?sujet=partenariat" class="btn-ghost">
+          Proposer un partenariat
+        </a>
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<script>
+  // Adapter dynamiquement le label et le href du bouton contact
+  // en fonction de la querystring ?sujet=soutenir-recherche.
+  const labels: Record<string, string> = {
+    'soutenir-recherche': 'Soutenir la recherche associative',
+  };
+  const sujet = new URLSearchParams(window.location.search).get('sujet');
+  if (sujet && labels[sujet]) {
+    const cta = document.querySelector<HTMLAnchorElement>('[data-contact-sujet]');
+    const label = document.querySelector<HTMLElement>('[data-sujet-label]');
+    if (cta) cta.href = `/contact?sujet=${sujet}`;
+    if (label) label.textContent = labels[sujet];
+  }
+</script>
+
+<style>
+  .sout-hero {
+    padding: 5rem 1.5rem 3rem;
+    background: linear-gradient(180deg, var(--color-bg) 0%, var(--color-bg-alt) 100%);
+    text-align: center;
+  }
+
+  .sout-hero .container {
+    max-width: 820px;
+    margin: 0 auto;
+  }
+
+  .eyebrow {
+    font-size: 0.85rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--color-primary);
+    margin-bottom: 0.75rem;
+  }
+
+  .sout-hero h1 {
+    font-size: clamp(2rem, 5vw, 2.8rem);
+    font-weight: 900;
+    margin: 0 0 1rem;
+    color: var(--color-text);
+    line-height: 1.15;
+  }
+
+  .lead {
+    color: var(--color-text-light);
+    font-size: 1.05rem;
+    line-height: 1.65;
+    margin: 0;
+  }
+
+  .ways {
+    padding: 4rem 1.5rem;
+    background: var(--color-bg);
+  }
+
+  .ways .container {
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .ways h2 {
+    text-align: center;
+    font-size: clamp(1.6rem, 3vw, 2.2rem);
+    margin: 0 0 2rem;
+    color: var(--color-text);
+  }
+
+  .ways-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
+    gap: 1.5rem;
+  }
+
+  .way-card {
+    background: var(--color-bg-alt);
+    border: 2px solid var(--color-border);
+    padding: 1.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+  }
+
+  .way-icon {
+    font-size: 2.2rem;
+    line-height: 1;
+  }
+
+  .way-card h3 {
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: var(--color-text);
+    margin: 0;
+  }
+
+  .way-card p {
+    color: var(--color-text-light);
+    line-height: 1.55;
+    margin: 0;
+    font-size: 0.95rem;
+  }
+
+  .way-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    align-self: flex-start;
+    padding: 0.7rem 1.25rem;
+    background: var(--color-primary);
+    color: var(--color-bg-alt);
+    font-weight: 800;
+    font-size: 0.95rem;
+    border: 2px solid var(--color-border);
+    text-decoration: none;
+    margin-top: auto;
+  }
+
+  .way-cta:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 4px 4px 0 var(--color-border);
+    color: var(--color-bg-alt);
+  }
+
+  .way-ext {
+    font-size: 0.85em;
+  }
+
+  .why-research {
+    padding: 4rem 1.5rem;
+    background: var(--color-bg-alt);
+  }
+
+  .why-research .container {
+    max-width: 820px;
+    margin: 0 auto;
+  }
+
+  .why-research h2 {
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    margin: 0 0 1rem;
+    color: var(--color-text);
+  }
+
+  .why-research p {
+    color: var(--color-text);
+    line-height: 1.65;
+    margin: 0 0 1rem;
+  }
+
+  .why-research ul {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+  }
+
+  .why-research li {
+    background: var(--color-bg-elevated);
+    border-left: 4px solid var(--color-primary);
+    padding: 0.85rem 1rem;
+    color: var(--color-text);
+    line-height: 1.55;
+  }
+
+  .why-research strong {
+    color: var(--color-primary);
+  }
+
+  .why-foot {
+    border-top: 1px solid var(--color-border);
+    padding-top: 1.25rem;
+    color: var(--color-text-light) !important;
+  }
+
+  .why-foot a {
+    color: var(--color-primary);
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .why-foot a:hover {
+    text-decoration: underline;
+  }
+
+  .contact-cta {
+    padding: 4rem 1.5rem 5rem;
+    background: var(--color-bg);
+    text-align: center;
+  }
+
+  .contact-cta .container {
+    max-width: 720px;
+    margin: 0 auto;
+  }
+
+  .contact-cta h2 {
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    margin: 0 0 0.75rem;
+    color: var(--color-text);
+  }
+
+  .contact-cta p {
+    color: var(--color-text-light);
+    line-height: 1.6;
+    margin: 0 0 1.5rem;
+  }
+
+  .contact-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .btn-primary {
+    display: inline-block;
+    padding: 0.85rem 1.5rem;
+    background: var(--color-primary);
+    color: var(--color-bg-alt);
+    border: 2px solid var(--color-border);
+    font-weight: 800;
+    text-decoration: none;
+  }
+
+  .btn-primary:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 4px 4px 0 var(--color-border);
+    color: var(--color-bg-alt);
+  }
+
+  .btn-ghost {
+    display: inline-block;
+    padding: 0.85rem 1.5rem;
+    background: transparent;
+    color: var(--color-text);
+    border: 2px solid var(--color-border);
+    text-decoration: none;
+    font-weight: 700;
+  }
+
+  .btn-ghost:hover {
+    background: var(--color-bg-alt);
+  }
+</style>

@@ -1,6 +1,6 @@
 ---
 // src/pages/piliers.astro
-// Hub des 4 piliers de l'association : presentation detaillee et navigation par pilier.
+// Hub des 5 piliers de l'association : presentation detaillee et navigation par pilier.
 
 export const prerender = true;
 
@@ -12,31 +12,31 @@ const schema = {
   type: 'WebPage' as const,
   data: {
     name: 'Nos piliers - Biscuits IA',
-    description: 'Quatre piliers, une mission : IA accessible, lutte contre la cybercriminalite, logiciels libres pour associations, Anti Pepins.',
+    description: 'Cinq piliers, une mission : IA accessible, lutte contre la cybercriminalite, logiciels libres pour associations, Anti Pepins, et recherche participative.',
   },
 };
 ---
 
 <Layout
   title="Nos piliers | Biscuits IA"
-  description="Decouvrez les quatre piliers de Biscuits IA : accompagnement a l'IA, lutte contre la cybercriminalite et sensibilisation, logiciels libres pour associations partenaires, Anti Pepins."
+  description="Decouvrez les cinq piliers de Biscuits IA : accompagnement a l'IA, lutte contre la cybercriminalite et sensibilisation, logiciels libres pour associations partenaires, Anti Pepins."
   schema={schema}
 >
   <Breadcrumb />
 
   <section class="hero-piliers">
     <div class="container">
-      <p class="eyebrow">Notre mission, en quatre piliers</p>
-      <h1>Quatre piliers, une mission d'interet general</h1>
+      <p class="eyebrow">Notre mission, en cinq piliers</p>
+      <h1>Cinq piliers, une mission d'interet general</h1>
       <p class="lead">
-        Biscuits IA est une association Loi 1901. Nous agissons sur quatre fronts complementaires pour rendre le numerique utile, sur et accessible aux associations, collectivites et citoyens. Chaque pilier alimente les autres : notre travail sur l'IA finance la sensibilisation, nos logiciels libres equipent d'autres associations, Anti Pepins protege le grand public.
+        Biscuits IA est une association Loi 1901. Nous agissons sur cinq fronts complementaires pour rendre le numerique utile, sur et accessible aux associations, collectivites et citoyens. Chaque pilier alimente les autres : notre travail sur l'IA finance la sensibilisation, nos logiciels libres equipent d'autres associations, Anti Pepins protege le grand public.
       </p>
     </div>
   </section>
 
   <PillarsGrid
     layout="hub"
-    title="Les quatre piliers"
+    title="Les cinq piliers"
     intro="Decouvrez en detail ce que nous faisons sur chaque front."
     showCta={false}
   />

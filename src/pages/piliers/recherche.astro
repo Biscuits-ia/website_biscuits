@@ -1,0 +1,322 @@
+---
+// src/pages/piliers/recherche.astro
+// Pilier 5 : recherche participative et modeles ouverts au service de l'agriculture
+// et de la sante. Co-construit avec les acteurs de terrain.
+
+export const prerender = true;
+
+import Layout from '@/layouts/Layout.astro';
+import Breadcrumb from '@/components/Breadcrumb.astro';
+
+const schema = {
+  type: 'Service' as const,
+  data: {
+    serviceType: 'Recherche participative et modeles ouverts',
+    name: "Recherche et modeles ouverts pour l'agriculture et la sante",
+    description:
+      "Recherches participatives et modeles ouverts (agronomie, nutrition, sante publique) co-construits avec les agriculteurs, soignants et beneficiaires. Notre laboratoire vivant au service du terrain.",
+  },
+};
+---
+
+<Layout
+  title="Recherche et modeles ouverts | Pilier 5 | Biscuits IA"
+  description="Pilier 5 de Biscuits IA : recherche participative et creation de modeles ouverts pour l'agriculture et la sante. Co-construits avec le terrain, accessibles a toutes les structures d'interet general."
+  schema={schema}
+>
+  <Breadcrumb />
+
+  <section class="pilier-hero">
+    <div class="container">
+      <p class="eyebrow">Pilier 5</p>
+      <h1>La recherche qui retourne a celles et ceux qui la rendent possible</h1>
+      <p class="lead">
+        Agriculture, alimentation, sante : nous menons des recherches participatives et
+        creons des modeles ouverts pour comprendre, anticiper et transformer les
+        pratiques. Notre conviction : les solutions naitront du terrain, pas dans une
+        tour d'ivoire.
+      </p>
+      <div class="hero-cta">
+        <a href="/contact" class="btn-primary">Rejoindre un programme de recherche</a>
+        <a href="/contact" class="btn-ghost">Soutenir nos travaux</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="content">
+    <div class="container">
+      <h2>Ce que nous faisons concretement</h2>
+      <div class="grid">
+        <article class="card">
+          <h3>Recherche-action en agroecologie</h3>
+          <p>
+            Parcelles-pilotes, itineraires techniques, indicateurs de sante des sols et de
+            rendements : nous co-concevons les protocoles avec les agriculteurs et
+            remontons les donnees du terrain pour alimenter des modeles utiles.
+          </p>
+        </article>
+        <article class="card">
+          <h3>Recherche en sante communautaire</h3>
+          <p>
+            Avec les soignants, les associations de patients et les collectivites, nous
+            etudions les determinants de sante lies a l'alimentation, a l'environement
+            et a l'acces aux soins. Methodologies mixtes, donnees anonymisees, restitution
+            accessible.
+          </p>
+        </article>
+        <article class="card">
+          <h3>Modeles ouverts et accessibles</h3>
+          <p>
+            Modeles agronomiques, nutritionnels et predictifs publies en open source,
+            documentes en francais, expliques pas a pas. Pour que chaque structure puisse
+            les comprendre, les adapter et se les approprier.
+          </p>
+          <a href="/projects-collaboratif">Voir nos projets open source</a>
+        </article>
+        <article class="card">
+          <h3>Partenariats et diffusion</h3>
+          <p>
+            Universites, instituts de recherche, acteurs locaux : nous multiplions les
+            alliances pour croiser les savoirs. Les resultats sont diffuses en francais
+            et en langues locales, sous forme de guides, de fiches pratiques et
+            d'ateliers.
+          </p>
+          <a href="/contact?sujet=partenariat-recherche">Proposer un partenariat</a>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="values">
+    <div class="container">
+      <h2>Nos principes de recherche</h2>
+      <ul>
+        <li>
+          <strong>Co-construction.</strong> Chaque projet est defini avec les personnes
+          concernees, pas pour elles. Les questions de recherche viennent du terrain.
+        </li>
+        <li>
+          <strong>Ouverture.</strong> Modeles, donnees anonymisees et methodologies sont
+          partages en libre acces. La connaissance doit circuler.
+        </li>
+        <li>
+          <strong>Utilite sociale.</strong> Un modele qui n'aide personne a prendre une
+          meilleure decision ne sert personne. Nous mesurons l'impact reel, pas le
+          nombre de publications.
+        </li>
+        <li>
+          <strong>Ethique et inclusion.</strong> Consentement eclaire, anonymisation,
+          acces aux resultats pour les participants : la recherche doit respecter celles
+          et ceux qui la rendent possible.
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="cta-final">
+    <div class="container">
+      <h2>Vous avez un terrain, une question, une idee ?</h2>
+      <p>
+        Un echange de 20 minutes suffit pour cadrer votre projet. Agriculteur, soignant,
+        chercheur, benevole, curieux : si la question vous touche, elle nous interesse.
+      </p>
+      <div class="cta-actions">
+        <a href="/contact" class="btn-ghost">Nous ecrire</a>
+        <a href="/soutenir" class="btn-primary">Soutenir la recherche associative</a>
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .pilier-hero {
+    padding: 5rem 1.5rem 3rem;
+    background: linear-gradient(180deg, var(--color-bg) 0%, var(--color-bg-alt) 100%);
+    text-align: center;
+  }
+
+  .pilier-hero .container {
+    max-width: 880px;
+    margin: 0 auto;
+  }
+
+  .eyebrow {
+    font-size: 0.85rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--color-primary);
+    margin-bottom: 0.75rem;
+  }
+
+  .pilier-hero h1 {
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 900;
+    margin: 0 0 1rem;
+    color: var(--color-text);
+    line-height: 1.15;
+  }
+
+  .lead {
+    color: var(--color-text-light);
+    font-size: 1.1rem;
+    line-height: 1.6;
+    margin: 0 0 2rem;
+  }
+
+  .hero-cta {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .btn-primary {
+    display: inline-block;
+    padding: 0.85rem 1.5rem;
+    background: var(--color-primary);
+    color: var(--color-bg-alt);
+    border: 2px solid var(--color-border);
+    font-weight: 800;
+    text-decoration: none;
+  }
+
+  .btn-primary:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 4px 4px 0 var(--color-border);
+  }
+
+  .btn-ghost {
+    display: inline-block;
+    padding: 0.85rem 1.5rem;
+    background: transparent;
+    color: var(--color-text);
+    border: 2px solid var(--color-border);
+    text-decoration: none;
+    font-weight: 700;
+  }
+
+  .btn-ghost:hover {
+    background: var(--color-bg-alt);
+  }
+
+  .content {
+    padding: 4rem 1.5rem;
+    background: var(--color-bg);
+  }
+
+  .content .container {
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .content h2 {
+    text-align: center;
+    font-size: clamp(1.6rem, 3vw, 2.2rem);
+    margin: 0 0 2rem;
+    color: var(--color-text);
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
+    gap: 1.5rem;
+  }
+
+  .card {
+    background: var(--color-bg-alt);
+    border: 2px solid var(--color-border);
+    padding: 1.5rem;
+  }
+
+  .card h3 {
+    font-size: 1.15rem;
+    font-weight: 800;
+    margin: 0 0 0.5rem;
+    color: var(--color-text);
+  }
+
+  .card p {
+    color: var(--color-text-light);
+    line-height: 1.55;
+    margin: 0 0 0.75rem;
+  }
+
+  .card a {
+    display: inline-block;
+    color: var(--color-primary);
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .card a:hover {
+    text-decoration: underline;
+  }
+
+  .values {
+    padding: 4rem 1.5rem;
+    background: var(--color-bg-alt);
+  }
+
+  .values .container {
+    max-width: 820px;
+    margin: 0 auto;
+  }
+
+  .values h2 {
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    margin: 0 0 1.5rem;
+    color: var(--color-text);
+  }
+
+  .values ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+  }
+
+  .values li {
+    color: var(--color-text);
+    line-height: 1.55;
+    padding: 0.85rem 1rem;
+    background: var(--color-bg-elevated);
+    border-left: 4px solid var(--color-primary);
+  }
+
+  .values strong {
+    color: var(--color-primary);
+  }
+
+  .cta-final {
+    padding: 4rem 1.5rem 5rem;
+    background: var(--color-bg);
+    text-align: center;
+  }
+
+  .cta-final .container {
+    max-width: 720px;
+    margin: 0 auto;
+  }
+
+  .cta-final h2 {
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    margin: 0 0 0.75rem;
+    color: var(--color-text);
+  }
+
+  .cta-final p {
+    color: var(--color-text-light);
+    margin: 0 0 1.5rem;
+    line-height: 1.6;
+  }
+
+  .cta-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+</style>

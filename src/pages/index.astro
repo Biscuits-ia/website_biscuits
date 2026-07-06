@@ -1,5 +1,5 @@
 ---
-// Page d'accueil : hero, 4 piliers, publics, victime, logiciels, anti-pepins, soutien, articles, communaute.
+// Page d'accueil : hero, 5 piliers, publics, victime, logiciels, anti-pepins, soutien, articles, communaute.
 export const prerender = true;
 
 import BaseLayout from '@/layouts/Layout.astro';
@@ -36,8 +36,8 @@ const latestArticles = (await getCollection('blog', ({ data }) =>
   <Hero />
   <PillarsGrid
     layout="home"
-    title="Quatre piliers, une mission d'interet general"
-    intro="Une association Loi 1901 qui agit sur quatre fronts complementaires pour rendre le numerique utile, sur et accessible a tous. Chaque pilier finance et renforce les autres."
+    title="Cinq piliers, une mission d'interet general"
+    intro="Une association Loi 1901 qui agit sur cinq fronts complementaires pour rendre le numerique utile, sur et accessible a tous. Chaque pilier finance et renforce les autres."
   />
   <PublicsPicker />
   <VictimShortNotice />

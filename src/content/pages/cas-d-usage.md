@@ -64,4 +64,4 @@ draft: false
 - **Résultats** :
   - Detection en moins de 30 minutes
   - 15 signalements actionnes
-  - Aide directe aux victimes
+  - Mise en relation rapide avec les associations specialisees

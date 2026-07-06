@@ -5,11 +5,11 @@ import { rateLimitRoute } from '@/lib/rateLimit';
 import { getClientIp } from '@/lib/http';
 
 type ContactBody = Record<string, unknown>;
-type ContactKind = 'general' | 'victime' | 'devis-logiciel' | 'signalement' | 'soutenir';
+type ContactKind = 'general' | 'devis-logiciel' | 'signalement' | 'soutenir';
 
 const CONTACT_LIMIT = 5;
 const CONTACT_WINDOW_MS = 10 * 60_000;
-const ALLOWED_KINDS: ContactKind[] = ['general', 'victime', 'devis-logiciel', 'signalement', 'soutenir'];
+const ALLOWED_KINDS: ContactKind[] = ['general', 'devis-logiciel', 'signalement', 'soutenir'];
 
 function parseContactBody(body: ContactBody) {
   const rawKind = typeof body.kind === 'string' ? body.kind.trim().toLowerCase() : '';
@@ -65,11 +65,10 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
     });
   }
 
-  // Si kind=victime et que l'objet ne contient pas de sujet, on en force un
-  // pour faciliter le tri cote dashboard admin.
-  const finalSubject = subject || (kind === 'victime' ? 'Demande aide victime' : 'Demande de contact');
+  // Sujet par defaut si l'objet n'en contient pas (facilite le tri cote dashboard admin).
+  const finalSubject = subject || 'Demande de contact';
 
-  // Champ `urgent` reserve aux victimes (sera ignore pour les autres kinds).
+  // Champ `urgent` reserve aux demandes generales (sera ignore pour les autres kinds).
   const supabase = createSupabaseAdminClient();
   // On encode kind et urgent dans le message pour exploitation humaine en
   // attendant une colonne dediee en BDD (gain : zero migration requise).

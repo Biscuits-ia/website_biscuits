@@ -10,16 +10,16 @@ import Breadcrumb from '@/components/Breadcrumb.astro';
 const schema = {
   type: 'Service' as const,
   data: {
-    serviceType: 'Aide aux victimes de cybercriminalite',
+    serviceType: 'Sensibilisation a la cybercriminalite',
     name: 'Lutte contre la cybercriminalite et aide aux victimes',
-    description: 'Accompagnement gratuit des victimes d\'arnaques en ligne, d\'usurpation d\'identite, de harponnage, de chantage et de tout type de cybercriminalite.',
+    description: 'Sensibilisation gratuite aux arnaques en ligne, a l\'usurpation d\'identite, au harponnage, au chantage et aux faux supports. Biscuits IA forme, documente et oriente les publics vers les associations specialisees.',
   },
 };
 ---
 
 <Layout
   title="Lutte contre la cybercriminalite | Pilier 2 | Biscuits IA"
-  description="Vous etes victime d'une arnaque en ligne, d'une usurpation d'identite, d'un chantage numerique ? Biscuits IA vous accompagne gratuitement pour signaler, vous proteger et reprendre la main."
+  description="Vous voulez vous proteger des arnaques en ligne ou orienter un proche victime ? Biscuits IA sensibilise, forme et refere les associations specialisees d'aide aux victimes."
   schema={schema}
 >
   <Breadcrumb />
@@ -27,12 +27,12 @@ const schema = {
   <section class="pilier-hero">
     <div class="container">
       <p class="eyebrow eyebrow-cyber">Pilier 2</p>
-      <h1>Lutter contre les arnaques et accompagner les victimes</h1>
+      <h1>Lutter contre les arnaques : sensibiliser, outiller, orienter</h1>
       <p class="lead">
-        Notre deuxieme pilier de mission : aider les victimes de cybercriminalite (arnaques, usurpation d'identite, harponnage, chantage, faux supports) et lutter contre la pedocriminalite en ligne. Accompagnement gratuit, en confiance, sans jugement.
+        Notre deuxieme pilier de mission : lutter contre les arnaques en ligne et la pedocriminalite, former les publics aux bons reflexes, et orienter les victimes vers les associations specialisees. La sensibilisation est notre coeur de bataille.
       </p>
       <div class="hero-cta">
-        <a href="/aide-victimes" class="btn-danger">Je suis victime, j'ai besoin d'aide</a>
+        <a href="/aide-victimes" class="btn-danger">Voir les associations d'aide</a>
         <a href="/contact?sujet=signalement" class="btn-ghost">Signaler un contenu illicite</a>
       </div>
     </div>
@@ -40,18 +40,18 @@ const schema = {
 
   <section class="content">
     <div class="container">
-      <h2>Comment nous aidons les victimes</h2>
+      <h2>Comment nous agissons</h2>
       <div class="grid">
         <article class="card">
-          <h3>Ecoute et orientation</h3>
+          <h3>Sensibilisation et prevention</h3>
           <p>Premier echange pour comprendre la situation, evaluer l'urgence (compte bancaire vide, chantage en cours, fuite de donnees) et orienter vers les bons interlocuteurs.</p>
         </article>
         <article class="card">
-          <h3>Signalements</h3>
+          <h3>Documentation et guides de signalement (PHAROS, 3018)</h3>
           <p>Nous aidons a constituer les dossiers de signalement (PHAROS pour les contenus illicites, 3018 pour les mineurs, FranceConnect pour les comptes compromises, etablissements bancaires).</p>
         </article>
         <article class="card">
-          <h3>Mesures de protection</h3>
+          <h3>Ressources : procedures pas-a-pas a telecharger</h3>
           <p>Procedures pas-a-pas pour reprendre le controle : changement de mots de passe, mise en opposition de carte, plainte, alertes aux proches en cas d'usurpation d'identite.</p>
         </article>
         <article class="card">
@@ -65,7 +65,8 @@ const schema = {
 
   <section class="values">
     <div class="container">
-      <h2>Les situations que nous traitons</h2>
+      <h2>Les situations que nous documentons</h2>
+      <p>Biscuits IA ne traite plus directement les dossiers. Nous documentons ces situations pour alimenter nos ressources et orienter vers les assos specialisees.</p>
       <ul>
         <li><strong>Arnaques financieres.</strong> Faux supports, harponnage, investissement crypto frauduleux, locations immobilieres fictives.</li>
         <li><strong>Usurpation d'identite.</strong> Comptes banques vides, contrats signes au nom de la victime, demarches administratives.</li>
@@ -79,11 +80,11 @@ const schema = {
 
   <section class="cta-final">
     <div class="container">
-      <h2>Besoin d'aide maintenant ?</h2>
-      <p>Contactez-nous. La premiere consultation est gratuite, confidentielle et sans engagement. Pour les urgences financieres, appelez votre banque sans delai.</p>
+      <h2>Vous etes victime ?</h2>
+      <p>Biscuits IA n'assure plus l'accompagnement direct. Consultez notre annuaire d'associations specialisees ou posez-nous une question par le formulaire de contact. Pour les urgences financieres, appelez votre banque sans delai.</p>
       <div class="cta-actions">
-        <a href="/aide-victimes" class="btn-danger">Acceder a la page d'aide aux victimes</a>
-        <a href="/contact?sujet=victime" class="btn-ghost">Formulaire confidentiel</a>
+        <a href="/aide-victimes" class="btn-danger">Voir l'annuaire d'assos</a>
+        <a href="/contact?sujet=orientation-victime" class="btn-ghost">Posez une question</a>
       </div>
     </div>
   </section>

@@ -19,7 +19,6 @@ logs/
 .env
 .env.production
 .env*.local
-.env*
 
 # macOS-specific files
 .DS_Store
@@ -37,12 +36,12 @@ build_stderr.txt
 check_stdout.txt
 check_stderr.txt
 test_html.txt
-fix-quotes2.cjs
+
+# Cache Prettier local
+.prettier-cache/
 
 # Assistants dev / IDE
 .claude/
 .agents/
 .serena/
 .vscode/
-.vercel
-.env*

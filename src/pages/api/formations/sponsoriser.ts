@@ -10,7 +10,6 @@ import type { APIRoute } from 'astro';
 import { createSupabaseClient, createSupabaseAdminClient } from '@/lib/supabase';
 import { getFormString } from '@/types/formations';
 import { sponsorshipCreateSchema, generateUniqueRedemptionCode } from '@/lib/formations';
-import { isValidUUID } from '@/lib/validation';
 import { enqueueEmail } from '@/lib/email-queue';
 import { renderSponsorshipConfirmation, type MailAddress } from '@/lib/mail';
 
@@ -31,12 +30,8 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   const beneficiaryEmail = getFormString(form, 'beneficiary_email') ?? '';
   const paymentMethod   = getFormString(form, 'payment_method') ?? 'helloasso';
 
-  if (trainingId && !isValidUUID(trainingId)) {
-    return redirect(`/formations/parrainer?error=${encodeURIComponent('Identifiant de formation invalide.')}`);
-  }
-  if (sessionId && !isValidUUID(sessionId)) {
-    return redirect(`/formations/parrainer?error=${encodeURIComponent('Identifiant de session invalide.')}`);
-  }
+  // Note : sponsorshipCreateSchema valide deja les UUIDs (uuidSchema sur
+  // training_id et session_id) ; pas de pre-check isValidUUID necessaire.
 
   const parsed = sponsorshipCreateSchema.safeParse({
     training_id:      trainingId || undefined,

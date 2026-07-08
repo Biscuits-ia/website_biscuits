@@ -7,6 +7,7 @@
 // ============================================================================
 
 import type { APIRoute } from 'astro';
+import { z } from 'zod';
 import { createSupabaseAdminClient } from '@/lib/supabase';
 import { verifyWebhookSignature, payloadHash } from '@/lib/helloasso';
 import { enqueueEmail } from '@/lib/email-queue';
@@ -14,48 +15,56 @@ import { type MailAddress } from '@/lib/mail';
 import { formatDateLong, formatTimeRange, formatPriceCents } from '@/types/formations';
 import { isValidUUID } from '@/lib/validation';
 
-// Forme LACHE du payload IPN HelloAsso : tous les champs sont optionnels car la
-// v5 varie selon le type d'evenement. On remplace le `any` d'origine (aucune
-// securite de type) par cette interface, sans pour autant imposer une structure
-// stricte qui rejetterait des webhooks legitimes de forme differente.
+// ----------------------------------------------------------------------------
+// Schemas Zod permissifs pour le payload IPN HelloAsso
+// ----------------------------------------------------------------------------
+// HelloAsso fait evoluer le format de ses webhooks entre versions (eventType
+// vs event_type vs type, data.{amount,totalAmount} selon le type d'event).
+// On garde donc un schema volontairement LACHE (.passthrough()) : les champs
+// inconnus ne sont pas rejetes, on ne valide que les champs sensibles qui
+// alimentent la compta / la BDD (montants, UUID, enum currency).
 //
 // Le payload est deja AUTHENTIFIE par la signature HMAC (etape 1) : il vient
-// bien de HelloAsso. La validation ci-dessous ne protege donc pas contre un
-// attaquant, mais contre des donnees malformees qui corrompraient la base
-// (registration_id non-UUID, montant negatif ou non numerique).
-interface HelloAssoPayer {
-  email?: string;
-  firstName?: string;
-  lastName?: string;
-}
-interface HelloAssoData {
-  checkoutIntentId?: string;
-  id?: string;
-  amount?: number;
-  totalAmount?: number;
-  state?: string;
-  status?: string;
-  currency?: string;
-  payer?: HelloAssoPayer;
-  paidAt?: string;
-  reason?: string;
-  metadata?: { registration_id?: string };
-}
-interface HelloAssoPayload {
-  eventType?: string;
-  event_type?: string;
-  type?: string;
-  checkoutIntentId?: string;
-  id?: string;
-  amount?: number;
-  state?: string;
-  status?: string;
-  currency?: string;
-  paidAt?: string;
-  reason?: string;
-  metadata?: { registration_id?: string };
-  data?: HelloAssoData;
-}
+// bien de HelloAsso. Le zod protege donc contre des donnees malformees qui
+// corrompraient la base (registration_id non-UUID, montant negatif ou non
+// numerique), pas contre un attaquant.
+const helloAssoPayerSchema = z.object({
+  email:     z.string().email().optional(),
+  firstName: z.string().optional(),
+  lastName:  z.string().optional(),
+}).optional();
+
+const helloAssoDataSchema = z.object({
+  checkoutIntentId: z.string().optional(),
+  id:               z.string().optional(),
+  amount:           z.number().int().nonnegative().optional(),
+  totalAmount:      z.number().int().nonnegative().optional(),
+  state:            z.string().optional(),
+  status:           z.string().optional(),
+  currency:         z.enum(['EUR', 'USD', 'GBP']).optional(),
+  payer:            helloAssoPayerSchema,
+  paidAt:           z.string().datetime().optional(),
+  reason:           z.string().optional(),
+  metadata:         z.object({ registration_id: z.string().uuid().optional() }).optional(),
+}).optional();
+
+const helloAssoWebhookSchema = z.object({
+  eventType: z.string().optional(),
+  event_type: z.string().optional(),
+  type: z.string().optional(),
+  checkoutIntentId: z.string().optional(),
+  id: z.string().optional(),
+  amount: z.number().int().nonnegative().optional(),
+  state: z.string().optional(),
+  status: z.string().optional(),
+  currency: z.enum(['EUR', 'USD', 'GBP']).optional(),
+  paidAt: z.string().datetime().optional(),
+  reason: z.string().optional(),
+  metadata: z.object({ registration_id: z.string().uuid().optional() }).optional(),
+  data: helloAssoDataSchema,
+}).passthrough();
+
+type HelloAssoPayload = z.infer<typeof helloAssoWebhookSchema>;
 
 export const POST: APIRoute = async ({ request }) => {
   const rawBody = await request.text();
@@ -69,13 +78,18 @@ export const POST: APIRoute = async ({ request }) => {
     return new Response(JSON.stringify({ error: 'Invalid signature' }), { status: 401 });
   }
 
-  // 2. Parse le body
-  let payload: HelloAssoPayload;
-  try {
-    payload = JSON.parse(rawBody) as HelloAssoPayload;
-  } catch {
-    return new Response(JSON.stringify({ error: 'Invalid JSON' }), { status: 400 });
+  // 2. Parse le body avec validation zod permissive
+  // Le .passthrough() garde les champs inconnus dans payload, on peut donc
+  // acceder a payload.data?.amount (meme si pas declare) sans crash.
+  const parseResult = helloAssoWebhookSchema.safeParse((() => {
+    try { return JSON.parse(rawBody); }
+    catch { return null; }
+  })());
+  if (!parseResult.success) {
+    console.warn('[helloasso/webhook] zod validation failed:', parseResult.error.issues[0]?.message);
+    return new Response(JSON.stringify({ error: 'Invalid payload' }), { status: 400 });
   }
+  const payload: HelloAssoPayload = parseResult.data;
 
   // 3. Deduplication via hash
   const hash = payloadHash(rawBody);
@@ -121,8 +135,9 @@ export const POST: APIRoute = async ({ request }) => {
     return new Response(JSON.stringify({ error: 'Missing registration_id' }), { status: 400 });
   }
   // registration_id sert de clef sur training_registrations : un format invalide
-  // ne doit jamais atteindre la base. On rejette explicitement (400) plutot que
-  // de laisser une requete `.eq('id', <non-uuid>)` echouer silencieusement.
+  // ne doit jamais atteindre la base. zod a deja valide le format UUID en etape 2
+  // (metadata.registration_id: z.string().uuid().optional()) ; on garde un
+  // garde-fou explicite au cas ou le payload evolue hors schema.
   if (!isValidUUID(registrationId)) {
     console.warn('[helloasso/webhook] registration_id non-UUID:', registrationId);
     return new Response(JSON.stringify({ error: 'Invalid registration_id' }), { status: 400 });

@@ -17,11 +17,15 @@
         },
         {
           "key": "Strict-Transport-Security",
-          "value": "max-age=31536000; includeSubDomains"
+          "value": "max-age=31536000; includeSubDomains; preload"
         },
         {
           "key": "Permissions-Policy",
           "value": "camera=(), microphone=(), geolocation=(), interest-cohort=(), xr-spatial-tracking=()"
+        },
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self'; script-src 'self' 'unsafe-inline'; script-src-elem 'self' 'unsafe-inline'; script-src-attr 'none'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self'; connect-src 'self' https://www.googletagmanager.com https://*.google-analytics.com https://analytics.google.com https://cdn.vercel-insights.com https://*.supabase.co wss://*.supabase.co; frame-src https://www.googletagmanager.com https://vercel.live; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests"
         }
       ]
     },
@@ -153,15 +157,6 @@
     },
     {
       "source": "/nos-missions",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=300, s-maxage=86400, stale-while-revalidate=604800"
-        }
-      ]
-    },
-    {
-      "source": "/pourquoi-biscuits-ia",
       "headers": [
         {
           "key": "Cache-Control",
@@ -319,13 +314,8 @@
       "statusCode": 301
     },
     {
-      "source": "/logiciels",
-      "destination": "/piliers/logiciels",
-      "statusCode": 301
-    },
-    {
-      "source": "/anti-pepins",
-      "destination": "/piliers/anti-pepins",
+      "source": "/a-qui.s-adresse",
+      "destination": "/a-qui-s-adresse",
       "statusCode": 301
     }
   ]

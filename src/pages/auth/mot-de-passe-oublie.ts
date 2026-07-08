@@ -64,7 +64,7 @@ function getErrorMessage(errorMessage: string): string {
 export const POST: APIRoute = async ({ request, cookies, url, site, clientAddress }) => {
   // 1. Rate-limit IP avant tout parsing (anti email-bombing).
   const ip = getClientIp(request, clientAddress as string | undefined);
-  const blocked = rateLimitRoute(ip, '/api/auth/mot-de-passe-oublie', 3, 10 * 60_000);
+  const blocked = await rateLimitRoute(ip, '/api/auth/mot-de-passe-oublie', 3, 10 * 60_000);
   if (blocked) return blocked;
 
   try {

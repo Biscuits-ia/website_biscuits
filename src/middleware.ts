@@ -19,14 +19,47 @@ import { getClientIpOrNull } from './lib/http';
 import { createSupabaseClient, createSupabaseAdminClient } from './lib/supabase';
 import crypto from 'node:crypto';
 
-// ─── Cache logout (30 s) ──────────────────────────────────────────────────────
+// ─── Cache logout (30 s, borne) ───────────────────────────────────────────────
+//
+// Une entree par userId vu. Sans borne, la Map croit indefiniment pour la duree
+// de vie de l'instance -- et les instances Fluid Compute vivent longtemps. A
+// l'echelle visee (millions de visiteurs) l'instance finit en OOM.
+//
+// Deux garde-fous :
+//   1. purge des entrees expirees, au plus une fois par CLEANUP_INTERVAL_MS ;
+//   2. plafond dur LOGOUT_CACHE_MAX : au-dela, on evince la plus ancienne
+//      entree inseree (une Map JS conserve l'ordre d'insertion).
 
 const LOGOUT_CACHE_TTL_MS = 30_000;
+const LOGOUT_CACHE_MAX = 10_000;
+const CLEANUP_INTERVAL_MS = 60_000;
+
 interface LogoutCacheEntry {
   lastLogoutAtMs: number | null;
   expiresAt: number;
 }
 const logoutCache = new Map<string, LogoutCacheEntry>();
+let lastLogoutCleanup = 0;
+
+function setLogoutCache(userId: string, entry: LogoutCacheEntry): void {
+  const now = Date.now();
+
+  // Purge amortie des entrees expirees.
+  if (now - lastLogoutCleanup > CLEANUP_INTERVAL_MS) {
+    lastLogoutCleanup = now;
+    for (const [key, value] of logoutCache) {
+      if (value.expiresAt <= now) logoutCache.delete(key);
+    }
+  }
+
+  // Plafond dur : eviction FIFO (la 1re clef iteree est la plus ancienne).
+  if (!logoutCache.has(userId) && logoutCache.size >= LOGOUT_CACHE_MAX) {
+    const oldest = logoutCache.keys().next().value;
+    if (oldest !== undefined) logoutCache.delete(oldest);
+  }
+
+  logoutCache.set(userId, entry);
+}
 
 // ─── Routes publiques ─────────────────────────────────────────────────────────
 
@@ -50,11 +83,11 @@ function isPublicPath(pathname: string): boolean {
 
 // ─── Rate-limit ───────────────────────────────────────────────────────────────
 
-function checkRouteRateLimit(
+async function checkRouteRateLimit(
   context: { request: Request; clientAddress?: string },
   isDev: boolean,
   pathname: string,
-): Response | null {
+): Promise<Response | null> {
   if (isDev) return null;
   if (!pathname.startsWith('/api/') && !pathname.startsWith('/auth/')) return null;
 
@@ -84,6 +117,33 @@ function checkRouteRateLimit(
   return rateLimit(`${ip}:${pathname}`, limit, windowMs);
 }
 
+// ─── Garde CSRF (Sec-Fetch-Site) ──────────────────────────────────────────────
+//
+// Defense en profondeur, en complement de SameSite=lax sur les cookies.
+//
+// Les navigateurs modernes envoient `Sec-Fetch-Site` sur chaque requete : il
+// decrit la relation entre l'origine de la page qui declenche la requete et
+// celle de la ressource. Une soumission de formulaire cross-site (le vecteur
+// CSRF classique) vaut `cross-site` ; une requete du site vers lui-meme vaut
+// `same-origin`.
+//
+// On bloque UNIQUEMENT `cross-site` sur les methodes mutantes. Cas volontairement
+// laisses passer :
+//   - header ABSENT : requetes server-to-server (webhook HelloAsso, pg_cron).
+//     Les headers Sec-Fetch-* sont poses par les navigateurs, jamais par curl
+//     ni par un serveur -> un webhook legitime n'en a pas.
+//   - `same-origin` / `same-site` / `none` : navigation directe, meme site.
+//
+// Un attaquant ne peut pas forger Sec-Fetch-* : ce sont des "forbidden header
+// names", le navigateur les ecrit lui-meme et refuse toute surcharge par fetch/XHR.
+
+const SAFE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS']);
+
+function isCrossSiteMutation(request: Request): boolean {
+  if (SAFE_METHODS.has(request.method)) return false;
+  return request.headers.get('sec-fetch-site') === 'cross-site';
+}
+
 // ─── Lecture last_logout_at (cache 30 s) ──────────────────────────────────────
 
 async function readLastLogoutAtMs(userId: string): Promise<number | null> {
@@ -111,7 +171,7 @@ async function readLastLogoutAtMs(userId: string): Promise<number | null> {
     return null;
   }
 
-  logoutCache.set(userId, { lastLogoutAtMs: value, expiresAt: Date.now() + LOGOUT_CACHE_TTL_MS });
+  setLogoutCache(userId, { lastLogoutAtMs: value, expiresAt: Date.now() + LOGOUT_CACHE_TTL_MS });
   return value;
 }
 
@@ -157,32 +217,34 @@ async function handleSessionGuard(
   }
 }
 
-// ─── CSP ──────────────────────────────────────────────────────────────────────
+// ─── CSP (routes SSR uniquement) ──────────────────────────────────────────────
+//
+// SUPPRIME LE 2026-07-08 : `injectNonce(html, nonce)`.
+//
+// Cette fonction parcourait le HTML de sortie en regex et apposait le nonce sur
+// TOUS les <script>, y compris ceux qu'un attaquant venait d'injecter. Elle
+// inversait le principe meme du nonce (seuls les scripts ecrits par le serveur
+// le portent) et transformait toute injection HTML en XSS a execution garantie.
+// Elle forcait aussi `await response.text()`, ce qui desactivait le streaming
+// HTML d'Astro sur toutes les routes SSR.
+//
+// Le nonce est desormais passe explicitement : `nonce={Astro.locals.nonce}`.
+//
+// NB : cette fonction n'est appelee QUE pour les routes SSR. Les pages
+// prerendered sont servies telles quelles par le CDN Vercel -- le middleware
+// ne s'execute jamais a la requete. Leur CSP vient de vercel.json.
 
 function buildCsp(nonce: string, isDev: boolean): string {
-  const EXTERNAL_SCRIPTS = [
-    'https://www.googletagmanager.com',
-    'https://*.googletagmanager.com',
-    'https://cdn.vercel-insights.com',
-    'https://*.vercel.app',
-    'https://vercel.live',
-    'https://*.vercel.live',
-    'https://biscuits-ia.com',
-    'https://*.biscuits-ia.com',
-  ];
-
+  // 'strict-dynamic' : les scripts charges par un script de confiance heritent
+  // de la confiance. Les allowlists d'hotes sont alors ignorees par le
+  // navigateur -- inutile de lister googletagmanager ici, GTM est injecte par
+  // un script nonce.
+  //
+  // On ne declare PAS `script-src-elem` : cette directive PRIME sur `script-src`
+  // pour les elements <script>, ce qui rendait le 'strict-dynamic' ci-dessous
+  // totalement inerte dans l'ancienne version.
   const scriptSrc = [`'self'`, `'nonce-${nonce}'`, `'strict-dynamic'`];
-  const scriptSrcElem = [
-    `'self'`,
-    `'nonce-${nonce}'`,
-    `'sha256-3bzWVxQE32IZQKH9eh8KzyHuhXOlMrboDVVBRd0fWTU='`,
-    ...EXTERNAL_SCRIPTS,
-  ];
-
-  if (isDev) {
-    scriptSrc.push(`'unsafe-inline'`);
-    scriptSrcElem.push(`'unsafe-inline'`);
-  }
+  if (isDev) scriptSrc.push(`'unsafe-inline'`);
 
   const connectSrc = [
     `'self'`,
@@ -190,14 +252,9 @@ function buildCsp(nonce: string, isDev: boolean): string {
     'https://*.google-analytics.com',
     'https://analytics.google.com',
     'https://cdn.vercel-insights.com',
-    'https://*.vercel.app',
     'https://*.supabase.co',
+    'wss://*.supabase.co', // Realtime (chat projet) : WebSocket, pas https.
     'https://api.helloasso.com',
-    'https://fonts.googleapis.com',
-    'https://fonts.gstatic.com',
-    'https://*.cloudflare.com',
-    'https://biscuits-ia.com',
-    'https://*.biscuits-ia.com',
   ];
 
   if (isDev) {
@@ -212,12 +269,16 @@ function buildCsp(nonce: string, isDev: boolean): string {
   return [
     `default-src 'self'`,
     `script-src ${scriptSrc.join(' ')}`,
-    `script-src-elem ${scriptSrcElem.join(' ')}`,
+    // 'none' en prod : neutralise les handlers inline (onerror=, onclick=),
+    // ce qui limite l'impact d'une injection HTML cote client.
     `script-src-attr ${isDev ? `'self' 'unsafe-inline'` : `'none'`}`,
-    `worker-src 'self' blob: https://www.googletagmanager.com https://*.googletagmanager.com`,
-    `style-src 'self' 'unsafe-inline' https://fonts.googleapis.com`,
+    `worker-src 'self' blob:`,
+    // 'unsafe-inline' requis : les dashboards utilisent des attributs style="".
+    // Cf. astro.config.mjs pour le chemin de migration vers un CSP a hashes.
+    `style-src 'self' 'unsafe-inline'`,
     `img-src 'self' data: blob: https:`,
-    `font-src 'self' https://fonts.gstatic.com`,
+    // Inter est self-hostee : plus aucun besoin de fonts.gstatic.com.
+    `font-src 'self'`,
     `connect-src ${connectSrc.join(' ')}`,
     `frame-src https://www.googletagmanager.com https://vercel.live`,
     `object-src 'none'`,
@@ -227,17 +288,25 @@ function buildCsp(nonce: string, isDev: boolean): string {
   ].join('; ');
 }
 
-function injectNonce(html: string, nonce: string): string {
-  return html.replaceAll(/<script\b([^>]*)>/g, (match, attrs: string) => {
-    if (/\bnonce\s*=/.test(attrs)) return match;
-    return `<script${attrs} nonce="${nonce}">`;
-  });
-}
-
 // ─── Middleware ───────────────────────────────────────────────────────────────
 
 export const onRequest = defineMiddleware(async (context, next) => {
   const isDev = !import.meta.env.PROD;
+
+  // 0. Pages prerendered.
+  //
+  // Le middleware s'execute pour elles UNE FOIS, AU BUILD -- puis plus jamais :
+  // Vercel les sert en statique depuis le CDN. Y generer un nonce le figeait
+  // dans le HTML, identique pour tous les visiteurs, a vie (verifie : le
+  // dist/ contenait `nonce="zsP9agPmSxxQHYHSI1dlVbQ6"` sur les 129 pages).
+  // Un nonce public et constant n'est pas un nonce.
+  //
+  // On ne pose donc NI nonce NI CSP ici : `nonce={Astro.locals.nonce}` rend
+  // alors un attribut absent, et le CSP de ces pages vient de vercel.json.
+  if (context.isPrerendered) {
+    return next();
+  }
+
   const nonce = crypto.randomBytes(18).toString('base64');
   context.locals.nonce = nonce;
 
@@ -246,11 +315,19 @@ export const onRequest = defineMiddleware(async (context, next) => {
 
   const { pathname } = context.url;
 
-  // 1. Rate-limit.
-  const rl = checkRouteRateLimit(context, isDev, pathname);
+  // 1. Garde CSRF : refuse les mutations declenchees cross-site.
+  if (isCrossSiteMutation(context.request)) {
+    return new Response(JSON.stringify({ error: 'Requete cross-site refusee.' }), {
+      status: 403,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
+  // 2. Rate-limit (distribue via Upstash, avec fallback in-memory L1 + laissez-passer).
+  const rl = await checkRouteRateLimit(context, isDev, pathname);
   if (rl) return rl;
 
-  // 2. Guard de session (skip routes publiques).
+  // 3. Guard de session (skip routes publiques).
   if (!isPublicPath(pathname)) {
     const guard = await handleSessionGuard(supabase);
     if (guard === 'invalidated') {
@@ -269,10 +346,10 @@ export const onRequest = defineMiddleware(async (context, next) => {
     // 'unauthenticated' -> les pages protegees gerent via requireAuth().
   }
 
-  // 3. Requete.
+  // 4. Requete.
   const response = await next();
 
-  // 4. Headers no-cache emis par @supabase/ssr lors d'un setAll (cf.
+  // 5. Headers no-cache emis par @supabase/ssr lors d'un setAll (cf.
   // lib/supabase.ts). On les recopie sur la reponse finale pour empecher
   // un CDN / proxy de cacher une reponse contenant un cookie de session.
   const extra = context.locals.__extraResponseHeaders;
@@ -282,19 +359,12 @@ export const onRequest = defineMiddleware(async (context, next) => {
     }
   }
 
-  // 5. CSP.
-  const csp = buildCsp(nonce, isDev);
-  const contentType = response.headers.get('content-type') ?? '';
-  if (contentType.includes('text/html')) {
-    const html = injectNonce(await response.text(), nonce);
-    const headers = new Headers(response.headers);
-    headers.set('Content-Security-Policy', csp);
-    return new Response(html, {
-      status: response.status,
-      statusText: response.statusText,
-      headers,
-    });
-  }
-  response.headers.set('Content-Security-Policy', csp);
+  // 6. CSP.
+  //
+  // On pose UNIQUEMENT le header, sans jamais lire le corps de la reponse.
+  // L'ancienne version faisait `await response.text()` pour y injecter le nonce
+  // en regex : cela bufferisait l'integralite du HTML et supprimait le streaming
+  // d'Astro (TTFB = temps de rendu complet, au lieu de "des le <head>").
+  response.headers.set('Content-Security-Policy', buildCsp(nonce, isDev));
   return response;
 });

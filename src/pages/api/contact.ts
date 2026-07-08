@@ -41,7 +41,7 @@ function validateContactFields(fields: { name: string; email: string; subject: s
 export const POST: APIRoute = async ({ request, clientAddress }) => {
   // 1. Rate-limit dedie avant tout parsing (evite de couteux insert en BDD)
   const ip = getClientIp(request, clientAddress as string | undefined);
-  const blocked = rateLimitRoute(ip, '/api/contact', CONTACT_LIMIT, CONTACT_WINDOW_MS);
+  const blocked = await rateLimitRoute(ip, '/api/contact', CONTACT_LIMIT, CONTACT_WINDOW_MS);
   if (blocked) return blocked;
 
   let body: ContactBody;

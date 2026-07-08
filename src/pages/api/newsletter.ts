@@ -16,7 +16,7 @@ const NEWSLETTER_WINDOW_MS = 10 * 60_000;
 
 export const POST: APIRoute = async ({ request, clientAddress }) => {
   const ip = getClientIp(request, clientAddress as string | undefined);
-  const blocked = rateLimitRoute(ip, '/api/newsletter', NEWSLETTER_LIMIT, NEWSLETTER_WINDOW_MS);
+  const blocked = await rateLimitRoute(ip, '/api/newsletter', NEWSLETTER_LIMIT, NEWSLETTER_WINDOW_MS);
   if (blocked) return blocked;
 
   let body: { email?: string; honey?: string } = {};

@@ -69,7 +69,7 @@ function validateRecruitmentFields(fields: {
 export const POST: APIRoute = async ({ request, clientAddress }) => {
   // 1. Rate-limit IP avant tout parsing.
   const ip = getClientIp(request, clientAddress as string | undefined);
-  const blocked = rateLimitRoute(ip, '/api/recruitment', RECRUITMENT_LIMIT, RECRUITMENT_WINDOW_MS);
+  const blocked = await rateLimitRoute(ip, '/api/recruitment', RECRUITMENT_LIMIT, RECRUITMENT_WINDOW_MS);
   if (blocked) return blocked;
 
   let body: RecruitmentBody;

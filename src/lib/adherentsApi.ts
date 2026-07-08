@@ -184,7 +184,7 @@ export async function getAdherentsAuthContext(
   const rateKey = clientIp
     ? `${clientIp}:${user.id}:${method}:${pathname}`
     : `${user.id}:${method}:${pathname}`;
-  rateLimitResponse = rateLimit(rateKey, limit, windowMs);
+  rateLimitResponse = await rateLimit(rateKey, limit, windowMs);
 
   return {
     result: { ok: true as const, ctx: { userId: user.id, roles, adminSupabase } },

@@ -12,6 +12,50 @@ import { verifyWebhookSignature, payloadHash } from '@/lib/helloasso';
 import { enqueueEmail } from '@/lib/email-queue';
 import { type MailAddress } from '@/lib/mail';
 import { formatDateLong, formatTimeRange, formatPriceCents } from '@/types/formations';
+import { isValidUUID } from '@/lib/validation';
+
+// Forme LACHE du payload IPN HelloAsso : tous les champs sont optionnels car la
+// v5 varie selon le type d'evenement. On remplace le `any` d'origine (aucune
+// securite de type) par cette interface, sans pour autant imposer une structure
+// stricte qui rejetterait des webhooks legitimes de forme differente.
+//
+// Le payload est deja AUTHENTIFIE par la signature HMAC (etape 1) : il vient
+// bien de HelloAsso. La validation ci-dessous ne protege donc pas contre un
+// attaquant, mais contre des donnees malformees qui corrompraient la base
+// (registration_id non-UUID, montant negatif ou non numerique).
+interface HelloAssoPayer {
+  email?: string;
+  firstName?: string;
+  lastName?: string;
+}
+interface HelloAssoData {
+  checkoutIntentId?: string;
+  id?: string;
+  amount?: number;
+  totalAmount?: number;
+  state?: string;
+  status?: string;
+  currency?: string;
+  payer?: HelloAssoPayer;
+  paidAt?: string;
+  reason?: string;
+  metadata?: { registration_id?: string };
+}
+interface HelloAssoPayload {
+  eventType?: string;
+  event_type?: string;
+  type?: string;
+  checkoutIntentId?: string;
+  id?: string;
+  amount?: number;
+  state?: string;
+  status?: string;
+  currency?: string;
+  paidAt?: string;
+  reason?: string;
+  metadata?: { registration_id?: string };
+  data?: HelloAssoData;
+}
 
 export const POST: APIRoute = async ({ request }) => {
   const rawBody = await request.text();
@@ -26,9 +70,9 @@ export const POST: APIRoute = async ({ request }) => {
   }
 
   // 2. Parse le body
-  let payload: any;
+  let payload: HelloAssoPayload;
   try {
-    payload = JSON.parse(rawBody);
+    payload = JSON.parse(rawBody) as HelloAssoPayload;
   } catch {
     return new Response(JSON.stringify({ error: 'Invalid JSON' }), { status: 400 });
   }
@@ -52,10 +96,13 @@ export const POST: APIRoute = async ({ request }) => {
                           ?? payload?.data?.id
                           ?? payload?.id
                           ?? '';
-  const amountCents: number = payload?.data?.amount
+  const amountCentsRaw: number = payload?.data?.amount
                               ?? payload?.amount
                               ?? payload?.data?.totalAmount
                               ?? 0;
+  // Le montant alimente la comptabilite (helloasso_payments, training_payments)
+  // et les emails. On refuse tout ce qui n'est pas un entier de centimes >= 0.
+  const amountCents = Number.isInteger(amountCentsRaw) && amountCentsRaw >= 0 ? amountCentsRaw : 0;
   const status: string = payload?.data?.state
                        ?? payload?.state
                        ?? payload?.data?.status
@@ -72,6 +119,13 @@ export const POST: APIRoute = async ({ request }) => {
   if (!registrationId) {
     console.warn('[helloasso/webhook] pas de registration_id dans le payload');
     return new Response(JSON.stringify({ error: 'Missing registration_id' }), { status: 400 });
+  }
+  // registration_id sert de clef sur training_registrations : un format invalide
+  // ne doit jamais atteindre la base. On rejette explicitement (400) plutot que
+  // de laisser une requete `.eq('id', <non-uuid>)` echouer silencieusement.
+  if (!isValidUUID(registrationId)) {
+    console.warn('[helloasso/webhook] registration_id non-UUID:', registrationId);
+    return new Response(JSON.stringify({ error: 'Invalid registration_id' }), { status: 400 });
   }
 
   // 5. Mapper le statut HelloAsso vers notre enum

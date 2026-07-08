@@ -1,5 +1,6 @@
 import type { APIRoute } from 'astro';
 import { createSupabaseAdminClient } from '@/lib/supabase';
+import { verifyBearer } from '@/lib/secrets';
 
 /**
  * POST /api/appointments/cron/expire
@@ -20,9 +21,8 @@ import { createSupabaseAdminClient } from '@/lib/supabase';
 export const POST: APIRoute = async ({ request }) => {
   try {
     const authHeader = request.headers.get('authorization');
-    const expectedSecret = import.meta.env.CRON_SECRET;
 
-    if (!expectedSecret || authHeader !== `Bearer ${expectedSecret}`) {
+    if (!verifyBearer(authHeader, import.meta.env.CRON_SECRET)) {
       return new Response(
         JSON.stringify({ error: 'Unauthorized' }),
         { status: 401, headers: { 'Content-Type': 'application/json' } },

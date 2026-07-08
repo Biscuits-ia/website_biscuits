@@ -1,4 +1,5 @@
 ---
+import { jsonLd } from '@/lib/jsonLd';
 // src/pages/auteur/[slug].astro
 // ----------------------------------------------------------------------------
 // Page auteur dediee pour le signal E-E-A-T (Experience, Expertise,
@@ -163,7 +164,7 @@ const description = author.bio.slice(0, 160);
   <script
     is:inline
     type="application/ld+json"
-    set:html={JSON.stringify(personSchema)}
+    set:html={jsonLd(personSchema)}
   />
 </BaseLayout>
 

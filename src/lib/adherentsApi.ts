@@ -172,7 +172,7 @@ export async function getAdherentsAuthContext(
   const isBulkOperation = pathname.endsWith('/import') || pathname.endsWith('/export');
 
   let limit = 30;
-  let windowMs = 60_000;
+  const windowMs = 60_000;
   if (isBulkOperation) {
     limit = 5;
   } else if (isWriteOperation) {

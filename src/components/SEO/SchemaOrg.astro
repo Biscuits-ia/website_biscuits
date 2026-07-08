@@ -1,4 +1,5 @@
 ---
+import { jsonLd } from '@/lib/jsonLd';
 // -------- Types discriminés par type de schéma Schema.org --------------------------------------------------------------------------------------------------------
 //
 // Avant : `data?: Record<string, any>` — — perdait la sécurité de type et
@@ -471,9 +472,9 @@ const reviewSchema = articleDataForReview?.rating ? {
 ---
 
 <!-- Schema.org Structured Data (JSON-LD) -->
-<script is:inline type="application/ld+json" set:html={JSON.stringify(graphSchema)} />
+<script is:inline type="application/ld+json" set:html={jsonLd(graphSchema)} />
 
 <!-- Additional Rich Snippets -->
 {reviewSchema && (
-  <script is:inline type="application/ld+json" set:html={JSON.stringify(reviewSchema)} />
+  <script is:inline type="application/ld+json" set:html={jsonLd(reviewSchema)} />
 )}

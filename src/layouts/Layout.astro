@@ -2,9 +2,10 @@
 import Header from '@/components/Header.astro';
 import Footer from '@/components/Footer.astro';
 import BaseHead from '@/components/BaseHead.astro';
-import CookieConsent from '@/components/react/CookieConsent.tsx';
+import CookieConsent from '@/components/CookieConsent.astro';
 
-import '@/styles/theme.css';
+// global.css importe deja theme.css (via son propre @import) : inutile de le
+// dupliquer ici.
 import '@/styles/global.css';
 
 
@@ -49,9 +50,14 @@ const fullCanonical = canonical
 const fullTitle = title.includes('|') ? title : `${title} | Biscuits IA`;
 
 const isProd = import.meta.env.PROD;
-// PUBLIC_ANALYTICS_DISABLED : kill-switch global (utile en preprod, en local, ou en cas d'incident).
-// Expose au client via window.__ANALYTICS_DISABLED__ ; BaseHead et CookieConsent consultent ce flag.
-const _analyticsDisabled = import.meta.env.PUBLIC_ANALYTICS_DISABLED === 'true'; if (_analyticsDisabled && typeof window !== "undefined") (window as unknown as { __ANALYTICS_DISABLED__?: boolean }).__ANALYTICS_DISABLED__ = true;
+// PUBLIC_ANALYTICS_DISABLED : kill-switch global (preprod, local, incident).
+// Expose au client via window.__ANALYTICS_DISABLED__ ; BaseHead le consulte.
+//
+// Le frontmatter Astro s'execute UNIQUEMENT cote serveur : `typeof window` y vaut
+// toujours 'undefined'. L'ancienne version testait `typeof window !== "undefined"`
+// avant d'affecter le flag -> branche morte, le kill-switch n'a jamais fonctionne.
+// La valeur doit etre serialisee vers le client via define:vars (cf. <head> ci-dessous).
+const analyticsDisabled = import.meta.env.PUBLIC_ANALYTICS_DISABLED === 'true';
 const nonce = Astro.locals.nonce;
 
 const criticalCSS = `
@@ -81,18 +87,14 @@ const criticalCSS = `
     isProd={isProd}
     nonce={nonce}
   >
-    <!-- Critical CSS inline pour FCP optimal (Lighthouse Performance) -->
+    <script is:inline nonce={nonce} define:vars={{ analyticsDisabled }}>
+      window.__ANALYTICS_DISABLED__ = analyticsDisabled;
+    </script>
     <style set:html={criticalCSS}></style>
   </BaseHead>
 </head>
 
 <body>
-  <!-- Kill-switch analytics : expose au client le plus tot possible pour empecher
-       le load GTM / Vercel Insights meme en cas de bug JS en aval. -->
-  <script is:inline nonce={nonce}>
-    window.__ANALYTICS_DISABLED__ = false;
-  </script>
-
   <Header />
 
   <main id="main-content" role="main">
@@ -104,14 +106,14 @@ const criticalCSS = `
   <!-- Service Worker (PWA, activé uniquement après opt-in analytics + consentement cookies) -->
   <script is:inline nonce={nonce}>
     if (typeof window !== "undefined" && "serviceWorker" in navigator) {
-      var reg = function() { navigator.serviceWorker.register("/sw.js").catch(function() {}); };
+      const reg = function() { navigator.serviceWorker.register("/sw.js").catch(function() {}); };
       if ("requestIdleCallback" in window) window.requestIdleCallback(reg, { timeout: 5000 });
       else window.addEventListener("load", reg);
     }
   </script>
 
-  <!-- Composants non-critiques chargés après le contenu (améliore TBT) -->
-  <CookieConsent client:visible />
+  <!-- Bandeau cookies : composant Astro vanilla (zéro runtime React). -->
+  <CookieConsent />
 </body>
 
 <style is:global>
@@ -144,11 +146,6 @@ const criticalCSS = `
 
   main {
     min-height: 60vh;
-  }
-
-  /* Prévention du CLS pour les images */
-  img:not([width]):not([height]) {
-    aspect-ratio: attr(width) / attr(height);
   }
 
   /* Amélioration du contraste pour l'accessibilité */

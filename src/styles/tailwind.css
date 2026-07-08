@@ -1,0 +1,21 @@
+/* Fondation CSS partagee : polices self-hostees + Tailwind.
+ *
+ * Pourquoi un module dedie (audit.md P2 #13) :
+ * En Tailwind v4 (@tailwindcss/vite), CHAQUE feuille qui fait
+ * `@import "tailwindcss"` regenere l'INTEGRALITE des utilitaires du projet
+ * (le scan de contenu est global). Avoir cet import dans global.css ET
+ * dashboard.css produisait donc deux fois le preflight + tous les utilitaires
+ * (verifie a l'audit : marqueur `-webkit-text-size-adjust` x3 dans index.html).
+ *
+ * En le centralisant ici, un seul module porte Tailwind. global.css et
+ * dashboard.css l'importent tous deux -> Vite le traite comme un module unique
+ * et le hisse dans un chunk CSS partage au lieu de le dupliquer par entree.
+ *
+ * Ne PAS y mettre de theme : theme.css (brutalisme du site public) ne doit
+ * jamais atteindre le dashboard, qui a sa propre identite visuelle.
+ */
+
+/* Inter self-hostee (RGPD : aucune IP visiteur transmise a Google).
+   Le package expose des unicode-range : seul le subset latin est telecharge. */
+@import '@fontsource-variable/inter';
+@import 'tailwindcss';

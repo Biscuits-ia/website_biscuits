@@ -1,8 +1,10 @@
 ---
 import AuthLayout from '../layouts/AuthLayout.astro';
+import { createSupabaseClient } from '@/lib/supabase';
 // Réutilise le client Supabase initialisé par le middleware (évite un 2e
 // round-trip Auth et garantit que les cookies rafraîchis sont cohérents).
-const supabase = Astro.locals.supabase;
+// Le `??` couvre le cas prerendered, où le middleware sort avant de le poser.
+const supabase = Astro.locals.supabase ?? createSupabaseClient(Astro);
 const { data: { user } } = await supabase.auth.getUser();
 if (user) return Astro.redirect('/dashboard/user/');
 const nonce = Astro.locals.nonce;

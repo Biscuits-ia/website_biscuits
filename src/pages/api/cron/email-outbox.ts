@@ -13,6 +13,7 @@
 
 import type { APIRoute } from 'astro';
 import { processEmailOutbox } from '@/lib/email-queue';
+import { verifyBearer } from '@/lib/secrets';
 
 export const POST: APIRoute = async ({ request }) => {
   return await runWorker(request);
@@ -23,7 +24,6 @@ export const GET: APIRoute = async ({ request }) => {
 };
 
 async function runWorker(request: Request): Promise<Response> {
-  const authHeader = request.headers.get('authorization');
   const expectedSecret = import.meta.env.CRON_SECRET;
 
   if (!expectedSecret) {
@@ -33,7 +33,7 @@ async function runWorker(request: Request): Promise<Response> {
     );
   }
 
-  if (authHeader !== `Bearer ${expectedSecret}`) {
+  if (!verifyBearer(request.headers.get('authorization'), expectedSecret)) {
     return new Response(
       JSON.stringify({ error: 'Unauthorized' }),
       { status: 401, headers: { 'Content-Type': 'application/json' } },

@@ -1,4 +1,5 @@
 ---
+import { jsonLd } from '@/lib/jsonLd';
 // src/components/Citation.astro
 // ----------------------------------------------------------------------------
 // Composant Citation : affiche une source/expertise de maniere visible pour
@@ -79,7 +80,7 @@ const quotationSchema = quote ? {
   <script
     is:inline
     type="application/ld+json"
-    set:html={JSON.stringify(quotationSchema)}
+    set:html={jsonLd(quotationSchema)}
   />
 )}
 

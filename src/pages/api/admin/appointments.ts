@@ -53,7 +53,7 @@ export const GET: APIRoute = async ({ request, cookies }) => {
     // Récupérer les profils pour les user_id présents
     // (pas de FK directe vers profiles dans le schéma, donc requête séparée)
     const userIds = [...new Set((appointments ?? []).map((a) => a.user_id).filter(Boolean))];
-    let profilesMap: Record<string, { full_name: string | null; email: string | null }> = {};
+    const profilesMap: Record<string, { full_name: string | null; email: string | null }> = {};
 
     if (userIds.length > 0) {
       const { data: profiles } = await adminDb

@@ -1,7 +1,9 @@
 ---
 import AuthLayout from '../layouts/AuthLayout.astro';
+import { createSupabaseClient } from '@/lib/supabase';
 // Réutilise le client Supabase initialisé par le middleware.
-const supabase = Astro.locals.supabase;
+// Le `??` couvre le cas prerendered, où le middleware sort avant de le poser.
+const supabase = Astro.locals.supabase ?? createSupabaseClient(Astro);
 const { data: { user } } = await supabase.auth.getUser();
 if (user) return Astro.redirect('/dashboard/user');
 const nonce = Astro.locals.nonce;
@@ -131,9 +133,9 @@ const nonce = Astro.locals.nonce;
 
 <script is:inline nonce={nonce}>
   // Helpers validation — source de vérité : src/lib/validation.ts
-  var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  var MIN_PASSWORD_LENGTH = 8;
-  var MAX_PASSWORD_LENGTH = 128;
+  const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const MIN_PASSWORD_LENGTH = 8;
+  const MAX_PASSWORD_LENGTH = 128;
   function validateEmailClient(value) {
     if (typeof value !== 'string' || !value.trim()) return 'L’adresse email est requise.';
     if (!EMAIL_RE.test(value.trim())) return 'Adresse email invalide.';
@@ -146,14 +148,14 @@ const nonce = Astro.locals.nonce;
     return null;
   }
 
-  var passInput  = document.getElementById('password');
-  var msgEl      = document.getElementById('msg');
-  var btn        = document.getElementById('signup-btn');
-  var btnText    = document.getElementById('btn-text');
-  var btnLoader  = document.getElementById('btn-loader');
-  var segments   = ['s1','s2','s3','s4'].map(function(id) { return document.getElementById(id); });
-  var colors     = ['#E24B4A','#E89A3C','#C4623A','#3D5A47'];
-  var labels     = ['Trop court','Faible','Moyen','Fort'];
+  const passInput  = document.getElementById('password');
+  const msgEl      = document.getElementById('msg');
+  const btn        = document.getElementById('signup-btn');
+  const btnText    = document.getElementById('btn-text');
+  const btnLoader  = document.getElementById('btn-loader');
+  const segments   = ['s1','s2','s3','s4'].map(function(id) { return document.getElementById(id); });
+  const colors     = ['#E24B4A','#E89A3C','#C4623A','#3D5A47'];
+  const labels     = ['Trop court','Faible','Moyen','Fort'];
 
   function showMsg(text, type) {
     if (type === undefined) type = 'error';
@@ -170,7 +172,7 @@ const nonce = Astro.locals.nonce;
   }
 
   function getStrength(pw) {
-    var s = 0;
+    let s = 0;
     if (pw.length >= 8)  s++;
     if (pw.length >= 12) s++;
     if (/[A-Z]/.test(pw) && /[a-z]/.test(pw)) s++;
@@ -179,43 +181,43 @@ const nonce = Astro.locals.nonce;
   }
 
   passInput.addEventListener('input', function() {
-    var pw = passInput.value;
-    var wrap = document.getElementById('strength-wrap');
+    const pw = passInput.value;
+    const wrap = document.getElementById('strength-wrap');
     if (!pw) { wrap.style.display = 'none'; return; }
     wrap.style.display = 'block';
-    var s = getStrength(pw);
+    const s = getStrength(pw);
     segments.forEach(function(seg, i) { seg.style.background = i < s ? colors[s - 1] : '#DDD0B8'; });
-    var lbl = document.getElementById('strength-label');
+    const lbl = document.getElementById('strength-label');
     lbl.textContent = labels[s - 1];
     lbl.style.color = colors[s - 1];
   });
 
   async function handleSignup() {
-    var email    = document.getElementById('email').value.trim();
-    var password = passInput.value;
-    var confirm  = document.getElementById('confirm').value;
+    const email    = document.getElementById('email').value.trim();
+    const password = passInput.value;
+    const confirm  = document.getElementById('confirm').value;
 
     hideMsg();
     if (!email || !password || !confirm) return showMsg('Veuillez remplir tous les champs.');
-    var emailErr = validateEmailClient(email);
+    const emailErr = validateEmailClient(email);
     if (emailErr) return showMsg(emailErr);
-    var passErr = validatePasswordClient(password);
+    const passErr = validatePasswordClient(password);
     if (passErr) return showMsg(passErr);
     if (password !== confirm) return showMsg('Les mots de passe ne correspondent pas.');
 
     setLoading(true);
     try {
-      var formData = new FormData();
+      const formData = new FormData();
       formData.set('email', email);
       formData.set('password', password);
 
-      var res = await fetch('/auth/inscription', {
-        method: 'POST',
-        body: formData,
-      });
+      const res = await fetch('/auth/inscription', {
+      method: 'POST',
+      body: formData,
+    });
 
-      var raw = await res.text();
-      var data = {};
+      const raw = await res.text();
+      let data = {};
       try {
         data = raw ? JSON.parse(raw) : {};
       } catch (_) {

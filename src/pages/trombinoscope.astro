@@ -2,6 +2,7 @@
 import Layout from '@/layouts/Layout.astro';
 import Breadcrumb from '@/components/Breadcrumb.astro';
 import { createSupabaseAdminClient } from '@/lib/supabase';
+import { jsonLd } from '@/lib/jsonLd';
 
 export const prerender = false;
 
@@ -212,7 +213,7 @@ function photoUrl(url: string | null): string {
       <a href="/rejoignez-nous" class="btn-cta">Devenir bénévole</a>
     </div>
   </section>
-<script type="application/ld+json" is:inline set:html={JSON.stringify(trombinoscopeSchema)} />
+<script type="application/ld+json" is:inline set:html={jsonLd(trombinoscopeSchema)} />
 </Layout>
 
 <style>

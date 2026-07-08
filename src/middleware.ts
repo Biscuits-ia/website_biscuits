@@ -17,6 +17,7 @@ import { defineMiddleware } from 'astro:middleware';
 import { rateLimit } from './lib/rateLimit';
 import { getClientIpOrNull } from './lib/http';
 import { createSupabaseClient, createSupabaseAdminClient } from './lib/supabase';
+import { logError, requestContext } from './lib/observability';
 import crypto from 'node:crypto';
 
 // ─── Cache logout (30 s, borne) ───────────────────────────────────────────────
@@ -347,7 +348,18 @@ export const onRequest = defineMiddleware(async (context, next) => {
   }
 
   // 4. Requete.
-  const response = await next();
+  //
+  // Observabilite (audit.md P2 #20) : on encapsule le rendu pour capturer les
+  // erreurs non gerees avec leur contexte (methode + path) dans les Vercel
+  // Runtime Logs. On RE-jette ensuite : le comportement (page 500 d'Astro)
+  // reste identique -- on ajoute seulement une ligne de log exploitable.
+  let response: Response;
+  try {
+    response = await next();
+  } catch (err) {
+    logError('[middleware] erreur non geree pendant le rendu', err, requestContext(context.request));
+    throw err;
+  }
 
   // 5. Headers no-cache emis par @supabase/ssr lors d'un setAll (cf.
   // lib/supabase.ts). On les recopie sur la reponse finale pour empecher

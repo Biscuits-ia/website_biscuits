@@ -1,6 +1,35 @@
 ---
+// ============================================================================
+// BaseHead : tout le <head> commun.
+//
+// NB : les commentaires `<!-- -->` sont EMIS dans le HTML final (x129 pages).
+// Toute explication longue va donc ici, dans le frontmatter, jamais dans le
+// template.
+//
+// ── Polices ─────────────────────────────────────────────────────────────────
+// Inter est self-hostee via @fontsource-variable/inter, importee par global.css.
+// Aucun <link>, aucun preconnect vers Google : zero requete tierce, aucune IP
+// transmise avant consentement.
+//
+// Supprime le 2026-07-08 :
+//   - 3 <link> vers "Zalando Sans SemiExpanded" : police variable (200..900,
+//     roman + italique) telechargee sur chaque page, referencee par AUCUNE
+//     regle `font-family` du projet ;
+//   - le hack `media="print"` + onload qui l'accompagnait ;
+//   - <meta http-equiv="X-Content-Type-Options"> : sans effet en HTML, seul le
+//     header HTTP compte (deja pose par vercel.json) ;
+//   - le bloc `window.__PARTYTOWN_CONFIG` : Partytown n'a jamais ete une
+//     dependance du projet.
+//
+// ── GTM ─────────────────────────────────────────────────────────────────────
+// Le loader ne se declenche qu'APRES consentement analytics (RGPD / CNIL
+// deliberation n 2020-091). Aucun prechauffage TCP/TLS vers Google sans opt-in.
+// Il teste `!window.__ANALYTICS_DISABLED__`, flag pose par Layout.astro dans le
+// <slot /> ci-dessous -- donc AVANT ce script. Ne pas reordonner.
+// ============================================================================
 import SEOHead from '@/components/SEO/SEOHead.astro';
 import SchemaOrg from '@/components/SEO/SchemaOrg.astro';
+import { jsonLd } from '@/lib/jsonLd';
 
 export interface Props {
   fullTitle: string;
@@ -35,22 +64,6 @@ const {
 
 <slot />
 
-<!--
-  Preconnect GTM : ne se declenche qu'APRES consentement analytics.
-  Sans opt-in, aucun prechauffage TCP/TLS vers Google n'est emis
-  (RGPD / CNIL deliberation n 2020-091).
-  Le handshake est ajoute dynamiquement par le loader ci-dessous.
--->
-{isProd && (
-  <script is:inline nonce={nonce}>
-    if (window.location.hostname === 'biscuits-ia.com') {
-      window.__PARTYTOWN_CONFIG = {
-        skipDeprecatedAPIs: true,
-      };
-    }
-  </script>
-)}
-
 <SEOHead
   title={fullTitle}
   description={description}
@@ -64,7 +77,7 @@ const {
 {!schema && (
   <>
     <SchemaOrg type="Organization" />
-    <script is:inline type="application/ld+json" set:html={JSON.stringify({
+    <script is:inline type="application/ld+json" set:html={jsonLd({
       "@context": "https://schema.org",
       "@type": "WebPage",
       "url": fullCanonical,
@@ -80,39 +93,14 @@ const {
   </>
 )}
 
-<!-- Favicons optimises (format moderne) -->
 <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 <link rel="alternate icon" href="/favicon.ico" sizes="32x32" />
 <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
 <link rel="manifest" href="/site.webmanifest" />
-<link rel="sitemap" type="application/xml" href="/sitemap.xml" />
+<link rel="sitemap" type="application/xml" href="/sitemap-index.xml" />
+<link rel="alternate" type="text/markdown" href="/llms.txt" title="llms.txt" />
 
-<meta http-equiv="X-Content-Type-Options" content="nosniff" />
 <meta name="referrer" content="strict-origin-when-cross-origin" />
-<!--
-  Fonts : preconnect + load asynchrone pour ne pas bloquer le render (Lighthouse).
-  Le swap `media=print` + onload evite que la feuille de style Google Fonts bloque le FCP.
-  font-display:swap est deja dans la query string (deja inclus).
--->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link
-  id="font-zalando"
-  rel="stylesheet"
-  href="https://fonts.googleapis.com/css2?family=Zalando+Sans+SemiExpanded:ital,wght@0,200..900;1,200..900&display=swap"
-  media="print"
->
-<noscript>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zalando+Sans+SemiExpanded:ital,wght@0,200..900;1,200..900&display=swap">
-</noscript>
-
-<script is:inline nonce={nonce}>
-  var fontLink = document.getElementById('font-zalando');
-  if (fontLink) fontLink.addEventListener('load', function () { fontLink.media = 'all'; }, { once: true });
-</script>
-<noscript>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zalando+Sans+SemiExpanded:ital,wght@0,200..900;1,200..900&display=swap">
-</noscript>
 
 {isProd && (
   <script is:inline nonce={nonce}>

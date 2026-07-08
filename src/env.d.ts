@@ -50,10 +50,23 @@ interface ImportMeta {
 declare global {
   namespace App {
     interface Locals {
-      /** CSP nonce genere par le middleware, injecte dans les <script> inline. */
-      nonce: string;
-      /** Client Supabase reauthentifiable partage par toutes les requetes du middleware. */
-      supabase: import('@supabase/supabase-js').SupabaseClient;
+      /**
+       * Nonce CSP genere par le middleware, a passer EXPLICITEMENT :
+       * `<script is:inline nonce={Astro.locals.nonce}>`.
+       *
+       * `undefined` sur les pages `prerender = true` : le middleware n'y tourne
+       * qu'au BUILD. Un nonce y serait fige dans le HTML statique -- identique
+       * pour tous les visiteurs, a vie -- donc sans aucune valeur de securite.
+       * Ces pages recoivent leur CSP depuis vercel.json.
+       *
+       * Astro omet simplement l'attribut quand la valeur est `undefined`.
+       */
+      nonce?: string;
+      /**
+       * Client Supabase partage par la requete.
+       * `undefined` sur les pages prerendered (le middleware sort tot).
+       */
+      supabase?: import('@supabase/supabase-js').SupabaseClient;
       /**
        * Headers no-cache emis par @supabase/ssr lors d'un setAll (cf.
        * lib/supabase.ts). Le middleware les recopie sur la reponse finale

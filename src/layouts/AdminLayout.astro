@@ -1,4 +1,8 @@
 ---
+// dashboard.css importe Tailwind (via tailwind.css) + la charte du dashboard.
+// Import ESM (et non <link href="/src/styles/...">) : un chemin source brut
+// n'est pas traite par le pipeline Astro et renvoie 404 en production.
+import '../styles/dashboard.css';
 import BaseHead from '@/components/BaseHead.astro';
 import Header from '@/components/Header.astro';
 import Footer from '@/components/Footer.astro';
@@ -47,7 +51,6 @@ const nonce = Astro.locals.nonce;
       isProd={isProd}
       nonce={nonce}
     />
-    <link rel="stylesheet" href="/src/styles/dashboard.css" />
   </head>
   <body class="min-h-screen flex flex-col bg-gray-50">
     <Header isAdmin />

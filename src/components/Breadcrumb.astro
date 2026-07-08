@@ -1,4 +1,5 @@
 ---
+import { jsonLd } from '@/lib/jsonLd';
 // Fil d'Ariane accessible + BreadcrumbList schema (Google).
 // Génère automatiquement la chaîne depuis Astro.url.pathname.
 // Les libellés de segments sont surchargés via `labels` si besoin.
@@ -82,7 +83,7 @@ const schema = {
         ))}
       </ol>
     </nav>
-    <script type="application/ld+json" set:html={JSON.stringify(schema)} is:inline />
+    <script type="application/ld+json" set:html={jsonLd(schema)} is:inline />
   </>
 )}
 

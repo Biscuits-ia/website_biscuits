@@ -1,4 +1,8 @@
-@import "tailwindcss";
+/* Tailwind via le module partage (cf. tailwind.css). NE PAS remettre
+   `@import "tailwindcss"` ici : cela regenererait tous les utilitaires une
+   seconde fois (audit.md P2 #13). Ce fichier ne contient QUE la charte du
+   dashboard -- pas de theme.css (brutalisme public). */
+@import './tailwind.css';
 
 :root {
   /* ── Fonds ── */

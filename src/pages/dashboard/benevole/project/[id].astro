@@ -726,7 +726,7 @@ const memberOptionsJson = JSON.stringify(memberOptions);
 <script is:inline define:vars={{ projectId, memberOptionsJson, userId, isMember, isStaff, userName }}>
   /* ── Helpers ──────────────────────────────────────────────────────────────── */
   // memberOptionsJson is injected by <script is:inline define:vars>
-  // eslint-disable-next-line @typescript-eslint/no-undef
+  // eslint-disable-next-line no-undef
   const _memberOptions = JSON.parse(memberOptionsJson);
 
   function esc(str) {

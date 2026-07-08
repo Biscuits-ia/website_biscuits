@@ -1,0 +1,322 @@
+---
+// src/components/CookieConsent.astro
+//
+// Bandeau de consentement cookies — VANILLA (ex-island React, audit.md P2 #14).
+//
+// Pourquoi ce n'est plus du React : le composant precedent (CookieConsent.tsx)
+// etait monte via <CookieConsent client:visible /> dans le layout GLOBAL. Il
+// hydratait donc le runtime React (~185 Ko de JS) sur 100 % des pages publiques
+// -- y compris les ~129 pages statiques du blog -- pour gerer 2 cases a cocher
+// et localStorage. TBT / INP degrades sur tout le trafic.
+//
+// Cette version rend le markup en statique (zero JS de framework) et pilote
+// l'affichage avec un <script is:inline> vanilla (~2 Ko). Comportement identique
+// a l'ancien composant :
+//   - 2 categories : necessaire (verrouille) + analytics (opt-in) ;
+//   - vues bannière / réglages ;
+//   - persistance localStorage + expiration 13 mois + versionnage ;
+//   - event `cookieConsentUpdated` (ecoute par BaseHead pour (de)charger GTM) ;
+//   - chargement/dechargement de Vercel Insights selon le consentement ;
+//   - kill-switch runtime `window.__ANALYTICS_DISABLED__` ;
+//   - API globale `window.showCookieBanner()` + event `showCookieBanner`
+//     (rouvre le bandeau depuis un lien de pied de page).
+//
+// GTM lui-meme est charge par BaseHead.astro (loadGTMIfConsented) : ici on ne
+// touche qu'a Vercel Insights et on emet l'event que BaseHead ecoute.
+
+import '@/styles/cookie-consent.css';
+
+interface Props {
+  /** Incrementer pour re-demander le consentement apres un changement de politique. */
+  consentVersion?: string;
+}
+const { consentVersion = '1.0' } = Astro.props;
+const nonce = Astro.locals.nonce;
+---
+
+<div
+  id="cookie-banner"
+  class="cookie-banner"
+  role="dialog"
+  aria-labelledby="cookie-banner-title"
+  aria-describedby="cookie-banner-description"
+  aria-live="polite"
+  hidden
+>
+  <div class="cookie-banner-content">
+    <!-- Vue principale -->
+    <div id="cookie-view-main">
+      <div class="cookie-header">
+        <div class="cookie-text">
+          <h3 id="cookie-banner-title">Cookies</h3>
+          <p id="cookie-banner-description">
+            Nous utilisons des cookies pour ameliorer votre experience. Les
+            cookies necessaires sont requis pour le fonctionnement du site. Vous
+            pouvez personnaliser vos preferences a tout moment.{' '}
+            <a href="/legal/cookies" style="color:inherit;text-decoration:underline">
+              En savoir plus
+            </a>
+          </p>
+          <span class="cookie-example">Exemple : session, securite, preferences</span>
+        </div>
+        <button
+          type="button"
+          class="cookie-close"
+          data-action="refuse"
+          aria-label="Refuser les cookies optionnels"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+            <line x1="18" y1="6" x2="6" y2="18" stroke-width="2" stroke-linecap="round" />
+            <line x1="6" y1="6" x2="18" y2="18" stroke-width="2" stroke-linecap="round" />
+          </svg>
+        </button>
+      </div>
+
+      <div class="cookie-actions">
+        <button type="button" class="cookie-btn cookie-btn-secondary" data-action="settings">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+            <circle cx="12" cy="12" r="3" stroke-width="2" />
+            <path d="M12 1v6m0 6v6M23 12h-6m-6 0H1" stroke-width="2" stroke-linecap="round" />
+          </svg>
+          Personnaliser
+        </button>
+        <button type="button" class="cookie-btn cookie-btn-secondary" data-action="refuse">
+          Refuser
+        </button>
+        <button type="button" class="cookie-btn cookie-btn-primary" data-action="accept-all">
+          Accepter tout
+        </button>
+      </div>
+    </div>
+
+    <!-- Vue reglages -->
+    <div id="cookie-view-settings" hidden>
+      <div class="cookie-header">
+        <div class="cookie-text">
+          <h3>Vos preferences</h3>
+          <p>
+            Choisissez les categories de cookies que vous autorisez. Vous pouvez
+            modifier votre choix a tout moment.
+          </p>
+        </div>
+      </div>
+
+      <div class="cookie-preferences">
+        <div class="cookie-pref-item">
+          <div class="cookie-pref-text">
+            <p class="cookie-pref-title">Cookies necessaires</p>
+            <p class="cookie-pref-desc">
+              Requis pour le fonctionnement du site (toujours actives)
+            </p>
+          </div>
+          <div class="cookie-toggle cookie-toggle-active" aria-hidden="true">
+            <div class="cookie-toggle-thumb"></div>
+          </div>
+        </div>
+
+        <div class="cookie-pref-item">
+          <div class="cookie-pref-text">
+            <p class="cookie-pref-title">Cookies analytiques</p>
+            <p class="cookie-pref-desc">
+              Nous aident a comprendre comment vous utilisez le site
+            </p>
+          </div>
+          <button
+            type="button"
+            class="cookie-toggle"
+            data-toggle="analytics"
+            role="switch"
+            aria-checked="false"
+            aria-label="Activer les cookies analytiques"
+          >
+            <div class="cookie-toggle-thumb"></div>
+          </button>
+        </div>
+      </div>
+
+      <div class="cookie-actions">
+        <button type="button" class="cookie-btn cookie-btn-secondary" data-action="cancel">
+          Annuler
+        </button>
+        <button type="button" class="cookie-btn cookie-btn-primary" data-action="save">
+          Enregistrer
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script is:inline nonce={nonce} define:vars={{ consentVersion }}>
+  (function () {
+    const banner = document.getElementById('cookie-banner');
+    if (!banner) return;
+
+    const viewMain = document.getElementById('cookie-view-main');
+    const viewSettings = document.getElementById('cookie-view-settings');
+    const analyticsToggle = banner.querySelector('[data-toggle="analytics"]');
+
+    // Etat local de la case analytics dans la vue reglages.
+    let analyticsPref = false;
+
+    // ── localStorage ─────────────────────────────────────────────────────────
+    const KEY = 'cookie-consent';
+    const KEY_DATE = 'cookie-consent-date';
+    const KEY_VERSION = 'cookie-consent-version';
+
+    function clearConsent() {
+      localStorage.removeItem(KEY);
+      localStorage.removeItem(KEY_DATE);
+      localStorage.removeItem(KEY_VERSION);
+    }
+
+    // ── Vercel Insights (analytics) ────────────────────────────────────────────
+    // GTM est gere par BaseHead (loadGTMIfConsented) ; ici, uniquement Insights.
+    function loadAnalytics() {
+      if (window.__ANALYTICS_DISABLED__ === true) return;
+      if (document.querySelector('script[data-consent="analytics"], script[data-vercel-insights]')) {
+        return;
+      }
+      const script = document.createElement('script');
+      script.src = '/_vercel/insights/script.js';
+      script.async = true;
+      script.dataset.consent = 'analytics';
+      script.dataset.vercelInsights = '1';
+      script.addEventListener(
+        'error',
+        () => {
+          if (window.__GTM_DEBUG__ === true) {
+            console.info('[Vercel Insights] load failed (likely blocked or offline)');
+          }
+        },
+        { once: true },
+      );
+      try {
+        document.head.appendChild(script);
+      } catch (e) {
+        /* DOM indisponible (page unload, sandbox) : on ne fait rien. */
+      }
+    }
+
+    function unloadAnalytics() {
+      document.querySelectorAll('script[data-consent="analytics"]').forEach((s) => s.remove());
+    }
+
+    // ── Affichage ───────────────────────────────────────────────────────────────
+    function openBanner() {
+      showMain();
+      banner.hidden = false;
+    }
+    function closeBanner() {
+      banner.hidden = true;
+    }
+    function showMain() {
+      viewMain.hidden = false;
+      viewSettings.hidden = true;
+    }
+    function showSettings() {
+      viewMain.hidden = true;
+      viewSettings.hidden = false;
+      syncToggleUI();
+    }
+    function syncToggleUI() {
+      if (!analyticsToggle) return;
+      analyticsToggle.classList.toggle('cookie-toggle-active', analyticsPref);
+      analyticsToggle.setAttribute('aria-checked', String(analyticsPref));
+    }
+
+    // ── Sauvegarde du consentement ───────────────────────────────────────────────
+    function savePreferences(prefs) {
+      const date = new Date().toISOString();
+      localStorage.setItem(KEY, JSON.stringify(prefs));
+      localStorage.setItem(KEY_DATE, date);
+      localStorage.setItem(KEY_VERSION, consentVersion);
+
+      // BaseHead ecoute cet event pour (de)charger GTM.
+      window.dispatchEvent(
+        new CustomEvent('cookieConsentUpdated', {
+          detail: { ...prefs, date, version: consentVersion },
+        }),
+      );
+
+      // RGPD : un refus explicite doit retirer les scripts deja charges.
+      if (prefs.analytics) {
+        if (typeof window.loadGTMIfConsented === 'function') window.loadGTMIfConsented();
+        loadAnalytics();
+      } else {
+        unloadAnalytics();
+      }
+
+      analyticsPref = prefs.analytics;
+      closeBanner();
+    }
+
+    // ── Interactions (delegation) ────────────────────────────────────────────────
+    banner.addEventListener('click', (e) => {
+      const el = e.target instanceof Element ? e.target.closest('[data-action],[data-toggle]') : null;
+      if (!el) return;
+
+      const toggle = el.getAttribute('data-toggle');
+      if (toggle === 'analytics') {
+        analyticsPref = !analyticsPref;
+        syncToggleUI();
+        return;
+      }
+
+      switch (el.getAttribute('data-action')) {
+        case 'accept-all':
+          savePreferences({ necessary: true, analytics: true });
+          break;
+        case 'refuse':
+          savePreferences({ necessary: true, analytics: false });
+          break;
+        case 'settings':
+          showSettings();
+          break;
+        case 'cancel':
+          showMain();
+          break;
+        case 'save':
+          savePreferences({ necessary: true, analytics: analyticsPref });
+          break;
+      }
+    });
+
+    // Fermeture au clavier (Echap) : equivaut a "refuser l'optionnel".
+    banner.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') savePreferences({ necessary: true, analytics: false });
+    });
+
+    // ── API de reouverture (lien pied de page) ───────────────────────────────────
+    window.showCookieBanner = openBanner;
+    window.addEventListener('showCookieBanner', openBanner);
+
+    // ── Initialisation ────────────────────────────────────────────────────────────
+    const consentStr = localStorage.getItem(KEY);
+    const consentDateStr = localStorage.getItem(KEY_DATE);
+    const consentVersionStr = localStorage.getItem(KEY_VERSION);
+
+    if (!consentStr || !consentDateStr) {
+      openBanner();
+      return;
+    }
+
+    const consentDate = new Date(consentDateStr);
+    const thirteenMonthsAgo = new Date();
+    thirteenMonthsAgo.setMonth(thirteenMonthsAgo.getMonth() - 13);
+
+    if (consentDate < thirteenMonthsAgo || consentVersionStr !== consentVersion) {
+      clearConsent();
+      openBanner();
+      return;
+    }
+
+    try {
+      const consent = JSON.parse(consentStr);
+      analyticsPref = consent.analytics === true;
+      if (analyticsPref) loadAnalytics();
+    } catch (e) {
+      console.error('[cookie-consent] preferences illisibles:', e);
+      openBanner();
+    }
+  })();
+</script>

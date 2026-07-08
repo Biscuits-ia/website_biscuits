@@ -1,5 +1,11 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-@import "tailwindcss";
+/* Fondation partagee (Inter self-hostee + Tailwind), factorisee dans un seul
+   module pour ne pas regenerer les utilitaires Tailwind deux fois (cf.
+   tailwind.css et audit.md P2 #13).
+   RGPD : aucune IP visiteur transmise a Google avant consentement -- ne JAMAIS
+   revenir a un @import vers fonts.googleapis.com (cf. LG Munchen I, 3 O 17493/20). */
+@import './tailwind.css';
+/* theme.css = identite visuelle du site PUBLIC (brutalisme). A ne pas charger
+   sur le dashboard, qui a sa propre charte dans dashboard.css. */
 @import './theme.css';
 
 /* ===== WCAG 2.1 Accessibilité ===== */
@@ -39,7 +45,9 @@ html {
 
 
 body {
-  font-family: 'Inter', Arial, Helvetica, sans-serif;
+  /* 'Inter Variable' = nom declare par @fontsource-variable/inter.
+     'Inter' en repli si la police est installee localement. */
+  font-family: 'Inter Variable', 'Inter', Arial, Helvetica, sans-serif;
   color: var(--color-text);
   background-color: var(--color-bg);
   -webkit-font-smoothing: antialiased;

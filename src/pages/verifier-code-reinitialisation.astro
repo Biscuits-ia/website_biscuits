@@ -107,12 +107,12 @@ const prefilledEmail = (Astro.url.searchParams.get('email') ?? '').trim();
 </style>
 
 <script is:inline nonce={nonce}>
-	var msgEl = document.getElementById('msg');
-	var btn = document.getElementById('verify-btn');
-	var btnText = document.getElementById('btn-text');
-	var btnLoader = document.getElementById('btn-loader');
-	var emailInput = document.getElementById('email');
-	var tokenInput = document.getElementById('token');
+	const msgEl = document.getElementById('msg');
+	const btn = document.getElementById('verify-btn');
+	const btnText = document.getElementById('btn-text');
+	const btnLoader = document.getElementById('btn-loader');
+	const emailInput = document.getElementById('email');
+	const tokenInput = document.getElementById('token');
 
 	function showMsg(text, type) {
 		if (type === undefined) type = 'error';
@@ -128,8 +128,8 @@ const prefilledEmail = (Astro.url.searchParams.get('email') ?? '').trim();
 	}
 
 	async function handleVerify() {
-		var email = emailInput.value.trim().toLowerCase();
-		var token = tokenInput.value.trim();
+		const email = emailInput.value.trim().toLowerCase();
+		const token = tokenInput.value.trim();
 
 		msgEl.style.display = 'none';
 
@@ -140,16 +140,16 @@ const prefilledEmail = (Astro.url.searchParams.get('email') ?? '').trim();
 
 		setLoading(true);
 		try {
-			var formData = new FormData();
+			const formData = new FormData();
 			formData.set('email', email);
 			formData.set('token', token);
 
-			var res = await fetch('/auth/verifier-token-reinitialisation', {
-				method: 'POST',
-				body: formData,
-			});
+			const res = await fetch('/auth/verifier-token-reinitialisation', {
+			method: 'POST',
+			body: formData,
+		});
 
-			var data = await res.json();
+			const data = await res.json();
 			if (!res.ok) {
 				return showMsg(data.error || 'Impossible de vérifier le code.');
 			}

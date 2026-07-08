@@ -14,6 +14,20 @@
   outline-offset: 3px;
   border-radius: 3px;
 }
+/* Cache visuellement un element tout en le laissant accessible aux lecteurs
+   d'ecran et au plan du document. Utilise pour les h1 globaux et les h2
+   parasites du Header / Footer qui injectent leur plan avant le <main>. */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
 button:not(.nav-trigger):not(.hamburger), a, select {
   min-height: 44px;
 }

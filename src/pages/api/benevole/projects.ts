@@ -1,7 +1,7 @@
 // src/pages/api/benevole/projects.ts
 import type { APIRoute } from 'astro';
-import { createSupabaseClient, createSupabaseAdminClient } from '@/lib/supabase';
-import { fetchRoleSecure } from '@/lib/auth';
+import { createSupabaseAdminClient } from '@/lib/supabase';
+import { requireBenevoleJson } from '@/lib/auth';
 
 function jsonError(message: string, status = 400) {
   return new Response(JSON.stringify({ error: message }), {
@@ -17,21 +17,12 @@ function jsonOk(data: unknown, status = 200) {
   });
 }
 
-async function getAuthContext(request: Request, cookies: { get: (n: string) => unknown; set: (n: string, v: string, o?: Record<string, unknown>) => void; delete: (n: string, o?: Record<string, unknown>) => void }) {
-  const supabase = createSupabaseClient({ request, cookies });
-  const { data: { user }, error } = await supabase.auth.getUser();
-  if (error || !user) return null;
-  const role = await fetchRoleSecure(user.id);
-  if (!role || (role !== 'benevole' && role !== 'moderator' && role !== 'admin')) return null;
-  return { supabase, user, role };
-}
-
-// â”€â”€ POST /api/benevole/projects â€” créer un projet â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-export const POST: APIRoute = async ({ request, cookies }) => {
-  const ctx = await getAuthContext(request, cookies);
-  if (!ctx) return jsonError('Non autorisé.', 401);
-
-  const { user, role } = ctx;
+// ── POST /api/benevole/projects — créer un projet ──────────────────────────────
+export const POST: APIRoute = async (ctx) => {
+  const auth = await requireBenevoleJson(ctx);
+  if (auth instanceof Response) return auth;
+  const { user, role } = auth;
+  const { request } = ctx;
   const adminSupabase = createSupabaseAdminClient();
 
   // Seuls le staff peut créer un projet
@@ -99,7 +90,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
   return jsonOk({ id: data.id }, 201);
 };
 
-// â”€â”€ PATCH /api/benevole/projects?id=â€¦ â€” modifier un projet â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── PATCH /api/benevole/projects?id=… — modifier un projet ────────────────────
 function buildProjectUpdates(body: Record<string, unknown>): { updates: Record<string, unknown>; error?: string } {
   const updates: Record<string, unknown> = {};
   if (typeof body.title === 'string') {
@@ -149,11 +140,11 @@ function buildProjectUpdates(body: Record<string, unknown>): { updates: Record<s
   return { updates };
 }
 
-export const PATCH: APIRoute = async ({ request, cookies, url }) => {
-  const ctx = await getAuthContext(request, cookies);
-  if (!ctx) return jsonError('Non autorisé.', 401);
-
-  const { user, role } = ctx;
+export const PATCH: APIRoute = async (ctx) => {
+  const auth = await requireBenevoleJson(ctx);
+  if (auth instanceof Response) return auth;
+  const { user, role } = auth;
+  const { request, url } = ctx;
   const adminSupabase = createSupabaseAdminClient();
 
   const projectId = url.searchParams.get('id');
@@ -187,12 +178,12 @@ export const PATCH: APIRoute = async ({ request, cookies, url }) => {
   return jsonOk({ ok: true });
 };
 
-// â”€â”€ DELETE /api/benevole/projects?id=â€¦ â€” supprimer un projet â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-export const DELETE: APIRoute = async ({ request, cookies, url }) => {
-  const ctx = await getAuthContext(request, cookies);
-  if (!ctx) return jsonError('Non autorisé.', 401);
-
-  const { role } = ctx;
+// ── DELETE /api/benevole/projects?id=… — supprimer un projet ───────────────────
+export const DELETE: APIRoute = async (ctx) => {
+  const auth = await requireBenevoleJson(ctx);
+  if (auth instanceof Response) return auth;
+  const { role } = auth;
+  const { url } = ctx;
   const adminSupabase = createSupabaseAdminClient();
 
   if (role !== 'admin') return jsonError('Réservé aux admins.', 403);

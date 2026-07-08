@@ -1,23 +1,16 @@
 import type { APIRoute } from 'astro';
-import { createSupabaseClient, createSupabaseAdminClient } from '@/lib/supabase';
-import { fetchRoleSecure } from '@/lib/auth';
+import { createSupabaseAdminClient } from '@/lib/supabase';
+import { requireAdminJson } from '@/lib/auth';
 import { isValidUUID } from '@/lib/validation';
 
 const JSON_HEADERS = { 'Content-Type': 'application/json' } as const;
 
-export const PATCH: APIRoute = async ({ params, request, cookies }) => {
+export const PATCH: APIRoute = async (ctx) => {
   try {
-    const supabase = createSupabaseClient({ request, cookies });
-
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return new Response(JSON.stringify({ error: 'Non authentifié' }), { status: 401, headers: JSON_HEADERS });
-    }
-
-    const role = await fetchRoleSecure(user.id);
-    if (role !== 'admin') {
-      return new Response(JSON.stringify({ error: 'Non autorisé' }), { status: 403, headers: JSON_HEADERS });
-    }
+    const auth = await requireAdminJson(ctx);
+    if (auth instanceof Response) return auth;
+    const { user: _user } = auth;
+    const { params, request } = ctx;
 
     if (!isValidUUID(params.id)) {
       return new Response(JSON.stringify({ error: 'ID invalide' }), { status: 400, headers: JSON_HEADERS });

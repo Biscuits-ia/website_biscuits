@@ -1,17 +1,15 @@
 // src/pages/api/admin/sessions/supprimer.ts
 import type { APIRoute } from 'astro';
-import { createSupabaseClient, createSupabaseAdminClient } from '@/lib/supabase';
-import { fetchRoleSecure } from '@/lib/auth';
+import { createSupabaseAdminClient } from '@/lib/supabase';
+import { requireAdmin } from '@/lib/auth';
 import { getFormString } from '@/types/ateliers';
 import { isValidUUID } from '@/lib/validation';
 
-export const POST: APIRoute = async ({ request, cookies, redirect }) => {
-  const supabase = createSupabaseClient({ request, cookies });
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return redirect('/connexion');
-
-  const role = await fetchRoleSecure(user.id);
-  if (role !== 'admin') return redirect('/dashboard/user');
+export const POST: APIRoute = async (Astro) => {
+  const auth = await requireAdmin(Astro);
+  if (auth instanceof Response) return auth;
+  const { user: _user } = auth;
+  const { request, redirect } = Astro;
 
   const form      = await request.formData();
   const sessionId = getFormString(form, 'session_id');

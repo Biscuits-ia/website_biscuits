@@ -1,22 +1,14 @@
 import type { APIRoute } from 'astro';
-import { createSupabaseClient, createSupabaseAdminClient } from '@/lib/supabase';
-import { fetchRoleSecure } from '@/lib/auth';
+import { createSupabaseAdminClient } from '@/lib/supabase';
+import { requireAdminJson } from '@/lib/auth';
 
 const JSON_HEADERS = { 'Content-Type': 'application/json' } as const;
 
-export const GET: APIRoute = async ({ request, cookies }) => {
+export const GET: APIRoute = async (ctx) => {
   try {
-    const supabase = createSupabaseClient({ request, cookies });
-
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return new Response(JSON.stringify({ error: 'Non authentifié' }), { status: 401, headers: JSON_HEADERS });
-    }
-
-    const role = await fetchRoleSecure(user.id);
-    if (role !== 'admin') {
-      return new Response(JSON.stringify({ error: 'Non autorisé' }), { status: 403, headers: JSON_HEADERS });
-    }
+    const auth = await requireAdminJson(ctx);
+    if (auth instanceof Response) return auth;
+    const { user: _user } = auth;
 
     // Utiliser le client admin (service_role) pour bypasser les RLS
     // et voir TOUTES les réservations, pas seulement celles de l'admin connecté
@@ -24,7 +16,7 @@ export const GET: APIRoute = async ({ request, cookies }) => {
 
     // FIX P1 2.4 : pagination (page/limit) + filtres status/slot_id/from/to.
     // Limite par defaut 50, max 200. Retourne { data, total, page, limit }.
-    const url = new URL(request.url);
+    const url = new URL(ctx.request.url);
     const page = Math.max(1, parseInt(url.searchParams.get('page') ?? '1', 10) || 1);
     const limit = Math.min(200, Math.max(1, parseInt(url.searchParams.get('limit') ?? '50', 10) || 50));
     const statusFilter = url.searchParams.get('status') ?? '';
@@ -53,7 +45,7 @@ export const GET: APIRoute = async ({ request, cookies }) => {
     // Récupérer les profils pour les user_id présents
     // (pas de FK directe vers profiles dans le schéma, donc requête séparée)
     const userIds = [...new Set((appointments ?? []).map((a) => a.user_id).filter(Boolean))];
-    const profilesMap: Record<string, { full_name: string | null; email: string | null }> = {};
+    let profilesMap: Record<string, { full_name: string | null; email: string | null }> = {};
 
     if (userIds.length > 0) {
       const { data: profiles } = await adminDb

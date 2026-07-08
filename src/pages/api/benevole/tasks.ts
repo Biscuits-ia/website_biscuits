@@ -3,8 +3,8 @@
 // Le Task Hub a été retiré : la notion de "corps" n'existe plus (chaque bénévole
 // voit les tâches des projets dont il est membre).
 import type { APIRoute } from 'astro';
-import { createSupabaseClient, createSupabaseAdminClient } from '@/lib/supabase';
-import { fetchRoleSecure } from '@/lib/auth';
+import { createSupabaseAdminClient } from '@/lib/supabase';
+import { requireBenevoleJson } from '@/lib/auth';
 
 function jsonError(message: string, status = 400) {
   return new Response(JSON.stringify({ error: message }), {
@@ -18,16 +18,6 @@ function jsonOk(data: unknown, status = 200) {
     status,
     headers: { 'Content-Type': 'application/json' },
   });
-}
-
-async function getAuthContext(request: Request, cookies: any) {
-  const supabase = createSupabaseClient({ request, cookies });
-  const { data: { user }, error } = await supabase.auth.getUser();
-  if (error || !user) return null;
-  const role = await fetchRoleSecure(user.id);
-  if (!role || (role !== 'benevole' && role !== 'moderator' && role !== 'admin')) return null;
-  const adminSupabase = createSupabaseAdminClient();
-  return { adminSupabase, supabase, user, role };
 }
 
 interface TaskInput {
@@ -127,22 +117,24 @@ function buildTaskUpdates(
 
 // ── POST /api/benevole/tasks — créer une tâche ────────────────────────────────
 // Handler GET : liste les tasks d'un projet pour le front.
-export const GET: APIRoute = async ({ request, cookies, url }) => {
-  const ctx = await getAuthContext(request, cookies);
-  if (!ctx) return jsonError('Non autorise.', 401);
+export const GET: APIRoute = async (ctx) => {
+  const auth = await requireBenevoleJson(ctx);
+  if (auth instanceof Response) return auth;
+  const { supabase, user, role } = auth;
+  const { url } = ctx;
   const projectId = url.searchParams.get('project_id');
   if (!projectId) return jsonError('project_id requis.', 400);
   // Verifie que l'user est membre du projet
-  const { data: membership } = await ctx.supabase
+  const { data: membership } = await supabase
     .from('project_members')
     .select('user_id')
     .eq('project_id', projectId)
-    .eq('user_id', ctx.user.id)
+    .eq('user_id', user.id)
     .maybeSingle();
-  if (!membership && ctx.role === 'benevole') {
+  if (!membership && role === 'benevole') {
     return jsonError('Acces refuse.', 403);
   }
-  const { data, error } = await ctx.supabase
+  const { data, error } = await supabase
     .from('project_tasks')
     .select('*')
     .eq('project_id', projectId)
@@ -151,11 +143,13 @@ export const GET: APIRoute = async ({ request, cookies, url }) => {
   return jsonOk({ data: data ?? [] });
 };
 
-export const POST: APIRoute = async ({ request, cookies }) => {
-  const ctx = await getAuthContext(request, cookies);
-  if (!ctx) return jsonError('Non autorisé.', 401);
+export const POST: APIRoute = async (ctx) => {
+  const auth = await requireBenevoleJson(ctx);
+  if (auth instanceof Response) return auth;
+  const { user, role } = auth;
+  const { request } = ctx;
+  const supabase = createSupabaseAdminClient();
 
-  const { adminSupabase: supabase, user, role } = ctx;
   if (role !== 'admin' && role !== 'moderator') return jsonError('Réservé au staff.', 403);
 
   let body: Record<string, unknown>;
@@ -240,11 +234,12 @@ async function handleUnclaim(
 }
 
 // ── PATCH /api/benevole/tasks?id=… — modifier une tâche ──────────────────────
-export const PATCH: APIRoute = async ({ request, cookies, url }) => {
-  const ctx = await getAuthContext(request, cookies);
-  if (!ctx) return jsonError('Non autorisé.', 401);
-
-  const { adminSupabase: supabase, user, role } = ctx;
+export const PATCH: APIRoute = async (ctx) => {
+  const auth = await requireBenevoleJson(ctx);
+  if (auth instanceof Response) return auth;
+  const { user, role } = auth;
+  const { url } = ctx;
+  const supabase = createSupabaseAdminClient();
 
   const taskId = url.searchParams.get('id');
   if (!taskId) return jsonError('Paramètre id manquant.');
@@ -260,7 +255,7 @@ export const PATCH: APIRoute = async ({ request, cookies, url }) => {
   const isStaff = role === 'admin' || role === 'moderator';
 
   let body: Record<string, unknown>;
-  try { body = await request.json(); }
+  try { body = await ctx.request.json(); }
   catch { return jsonError('Corps de requête JSON invalide.'); }
 
   if (body.action === 'claim')   return handleClaim(supabase, taskId, task, user.id, isStaff);
@@ -284,11 +279,12 @@ export const PATCH: APIRoute = async ({ request, cookies, url }) => {
 };
 
 // ── DELETE /api/benevole/tasks?id=… — supprimer une tâche ────────────────────
-export const DELETE: APIRoute = async ({ request, cookies, url }) => {
-  const ctx = await getAuthContext(request, cookies);
-  if (!ctx) return jsonError('Non autorisé.', 401);
-
-  const { adminSupabase: supabase, user, role } = ctx;
+export const DELETE: APIRoute = async (ctx) => {
+  const auth = await requireBenevoleJson(ctx);
+  if (auth instanceof Response) return auth;
+  const { user, role } = auth;
+  const { url } = ctx;
+  const supabase = createSupabaseAdminClient();
 
   const taskId = url.searchParams.get('id');
   if (!taskId) return jsonError('Paramètre id manquant.');

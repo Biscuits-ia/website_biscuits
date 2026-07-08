@@ -1,7 +1,7 @@
 // src/pages/api/benevole/project-messages.ts
 import type { APIRoute } from 'astro';
-import { createSupabaseAdminClient, createSupabaseClient } from '@/lib/supabase';
-import { fetchRoleSecure } from '@/lib/auth';
+import { createSupabaseAdminClient } from '@/lib/supabase';
+import { requireBenevoleJson } from '@/lib/auth';
 
 export const prerender = false;
 
@@ -19,22 +19,14 @@ function jsonOk(data: unknown, status = 200) {
   });
 }
 
-async function getAuthContext(request: Request, cookies: Parameters<typeof createSupabaseClient>[0]['cookies']) {
-  const sessionSupabase = createSupabaseClient({ request, cookies });
-  const { data: { user }, error } = await sessionSupabase.auth.getUser();
-  if (error || !user) return null;
-  const role = await fetchRoleSecure(user.id);
-  if (!role || !['benevole', 'moderator', 'admin'].includes(role)) return null;
-  return { supabase: createSupabaseAdminClient(), user, role };
-}
-
 // ── GET /api/benevole/project-messages?project_id=X[&since=ISO] ──────────────
 // Retourne les 60 derniers messages (ou les messages depuis `since`)
-export const GET: APIRoute = async ({ request, cookies, url }) => {
-  const ctx = await getAuthContext(request, cookies);
-  if (!ctx) return jsonError('Non autorisé.', 401);
-
-  const { supabase, user } = ctx;
+export const GET: APIRoute = async (ctx) => {
+  const auth = await requireBenevoleJson(ctx);
+  if (auth instanceof Response) return auth;
+  const { user } = auth;
+  const { url } = ctx;
+  const supabase = createSupabaseAdminClient();
   const projectId = url.searchParams.get('project_id') ?? '';
   const since     = url.searchParams.get('since') ?? '';
   if (!projectId) return jsonError('project_id est requis.');
@@ -78,11 +70,12 @@ export const GET: APIRoute = async ({ request, cookies, url }) => {
 };
 
 // ── POST /api/benevole/project-messages — envoyer un message ─────────────────
-export const POST: APIRoute = async ({ request, cookies }) => {
-  const ctx = await getAuthContext(request, cookies);
-  if (!ctx) return jsonError('Non autorisé.', 401);
-
-  const { supabase, user, role } = ctx;
+export const POST: APIRoute = async (ctx) => {
+  const auth = await requireBenevoleJson(ctx);
+  if (auth instanceof Response) return auth;
+  const { user, role } = auth;
+  const { request } = ctx;
+  const supabase = createSupabaseAdminClient();
   const isAdmin = role === 'admin' || role === 'moderator';
 
   let body: Record<string, unknown>;
@@ -121,11 +114,12 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 };
 
 // ── DELETE /api/benevole/project-messages?id=… — supprimer un message ────────
-export const DELETE: APIRoute = async ({ request, cookies, url }) => {
-  const ctx = await getAuthContext(request, cookies);
-  if (!ctx) return jsonError('Non autorisé.', 401);
-
-  const { supabase, user, role } = ctx;
+export const DELETE: APIRoute = async (ctx) => {
+  const auth = await requireBenevoleJson(ctx);
+  if (auth instanceof Response) return auth;
+  const { user, role } = auth;
+  const { url } = ctx;
+  const supabase = createSupabaseAdminClient();
   const messageId = url.searchParams.get('id') ?? '';
   if (!messageId) return jsonError('id est requis.');
 

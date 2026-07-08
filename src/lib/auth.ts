@@ -203,3 +203,46 @@ export async function requireAppointmentOwner(
   }
   return { ok: true, appointment: data as VolunteerAppointment };
 }
+
+// --------------------------------------------------------------------------
+// Variantes JSON des requireX : pour les endpoints API qui retournent du JSON
+// (401/403) plutot qu'un redirect HTML 302. Les helpers ci-dessus (requireX)
+// appellent Astro.redirect(), ce qui est adapte aux <form> POST navigateur
+// mais casse les clients fetch() qui attendent un JSON d'erreur.
+// --------------------------------------------------------------------------
+
+type JsonAuthContext = Pick<APIContext, 'request' | 'cookies' | 'locals'>;
+
+function jsonError(message: string, status: 401 | 403): Response {
+  return new Response(JSON.stringify({ error: message }), {
+    status,
+    headers: { 'Content-Type': 'application/json' },
+  });
+}
+
+async function requireJson(
+  ctx: JsonAuthContext,
+  allowed: ReadonlyArray<UserRole>,
+): Promise<AuthResult | Response> {
+  const supabase = ctx.locals?.supabase ?? createSupabaseClient(ctx);
+  const { data: { user }, error } = await supabase.auth.getUser();
+  if (error || !user) return jsonError('Non authentifié', 401);
+  const role = await fetchRoleSecure(user.id);
+  if (!role || !allowed.includes(role)) return jsonError('Accès refusé', 403);
+  return { user, session: null, supabase, role };
+}
+
+/** Variante JSON de requireAuth : 401 si pas connecte, retourne { user, role } sinon. */
+export async function requireAuthJson(ctx: JsonAuthContext): Promise<AuthResult | Response> {
+  return requireJson(ctx, ['user', 'moderator', 'admin', 'benevole', 'association']);
+}
+
+/** Variante JSON de requireAdmin : 401 si pas connecte, 403 si pas admin. */
+export function requireAdminJson(ctx: JsonAuthContext): Promise<AuthResult | Response> {
+  return requireJson(ctx, ['admin']);
+}
+
+/** Variante JSON de requireBenevole : 401/403, accepte benevole/moderator/admin. */
+export function requireBenevoleJson(ctx: JsonAuthContext): Promise<AuthResult | Response> {
+  return requireJson(ctx, ['benevole', 'moderator', 'admin']);
+}

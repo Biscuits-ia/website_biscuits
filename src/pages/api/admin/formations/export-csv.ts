@@ -12,8 +12,8 @@
 // ============================================================================
 
 import type { APIRoute } from 'astro';
-import { createSupabaseClient, createSupabaseAdminClient } from '@/lib/supabase';
-import { fetchRoleSecure } from '@/lib/auth';
+import { createSupabaseAdminClient } from '@/lib/supabase';
+import { requireAdminJson } from '@/lib/auth';
 
 const CSV_HEADERS = [
   'Mois',                  // YYYY-MM
@@ -45,13 +45,11 @@ function formatEur(cents: number): string {
   return (cents / 100).toFixed(2).replace('.', ',');
 }
 
-export const GET: APIRoute = async ({ request, cookies, url }) => {
-  const supabase = createSupabaseClient({ request, cookies });
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return new Response('Unauthorized', { status: 401 });
-
-  const role = await fetchRoleSecure(user.id);
-  if (role !== 'admin') return new Response('Forbidden', { status: 403 });
+export const GET: APIRoute = async (ctx) => {
+  const auth = await requireAdminJson(ctx);
+  if (auth instanceof Response) return auth;
+  const { user: _user } = auth;
+  const { url } = ctx;
 
   // Filtres optionnels : ?from=YYYY-MM-DD&to=YYYY-MM-DD&training=ID
   const fromParam = url.searchParams.get('from') ?? '';

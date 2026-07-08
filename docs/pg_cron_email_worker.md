@@ -44,7 +44,7 @@ supabase db push
 `
 
 ou copier/coller le contenu de
-supabase/migration/20260624_pg_cron_email_outbox.sql dans le SQL
+supabase/migrations/20260624_pg_cron_email_outbox.sql dans le SQL
 Editor du dashboard Supabase.
 
 ### 2. Stocker le CRON_SECRET

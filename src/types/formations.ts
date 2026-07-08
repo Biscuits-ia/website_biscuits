@@ -3,7 +3,7 @@
 // ----------------------------------------------------------------------------
 // Types stricts partages entre les pages, les composants et les routes API
 // pour le systeme de formations payantes (modele tarif conscient + parrainage).
-// Toutes les tables ici ont leur pendant en BDD dans supabase/migration/
+// Toutes les tables ici ont leur pendant en BDD dans supabase/migrations/
 // 20260624_add_trainings.sql.
 // ============================================================================
 

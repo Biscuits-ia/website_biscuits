@@ -45,7 +45,6 @@ export interface TrainingSession {
   allow_sliding_scale:     boolean;
   allow_sponsorship:       boolean;
   allow_free_request:      boolean;
-  helloasso_form_url:      string | null;
   bank_transfer_info:      string | null;
   override_min_cents:      number | null;
   override_suggested_cents: number | null;
@@ -127,6 +126,12 @@ export interface TrainingFreeSeatRequest {
 
 export type TrainingPaymentMethod =
   | 'pending'
+  /**
+   * LEGACY, lecture seule. L'integration HelloAsso a ete retiree le 2026-07-09.
+   * Aucune inscription ne peut plus etre creee avec cette valeur (elle a ete
+   * retiree de `paymentMethodSchema`), mais les lignes historiques la portent
+   * toujours : les reecrire en 'transfer' falsifierait la comptabilite.
+   */
   | 'helloasso'
   | 'transfer'
   | 'sponsorship'
@@ -150,6 +155,7 @@ export type TrainingPaymentStatus =
   | 'cancelled';
 
 export type TrainingPaymentProvider =
+  /** LEGACY, lecture seule. Cf. TrainingPaymentMethod. */
   | 'helloasso'
   | 'transfer'
   | 'sponsorship'
@@ -177,7 +183,6 @@ export interface TrainingSessionWithSeats {
   allow_sliding_scale:         boolean;
   allow_sponsorship:           boolean;
   allow_free_request:          boolean;
-  helloasso_form_url:          string | null;
   bank_transfer_info:          string | null;
   seats_left:                  number;
   registered_count:            number;

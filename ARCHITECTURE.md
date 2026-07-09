@@ -87,33 +87,22 @@ le store Astro.
 `createSupabaseClient` lit le cookie `sb-*-auth-token` (Supabase SSR cookie).
 L'admin client lit `SUPABASE_SERVICE_ROLE_KEY` côté serveur uniquement.
 
-## Webhook HelloAsso — flux
+## Paiement des formations — flux
 
 ```
-HelloAsso (externe) → POST /api/formations/helloasso/webhook
+Inscription (POST /api/formations/inscrire)
   │
-  ├─ 1. Lit rawBody (await request.text())
-  ├─ 2. verifyWebhookSignature(rawBody, header x-helloasso-signature)
-  │     → HMAC SHA256 avec secret env, comparaison constant-time
-  ├─ 3. helloAssoWebhookSchema.safeParse(JSON.parse(rawBody))
-  │     → zod permissif (.passthrough()), valide UUID + montant ≥ 0
-  ├─ 4. payloadHash(rawBody) → SELECT WHERE payload_hash = hash
-  │     → si existe : return 200 { deduplicated: true }
-  ├─ 5. INSERT INTO helloasso_payments (payload_hash UNIQUE)
-  ├─ 6. Si status = confirmed/authorized :
-  │     - UPDATE training_registrations SET status='confirmed'
-  │     - UPSERT training_payments
-  │     - Enqueue email confirmation (enqueueEmail)
-  ├─ 7. Si status = refused/cancelled :
-  │     - UPDATE training_registrations SET status='pending_payment'
-  └─ 8. Si eventType = payment.refunded :
-        - UPSERT helloasso_refunds
-        - UPDATE training_registrations + training_payments
-        - Enqueue email user + admin
+  ├─ 1. atomic_training_register(...)  -> status = 'pending_payment'
+  ├─ 2. Email de confirmation + coordonnees bancaires (enqueueEmail)
+  └─ 3. L'adherent effectue le virement
+
+Validation (POST /api/admin/formations/validate-payment, admin)
+  └─ UPDATE training_registrations SET status = 'confirmed'
 ```
 
-**Aucune étape n'est optionnelle.** Sauter la vérif HMAC = vulnérabilité
-critique (faux paiements, faux refunds).
+Aucun prestataire de paiement en ligne n'est branche depuis le retrait de
+HelloAsso (2026-07-09). Les dons, eux, restent collectes sur la page HelloAsso
+de l'association, hors de ce site.
 
 ## Rate-limit — `src/lib/rateLimit.ts`
 
@@ -163,7 +152,6 @@ src/pages/
 │   └── inscrire/[sessionId].astro
 ├── api/
 │   ├── formations/
-│   │   ├── helloasso/webhook.ts             # POST IPN
 │   │   ├── inscrire.ts
 │   │   ├── sponsoriser.ts                   # parrains
 │   │   └── ...
@@ -210,8 +198,7 @@ src/pages/
 
 | Provider | Usage | Endpoint |
 |---|---|---|
-| HelloAsso | Inscriptions formations (carte, virement) | `POST /api/formations/helloasso/webhook` |
 | Virement (manual) | Parrainages mode `transfer` | `POST /api/formations/sponsoriser` (paiement manuel) |
 
-Pas de Stripe. Choix associatif : HelloAsso est un acteur français sans
-frais pour les assos, conforme à l'éthique de la structure.
+Aucun prestataire de paiement en ligne n'est integre. Les inscriptions payantes
+se reglent par virement, validees manuellement par un admin.

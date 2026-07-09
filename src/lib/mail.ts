@@ -549,11 +549,10 @@ export interface RegistrationConfirmationData {
   sessionTime:   string;
   location:      string;
   amount:        string;          // texte formate "35,00 EUR" ou "Gratuit"
-  paymentMethod: string;          // "HelloAsso" | "Virement" | "Place offerte" | etc.
+  paymentMethod: string;          // "Virement bancaire" | "Place offerte" | etc.
   nextSteps:     string;          // texte
   isFree:        boolean;
   bankInfo?:     string;          // instructions virement (si applicable)
-  helloassoUrl?: string;          // URL formulaire (si applicable)
 }
 
 export function renderRegistrationConfirmation(d: RegistrationConfirmationData): { html: string; text: string } {
@@ -571,7 +570,6 @@ export function renderRegistrationConfirmation(d: RegistrationConfirmationData):
     </dl>
     <h2>Prochaines etapes</h2>
     <p>${escapeHtml(d.nextSteps)}</p>
-    ${d.helloassoUrl ? `<p><a href="${escapeHtml(d.helloassoUrl)}" class="btn">Payer via HelloAsso</a></p>` : ''}
     ${d.bankInfo ? `<h2>Coordonnees bancaires</h2><pre style="white-space:pre-wrap;font-family:inherit;background:#fdf3d8;padding:12px;border:2px solid #2a2424">${escapeHtml(d.bankInfo)}</pre>` : ''}
     ${d.isFree ? '<p><em>Votre place est confirmee. A bientot !</em></p>' : '<p>Votre place sera definitivee des reception du paiement.</p>'}
   `, `Inscription confirmee : ${d.trainingTitle}`);
@@ -590,7 +588,6 @@ Paiement : ${d.paymentMethod}
 
 Prochaines etapes :
 ${d.nextSteps}
-${d.helloassoUrl ? `\nPayer via HelloAsso : ${d.helloassoUrl}` : ''}
 ${d.bankInfo ? `\nCoordonnees bancaires :\n${d.bankInfo}` : ''}
 ${d.isFree ? '\nVotre place est confirmee. A bientot !' : '\nVotre place sera definitivee des reception du paiement.'}
 

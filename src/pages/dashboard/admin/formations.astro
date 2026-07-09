@@ -70,29 +70,9 @@ const sessionById = new Map<string, TrainingSessionWithSeats>(
 const saved  = Astro.url.searchParams.get('saved') === '1';
 const errorMsg = Astro.url.searchParams.get('error') ?? '';
 
-// 7. Paiements recus (avec statut remboursement) - pour l'admin overview
-const { data: receivedPayments } = await admin
-  .from('helloasso_payments')
-  .select(`
-    id, intent_id, amount_cents, refunded_amount_cents, status, payer_email, payer_name,
-    received_at, registration_id
-  `)
-  .order('received_at', { ascending: false })
-  .limit(50);
-
 // 8. Stats de l'outbox email
 import { getOutboxStats } from '@/lib/email-queue';
 const outboxStats = await getOutboxStats().catch(() => null);
-
-// 9. Liste des refunds
-const { data: refundsList } = await admin
-  .from('helloasso_refunds')
-  .select(`
-    id, helloasso_payment_id, amount_cents, refund_type, source, reason, refunded_at,
-    helloasso_payments!inner ( registration_id, intent_id )
-  `)
-  .order('refunded_at', { ascending: false })
-  .limit(20);
 
 const trainingList = (trainings ?? []) as unknown as Training[];
 
@@ -380,110 +360,6 @@ const hasPendingSponsorship = (pendingSponsorships ?? []).length > 0;
   </dialog>
 
 
-  {refundsList && refundsList.length > 0 && (
-    <div class="card" id="outbox">
-      <h2 class="card-title">Remboursements recents</h2>
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>Type</th>
-              <th>Montant</th>
-              <th>Source</th>
-              <th>Inscription</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {refundsList.map((r: any) => (
-              <tr>
-                <td class="mono">{formatDate(r.refunded_at)}</td>
-                <td>
-                  <span class={`badge ${r.refund_type === 'full' ? 'badge-warn' : 'badge-info'}`}>
-                    {r.refund_type === 'full' ? 'Total' : 'Partiel'}
-                  </span>
-                </td>
-                <td class="mono">{formatPriceCents(r.amount_cents)}</td>
-                <td>
-                  <span class={`badge ${r.source === 'webhook' ? 'badge-info' : r.source === 'admin' ? 'badge-warn' : 'badge-neutral'}`}>
-                    {r.source === 'webhook' ? 'IPN HelloAsso' : r.source === 'admin' ? 'Manuel' : 'API'}
-                  </span>
-                </td>
-                <td class="mono">{r.helloasso_payments?.intent_id?.slice(0, 12) ?? '?'}...</td>
-                <td>
-                  <form method="POST" action="/dashboard/admin/formations" style="display:inline;">
-                    <input type="hidden" name="action" value="noop" />
-                  </form>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  )}
-
-  {receivedPayments && receivedPayments.length > 0 && (
-    <div class="card">
-      <h2 class="card-title">Paiements recus (50 derniers)</h2>
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>Intent</th>
-              <th>Montant</th>
-              <th>Rembourse</th>
-              <th>Statut</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {receivedPayments.map((p: any) => {
-              const refundableCents = p.amount_cents - p.refunded_amount_cents;
-              const isRefunded = p.refunded_amount_cents > 0;
-              return (
-                <tr>
-                  <td class="mono">{formatDate(p.received_at)}</td>
-                  <td class="mono" title={p.intent_id}>{p.intent_id.slice(0, 12)}...</td>
-                  <td class="mono">{formatPriceCents(p.amount_cents)}</td>
-                  <td class="mono">{isRefunded ? formatPriceCents(p.refunded_amount_cents) : '-'}</td>
-                  <td>
-                    <span class={`badge ${p.status === 'refunded' ? 'badge-warn' : 'badge-ok'}`}>
-                      {p.status === 'refunded' ? 'Rembourse' : p.status}
-                    </span>
-                  </td>
-                  <td>
-                    {refundableCents > 0 && (
-                      <details>
-                        <summary class="btn btn-ghost btn-xs">Rembourser</summary>
-                        <form method="POST" action="/api/admin/formations/refund" style="margin-top:6px;display:flex;flex-direction:column;gap:6px;min-width:200px">
-                          <input type="hidden" name="payment_id" value={p.id} />
-                          <label style="font-size:0.75rem">
-                            Montant (centimes) - max {refundableCents}
-                            <input type="number" name="amount_cents" value={refundableCents} min="1" max={refundableCents} required />
-                          </label>
-                          <label style="font-size:0.75rem">
-                            Raison (optionnel)
-                            <input type="text" name="reason" maxlength="500" placeholder="Remboursement suite demande user" />
-                          </label>
-                          <button type="submit" class="btn btn-danger btn-xs"
-                                  data-confirm={`Confirmer le remboursement de ${formatPriceCents(refundableCents)} ?`}>
-                            Confirmer
-                          </button>
-                        </form>
-                      </details>
-                    )}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  )}
 </DashboardLayout>
 
 <style>

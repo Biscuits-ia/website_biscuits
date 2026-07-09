@@ -176,15 +176,13 @@ const trainingOptions: TrainingOption[] = (trainings ?? [])
               <input type="hidden" name="amount_cents" value="0" />
             </label>
 
-            <p class="form-hint">Choisissez votre mode de paiement :</p>
-            <label class="payment-radio">
-              <input type="radio" name="payment_method" value="helloasso" checked />
-              <span>HelloAsso (paiement en ligne, sans frais)</span>
-            </label>
-            <label class="payment-radio">
-              <input type="radio" name="payment_method" value="transfer" />
-              <span>Virement bancaire (RIB transmis apres validation)</span>
-            </label>
+            {/* Le paiement en ligne a ete retire le 2026-07-09 : le virement est
+                la seule modalite. Un radio unique n'apporte rien, d'ou le champ cache. */}
+            <input type="hidden" name="payment_method" value="transfer" />
+            <p class="form-hint">
+              Reglement par <strong>virement bancaire</strong> : le RIB vous sera transmis
+              par email apres validation de votre parrainage.
+            </p>
           </fieldset>
 
           <div class="form-actions">

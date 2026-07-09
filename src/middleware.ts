@@ -130,7 +130,7 @@ async function checkRouteRateLimit(
 //
 // On bloque UNIQUEMENT `cross-site` sur les methodes mutantes. Cas volontairement
 // laisses passer :
-//   - header ABSENT : requetes server-to-server (webhook HelloAsso, pg_cron).
+//   - header ABSENT : requetes server-to-server (pg_cron, webhooks tiers).
 //     Les headers Sec-Fetch-* sont poses par les navigateurs, jamais par curl
 //     ni par un serveur -> un webhook legitime n'en a pas.
 //   - `same-origin` / `same-site` / `none` : navigation directe, meme site.
@@ -255,7 +255,6 @@ function buildCsp(nonce: string, isDev: boolean): string {
     'https://cdn.vercel-insights.com',
     'https://*.supabase.co',
     'wss://*.supabase.co', // Realtime (chat projet) : WebSocket, pas https.
-    'https://api.helloasso.com',
   ];
 
   if (isDev) {

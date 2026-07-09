@@ -4,7 +4,8 @@
 
 Site public + back-office de l'association **Biscuits IA** (Loi 1901). Astro 7 en
 mode `output: 'server'` (SSR), déployé sur Vercel, base Supabase (Postgres +
-Auth + Storage), paiement HelloAsso (IPN webhook HMAC).
+Auth + Storage). Aucun paiement en ligne : les inscriptions payantes se reglent
+par virement, valides manuellement par un admin (HelloAsso retire le 2026-07-09).
 
 - 5 piliers métier : Accompagnement IA, Lutte cyber, Logiciels pour assos,
   Anti Pepins (service public d'aide aux victimes), Recherche & modèles ouverts.
@@ -37,9 +38,9 @@ Auth + Storage), paiement HelloAsso (IPN webhook HMAC).
 6. **Rate-limit : IP source = `x-vercel-forwarded-for` UNIQUEMENT.**
    Ne JAMAIS faire confiance à `cf-connecting-ip`, `x-real-ip`, ou
    `x-forwarded-for` non-Vercel. Header Vercel signé, le reste ne l'est pas.
-7. **Webhook HelloAsso : `verifyWebhookSignature(rawBody, header)` est OBLIGATOIRE**
-   avant tout parsing. Voir `src/lib/helloasso.ts`. Sans cette vérif, n'importe
-   qui peut insérer des paiements frauduleux en BDD.
+7. **Tout webhook de paiement futur doit vérifier sa signature avant tout
+   parsing.** L'intégration HelloAsso a été retirée le 2026-07-09 ; si un
+   prestataire la remplace, la vérif HMAC constant-time est non négociable.
 
 ## Frontmatter boundaries : où poser la sécurité
 
@@ -90,8 +91,10 @@ build` + smoke tests manuels sur les routes critiques.
    qui gagne. Surprenant mais documenté.
 4. **ESLint 10 flat config : pas de `.eslintrc`.** La config est dans
    `eslint.config.js`. Ne pas recréer un `.eslintrc.json` — il est ignoré.
-5. **Schéma zod permissif sur le webhook HelloAsso** : on `.passthrough()` car
-   HelloAsso fait évoluer son format de payload. Voir `src/pages/api/formations/helloasso/webhook.ts:51-65`.
+5. **`payment_method = 'helloasso'` est une valeur LEGACY en lecture seule.**
+   Elle est absente de `paymentMethodSchema` (aucune création possible) mais
+   présente en base sur les inscriptions antérieures au 2026-07-09. Ne pas la
+   réécrire : ce sont des faits comptables.
 6. **Templates email en français SANS accents** (ex: "Parrainage enregistre").
    C'est volontaire : compatibilité avec les clients mail anciens. Ne pas
    ré-accentuer.

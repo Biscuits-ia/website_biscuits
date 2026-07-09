@@ -5,7 +5,7 @@
 Vercel **Hobby** limite les cron jobs à **1 exécution / jour**. Notre
 worker d'envoi d'emails (/api/cron/email-outbox) doit tourner toutes
 les ~2 minutes pour que les emails transactionnels partent sans délai
-visible (confirmations d'inscription, HelloAsso, etc.).
+visible (confirmations d'inscription, validations de paiement, etc.).
 
 On a donc déplacé la périodicité côté **Supabase** via pg_cron, qui
 est gratuit et sans limite de fréquence sur tous les plans Supabase.

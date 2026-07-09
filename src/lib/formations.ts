@@ -80,8 +80,10 @@ export const emailSchema = z
 export const uuidSchema = z.string().refine(isValidUUID, 'Identifiant invalide.');
 
 /** Methode de paiement (sous-ensemble pour une inscription). */
+// `helloasso` a ete retire le 2026-07-09 : plus aucune inscription ne peut etre
+// creee avec ce moyen de paiement. Les lignes historiques le portent encore en
+// base (cf. types/formations.ts, TrainingPaymentMethod).
 export const paymentMethodSchema = z.enum([
-  'helloasso',
   'transfer',
   'sponsorship',
   'free_request',
@@ -137,7 +139,6 @@ export const trainingSessionUpsertSchema = z.object({
   allow_sliding_scale:     z.coerce.boolean().optional().default(true),
   allow_sponsorship:       z.coerce.boolean().optional().default(true),
   allow_free_request:      z.coerce.boolean().optional().default(true),
-  helloasso_form_url:      optionalText(500, 'L\'URL HelloAsso'),
   bank_transfer_info:      optionalText(2000, 'Les infos virement'),
   override_min_cents:      priceCentsSchema.optional(),
   override_suggested_cents: priceCentsSchema.optional(),

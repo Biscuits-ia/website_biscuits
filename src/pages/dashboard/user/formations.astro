@@ -62,7 +62,6 @@ interface UpcomingRow {
   statusBadge:   string;
   amountLabel:   string;
   isCancellable: boolean;
-  canPayOnline:  boolean;
   canPayTransfer: boolean;
 }
 
@@ -75,7 +74,7 @@ interface PastRow {
 }
 
 const paymentLabels: Record<string, string> = {
-  helloasso:     'HelloAsso',
+  helloasso:     'HelloAsso (archive)',   // legacy : inscriptions anterieures au 2026-07-09
   transfer:      'Virement',
   sponsorship:   'Parrainage',
   free_request:  'Demande d\'exoneration',
@@ -137,7 +136,6 @@ for (const r of regsRaw) {
       session:       sessionFull,
       paymentLabel:  paymentLabels[r.payment_method] ?? r.payment_method,
       paymentMethod: r.payment_method,
-      canPayOnline:   r.status === 'pending_payment' && r.payment_method === 'helloasso',
       canPayTransfer: r.status === 'pending_payment' && r.payment_method === 'transfer',
       statusLabel:   statusLabels[r.status] ?? r.status,
       statusBadge:   statusBadgeClass(r.status),
@@ -215,11 +213,6 @@ const hasPast     = pastRows.length > 0;
               <div class="formation-status">
                 <span class={`badge ${row.statusBadge}`}>{row.statusLabel}</span>
               </div>
-              {row.canPayOnline && (
-                <a href={`/api/formations/helloasso/start?registration_id=${row.regId}`} class="btn btn-primary btn-sm">
-                  Payer via HelloAsso
-                </a>
-              )}
               {row.canPayTransfer && row.session && row.session.bank_transfer_info && (
                 <details class="formation-bank-info">
                   <summary class="btn btn-ghost btn-sm">Coordonnees bancaires</summary>

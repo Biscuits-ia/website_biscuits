@@ -28,7 +28,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   const amountRaw       = getFormString(form, 'amount_cents') ?? '0';
   const message         = getFormString(form, 'message') ?? '';
   const beneficiaryEmail = getFormString(form, 'beneficiary_email') ?? '';
-  const paymentMethod   = getFormString(form, 'payment_method') ?? 'helloasso';
+  const paymentMethod   = getFormString(form, 'payment_method') ?? 'transfer';
 
   // Note : sponsorshipCreateSchema valide deja les UUIDs (uuidSchema sur
   // training_id et session_id) ; pas de pre-check isValidUUID necessaire.
@@ -49,7 +49,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     return redirect(`/formations/parrainer?error=${encodeURIComponent(msg)}`);
   }
 
-  if (paymentMethod !== 'helloasso' && paymentMethod !== 'transfer') {
+  if (paymentMethod !== 'transfer') {
     return redirect(`/formations/parrainer?error=${encodeURIComponent('Mode de paiement invalide.')}`);
   }
 

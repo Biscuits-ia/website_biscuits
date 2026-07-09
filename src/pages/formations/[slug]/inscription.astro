@@ -2,7 +2,7 @@
 // src/pages/formations/[slug]/inscription.astro
 // Page d'inscription a une session d'une formation.
 // Gere 3 flux :
-//   1. Paiement libre (sliding scale) -> HelloAsso / virement
+//   1. Paiement libre (sliding scale) -> virement bancaire
 //   2. Demande d'exoneration (free_request)
 //   3. Utilisation d'un code de parrainage (sponsorship)
 
@@ -167,11 +167,7 @@ const redirectAfterLogin = encodeURIComponent(Astro.url.pathname + Astro.url.sea
               <legend>{isFree ? '2' : '3'}. Mode de paiement</legend>
 
               <label class="payment-radio">
-                <input type="radio" name="payment_method" value="helloasso" checked />
-                <span>Payer en ligne via <strong>HelloAsso</strong> (carte, sans frais)</span>
-              </label>
-              <label class="payment-radio">
-                <input type="radio" name="payment_method" value="transfer" />
+                <input type="radio" name="payment_method" value="transfer" checked />
                 <span>Payer par <strong>virement bancaire</strong> (vous recevrez les coordonnees par email)</span>
               </label>
               {training.is_paying && (

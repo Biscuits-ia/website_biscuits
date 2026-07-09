@@ -21,7 +21,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   const form = await request.formData();
   const sessionId    = getFormString(form, 'session_id') ?? '';
   const amountRaw    = getFormString(form, 'amount_cents') ?? '0';
-  const methodRaw    = getFormString(form, 'payment_method') ?? 'helloasso';
+  const methodRaw    = getFormString(form, 'payment_method') ?? 'transfer';
   const notes        = getFormString(form, 'notes') ?? '';
   const codeRaw      = getFormString(form, 'redemption_code') ?? '';
   const cgvAccepted  = getFormString(form, 'cgv_accepted') === '1';
@@ -142,8 +142,6 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
 
   const successMessage = (() => {
     switch (data.payment_method) {
-      case 'helloasso':
-        return 'Inscription enregistree. Vous allez recevoir un email avec le lien HelloAsso pour le paiement.';
       case 'transfer':
         return 'Inscription enregistree. Les instructions de virement vous ont ete envoyees par email.';
       case 'free_request':
@@ -182,7 +180,7 @@ async function sendRegistrationEmail(args: SendRegistrationEmailArgs): Promise<v
     const isFree = isFreeTraining(session.min_price_cents, session.suggested_price_cents, session.solidarity_price_cents);
     const amountLabel = formatPriceCents(args.amountCents);
     const methodLabels: Record<string, string> = {
-      helloasso:     'HelloAsso',
+      helloasso:     'HelloAsso (archive)',   // legacy : inscriptions anterieures au 2026-07-09
       transfer:      'Virement bancaire',
       sponsorship:   'Parrainage (place financee)',
       free_request:  'Demande d\'exoneration',
@@ -191,11 +189,7 @@ async function sendRegistrationEmail(args: SendRegistrationEmailArgs): Promise<v
     const methodLabel = methodLabels[args.paymentMethod] ?? args.paymentMethod;
 
     let nextSteps = '';
-    if (args.paymentMethod === 'helloasso') {
-      nextSteps = session.helloasso_form_url
-        ? 'Cliquez sur le bouton "Payer via HelloAsso" ci-dessous, ou accedez directement a : ' + session.helloasso_form_url
-        : 'Vous recevrez prochainement le lien HelloAsso pour finaliser le paiement.';
-    } else if (args.paymentMethod === 'transfer') {
+    if (args.paymentMethod === 'transfer') {
       nextSteps = 'Effectuez le virement en utilisant les coordonnees bancaires ci-dessous, puis envoyez-nous le justificatif par retour d\'email pour accelerer la validation.';
     } else if (args.paymentMethod === 'free_request') {
       nextSteps = 'Votre demande va etre examinee par notre equipe. Vous recevrez un email de decision sous 48h ouvrables. Aucune action requise de votre part en attendant.';
@@ -216,7 +210,6 @@ async function sendRegistrationEmail(args: SendRegistrationEmailArgs): Promise<v
       nextSteps,
       isFree:        isFree || args.paymentMethod === 'free_approved' || args.paymentMethod === 'sponsorship',
       bankInfo:      session.bank_transfer_info ?? undefined,
-      helloassoUrl:  session.helloasso_form_url ?? undefined,
     });
 
     const fromAddress: MailAddress = { email: import.meta.env.SMTP_FROM || 'noreply@biscuits-ia.com', name: 'Biscuits IA' };

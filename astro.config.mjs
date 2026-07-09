@@ -143,28 +143,45 @@ export default defineConfig({
   //
   // Astro 7 sait generer un CSP a base de hashes (`security: { csp: {...} }`),
   // emis en <meta> sur les pages prerendered et en header en SSR. C'est la
-  // destination correcte. Trois blocages, tous VERIFIES dans Chrome sur le
-  // build reel (2026-07-08) :
+  // destination correcte. QUATRE blocages, tous VERIFIES sur le build reel et
+  // la production (dernier controle : audit 2026-07-09, cf. AUDIT-back.md S4) :
   //
   //  1. Des que style-src contient un hash, le navigateur IGNORE 'unsafe-inline'
-  //     (spec CSP3). Or le projet compte 384 attributs `style="..."` sur 78
-  //     pages -> "Applying inline style violates ... The action has been
-  //     blocked." Regression visuelle immediate.
+  //     (spec CSP3). Or le build compte 514 attributs `style="..."` sur les 130
+  //     pages (mesure 2026-07-09, en hausse : 384 en juillet) + 309 balises
+  //     <style> inline -> "Applying inline style violates ... blocked".
+  //     Regression visuelle immediate. Astro hashe les <style> qu'il controle,
+  //     donc activer `security.csp` emet forcement un hash style-src : les 514
+  //     attributs cassent tous.
   //
-  //  2. Shiki (coloration syntaxique du blog) emet des styles inline. Astro le
-  //     signale lui-meme au build : "Shiki syntax highlighting uses inline
-  //     styles that are not compatible with CSP".
+  //  2. Shiki (coloration syntaxique du blog, 8 pages) emet des styles inline.
+  //     Astro le signale lui-meme au build.
   //
-  //  3. Astro ne hashe PAS les scripts `is:inline` (par definition il n'y touche
-  //     pas). Le script d'enregistrement du Service Worker etait bloque.
+  //  3. Astro ne hashe PAS les scripts `is:inline`. Il en reste 3 (sw-register,
+  //     __ANALYTICS_DISABLED__, config GTM) a convertir ou a declarer dans
+  //     `scriptDirective.hashes`.
   //
-  // Chemin de migration (cf. audit.md, priorite 3) :
-  //   a. supprimer les 384 attributs style="" au profit de classes ;
-  //   b. passer Shiki en theme a variables CSS (`markdown.shikiConfig`) ;
-  //   c. convertir les 3 scripts `is:inline` OU declarer leurs hashes via
+  //  4. AJOUTE 2026-07-09 -- BLOQUEUR INFRASTRUCTURE, hors du code :
+  //     Cloudflare (Bot Fight Mode / JS Detections) INJECTE a l'edge, par
+  //     intermittence, un <script> inline sans nonce ni hash stable :
+  //       window.__CF$cv$params={r:'<jeton-par-requete>', ...}
+  //     Le jeton change a chaque requete -> AUCUN hash ni nonce ne peut
+  //     l'autoriser. Tout `script-src` strict (hash OU nonce) le bloque. Ce
+  //     script est deja bloque en silence sur les routes SSR (CSP nonce du
+  //     middleware) -- y compris la page de connexion, ou la protection anti-bot
+  //     compte le plus. Fermer S4 sur les pages prerendered exige donc D'ABORD
+  //     une decision cote Cloudflare : desactiver Bot Fight Mode / JS Detections,
+  //     ou accepter la degradation de la detection anti-bot.
+  //
+  // Chemin de migration (cf. AUDIT-back.md, plan point 9) :
+  //   a. TRANCHER le point 4 cote Cloudflare (decision produit/securite) ;
+  //   b. supprimer les 514 attributs style="" au profit de classes ;
+  //   c. passer Shiki en theme a variables CSS (`markdown.shikiConfig`) ;
+  //   d. convertir les 3 scripts `is:inline` OU declarer leurs hashes via
   //      `scriptDirective.hashes` ;
-  //   d. activer `security.csp` et supprimer le CSP du middleware + celui de
-  //      vercel.json.
+  //   e. activer `security.csp` et supprimer le script-src 'unsafe-inline' du
+  //      middleware + celui de vercel.json (le <meta> et le header s'intersectent
+  //      cote navigateur : les deux doivent bouger ensemble).
   //
   // En attendant : CSP nonce-based par requete pour les routes SSR (middleware),
   // CSP de base par header pour les pages statiques (vercel.json). Ce dernier

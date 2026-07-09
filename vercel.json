@@ -330,6 +330,16 @@
       "source": "/a-qui.s-adresse",
       "destination": "/a-qui-s-adresse",
       "statusCode": 301
+    },
+    {
+      "source": "/legal/confidentialite",
+      "destination": "/legal/politique-de-confidentialite",
+      "statusCode": 301
+    },
+    {
+      "source": "/legal/confidentialite/:path*",
+      "destination": "/legal/politique-de-confidentialite",
+      "statusCode": 301
     }
   ]
 }

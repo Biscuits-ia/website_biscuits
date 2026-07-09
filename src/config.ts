@@ -22,7 +22,7 @@ export const SITE = {
   footer: {
     links: [
       { name: 'Mentions légales', link: '/legal/mentions-legales/' },
-      { name: 'Confidentialité', link: '/legal/confidentialite/' },
+      { name: 'Confidentialité', link: '/legal/politique-de-confidentialite/' },
       { name: 'Cookies', link: '/legal/cookies/' },
     ],
   },

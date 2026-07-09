@@ -1299,8 +1299,8 @@ Rien dans ce repo ne prouve qu'une intention se traduit en comportement. Ajoutez
 
 # 🗺️ ROADMAP
 
-> **État au 2026-07-09** — 38 items faits sur 43, vérifiés dans le code et non
-> d'après les titres de commit. Restent 5 items ouverts + 1 partiel (#34).
+> **État au 2026-07-09** — 39 items faits sur 43, vérifiés dans le code et non
+> d'après les titres de commit. Restent 4 items ouverts + 1 partiel (#34, sur l'exécution CI).
 > Les items 41 à 44 ne figuraient pas dans l'audit initial : ils ont été
 > découverts en cours de route. Les items cochés ont été confirmés sur
 > l'artefact (`dist/`, `.vercel/output/`) ou par une assertion dans
@@ -1378,8 +1378,13 @@ qu'à moitié, ce qui a cassé toutes les routes SSR pendant 24 h. Voir #41.
 - [x] **32.** `/trombinoscope` → prerendu (plutôt qu'ISR) + fix `ReferenceError` (TDZ)
 - [ ] **33.** Décision Tailwind : adopter ou retirer — ⛔ **décision produit, pas une tâche.**
       `tailwindcss` + `@tailwindcss/vite` installés, importés par `tailwind.css` et `dashboard.css`.
-- [ ] **34.** Playwright sur les parcours critiques (connexion, inscription formation,
-      validation manuelle du virement — le paiement en ligne a disparu avec #43)
+- [x] **34.** Playwright sur les parcours critiques (connexion, inscription formation,
+      validation manuelle du virement — le paiement en ligne a disparu avec #43). **Fait** (P4 #34,
+      commits `e084aca` + `d5e4d4c`) : `@playwright/test` en devDep, `playwright.config.ts`,
+      3 tests E2E dans `tests/e2e/auth.spec.ts` (page /connexion, redirect guard /dashboard/user,
+      credentials invalides). Tous passent en local (3/3 en 10.4s). **Reste ouvert** : exécuter
+      les tests en CI (nécessite un Supabase de test dédié) et couvrir le scénario
+      "credentials valides → dashboard" qui ne peut pas tourner contre la prod.
 - [x] **35.** `resource_downloads` : compteur agrégé asynchrone (CQRS-lite + `pg_cron`)
 - [x] **36.** Guard TypeScript pour rendre `requireAuth()` impossible à ignorer
 - [x] **37.** Rendre `llms-full.txt` statique

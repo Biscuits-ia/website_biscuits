@@ -54,6 +54,17 @@ assert('robots.txt reference llms.txt', () => read('robots.txt').includes('llms.
 assert('llms-full.txt est prerendu (fichier statique, pas une lambda)', () =>
   exists('llms-full.txt') || 'dist/client/llms-full.txt absent : prerender = false ?');
 
+// ── trombinoscope (P4 #32) ───────────────────────────────────────────────────
+// Page publique en lecture seule. En SSR, chaque visite = 1 lambda + 1 requete
+// Supabase en service_role. Prerendue, elle ne doit contenir ni nonce (le CSP
+// vient de vercel.json) ni trace de secret.
+assert('trombinoscope est prerendu', () =>
+  exists('trombinoscope/index.html') || 'dist/client/trombinoscope/index.html absent : prerender = false ?');
+assert('trombinoscope ne contient aucun nonce fige', () => {
+  const m = read('trombinoscope/index.html').match(/nonce="([A-Za-z0-9+/=_-]{16,})"/);
+  return m ? `nonce statique trouve : ${m[1]}` : true;
+});
+
 // ── sitemap ──────────────────────────────────────────────────────────────────
 assert('aucun sitemap.xml statique ne masque sitemap-index.xml', () => !exists('sitemap.xml') || 'public/sitemap.xml est revenu');
 assert('sitemap-index.xml genere', () => exists('sitemap-index.xml'));

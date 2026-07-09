@@ -1,6 +1,7 @@
 // src/pages/api/admin/benevoles/update.ts
 import type { APIRoute } from 'astro';
-import { createSupabaseClient, createSupabaseAdminClient } from '@/lib/supabase';
+import { createSupabaseAdminClient } from '@/lib/supabase';
+import { requireAdmin } from '@/lib/auth';
 import { isValidUUID } from '@/lib/validation';
 
 const ALLOWED_MIME = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/avif']);
@@ -24,18 +25,11 @@ async function uploadPhoto(
   return `${data.publicUrl}?v=${Date.now()}`;
 }
 
-async function verifyAdmin(request: Request, cookies: any): Promise<boolean> {
-  const supabase = createSupabaseClient({ request, cookies });
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return false;
-  const adminDb = createSupabaseAdminClient();
-  const { data: profile } = await adminDb.from('profiles').select('role').eq('id', user.id).single();
-  return profile?.role === 'admin';
-}
+export const POST: APIRoute = async (context) => {
+  const auth = await requireAdmin(context);
+  if (auth instanceof Response) return auth;
 
-export const POST: APIRoute = async ({ request, cookies, redirect }) => {
-  if (!await verifyAdmin(request, cookies)) return redirect('/connexion');
-
+  const { request, redirect } = context;
   const form = await request.formData();
 
   const id          = (form.get('id') as string | null)?.trim() ?? '';

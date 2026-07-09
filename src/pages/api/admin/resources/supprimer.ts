@@ -1,24 +1,16 @@
 // src/pages/api/admin/resources/supprimer.ts
 import type { APIRoute } from 'astro';
-import { createSupabaseClient, createSupabaseAdminClient } from '@/lib/supabase';
+import { createSupabaseAdminClient } from '@/lib/supabase';
+import { requireAdmin } from '@/lib/auth';
 import { getFormString } from '@/types/ateliers';
 import { isValidUUID } from '@/lib/validation';
 
-export const POST: APIRoute = async ({ request, cookies, redirect }) => {
-  const supabase = createSupabaseClient({ request, cookies });
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return redirect('/connexion');
+export const POST: APIRoute = async (context) => {
+  const auth = await requireAdmin(context);
+  if (auth instanceof Response) return auth;
 
+  const { request, redirect } = context;
   const adminDb = createSupabaseAdminClient();
-  const { data: profile } = await adminDb
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single();
-
-  if (profile?.role !== 'admin') {
-    return new Response('Accès interdit', { status: 403 });
-  }
 
   const form       = await request.formData();
   const resourceId = getFormString(form, 'resource_id');

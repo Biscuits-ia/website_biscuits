@@ -8,7 +8,9 @@
 // dans le scope du `createComponent()`, le runtime jette un ReferenceError.
 // BaseHead.astro a déjà ce pattern ; on aligne Toast / ConfirmDialog /
 // CookieConsent dessus pour les mêmes raisons.
-interface Props { nonce: string; }
+// `undefined` sur les pages prerendered : le middleware n'y genere pas de nonce
+// (cf. env.d.ts). Astro omet alors l'attribut, et le CSP vient de vercel.json.
+interface Props { nonce?: string; }
 const { nonce } = Astro.props;
 ---
 

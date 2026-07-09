@@ -112,22 +112,22 @@ Le script `"lint": "eslint src --ext .ts,.tsx,.astro"` (`package.json`) **échou
 
 ---
 
-## 🟠 1.3 — Duplication de composants avec collision d'encodage
+## 🟢 1.3 — Duplication de composants avec collision d'encodage
 
 ```
-src/components/Confidentialite.astro
-src/components/Confidentialité.astro        ← accent dans le nom de fichier
-src/pages/legal/confidentialite.astro
-src/pages/legal/politique-de-confidentialite.astro
+src/components/Confidentialite.astro        ← déjà supprimé
+src/components/Confidentialité.astro        ← déjà supprimé (accent dans le nom de fichier)
+src/pages/legal/confidentialite.astro       ← supprimé (P4 #28, 9b6c575)
+src/pages/legal/politique-de-confidentialite.astro  ← canonique conservée
 ```
 
-Deux composants, deux pages, mêmes responsabilités. Le fichier accentué (stocké en octal `Confidentialit\303\251`) est une **bombe à retardement** sur macOS (NFD vs NFC) et sur les systèmes de fichiers insensibles à la casse.
+La page courte (161 l., MAJ 4 avril 2026) etait un sous-ensemble obsolete de la canonique (325 l., MAJ 24 juin 2026, mentionne RNA/SIRET/siege/sous-traitants reels). Une 301 de `/legal/confidentialite` vers la canonique est en place dans `vercel.json`. Les 4 derniers liens internes (Footer, config.ts, aide-victimes, mentions-legales) pointent sur la canonique.
 
 ---
 
-## 🟠 1.4 — Deux lockfiles
+## 🟢 1.4 — Deux lockfiles
 
-`package-lock.json` (300 Ko) **et** `bun.lock` (141 Ko) sont versionnés. Vercel choisira l'un des deux selon détection ; **les installs ne sont pas reproductibles**.
+**Fait (P4 #28, fc3819e).** `bun.lock` supprime. Le projet utilise `npm` exclusivement (`package.json` n'a aucune mention de bun, CI fait `npm ci`). Un seul lockfile, environnement reproductible.
 
 ---
 
@@ -1299,8 +1299,8 @@ Rien dans ce repo ne prouve qu'une intention se traduit en comportement. Ajoutez
 
 # 🗺️ ROADMAP
 
-> **État au 2026-07-09** — 37 items faits sur 43, vérifiés dans le code et non
-> d'après les titres de commit. Restent 6 items ouverts + 1 partiel (#28).
+> **État au 2026-07-09** — 38 items faits sur 43, vérifiés dans le code et non
+> d'après les titres de commit. Restent 5 items ouverts + 1 partiel (#34).
 > Les items 41 à 44 ne figuraient pas dans l'audit initial : ils ont été
 > découverts en cours de route. Les items cochés ont été confirmés sur
 > l'artefact (`dist/`, `.vercel/output/`) ou par une assertion dans
@@ -1352,10 +1352,12 @@ qu'à moitié, ce qui a cassé toutes les routes SSR pendant 24 h. Voir #41.
       l'exposition réelle n'est pas lisible depuis le repo.
 - [x] **26.** `git rm scripts/patch-*.cjs` (61 fichiers), `astro-error.log`, `logs/` — il reste 6 scripts
 - [x] **27.** Écrire `AGENTS.md` + `ARCHITECTURE.md`
-- [ ] **28.** *(partiel)* `lucide-astro` et `@astrojs/node` retirés ✅. **Restent** : deux lockfiles
-      (`bun.lock` + `package-lock.json`) et un doublon de page légale —
-      `legal/confidentialite.astro` (161 l.) **et** `legal/politique-de-confidentialite.astro`
-      (324 l.), toutes deux prerendered, aucune ne redirigeant vers l'autre.
+- [x] **28.** `lucide-astro` et `@astrojs/node` retirés ✅. **Fait** (P4 #28, commits `9b6c575` + `fc3819e`) :
+      page `legal/confidentialite.astro` (161 l., obsolète) supprimée, **301 permanent** vers
+      `legal/politique-de-confidentialite` dans `vercel.json`, 4 liens internes mis à jour
+      (Footer, config.ts, aide-victimes, mentions-legales), `bun.lock` retiré (le projet
+      utilise `npm` exclusivement, CI fait `npm ci`). Vérifié : 23/23 assertions de build
+      passent, `sitemap-0.xml` ne référence plus l'ancienne URL.
 - [x] **29.** Check `Sec-Fetch-Site` dans le middleware
 - [x] **30.** Optimiser le logo (SVG, < 5 Ko)
 

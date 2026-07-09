@@ -39,6 +39,14 @@ interface ImportMetaEnv {
    * Defaut : non defini (= false).
    */
   readonly PUBLIC_ANALYTICS_DISABLED?: string;
+  /**
+   * GTM_ID -- identifiant Google Tag Manager (ex. GTM-XXXXXXX).
+   * Lu au build/SSR par BaseHead.astro, puis injecte dans le script inline via
+   * `define:vars`. Non prefixe PUBLIC_ : la valeur n'est pas un secret (elle
+   * finit dans le HTML), mais rien ne justifie de l'exposer au bundle client.
+   * Absent ou vide => le bloc GTM n'est pas emis du tout.
+   */
+  readonly GTM_ID?: string;
   readonly INDEXNOW_KEY?: string;
   readonly CRON_SECRET?: string;
 }

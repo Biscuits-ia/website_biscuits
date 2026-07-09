@@ -26,6 +26,12 @@
 // deliberation n 2020-091). Aucun prechauffage TCP/TLS vers Google sans opt-in.
 // Il teste `!window.__ANALYTICS_DISABLED__`, flag pose par Layout.astro dans le
 // <slot /> ci-dessous -- donc AVANT ce script. Ne pas reordonner.
+//
+// L'ID vient de GTM_ID (P4 #40). S'il est absent, tout le bloc est omis : le
+// consommateur (CookieConsent.astro) teste `typeof loadGTMIfConsented ===
+// 'function'` avant d'appeler, donc aucun analytics == aucune erreur.
+// `is:inline` emet le script verbatim -- les {expressions} n'y sont pas
+// evaluees --, d'ou le passage par `define:vars`.
 // ============================================================================
 import SEOHead from '@/components/SEO/SEOHead.astro';
 import SchemaOrg from '@/components/SEO/SchemaOrg.astro';
@@ -57,6 +63,9 @@ const {
   isProd,
   nonce,
 } = Astro.props;
+
+const gtmId = (import.meta.env.GTM_ID ?? '').trim();
+const gtmEnabled = isProd && gtmId.length > 0;
 ---
 
 <meta charset="UTF-8" />
@@ -102,8 +111,8 @@ const {
 
 <meta name="referrer" content="strict-origin-when-cross-origin" />
 
-{isProd && (
-  <script is:inline nonce={nonce}>
+{gtmEnabled && (
+  <script is:inline nonce={nonce} define:vars={{ gtmId }}>
     // Definition du dataLayer pour GTM (charge dynamiquement par CookieConsent)
     window.dataLayer = window.dataLayer || [];
 
@@ -131,7 +140,7 @@ const {
         const script = document.createElement('script');
         script.async = true;
         script.dataset.gtmLoader = '1';
-        script.src = 'https://www.googletagmanager.com/gtm.js?id=GTM-W2273TRX';
+        script.src = 'https://www.googletagmanager.com/gtm.js?id=' + encodeURIComponent(gtmId);
         // Erreur silencieuse : un blocage reseau / bloqueur n'est pas une
         // erreur applicative. On log uniquement en mode debug.
         script.addEventListener('error', () => {

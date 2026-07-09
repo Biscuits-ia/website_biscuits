@@ -13,6 +13,9 @@ import js from '@eslint/js';
 import tseslint from 'typescript-eslint';
 import astro from 'eslint-plugin-astro';
 import globals from 'globals';
+import { createRequire } from 'node:module';
+const require = createRequire(import.meta.url);
+const localAuthNarrow = require('./eslint-rules/require-auth-narrow.cjs');
 
 export default tseslint.config(
   {
@@ -23,6 +26,8 @@ export default tseslint.config(
       'node_modules/',
       'public/',
       'scripts/patch-*.cjs',
+      // Le plugin lui-meme (CommonJS, pas lintable par notre config TS).
+      'eslint-rules/',
     ],
   },
 
@@ -31,9 +36,26 @@ export default tseslint.config(
   ...astro.configs.recommended,
 
   {
+    plugins: {
+      'local-auth-narrow': localAuthNarrow,
+    },
+  },
+
+  {
     // Scripts inline .astro + code SSR : globals navigateur ET Node.
     languageOptions: {
       globals: { ...globals.browser, ...globals.node },
+    },
+  },
+
+  {
+    // Regle custom : impose le narrowing `instanceof Response` apres tout
+    // appel `await requireX(...)` (P4 #36). Cible : code TS et frontmatter
+    // des .astro. Le processor `.astro` d'eslint-plugin-astro extrait le
+    // frontmatter en fichier TS virtuel, donc la regle s'y applique aussi.
+    files: ['**/*.{ts,tsx,astro}'],
+    rules: {
+      'local-auth-narrow/no-unguarded-auth-result': 'error',
     },
   },
 

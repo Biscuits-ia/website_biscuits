@@ -34,19 +34,18 @@ await supabase.rpc('log_level_counts');
 
 <DashboardLayout title="Logs système" activePage="logs" userName={userName} authResult={result}>
 
-  <div style="margin-bottom: 24px; display:flex; align-items:center; justify-content:space-between;">
+  <div class="log-head">
     <div>
-      <h1 style="font-size: 1.2rem; font-weight: 400; letter-spacing: -0.02em;">
+      <h1 class="log-title">
         Logs système
-        <span class="badge badge-info" style="font-size:0.62rem; margin-left:8px; vertical-align:middle;">LIVE</span>
+        <span class="badge badge-info log-live-badge">LIVE</span>
       </h1>
-      <p style="color: var(--text-muted); font-size: 0.8rem; margin-top: 3px;">{count ?? 0} entrées</p>
+      <p class="log-count">{count ?? 0} entrées</p>
     </div>
     <!-- Auto-refresh -->
     <button
       data-reload="1"
-      class="btn btn-ghost"
-      style="font-size:0.78rem;"
+      class="btn btn-ghost btn-xs-text"
     >âŸ³ Rafraîchir</button>
   </div>
 
@@ -57,8 +56,7 @@ await supabase.rpc('log_level_counts');
       name="q"
       placeholder="Rechercher dans les messages..."
       value={search}
-      class="filter-input"
-      style="min-width:240px;"
+      class="filter-input search-input"
     />
     <select name="level" class="filter-input" data-autosubmit="1">
       <option value="">Tous les niveaux</option>
@@ -67,20 +65,20 @@ await supabase.rpc('log_level_counts');
       <option value="ERROR" selected={filterLvl === 'ERROR'}>ERROR</option>
       <option value="DEBUG" selected={filterLvl === 'DEBUG'}>DEBUG</option>
     </select>
-    <button type="submit" class="btn btn-primary" style="font-size:0.8rem;">Filtrer</button>
+    <button type="submit" class="btn btn-primary log-filter-btn">Filtrer</button>
     {(filterLvl || search) && (
-      <a href="/dashboard/admin/logs" class="btn btn-ghost" style="font-size:0.78rem;">Ã— Réinitialiser</a>
+      <a href="/dashboard/admin/logs" class="btn btn-ghost btn-xs-text">Ã— Réinitialiser</a>
     )}
   </form>
 
   <!-- Compteurs par niveau -->
-  <div style="display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap;">
+  <div class="level-counts">
     {[
       { level: 'INFO',  cls: 'info' },
       { level: 'WARN',  cls: 'warn' },
       { level: 'ERROR', cls: 'err' },
     ].map(({ level, cls }) => (
-      <a href={`?level=${level}`} class={`badge badge-${cls}`} style="cursor:pointer; font-size:0.72rem;">
+      <a href={`?level=${level}`} class={`badge badge-${cls} level-badge`}>
         {level}
         {filterLvl === level && ' âœ“'}
       </a>
@@ -88,25 +86,25 @@ await supabase.rpc('log_level_counts');
   </div>
 
   <!-- Log list -->
-  <div class="log-list" style="gap:4px;">
+  <div class="log-list log-list--tight">
     {logs && logs.length > 0 ? logs.map((log: any) => {
       const d   = new Date(log.created_at);
       const lvl = (log.level ?? 'info').toLowerCase();
       const svc = log.service ?? '';
       return (
-        <div class="log-entry" style="grid-template-columns: 170px 60px 90px 1fr;">
+        <div class="log-entry log-cols">
           <span class="log-time">
             {d.toLocaleDateString('fr-FR')} {d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
           </span>
           <span class={`log-level ${lvl}`}>{log.level}</span>
-          <span style="font-size:0.72rem; color:var(--text-muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+          <span class="log-svc">
             {svc || 'â€”'}
           </span>
           <span class="log-msg">{log.message}</span>
         </div>
       );
     }) : (
-      <div style="text-align:center; padding:40px; color:var(--text-muted); font-size:0.83rem;">
+      <div class="log-empty">
         Aucun log trouvé.
       </div>
     )}
@@ -114,11 +112,11 @@ await supabase.rpc('log_level_counts');
 
   <!-- Pagination -->
   {totalPages > 1 && (
-    <div style="display:flex; gap:8px; justify-content:center; margin-top:20px;">
+    <div class="pager">
       {page > 1 && (
         <a href={`?page=${page - 1}&level=${filterLvl}&q=${search}`} class="btn btn-ghost">â† Précédent</a>
       )}
-      <span style="padding:7px 14px; font-size:0.82rem; color:var(--text-muted);">{page} / {totalPages}</span>
+      <span class="pager-info">{page} / {totalPages}</span>
       {page < totalPages && (
         <a href={`?page=${page + 1}&level=${filterLvl}&q=${search}`} class="btn btn-ghost">Suivant â†’</a>
       )}
@@ -134,3 +132,21 @@ await supabase.rpc('log_level_counts');
   </script>
 
 </DashboardLayout>
+
+<style>
+  /* Specifique a la page logs (audit S4 : sortie des attributs inline). */
+  .log-head        { margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; }
+  .log-title       { font-size: 1.2rem; font-weight: 400; letter-spacing: -0.02em; }
+  .log-live-badge  { font-size: 0.62rem; margin-left: 8px; vertical-align: middle; }
+  .log-count       { color: var(--text-muted); font-size: 0.8rem; margin-top: 3px; }
+  .search-input    { min-width: 240px; }
+  .log-filter-btn  { font-size: 0.8rem; }
+  .level-counts    { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+  .level-badge     { cursor: pointer; font-size: 0.72rem; }
+  .log-list--tight { gap: 4px; }
+  .log-cols        { grid-template-columns: 170px 60px 90px 1fr; }
+  .log-svc         { font-size: 0.72rem; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .log-empty       { text-align: center; padding: 40px; color: var(--text-muted); font-size: 0.83rem; }
+  .pager           { display: flex; gap: 8px; justify-content: center; margin-top: 20px; }
+  .pager-info      { padding: 7px 14px; font-size: 0.82rem; color: var(--text-muted); }
+</style>

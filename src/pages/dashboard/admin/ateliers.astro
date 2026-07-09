@@ -138,7 +138,7 @@ const workshopRows: WorkshopRow[] = workshops.map((w: Workshop) => {
               class="btn btn-ghost btn-sm"
               data-modal-open={`modal-edit-${w.id}`}
             >Modifier</button>
-            <form method="POST" action="/api/admin/ateliers/supprimer" style="display:inline;">
+            <form method="POST" action="/api/admin/ateliers/supprimer" class="form-inline">
               <input type="hidden" name="workshop_id" value={w.id} />
               <button
                 type="submit"

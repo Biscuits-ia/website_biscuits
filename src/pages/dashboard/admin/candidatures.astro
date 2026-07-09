@@ -52,9 +52,9 @@ const availabilityLabel: Record<string, string> = {
 
 <DashboardLayout title="Candidatures" activePage="candidatures" userName={userName} authResult={result}>
 
-  <div style="margin-bottom: 28px;">
+  <div class="page-head">
     <h1>Candidatures bénévoles</h1>
-    <p style="margin-top: 6px;">Gérez les candidatures reçues via le formulaire de recrutement.</p>
+    <p class="page-head-sub">Gérez les candidatures reçues via le formulaire de recrutement.</p>
   </div>
 
   {saved && <div class="flash flash-ok" role="alert">âœ“ Modifications sauvegardées.</div>}
@@ -64,19 +64,19 @@ const availabilityLabel: Record<string, string> = {
   <div class="stats-grid mb-6">
     <div class="stat-card">
       <div class="stat-label">Nouvelles</div>
-      <div class="stat-value" style="color: var(--warn);">{newCount ?? 0}</div>
+      <div class="stat-value stat-value--warn">{newCount ?? 0}</div>
     </div>
     <div class="stat-card">
       <div class="stat-label">En examen</div>
-      <div class="stat-value" style="color: var(--info);">{reviewingCount ?? 0}</div>
+      <div class="stat-value stat-value--info">{reviewingCount ?? 0}</div>
     </div>
     <div class="stat-card">
       <div class="stat-label">Acceptées</div>
-      <div class="stat-value" style="color: var(--ok);">{acceptedCount ?? 0}</div>
+      <div class="stat-value stat-value--ok">{acceptedCount ?? 0}</div>
     </div>
     <div class="stat-card">
       <div class="stat-label">Refusées</div>
-      <div class="stat-value" style="color: var(--err, #e53935);">{declinedCount ?? 0}</div>
+      <div class="stat-value stat-value--err">{declinedCount ?? 0}</div>
     </div>
   </div>
 
@@ -85,8 +85,7 @@ const availabilityLabel: Record<string, string> = {
     {['', 'new', 'reviewing', 'accepted', 'declined'].map((s) => (
       <a
         href={s ? `?status=${s}` : '?'}
-        class={`btn ${filter === s ? 'btn-primary' : 'btn-ghost'}`}
-        style="font-size: 0.82rem;"
+        class={`btn filter-link ${filter === s ? 'btn-primary' : 'btn-ghost'}`}
       >
         {s === '' ? 'Toutes' : statusLabel[s]}
         {s === 'new'       && newCount       ? ` (${newCount})`       : ''}
@@ -98,7 +97,7 @@ const availabilityLabel: Record<string, string> = {
   </div>
 
   <!-- Liste des candidatures -->
-  <div style="display: flex; flex-direction: column; gap: 16px;">
+  <div class="admin-list">
     {submissions && submissions.length > 0 ? submissions.map((s: any) => {
       const date       = new Date(s.created_at);
       const badgeClass = statusBadge[s.status] ?? 'badge-neutral';
@@ -109,10 +108,10 @@ const availabilityLabel: Record<string, string> = {
         <div class="card recruit-card">
 
           <div class="recruit-header">
-            <div style="flex: 1; min-width: 0;">
-              <div style="font-size: 1.05rem; font-weight: 700; color: var(--text-primary);">{fullName}</div>
-              <div style="font-size: var(--text-xs); font-family: var(--font-mono); color: var(--text-muted); margin-top: 3px;">
-                <a href={`mailto:${s.email}`} style="color: var(--accent);">{s.email}</a>
+            <div class="admin-detail-id">
+              <div class="admin-detail-title">{fullName}</div>
+              <div class="admin-detail-meta">
+                <a href={`mailto:${s.email}`} class="recruit-email">{s.email}</a>
                 · {date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
                 {s.availability && ` · Dispo : ${availabilityLabel[s.availability] ?? s.availability}`}
               </div>
@@ -142,14 +141,14 @@ const availabilityLabel: Record<string, string> = {
           )}
 
           <!-- Formulaire de gestion -->
-          <form method="POST" action="/api/admin/candidatures/update" style="display: flex; flex-direction: column; gap: 12px; padding-top: 14px; border-top: var(--brutal-border-thin);">
+          <form method="POST" action="/api/admin/candidatures/update" class="admin-form">
             <input type="hidden" name="submission_id" value={s.id} />
 
-            <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
-              <label style="font-size: var(--text-xs); font-weight: 700; color: var(--text-muted); font-family: var(--font-mono); text-transform: uppercase;">
+            <div class="admin-form-row">
+              <label class="admin-form-label">
                 Statut :
               </label>
-              <select name="status" class="filter-input" style="min-height: unset; padding: 6px 10px;">
+              <select name="status" class="filter-input admin-select">
                 <option value="new"       selected={s.status === 'new'}>Nouvelle</option>
                 <option value="reviewing" selected={s.status === 'reviewing'}>En examen</option>
                 <option value="accepted"  selected={s.status === 'accepted'}>Acceptée</option>
@@ -163,32 +162,30 @@ const availabilityLabel: Record<string, string> = {
                 name="admin_notes"
                 rows="2"
                 placeholder="Notes internes sur le candidatâ€¦"
-                style="resize: vertical; font-family: var(--font-sans);"
+                class="admin-textarea"
               >{s.admin_notes ?? ''}</textarea>
             </div>
 
-            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-              <button type="submit" class="btn btn-primary" style="font-size: 0.85rem;">
+            <div class="admin-actions">
+              <button type="submit" class="btn btn-primary btn-sm-text">
                 Sauvegarder
               </button>
             </div>
           </form>
 
           <!-- Boutons d'action (hors du formulaire) -->
-          <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px;">
+          <div class="admin-actions admin-actions--spaced">
             <a
               href={`mailto:${s.email}?subject=${encodeURIComponent(`Votre candidature chez Biscuits IA`)}`}
-              class="btn btn-ghost"
-              style="font-size: 0.85rem;"
+              class="btn btn-ghost btn-sm-text"
             >
               âœ‰ Contacter
             </a>
-            <form method="POST" action="/api/admin/candidatures/delete" style="display: inline;">
+            <form method="POST" action="/api/admin/candidatures/delete" class="form-inline">
               <input type="hidden" name="submission_id" value={s.id} />
               <button
                 type="submit"
-                class="btn btn-danger"
-                style="font-size: 0.85rem;"
+                class="btn btn-danger btn-sm-text"
                 data-confirm="'Supprimer définitivement cette candidature ?'"
               >
                 Supprimer
@@ -199,8 +196,8 @@ const availabilityLabel: Record<string, string> = {
         </div>
       );
     }) : (
-      <div class="card" style="text-align: center; padding: 48px 24px;">
-        <p style="font-size: 1.5rem; margin-bottom: 8px;">ðŸ“‹</p>
+      <div class="card empty-state">
+        <p class="empty-icon">ðŸ“‹</p>
         <p>{filter ? `Aucune candidature avec le statut "${statusLabel[filter] ?? filter}".` : 'Aucune candidature pour le moment.'}</p>
       </div>
     )}
@@ -209,6 +206,11 @@ const availabilityLabel: Record<string, string> = {
 </DashboardLayout>
 
 <style>
+  /* Classes partagees promues dans dashboard.css : .admin-list, .admin-detail-*,
+   * .admin-form*, .admin-select, .admin-textarea, .admin-actions*, .filter-link,
+   * .stat-value--*. Ne restent ici que les elements propres a cette page. */
+  .recruit-email { color: var(--accent); }
+
   .recruit-card { display: flex; flex-direction: column; gap: 14px; }
   .recruit-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
 

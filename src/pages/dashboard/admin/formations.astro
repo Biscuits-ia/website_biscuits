@@ -109,7 +109,7 @@ const hasPendingSponsorship = (pendingSponsorships ?? []).length > 0;
       <strong>âš ï¸ CGV non activées.</strong>
       Les Conditions Générales de Vente doivent être validées par le bureau et activées
       avant d'autoriser la vente de formations.
-      <ul style="margin:8px 0 0 0;padding-left:24px;list-style:disc">
+      <ul class="detail-list">
         <li><a href="/legal/cgv">Consulter les CGV</a></li>
         <li><a href="/legal/guide-relecture" target="_blank" rel="noopener">Guide de relecture (checklist Bureau)</a></li>
         <li>Activer via : <code>UPDATE legal_compliance SET cgv_activees = true WHERE id = 1;</code></li>
@@ -122,7 +122,7 @@ const hasPendingSponsorship = (pendingSponsorships ?? []).length > 0;
       <span class="kpi-label">Outbox emails</span>
       <span class="kpi-value">
         {outboxStats ? (outboxStats.pending + outboxStats.failed) : '?'}
-        <small style="font-size:0.7rem;font-weight:400;color:var(--text-muted)">en attente</small>
+        <small class="pending-note">en attente</small>
       </span>
     </div>
     <div class="kpi-card">
@@ -173,12 +173,12 @@ const hasPendingSponsorship = (pendingSponsorships ?? []).length > 0;
                   <td class="cell-reason">{req.reason}</td>
                   <td>
                     <div class="workshop-actions">
-                      <form method="POST" action="/api/admin/formations/validate-payment" style="display:inline;">
+                      <form method="POST" action="/api/admin/formations/validate-payment" class="form-inline">
                         <input type="hidden" name="free_request_id" value={req.id} />
                         <input type="hidden" name="decision" value="APPROVE" />
                         <button type="submit" class="btn btn-primary btn-xs" data-confirm={`Approuver la demande d exoneration de ${req.profiles?.full_name ?? "cet utilisateur"} ?`}>Approuver</button>
                       </form>
-                      <form method="POST" action="/api/admin/formations/validate-payment" style="display:inline;">
+                      <form method="POST" action="/api/admin/formations/validate-payment" class="form-inline">
                         <input type="hidden" name="free_request_id" value={req.id} />
                         <input type="hidden" name="decision" value="REFUSE" />
                         <input type="hidden" name="note" value="Demande d exoneration refusee" />
@@ -223,7 +223,7 @@ const hasPendingSponsorship = (pendingSponsorships ?? []).length > 0;
                 <td>{s.mode === 'pool' ? 'Pool libre' : 'Nominatif'}</td>
                 <td><code class="code-inline">{s.redemption_code}</code></td>
                 <td>
-                  <form method="POST" action="/api/admin/formations/validate-payment" style="display:inline;">
+                  <form method="POST" action="/api/admin/formations/validate-payment" class="form-inline">
                     <input type="hidden" name="sponsorship_id" value={s.id} />
                     <button type="submit" class="btn btn-primary btn-xs">Confirmer paiement</button>
                   </form>
@@ -261,13 +261,13 @@ const hasPendingSponsorship = (pendingSponsorships ?? []).length > 0;
                 {t.short_description && <p class="workshop-desc">{t.short_description}</p>}
               </div>
               <div class="workshop-actions">
-                <form method="POST" action="/api/admin/formations/toggle" style="display:inline;">
+                <form method="POST" action="/api/admin/formations/toggle" class="form-inline">
                   <input type="hidden" name="training_id" value={t.id} />
                   <input type="hidden" name="is_published" value={String(!t.is_published)} />
                   <button type="submit" class="btn btn-ghost btn-sm">{t.is_published ? 'Depublier' : 'Publier'}</button>
                 </form>
                 <button class="btn btn-ghost btn-sm" data-modal-open={`modal-edit-${t.id}`}>Modifier</button>
-                <form method="POST" action="/api/admin/formations/supprimer" style="display:inline;">
+                <form method="POST" action="/api/admin/formations/supprimer" class="form-inline">
                   <input type="hidden" name="training_id" value={t.id} />
                   <button type="submit" class="btn btn-danger btn-sm"
                           data-confirm="Supprimer cette formation et toutes ses donnees associees (sessions, inscriptions, paiements) ?">
@@ -363,6 +363,10 @@ const hasPendingSponsorship = (pendingSponsorships ?? []).length > 0;
 </DashboardLayout>
 
 <style>
+  /* Audit S4 : anciennement des attributs inline. */
+  .detail-list { margin: 8px 0 0 0; padding-left: 24px; list-style: disc; }
+  .pending-note { font-size: 0.7rem; font-weight: 400; color: var(--text-muted); }
+
   .header-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 24px; }
   .header-actions { display: flex; gap: 8px; flex-wrap: wrap; }
   .subtitle { margin-top: 6px; color: var(--text-secondary); }

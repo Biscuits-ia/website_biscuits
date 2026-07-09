@@ -1299,10 +1299,12 @@ Rien dans ce repo ne prouve qu'une intention se traduit en comportement. Ajoutez
 
 # 🗺️ ROADMAP
 
-> **État au 2026-07-09** — 33 items faits sur 41, vérifiés dans le code et non
+> **État au 2026-07-09** — 35 items faits sur 43, vérifiés dans le code et non
 > d'après les titres de commit. Restent 7 items ouverts + 1 partiel (#28).
-> Les items barrés d'un ✅ ont été confirmés sur l'artefact (`dist/`, `.vercel/output/`)
-> ou par assertion dans `scripts/assert-build-invariants.mjs`.
+> Les items 41 à 43 ne figuraient pas dans l'audit initial : ils ont été
+> découverts en cours de route. Les items cochés ont été confirmés sur
+> l'artefact (`dist/`, `.vercel/output/`) ou par une assertion dans
+> `scripts/assert-build-invariants.mjs` (22 assertions, dont 3 testées en négatif).
 
 ## PRIORITÉ 1 — Immédiat (aujourd'hui / cette semaine)
 
@@ -1365,7 +1367,8 @@ qu'à moitié, ce qui a cassé toutes les routes SSR pendant 24 h. Voir #41.
 - [x] **32.** `/trombinoscope` → prerendu (plutôt qu'ISR) + fix `ReferenceError` (TDZ)
 - [ ] **33.** Décision Tailwind : adopter ou retirer — ⛔ **décision produit, pas une tâche.**
       `tailwindcss` + `@tailwindcss/vite` installés, importés par `tailwind.css` et `dashboard.css`.
-- [ ] **34.** Playwright sur les parcours critiques (connexion, inscription formation, paiement)
+- [ ] **34.** Playwright sur les parcours critiques (connexion, inscription formation,
+      validation manuelle du virement — le paiement en ligne a disparu avec #43)
 - [x] **35.** `resource_downloads` : compteur agrégé asynchrone (CQRS-lite + `pg_cron`)
 - [x] **36.** Guard TypeScript pour rendre `requireAuth()` impossible à ignorer
 - [x] **37.** Rendre `llms-full.txt` statique
@@ -1384,6 +1387,31 @@ qu'à moitié, ce qui a cassé toutes les routes SSR pendant 24 h. Voir #41.
       **Reste ouvert** : `dashboard/admin/appointments.astro` monte un island `client:load`
       dont Astro émet lui-même le bootstrap sans nonce → le calendrier admin ne s'hydrate
       pas en prod. Correctif = activer `security.csp` (cf. `astro.config.mjs`).
+- [x] **42.** *(hors audit initial)* IP forgeable dans la preuve d'acceptation des CGV.
+      L'item #3 n'avait corrigé que `lib/http.ts`. Deux routes lisaient encore
+      `cf-connecting-ip` puis `x-forwarded-for` en direct — `api/legal/accept.ts:64`
+      et `api/formations/inscrire.ts:114` — pour hacher l'IP insérée dans
+      `legal_acceptance`. Ces en-têtes sont choisis par l'appelant : la trace
+      juridique enregistrait l'adresse dictée par le client. Pas une élévation de
+      privilège, mais une preuve à valeur probante nulle en cas de litige.
+      Verrouillé par l'assertion « aucune lecture directe d'un header IP forgeable
+      hors `lib/http.ts` », testée en négatif.
+- [x] **43.** *(hors audit initial)* Retrait de l'intégration HelloAsso (commit `95ef69e`).
+      Décision produit : un autre prestataire de paiement sera branché plus tard.
+      −1319 lignes. Les inscriptions payantes passent par virement, validé
+      manuellement. `payment_method = 'helloasso'` devient une valeur **legacy en
+      lecture seule** : retirée de `paymentMethodSchema`, conservée en base — la
+      réécrire falsifierait la comptabilité. La page de dons HelloAsso de
+      l'association est conservée (lien externe, pas une intégration).
+      ⚠️ La migration `20260709_drop_helloasso.sql` est **destructive et non
+      appliquée** : elle supprime l'historique des paiements. L'article L123-22 du
+      code de commerce impose 10 ans de conservation — son en-tête propose un
+      archivage par renommage. **À trancher avant `supabase db push`.**
+      Au passage : `helloasso_refunds` et la vue `training_revenue_by_month`
+      n'étaient créées par **aucune migration versionnée** (la migration
+      `20260624_email_queue_and_refunds.sql` citée par l'ancien `refund.ts` n'existe
+      pas). Créées à la main en console, ou jamais — auquel cas `refund.ts` échouait
+      en silence depuis toujours. À vérifier.
 
 ---
 
@@ -1442,11 +1470,11 @@ qu'à moitié, ce qui a cassé toutes les routes SSR pendant 24 h. Voir #41.
 |---|---|---|
 | **Contrastes de couleur** | Les tokens sont dans `theme.css` ; le calcul nécessite le rendu | Run axe-core / Lighthouse |
 | **RLS effective** sur les 49 tables | Nécessite `\d+` sur la base réelle. Le code contourne massivement RLS via `service_role`, donc l'exposition dépend de policies non lisibles ici | Audit SQL sur la prod |
-| **Format de signature HelloAsso** | `helloasso.ts:278` utilise `clientSecret` comme clé HMAC. Je n'ai pas la doc HelloAsso v5 pour confirmer que c'est le schéma attendu | **Si HelloAsso n'envoie pas de signature HMAC, `verifyWebhookSignature()` rejette 100 % des webhooks légitimes** (fail-closed — pas une faille, mais une fonctionnalité morte). À valider en urgence. <br>**⛔ Toujours non résolu au 2026-07-09** : `webhook.ts:75` renvoie encore un 401 sec si l'en-tête `x-helloasso-signature` est absent. Les inscriptions payées ne seraient jamais confirmées. |
+| ~~**Format de signature HelloAsso**~~ | ~~`helloasso.ts:278` utilise `clientSecret` comme clé HMAC.~~ | ✅ **Sans objet depuis le 2026-07-09** : l'intégration HelloAsso a été retirée (commit `95ef69e`). Les inscriptions payantes se règlent par virement, validé manuellement. Si un prestataire de paiement la remplace, la vérification HMAC constant-time redevient obligatoire — et la question de sa présence effective devra être tranchée **avant** la mise en production, pas après. |
 | **Core Web Vitals réels** | Mes conclusions perf sont dérivées de mesures d'octets sur `dist/`, pas d'un Lighthouse en conditions réseau | Run Lighthouse mobile / 4G |
 
 ---
 
 *Audit réalisé le 2026-07-08 sur le commit `da96ef7`. Toutes les assertions sont vérifiables par `grep` sur `src/` ou `dist/client/`.*
 
-*Roadmap remise à jour le 2026-07-09 sur le commit `8fa7bb0` : état vérifié item par item dans le code, et non d'après les titres de commit. 33 faits / 41.*
+*Roadmap remise à jour le 2026-07-09 : état vérifié item par item dans le code, et non d'après les titres de commit. 35 faits / 43. Les items 41 (nonce SSR), 42 (IP forgeable) et 43 (retrait HelloAsso) ne figuraient pas dans l'audit initial.*

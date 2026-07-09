@@ -318,5 +318,40 @@ assert('le CSS inline de index.html reste sous 8 Ko', () => {
   return bytes < 8192 || `${bytes} octets de CSS inline`;
 });
 
+// ── a11y (P2 #38) ─────────────────────────────────────────────────────────────
+// L'audit de contraste axe-core ne peut pas tourner dans ce script (il faut
+// un navigateur). Mais on verifie que le spec qui le porte N'EST PAS
+// supprimé par inadvertance : retirer le fichier, c'est supprimer l'a11y
+// silencieusement, exactement le pattern que ce script combat.
+assert('spec a11y-contrast (axe-core) present', () =>
+  fs.existsSync('tests/e2e/a11y-contrast.spec.ts')
+  || 'tests/e2e/a11y-contrast.spec.ts absent : audit P2 #38 supprime ?');
+assert('dep @axe-core/playwright declaree', () => {
+  const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+  return Boolean(pkg.devDependencies?.['@axe-core/playwright'])
+  || '@axe-core/playwright absent de devDependencies';
+});
+
+// ── secrets scan (P2 #39) ─────────────────────────────────────────────────────
+// Meme logique : on ne peut pas executer gitleaks ici (binaire Go, pas
+// module Node), mais on verifie la presence de la config et du job CI qui
+// l'integre. Sans cette assertion, supprimer .gitleaks.toml ou le job
+// secrets-scan retablirait la faille en silence.
+assert('.gitleaks.toml present', () =>
+  fs.existsSync('.gitleaks.toml')
+  || '.gitleaks.toml absent : audit P2 #39 supprime ?');
+assert('CI integre le scan secrets gitleaks', () => {
+  if (!fs.existsSync('.github/workflows/ci.yml')) return 'ci.yml absent';
+  const yml = fs.readFileSync('.github/workflows/ci.yml', 'utf8');
+  return /gitleaks/i.test(yml)
+  || 'job gitleaks absent de .github/workflows/ci.yml';
+});
+assert('CI integre le job a11y contrast', () => {
+  if (!fs.existsSync('.github/workflows/ci.yml')) return 'ci.yml absent';
+  const yml = fs.readFileSync('.github/workflows/ci.yml', 'utf8');
+  return /a11y-contrast/.test(yml) && /axe-core/.test(yml)
+  || 'job a11y axe-core absent de .github/workflows/ci.yml';
+});
+
 console.log(`\n${failures === 0 ? 'TOUTES LES ASSERTIONS PASSENT' : `${failures} ECHEC(S)`}`);
 process.exit(failures === 0 ? 0 : 1);

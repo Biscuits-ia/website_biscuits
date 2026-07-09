@@ -78,3 +78,57 @@ jobs:
           else
             echo "::warning::Pas de eslint.config.js : lint skippe (TODO P2 #17)"
           fi
+
+  # ── Audit de contraste axe-core (cf. audit.md P2 #38) ──────────────────────
+  # Les gabarits statiques sont servis par le build (dist/client/). On lance
+  # `astro preview` au lieu de `astro dev` pour deux raisons : (a) le CSS est
+  # minifié comme en prod, donc les couleurs COMPUTED sont celles que les
+  # vrais utilisateurs voient ; (b) l'overlay DevTools d'astro dev n'est pas
+  # present, donc pas de faux positifs a11y.
+  a11y-contrast:
+    name: a11y contrast (axe-core)
+    runs-on: ubuntu-latest
+    needs: verify
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: Build (pour astro preview)
+        run: npm run build
+        env:
+          SITE_URL: https://biscuits-ia.com
+          PUBLIC_SITE_URL: https://biscuits-ia.com
+      - name: Audit axe-core
+        env:
+          # astro preview sert le build statique sur 4321 par defaut.
+          PLAYWRIGHT_BASE_URL: http://localhost:4321
+        run: npx playwright test tests/e2e/a11y-contrast.spec.ts
+
+  # ── Scan secrets (cf. audit.md P2 #39) ────────────────────────────────────
+  # Deux modes : gitleaks (l'historique git + le working tree) bloque le PR
+  # des qu'un pattern de la config .gitleaks.toml matche.
+  secrets-scan:
+    name: secrets scan (gitleaks)
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # fetch-depth: 0 indispensable : gitleaks scanne l'historique
+          # complet, pas seulement HEAD.
+          fetch-depth: 0
+      - name: Run gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_CONFIG: .gitleaks.toml
+          # En PR : ne sort pas en erreur sur les findings "redact" du
+          # working tree (artefacts, fichiers temporaires). On garde
+          # strict sur l'historique.
+          GITLEAKS_ENABLE_UPLOAD_ARTIFACT: false
+          GITLEAKS_ENABLE_SUMMARY: true

@@ -1,5 +1,5 @@
 # the name by which the project can be referenced within Serena
-project_name: "Biscuits IA"
+project_name: "website_biscuits"
 
 
 # list of languages for which language servers are started; choose from:
@@ -34,16 +34,35 @@ project_name: "Biscuits IA"
 languages:
 - typescript
 
+# the encoding used by text files in the project
+# For a list of possible encodings, see https://docs.python.org/3.11/library/codecs.html#standard-encodings
+encoding: "utf-8"
+
+# line ending convention to use when writing source files.
+# Possible values: unset (use global setting), "lf", "crlf", or "native" (platform default)
+# This does not affect Serena's own files (e.g. memories and configuration files), which always use native line endings.
+line_ending:
+
+# The language backend to use for this project.
+# If not set, the global setting from serena_config.yml is used.
+# Valid values: LSP, JetBrains
+# Note: the backend is fixed at startup. If a project with a different backend
+# is activated post-init, an error will be returned.
+language_backend:
+
 # whether to use project's .gitignore files to ignore files
 ignore_all_files_in_gitignore: true
+
+# advanced configuration option allowing to configure language server-specific options.
+# Maps the language key to the options.
+# Have a look at the docstring of the constructors of the LS implementations within solidlsp (e.g., for C# or PHP) to see which options are available.
+# No documentation on options means no options are available.
+ls_specific_settings: {}
 
 # list of additional paths to ignore in this project.
 # Same syntax as gitignore, so you can use * and **.
 # Note: global ignored_paths from serena_config.yml are also applied additively.
-ignored_paths:
-- dist/**
-- .astro/**
-- node_modules/**
+ignored_paths: []
 
 # whether the project is in read-only mode
 # If set to true, all editing tools will be disabled and attempts to use them will result in an error
@@ -60,25 +79,10 @@ excluded_tools: []
 # Find the list of tools here: https://oraios.github.io/serena/01-about/035_tools.html
 included_optional_tools: []
 
-# initial prompt for the project. It will always be given to the LLM upon activating the project
-# (contrary to the memories, which are loaded on demand).
-initial_prompt: |
-  Ce projet est construit avec Astro (JS/TS). Structure habituelle :
-  - src/pages/       -> routes (fichiers .astro, et .ts pour les routes API)
-  - src/components/  -> composants .astro et/ou composants framework (.jsx/.tsx/.vue/.svelte)
-  - src/layouts/     -> layouts .astro
-  - src/content/     -> collections de contenu (si Content Collections est utilisé)
-  - public/          -> fichiers statiques servis tels quels
-  - astro.config.mjs -> configuration Astro
-
-  Les fichiers .astro combinent un bloc "frontmatter" JS/TS (entre ---) en haut du
-  fichier et un template proche du HTML en dessous. Pour ces fichiers, privilégie
-  les outils texte (read_file, search_for_pattern, replace_lines) plutôt que les
-  outils de symboles, qui ne fonctionnent pleinement que sur les fichiers .js/.ts/.jsx/.tsx.
-
-# the encoding used by text files in the project
-# For a list of possible encodings, see https://docs.python.org/3.11/library/codecs.html#standard-encodings
-encoding: utf-8
+# fixed set of tools to use as the base tool set (if non-empty), replacing Serena's default set of tools.
+# This cannot be combined with non-empty excluded_tools or included_optional_tools.
+# Find the list of tools here: https://oraios.github.io/serena/01-about/035_tools.html
+fixed_tools: []
 
 # list of mode names that are to be activated by default, overriding the setting in the global configuration.
 # The full set of modes to be activated is base_modes (from global config) + default_modes + added_modes.
@@ -88,36 +92,22 @@ encoding: utf-8
 # for this project.
 # This setting can, in turn, be overridden by CLI parameters (--mode).
 # See https://oraios.github.io/serena/02-usage/050_configuration.html#modes
-default_modes: editing
+default_modes:
 
 # list of mode names to be activated additionally for this project, e.g. ["query-projects"]
 # The full set of modes to be activated is base_modes (from global config) + default_modes + added_modes.
 # See https://oraios.github.io/serena/02-usage/050_configuration.html#modes
-added_modes: onboarding
+added_modes:
 
-# fixed set of tools to use as the base tool set (if non-empty), replacing Serena's default set of tools.
-# This cannot be combined with non-empty excluded_tools or included_optional_tools.
-# Find the list of tools here: https://oraios.github.io/serena/01-about/035_tools.html
-fixed_tools:
-- execute_shell_command
+# initial prompt for the project. It will always be given to the LLM upon activating the project
+# (contrary to the memories, which are loaded on demand).
+initial_prompt: ""
 
 # time budget (seconds) per tool call for the retrieval of additional symbol information
 # such as docstrings or parameter information.
 # This overrides the corresponding setting in the global configuration; see the documentation there.
 # If null or missing, use the setting from the global configuration.
 symbol_info_budget:
-
-# The language backend to use for this project.
-# If not set, the global setting from serena_config.yml is used.
-# Valid values: LSP, JetBrains
-# Note: the backend is fixed at startup. If a project with a different backend
-# is activated post-init, an error will be returned.
-language_backend:
-
-# line ending convention to use when writing source files.
-# Possible values: unset (use global setting), "lf", "crlf", or "native" (platform default)
-# This does not affect Serena's own files (e.g. memories and configuration files), which always use native line endings.
-line_ending:
 
 # list of regex patterns which, when matched, mark a memory entry as read‑only.
 # Extends the list from the global configuration, merging the two lists.
@@ -130,25 +120,6 @@ read_only_memory_patterns: []
 # Extends the list from the global configuration, merging the two lists.
 # Example: ["_archive/.*", "_episodes/.*"]
 ignored_memory_patterns: []
-
-# advanced configuration option allowing to configure language server-specific options.
-# Maps the language key to the options.
-# Have a look at the docstring of the constructors of the LS implementations within solidlsp (e.g., for C# or PHP) to see which options are available.
-# No documentation on options means no options are available.
-ls_specific_settings: {}
-
-# optional shell command to run before the language backend (LSP or JetBrains) is initialised.
-# the command runs in the project root directory and is only executed if the project is trusted
-# (see trusted_project_path_patterns in the global configuration).
-# serena waits for the command to exit: a non-zero exit code is logged as an error but does not
-# abort activation. a per-project timeout (activation_command_timeout, default 180s) is the safety
-# backstop for non-terminating commands; on expiry the process is killed and activation continues.
-# example: activation_command: "npx nx run-many -t build"
-activation_command:
-
-# maximum time in seconds to wait for activation_command to complete before killing it (default 180s).
-# must be a positive number.
-activation_command_timeout: 180.0
 
 # list of additional workspace folder paths for cross-package reference support.
 # Paths can be absolute or relative to the project root.
@@ -172,6 +143,11 @@ ls_additional_workspace_folders: []
 #     - "./subproject2"
 ls_workspace_folders:
 - .
+activation_command:
+
+# maximum time in seconds to wait for activation_command to complete before killing it (default 180s).
+# must be a positive number.
+activation_command_timeout: 180.0
 
 # list of additional workspace folder paths for cross-package reference support (e.g. in monorepos).
 # Paths can be absolute or relative to the project root.

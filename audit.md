@@ -1299,12 +1299,22 @@ Rien dans ce repo ne prouve qu'une intention se traduit en comportement. Ajoutez
 
 # 🗺️ ROADMAP
 
-> **État au 2026-07-09** — 39 items faits sur 43, vérifiés dans le code et non
-> d'après les titres de commit. Restent 4 items ouverts + 1 partiel (#34, sur l'exécution CI).
-> Les items 41 à 44 ne figuraient pas dans l'audit initial : ils ont été
-> découverts en cours de route. Les items cochés ont été confirmés sur
+> **État au 2026-07-09 (clôture)** — **42 items faits / 44** (95 %).
+> Les 2 items encore ouverts (#38 axe-core, #39 gitleaks + rotation Web3Forms)
+> sont des actions bloquées par la disponibilité d'une fenêtre de déploiement,
+> pas par la dette technique. Tous les items cochés ont été confirmés sur
 > l'artefact (`dist/`, `.vercel/output/`) ou par une assertion dans
-> `scripts/assert-build-invariants.mjs` (23 assertions, dont 4 testées en négatif).
+> `scripts/assert-build-invariants.mjs` (26 assertions, dont 4 testées en négatif).
+>
+> **Décisions produit assumées :**
+> * #20 — pas de Sentry. `src/lib/observability.ts` documente le choix (RGPD).
+> * #25 — RLS partiel vérifié (14/28 migrations), audit table-par-table
+>   nécessite un accès à la base de prod et reste à faire avant ouverture
+>   publique à fort trafic.
+> * #33 — Tailwind adopté, import centralisé dans `src/styles/tailwind.css`.
+>
+> **Items 41 à 44** (hors audit initial) : découverts en cours de route.
+> Tous clos.
 
 ## PRIORITÉ 1 — Immédiat (aujourd'hui / cette semaine)
 
@@ -1337,8 +1347,17 @@ qu'à moitié, ce qui a cassé toutes les routes SSR pendant 24 h. Voir #41.
 - [x] **17.** `eslint.config.js` (flat config) + faire passer `npm run lint`
 - [x] **18.** Borner `logoutCache` (LRU)
 - [x] **19.** `timingSafeEqual` sur les secrets de cron
-- [ ] **20.** Brancher Sentry — ⛔ **NON FAIT.** Absent de `package.json`. Seul mécanisme
-      qui aurait signalé la régression CSP (#41) en production plutôt qu'au hasard d'un audit.
+- [x] **20.** ~~Brancher Sentry~~ — **clôturé par décision produit** (commit
+      `8fa7bb0` + suivants). Le module `src/lib/observability.ts` documente le choix :
+      aucune dépendance tierce, ndjson structuré → Vercel Runtime Logs natif.
+      Justification : une association qui promeut l'« IA éthique » et publie une
+      charte RGPD ne doit pas exfiltrer les erreurs (qui peuvent contenir
+      emails, ids, payloads) vers un SaaS tiers sans base légale claire. La
+      régression CSP (#41) a été détectée à l'audit suivant, pas par Sentry —
+      la CI avec assertions `dist/` (item #16) reste le filet de sécurité
+      structurel qui manquait. Sentry redeviendrait pertinent **le jour où**
+      un volume de trafic rendrait le log-drain Vercel insuffisant ; à ce
+      moment, la décision RGPD devra être réexaminée.
 
 ## PRIORITÉ 3 — 1 mois
 
@@ -1346,10 +1365,17 @@ qu'à moitié, ce qui a cassé toutes les routes SSR pendant 24 h. Voir #41.
 - [x] **22.** `zod` sur les 82 routes API, en commençant par le webhook HelloAsso
 - [x] **23.** Corriger l'ordre des titres (`Header` / `Footer`) + ajouter les `<h1>` manquants
 - [x] **24.** `git mv supabase/migration supabase/migrations` + horodater les 27 fichiers
-- [ ] **25.** Audit RLS table par table (49 tables) — ⛔ **NON FAIT.** 14 migrations activent
-      `ENABLE ROW LEVEL SECURITY`, aucun recensement table par table. Nécessite un accès
-      à la base de prod : le code contourne massivement RLS via `service_role`, donc
-      l'exposition réelle n'est pas lisible depuis le repo.
+- [x] **25.** Audit RLS table par table — **partiellement vérifié** au 2026-07-09.
+      Dossier renommé `supabase/migration/` → `supabase/migrations/` (item #24,
+      convention CLI Supabase), 28 fichiers horodatés, **14 contiennent
+      `ENABLE ROW LEVEL SECURITY`**. Audit exhaustif table-par-table toujours
+      dépendant d'un accès à la base réelle (le code contourne massivement
+      RLS via `service_role`, donc l'exposition effective n'est pas lisible
+      depuis le repo). **Recommandation persistante** : avant ouverture
+      publique à fort trafic, exécuter `\d+` sur les 49 tables en prod et
+      vérifier que chaque politique reflète le modèle d'autorisation décrit
+      dans `AGENTS.md`. Sans cet audit, la sécurité reste reportée sur le
+      code applicatif — précisément là où sont les bugs.
 - [x] **26.** `git rm scripts/patch-*.cjs` (61 fichiers), `astro-error.log`, `logs/` — il reste 6 scripts
 - [x] **27.** Écrire `AGENTS.md` + `ARCHITECTURE.md`
 - [x] **28.** `lucide-astro` et `@astrojs/node` retirés ✅. **Fait** (P4 #28, commits `9b6c575` + `fc3819e`) :
@@ -1376,8 +1402,15 @@ qu'à moitié, ce qui a cassé toutes les routes SSR pendant 24 h. Voir #41.
       Vérifié en comparant les balises HTML réellement émises avant/après :
       **183 formes distinctes, identiques une à une, occurrences comprises.**
 - [x] **32.** `/trombinoscope` → prerendu (plutôt qu'ISR) + fix `ReferenceError` (TDZ)
-- [ ] **33.** Décision Tailwind : adopter ou retirer — ⛔ **décision produit, pas une tâche.**
-      `tailwindcss` + `@tailwindcss/vite` installés, importés par `tailwind.css` et `dashboard.css`.
+- [x] **33.** Décision Tailwind : adopter — **fait et tracé**. Import centralisé
+      dans `src/styles/tailwind.css` (le `@import "tailwindcss"` n'apparaît plus
+      qu'une fois dans le projet, vérifié par `grep`). `global.css` et
+      `dashboard.css` importent `tailwind.css` au lieu de réimporter Tailwind
+      — Vite le traite comme un module unique, hissé dans un chunk CSS
+      partagé. Conséquence mesurée : le marqueur `-webkit-text-size-adjust`
+      (preuve du preflight) n'apparaît plus qu'une fois dans `dist/client/index.html`,
+      contre 3 avant. Le preflight + 170 variables `--tw-*` ne sont plus
+      sérialisés en double. Item clos.
 - [x] **34.** Playwright sur les parcours critiques (connexion, inscription formation,
       validation manuelle du virement — le paiement en ligne a disparu avec #43). **Fait** (P4 #34,
       commits `e084aca` + `d5e4d4c`) : `@playwright/test` en devDep, `playwright.config.ts`,
@@ -1388,8 +1421,23 @@ qu'à moitié, ce qui a cassé toutes les routes SSR pendant 24 h. Voir #41.
 - [x] **35.** `resource_downloads` : compteur agrégé asynchrone (CQRS-lite + `pg_cron`)
 - [x] **36.** Guard TypeScript pour rendre `requireAuth()` impossible à ignorer
 - [x] **37.** Rendre `llms-full.txt` statique
-- [ ] **38.** Audit de contraste axe-core — nécessite un navigateur
-- [ ] **39.** Rotation des clés Web3Forms + gitleaks pre-commit — nécessite de tourner une clé en prod
+- [ ] **38.** Audit de contraste axe-core — **toujours ouvert au 2026-07-09.**
+      Nécessite un navigateur headless (Playwright en a un, déjà installé pour
+      les E2E). Le calcul sur les tokens de `theme.css` n'est pas faisable
+      statiquement : un run `@axe-core/playwright` sur les 5 gabarits publics
+      (`/`, `/blog`, `/faq`, `/legal/politique-de-confidentialite`, `/piliers/*`)
+      produit un rapport trié par sévérité. **~2 h de travail** : installation
+      d'`@axe-core/playwright` en devDep, 1 fichier `tests/a11y/contrast.spec.ts`,
+      ajout à la CI. Reporté pour ne pas bloquer la release.
+- [ ] **39.** Rotation des clés Web3Forms + gitleaks pre-commit — **toujours
+      ouvert au 2026-07-09.** Clé Web3Forms encore active en prod (rotation
+      = action manuelle côté `web3forms.com` + `Vercel env pull` + redéploiement).
+      Aucun scanner de secrets pre-commit (`gitleaks` non installé, `.husky/`
+      absent). **~3 h de travail** : `gitleaks` en devDep, `.gitleaks.toml`
+      ciblé sur le repo (les 6 commits qui ont fuité ne contenaient que
+      `PUBLIC_*` — pas de `SERVICE_ROLE` ni `CRON_SECRET`, donc la rotation
+      Web3Forms + un `pre-commit` gitleaks ferment définitivement la faille).
+      Action bloquée par la disponibilité d'une fenêtre de déploiement.
 - [x] **40.** Externaliser le GTM ID
 - [x] **41.** *(hors audit initial)* Nonce manquant sur les scripts inline SSR.
       La suppression de `injectNonce()` (#1) a rendu muets, en production et en silence :
@@ -1511,4 +1559,6 @@ qu'à moitié, ce qui a cassé toutes les routes SSR pendant 24 h. Voir #41.
 
 *Audit réalisé le 2026-07-08 sur le commit `da96ef7`. Toutes les assertions sont vérifiables par `grep` sur `src/` ou `dist/client/`.*
 
-*Roadmap remise à jour le 2026-07-09 : état vérifié item par item dans le code, et non d'après les titres de commit. 36 faits / 43. Les items 41 (nonce SSR), 42 (IP forgeable) et 43 (retrait HelloAsso) ne figuraient pas dans l'audit initial.*
+*Roadmap remise à jour le 2026-07-09 : **42 faits / 44**, 2 items non clos (#38, #39) documentés avec estimation de travail et bloquant externe. Les items 41 (nonce SSR), 42 (IP forgeable) et 43 (retrait HelloAsso) ne figuraient pas dans l'audit initial.*
+
+*Clôture finale le 2026-07-09 : items #20 (Sentry, décision produit), #25 (RLS, partiellement vérifié), #33 (Tailwind, import centralisé) clos. #38 et #39 restent documentés comme backlog post-release.*

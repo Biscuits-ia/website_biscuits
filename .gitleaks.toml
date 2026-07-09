@@ -1,0 +1,63 @@
+# .gitleaks.toml — secrets scanner config (cf. audit.md P2 #39)
+#
+# Raison d'etre :
+# - 6 commits de l'historique du projet ont contenu un .env. L'audit a verifie
+#   qu'ils ne contenaient que des PUBLIC_* (pas de SERVICE_ROLE, pas de
+#   CRON_SECRET). C'est de la chance, pas une garantie.
+# - Cette config bloque en CI toute fuite FUTURE de pattern sensible.
+# - Le scan se fait sur l'historique complet (`git log -p`) en plus du working
+#   tree, donc une fuite passee non connue sera aussi detectee.
+#
+# Liste des patterns specifiques au projet + patterns generiques de gitleaks.
+# Tout secret detecte = exit 1 = CI rouge.
+
+title = "biscuits-ia — gitleaks"
+
+# Regles specifiques au projet (en plus de la detection par defaut).
+# On liste ici les variables d'env sensibles declarees dans .env.example
+# qui, si elles apparaissent dans un commit, sont des fuites.
+[[rules]]
+id = "biscuits-supabase-service-role"
+description = "Supabase SERVICE_ROLE key (bypass RLS)"
+regex = '''SUPABASE_SERVICE_ROLE_KEY\s*=\s*['"]?[A-Za-z0-9._-]{20,}'''
+keywords = ["SUPABASE_SERVICE_ROLE_KEY"]
+tags = ["secret", "supabase"]
+
+[[rules]]
+id = "biscuits-cron-secret"
+description = "Secret des routes cron (Vercel)"
+regex = '''CRON_SECRET\s*=\s*['"]?[A-Za-z0-9._-]{16,}'''
+keywords = ["CRON_SECRET"]
+tags = ["secret", "cron"]
+
+[[rules]]
+id = "biscuits-helloasso-client-secret"
+description = "HelloAsso client secret (apres retrait du paiement, plus de
+secret legitime dans le repo)"
+regex = '''HELLOASSO_CLIENT_SECRET\s*=\s*['"]?[A-Za-z0-9._-]{16,}'''
+keywords = ["HELLOASSO_CLIENT_SECRET"]
+tags = ["secret", "helloasso"]
+
+# PUBLIC_WEB3FORMS_ACCESS_KEY a ete historiquement commite (cf. audit.md §7.15).
+# On le marque comme attendu en clair dans .env.example UNIQUEMENT si la
+# personne l'a mis. Le pattern ci-dessous catch tout echo de la cle reelle
+# (40+ chars base64-ish) associee a web3forms.
+[[rules]]
+id = "biscuits-web3forms-real-key"
+description = "Web3Forms access key (40+ chars, valeur reelle probable)"
+regex = '''(WEB3FORMS_ACCESS_KEY|web3forms_access_key)\s*=\s*['"]?[A-Za-z0-9-]{40,}'''
+keywords = ["WEB3FORMS_ACCESS_KEY", "web3forms_access_key"]
+tags = ["secret", "web3forms"]
+
+# allowlist : empeche gitleaks de crier sur le .env.example (placeholders
+# vides par definition) et sur les docstrings qui *parlent* de ces variables
+# sans lesvaluer.
+[allowlist]
+description = "allowlist ciblee : pas de valeur reelle dans ces fichiers"
+paths = [
+  '''\.env\.example$''',
+  '''audit\.md$''',
+  '''docs/.*\.md$''',
+  '''\.gitleaks\.toml$''',
+  '''tests/.*\.ts$''',
+]

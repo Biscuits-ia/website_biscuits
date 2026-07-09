@@ -1,10 +1,20 @@
 ---
-// src/components/ui/Toast.astro — conteneur de notifications client
+// src/components/ui/Toast.astro — conteneur de notifications client.
+//
+// Le nonce est passé en prop (cf. P4 #44) : en Astro 7, `Astro.locals.nonce`
+// n'est pas exposé dans le scope de template d'un composant enfant. Le
+// pattern `nonce={Astro.locals.nonce}` ne compile pas en `$$result.locals.nonce`
+// comme pour les pages — il est émis tel quel, et `Astro` n'étant pas défini
+// dans le scope du `createComponent()`, le runtime jette un ReferenceError.
+// BaseHead.astro a déjà ce pattern ; on aligne Toast / ConfirmDialog /
+// CookieConsent dessus pour les mêmes raisons.
+interface Props { nonce: string; }
+const { nonce } = Astro.props;
 ---
 
 <div id="toast-root" class="pointer-events-none fixed right-4 top-4 z-50 flex w-80 flex-col gap-2"></div>
 
-<script is:inline nonce={Astro.locals.nonce}>
+<script is:inline nonce={nonce}>
   window.showToast = (message, type = 'info') => {
     const root = document.getElementById('toast-root');
     if (!root) return;

@@ -9,6 +9,10 @@
 //   - accessibilité ARIA + focus trap + ESC gérés gratuitement par le navigateur
 //
 // À monter UNE fois globalement dans le layout (DashboardLayout.astro).
+//
+// Le nonce est passé en prop (cf. P4 #44) — voir Toast.astro pour la raison.
+interface Props { nonce: string; }
+const { nonce } = Astro.props;
 ---
 
 <dialog id="confirm-dialog" class="confirm-dialog" aria-labelledby="confirm-dialog-title">
@@ -85,7 +89,7 @@
   }
 </style>
 
-<script is:inline nonce={Astro.locals.nonce}>
+<script is:inline nonce={nonce}>
   (() => {
     const dlg       = document.getElementById('confirm-dialog');
     if (!dlg || dlg.dataset.bound === '1') return;

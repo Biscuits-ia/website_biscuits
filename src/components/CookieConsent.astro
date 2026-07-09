@@ -30,9 +30,10 @@ import { jsonIsland } from '@/lib/jsonLd';
 interface Props {
   /** Incrementer pour re-demander le consentement apres un changement de politique. */
   consentVersion?: string;
+  /** Nonce CSP — passé par le layout parent (cf. P4 #44). */
+  nonce: string;
 }
-const { consentVersion = '1.0' } = Astro.props;
-const nonce = Astro.locals.nonce;
+const { consentVersion = '1.0', nonce } = Astro.props;
 ---
 
 <div

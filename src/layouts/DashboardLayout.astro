@@ -244,8 +244,8 @@ const initials = displayName.split(' ').map((n: string) => n[0]).join('').toUppe
   </div>
 
   <!-- Notifications + modale de confirmation (global) -->
-  <Toast />
-  <ConfirmDialog />
+  <Toast nonce={Astro.locals.nonce} />
+  <ConfirmDialog nonce={Astro.locals.nonce} />
 </body>
 
 <!-- FIX P0 1.4 : handlers CSP-safe pour les attributs data-* (modal, autosubmit, reload). -->

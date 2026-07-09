@@ -1299,61 +1299,91 @@ Rien dans ce repo ne prouve qu'une intention se traduit en comportement. Ajoutez
 
 # 🗺️ ROADMAP
 
+> **État au 2026-07-09** — 33 items faits sur 41, vérifiés dans le code et non
+> d'après les titres de commit. Restent 7 items ouverts + 1 partiel (#28).
+> Les items barrés d'un ✅ ont été confirmés sur l'artefact (`dist/`, `.vercel/output/`)
+> ou par assertion dans `scripts/assert-build-invariants.mjs`.
+
 ## PRIORITÉ 1 — Immédiat (aujourd'hui / cette semaine)
 
 > *Failles exploitables + SEO cassé. Rien d'autre ne compte tant que ce bloc n'est pas fait.*
 
-- [ ] **1.** Supprimer `injectNonce()` (`middleware.ts:230`) et passer `nonce={Astro.locals.nonce}` explicitement
-- [ ] **2.** Échapper tous les JSON-LD — fonction `jsonLd()`, 8 sites d'appel
-- [ ] **3.** Corriger `getClientIpOrNull()` → `x-vercel-forwarded-for` uniquement
-- [ ] **4.** `git rm public/robots.txt public/sitemap.xml` → vérifier le `dist/` après build
-- [ ] **5.** Renommer `/a-qui.s-adresse` → `/a-qui-s-adresse` + 301
-- [ ] **6.** Trancher `/logiciels` et `/anti-pepins` : page **ou** redirect
-- [ ] **7.** Rate-limit distribué (Upstash) ou règle WAF Vercel sur `/auth/*`
-- [ ] **8.** CSP dans `vercel.json` pour les routes statiques
-- [ ] **9.** Échapper `task_title` / `task_id` dans `DashboardLayout.astro:337`
-- [ ] **10.** Retirer `image/svg+xml` des uploads
+**Bloc terminé** (commit `7909ad9`), à une réserve près : l'item 1 n'avait été fait
+qu'à moitié, ce qui a cassé toutes les routes SSR pendant 24 h. Voir #41.
+
+- [x] **1.** Supprimer `injectNonce()` (`middleware.ts:230`) et passer `nonce={Astro.locals.nonce}` explicitement — ⚠️ *complété seulement par #41*
+- [x] **2.** Échapper tous les JSON-LD — fonction `jsonLd()`, 8 sites d'appel
+- [x] **3.** Corriger `getClientIpOrNull()` → `x-vercel-forwarded-for` uniquement
+- [x] **4.** `git rm public/robots.txt public/sitemap.xml` → vérifier le `dist/` après build
+- [x] **5.** Renommer `/a-qui.s-adresse` → `/a-qui-s-adresse` + 301
+- [x] **6.** Trancher `/logiciels` et `/anti-pepins` : page **ou** redirect
+- [x] **7.** Rate-limit distribué (Upstash) ou règle WAF Vercel sur `/auth/*`
+- [x] **8.** CSP dans `vercel.json` pour les routes statiques
+- [x] **9.** Échapper `task_title` / `task_id` dans `DashboardLayout.astro:337` — via `textContent`/`dataset`, jamais `innerHTML`
+- [x] **10.** Retirer `image/svg+xml` des uploads
 
 ## PRIORITÉ 2 — 2 semaines
 
 > *Performance + le filet de sécurité qui empêche la P1 de revenir.*
 
-- [ ] **11.** `inlineStylesheets: 'auto'` → −94 Ko / page
-- [ ] **12.** Retirer `@import` Google Fonts de `global.css` ; self-host les polices ; supprimer la famille inutilisée
-- [ ] **13.** Retirer le second `@import "tailwindcss"` de `dashboard.css`
-- [ ] **14.** Remplacer `CookieConsent` React par du vanilla → −185 Ko de JS
-- [ ] **15.** Retirer `await response.text()` du middleware → réactiver le streaming
-- [ ] **16.** **CI GitHub Actions** avec les assertions sur `dist/` (script §11)
-- [ ] **17.** `eslint.config.js` (flat config) + faire passer `npm run lint`
-- [ ] **18.** Borner `logoutCache` (LRU)
-- [ ] **19.** `timingSafeEqual` sur les secrets de cron
-- [ ] **20.** Brancher Sentry
+- [x] **11.** `inlineStylesheets: 'auto'` → −94 Ko / page
+- [x] **12.** Retirer `@import` Google Fonts de `global.css` ; self-host les polices (`@fontsource-variable/inter`)
+- [x] **13.** Retirer le second `@import "tailwindcss"` de `dashboard.css`
+- [x] **14.** Remplacer `CookieConsent` React par du vanilla → −185 Ko de JS
+- [x] **15.** Retirer `await response.text()` du middleware → réactiver le streaming
+- [x] **16.** **CI GitHub Actions** avec les assertions sur `dist/` — `.github/workflows/ci.yml`
+- [x] **17.** `eslint.config.js` (flat config) + faire passer `npm run lint`
+- [x] **18.** Borner `logoutCache` (LRU)
+- [x] **19.** `timingSafeEqual` sur les secrets de cron
+- [ ] **20.** Brancher Sentry — ⛔ **NON FAIT.** Absent de `package.json`. Seul mécanisme
+      qui aurait signalé la régression CSP (#41) en production plutôt qu'au hasard d'un audit.
 
 ## PRIORITÉ 3 — 1 mois
 
-- [ ] **21.** Remplacer les 40 checks d'auth inline par `requireAdmin()` / `requireRole()`
-- [ ] **22.** `zod` sur les 82 routes API, en commençant par le webhook HelloAsso
-- [ ] **23.** Corriger l'ordre des titres (`Header` / `Footer`) + ajouter les `<h1>` manquants
-- [ ] **24.** `git mv supabase/migration supabase/migrations` + horodater les 27 fichiers
-- [ ] **25.** Audit RLS table par table (49 tables)
-- [ ] **26.** `git rm scripts/patch-*.cjs` (61 fichiers), `astro-error.log`, `logs/`
-- [ ] **27.** Écrire `AGENTS.md` + `ARCHITECTURE.md`
-- [ ] **28.** Supprimer `Confidentialité.astro`, `lucide-astro`, `@astrojs/node`, un des deux lockfiles
-- [ ] **29.** Check `Sec-Fetch-Site` dans le middleware
-- [ ] **30.** Optimiser le logo (SVG, < 5 Ko)
+- [x] **21.** Remplacer les 40 checks d'auth inline par `requireAdmin()` / `requireRole()`
+- [x] **22.** `zod` sur les 82 routes API, en commençant par le webhook HelloAsso
+- [x] **23.** Corriger l'ordre des titres (`Header` / `Footer`) + ajouter les `<h1>` manquants
+- [x] **24.** `git mv supabase/migration supabase/migrations` + horodater les 27 fichiers
+- [ ] **25.** Audit RLS table par table (49 tables) — ⛔ **NON FAIT.** 14 migrations activent
+      `ENABLE ROW LEVEL SECURITY`, aucun recensement table par table. Nécessite un accès
+      à la base de prod : le code contourne massivement RLS via `service_role`, donc
+      l'exposition réelle n'est pas lisible depuis le repo.
+- [x] **26.** `git rm scripts/patch-*.cjs` (61 fichiers), `astro-error.log`, `logs/` — il reste 6 scripts
+- [x] **27.** Écrire `AGENTS.md` + `ARCHITECTURE.md`
+- [ ] **28.** *(partiel)* `lucide-astro` et `@astrojs/node` retirés ✅. **Restent** : deux lockfiles
+      (`bun.lock` + `package-lock.json`) et un doublon de page légale —
+      `legal/confidentialite.astro` (161 l.) **et** `legal/politique-de-confidentialite.astro`
+      (324 l.), toutes deux prerendered, aucune ne redirigeant vers l'autre.
+- [x] **29.** Check `Sec-Fetch-Site` dans le middleware
+- [x] **30.** Optimiser le logo (SVG, < 5 Ko)
 
 ## PRIORITÉ 4 — Trimestre
 
-- [ ] **31.** Découper `project/[id].astro` (1385 l.) en island React + composants
-- [ ] **32.** `/trombinoscope` → ISR
-- [ ] **33.** Décision Tailwind : adopter ou retirer
+- [ ] **31.** Découper `project/[id].astro` (1385 l.) en island React + composants — *en cours*.
+      ⚠️ Un island React sur cette page serait **mort en prod** tant que `security.csp`
+      n'est pas activé (cf. #41). Viser des composants `.astro` + modules ES, pas un island.
+- [x] **32.** `/trombinoscope` → prerendu (plutôt qu'ISR) + fix `ReferenceError` (TDZ)
+- [ ] **33.** Décision Tailwind : adopter ou retirer — ⛔ **décision produit, pas une tâche.**
+      `tailwindcss` + `@tailwindcss/vite` installés, importés par `tailwind.css` et `dashboard.css`.
 - [ ] **34.** Playwright sur les parcours critiques (connexion, inscription formation, paiement)
-- [ ] **35.** `resource_downloads` : compteur agrégé asynchrone
-- [ ] **36.** Guard TypeScript pour rendre `requireAuth()` impossible à ignorer
-- [ ] **37.** Rendre `llms-full.txt` statique
-- [ ] **38.** Audit de contraste axe-core
-- [ ] **39.** Rotation des clés Web3Forms + gitleaks pre-commit
-- [ ] **40.** Externaliser le GTM ID
+- [x] **35.** `resource_downloads` : compteur agrégé asynchrone (CQRS-lite + `pg_cron`)
+- [x] **36.** Guard TypeScript pour rendre `requireAuth()` impossible à ignorer
+- [x] **37.** Rendre `llms-full.txt` statique
+- [ ] **38.** Audit de contraste axe-core — nécessite un navigateur
+- [ ] **39.** Rotation des clés Web3Forms + gitleaks pre-commit — nécessite de tourner une clé en prod
+- [x] **40.** Externaliser le GTM ID
+- [x] **41.** *(hors audit initial)* Nonce manquant sur les scripts inline SSR.
+      La suppression de `injectNonce()` (#1) a rendu muets, en production et en silence :
+      les 31 pages dashboard (`Toast`, `ConfirmDialog`), la page projet bénévole,
+      le bandeau cookies, GTM et deux formulaires `formations`.
+      Deux causes : (a) des scripts sans `nonce` explicite ; (b) **`define:vars` fait
+      perdre l'attribut `nonce` à la compilation** — le source paraît correct,
+      `astro check` passe, et l'attribut n'atteint jamais le HTML.
+      Corrigé par des data-blocks `<script type="application/json">` + `jsonIsland()`.
+      Verrouillé par deux assertions de build, testées en négatif.
+      **Reste ouvert** : `dashboard/admin/appointments.astro` monte un island `client:load`
+      dont Astro émet lui-même le bootstrap sans nonce → le calendrier admin ne s'hydrate
+      pas en prod. Correctif = activer `security.csp` (cf. `astro.config.mjs`).
 
 ---
 
@@ -1412,9 +1442,11 @@ Rien dans ce repo ne prouve qu'une intention se traduit en comportement. Ajoutez
 |---|---|---|
 | **Contrastes de couleur** | Les tokens sont dans `theme.css` ; le calcul nécessite le rendu | Run axe-core / Lighthouse |
 | **RLS effective** sur les 49 tables | Nécessite `\d+` sur la base réelle. Le code contourne massivement RLS via `service_role`, donc l'exposition dépend de policies non lisibles ici | Audit SQL sur la prod |
-| **Format de signature HelloAsso** | `helloasso.ts:278` utilise `clientSecret` comme clé HMAC. Je n'ai pas la doc HelloAsso v5 pour confirmer que c'est le schéma attendu | **Si HelloAsso n'envoie pas de signature HMAC, `verifyWebhookSignature()` rejette 100 % des webhooks légitimes** (fail-closed — pas une faille, mais une fonctionnalité morte). À valider en urgence. |
+| **Format de signature HelloAsso** | `helloasso.ts:278` utilise `clientSecret` comme clé HMAC. Je n'ai pas la doc HelloAsso v5 pour confirmer que c'est le schéma attendu | **Si HelloAsso n'envoie pas de signature HMAC, `verifyWebhookSignature()` rejette 100 % des webhooks légitimes** (fail-closed — pas une faille, mais une fonctionnalité morte). À valider en urgence. <br>**⛔ Toujours non résolu au 2026-07-09** : `webhook.ts:75` renvoie encore un 401 sec si l'en-tête `x-helloasso-signature` est absent. Les inscriptions payées ne seraient jamais confirmées. |
 | **Core Web Vitals réels** | Mes conclusions perf sont dérivées de mesures d'octets sur `dist/`, pas d'un Lighthouse en conditions réseau | Run Lighthouse mobile / 4G |
 
 ---
 
 *Audit réalisé le 2026-07-08 sur le commit `da96ef7`. Toutes les assertions sont vérifiables par `grep` sur `src/` ou `dist/client/`.*
+
+*Roadmap remise à jour le 2026-07-09 sur le commit `8fa7bb0` : état vérifié item par item dans le code, et non d'après les titres de commit. 33 faits / 41.*

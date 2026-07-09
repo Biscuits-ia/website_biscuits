@@ -1299,7 +1299,7 @@ Rien dans ce repo ne prouve qu'une intention se traduit en comportement. Ajoutez
 
 # 🗺️ ROADMAP
 
-> **État au 2026-07-09** — 35 items faits sur 43, vérifiés dans le code et non
+> **État au 2026-07-09** — 36 items faits sur 43, vérifiés dans le code et non
 > d'après les titres de commit. Restent 7 items ouverts + 1 partiel (#28).
 > Les items 41 à 43 ne figuraient pas dans l'audit initial : ils ont été
 > découverts en cours de route. Les items cochés ont été confirmés sur
@@ -1361,9 +1361,18 @@ qu'à moitié, ce qui a cassé toutes les routes SSR pendant 24 h. Voir #41.
 
 ## PRIORITÉ 4 — Trimestre
 
-- [ ] **31.** Découper `project/[id].astro` (1385 l.) en island React + composants — *en cours*.
-      ⚠️ Un island React sur cette page serait **mort en prod** tant que `security.csp`
-      n'est pas activé (cf. #41). Viser des composants `.astro` + modules ES, pas un island.
+- [x] **31.** Découper `project/[id].astro` — **1385 l. → 60 l.** (commit `417e377`).
+      La prescription initiale (« island React ») a été écartée : sous `strict-dynamic`,
+      Astro émet le bootstrap d'island en `<script>` inline sans nonce, donc mort en
+      prod (cf. #41). Découpé en `lib/project-detail.ts` (chargement), 5 composants
+      `.astro`, `styles/project-detail.css`, et `scripts/project-detail.js` importé
+      en `?raw` puis injecté dans un `<script is:inline nonce>`.
+      Piège évité : le `<style>` était **scopé** (`data-astro-cid-*`) — sortir le markup
+      vers des composants aurait annulé ses 149 règles en silence. Chaque sélecteur est
+      donc préfixé par `.project-detail` (même spécificité, aucune fuite vers le layout,
+      où `.badge` / `.input` / `.modal` existent déjà globalement).
+      Vérifié en comparant les balises HTML réellement émises avant/après :
+      **183 formes distinctes, identiques une à une, occurrences comprises.**
 - [x] **32.** `/trombinoscope` → prerendu (plutôt qu'ISR) + fix `ReferenceError` (TDZ)
 - [ ] **33.** Décision Tailwind : adopter ou retirer — ⛔ **décision produit, pas une tâche.**
       `tailwindcss` + `@tailwindcss/vite` installés, importés par `tailwind.css` et `dashboard.css`.
@@ -1477,4 +1486,4 @@ qu'à moitié, ce qui a cassé toutes les routes SSR pendant 24 h. Voir #41.
 
 *Audit réalisé le 2026-07-08 sur le commit `da96ef7`. Toutes les assertions sont vérifiables par `grep` sur `src/` ou `dist/client/`.*
 
-*Roadmap remise à jour le 2026-07-09 : état vérifié item par item dans le code, et non d'après les titres de commit. 35 faits / 43. Les items 41 (nonce SSR), 42 (IP forgeable) et 43 (retrait HelloAsso) ne figuraient pas dans l'audit initial.*
+*Roadmap remise à jour le 2026-07-09 : état vérifié item par item dans le code, et non d'après les titres de commit. 36 faits / 43. Les items 41 (nonce SSR), 42 (IP forgeable) et 43 (retrait HelloAsso) ne figuraient pas dans l'audit initial.*

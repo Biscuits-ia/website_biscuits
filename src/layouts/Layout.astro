@@ -3,6 +3,7 @@ import Header from '@/components/Header.astro';
 import Footer from '@/components/Footer.astro';
 import BaseHead from '@/components/BaseHead.astro';
 import CookieConsent from '@/components/CookieConsent.astro';
+import { jsonIsland } from '@/lib/jsonLd';
 
 // global.css importe deja theme.css (via son propre @import) : inutile de le
 // dupliquer ici.
@@ -56,7 +57,7 @@ const isProd = import.meta.env.PROD;
 // Le frontmatter Astro s'execute UNIQUEMENT cote serveur : `typeof window` y vaut
 // toujours 'undefined'. L'ancienne version testait `typeof window !== "undefined"`
 // avant d'affecter le flag -> branche morte, le kill-switch n'a jamais fonctionne.
-// La valeur doit etre serialisee vers le client via define:vars (cf. <head> ci-dessous).
+// La valeur doit donc etre serialisee vers le client (cf. <head> ci-dessous).
 const analyticsDisabled = import.meta.env.PUBLIC_ANALYTICS_DISABLED === 'true';
 const nonce = Astro.locals.nonce;
 
@@ -87,9 +88,10 @@ const criticalCSS = `
     isProd={isProd}
     nonce={nonce}
   >
-    <script is:inline nonce={nonce} define:vars={{ analyticsDisabled }}>
-      window.__ANALYTICS_DISABLED__ = analyticsDisabled;
-    </script>
+    {/* `set:html` plutot que `define:vars` : ce dernier fait perdre l'attribut
+        nonce au build, ce qui faisait bloquer le script par la CSP SSR.
+        jsonIsland() echappe la valeur (cf. lib/jsonLd.ts). */}
+    <script is:inline nonce={nonce} set:html={`window.__ANALYTICS_DISABLED__ = ${jsonIsland(analyticsDisabled)};`} />
     <style set:html={criticalCSS}></style>
   </BaseHead>
 </head>

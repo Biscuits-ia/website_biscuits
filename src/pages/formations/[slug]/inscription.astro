@@ -239,7 +239,7 @@ const redirectAfterLogin = encodeURIComponent(Astro.url.pathname + Astro.url.sea
   </section>
 </Layout>
 
-<script is:inline>
+<script is:inline nonce={Astro.locals.nonce}>
   // Si l'utilisateur saisit un montant libre, on met a jour le hidden "amount_cents".
   // Si un code de parrainage est saisi, on bascule le payment_method sur "sponsorship".
   document.addEventListener('DOMContentLoaded', () => {

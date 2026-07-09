@@ -61,3 +61,23 @@ const UNSAFE = /[<>&\u2028\u2029]/g;
 export function jsonLd(data: unknown): string {
   return JSON.stringify(data).replace(UNSAFE, (char) => ESCAPES[char] as string);
 }
+
+/**
+ * Serialise `data` pour un ilot de donnees
+ * `<script type="application/json" id="...">`, relu cote client par un script
+ * portant le nonce CSP.
+ *
+ * POURQUOI CET ILOT PLUTOT QUE `define:vars`
+ * ------------------------------------------
+ * Un `<script>` qui utilise `define:vars` perd son attribut `nonce` au build
+ * (constate sur l'artefact : aucun `addAttribute(nonce, ...)` n'est emis pour
+ * ces balises). Sous `script-src 'nonce-...' 'strict-dynamic'`, le script est
+ * donc bloque en production -- silencieusement, car le mode dev ajoute
+ * `'unsafe-inline'`. Cf. scripts/assert-build-invariants.mjs.
+ *
+ * Un bloc `type="application/json"` n'est PAS execute : c'est un data-block,
+ * hors du perimetre de `script-src`. Il vit toutefois dans le meme contexte de
+ * parsing HTML, ou `</script>` reste tout aussi dangereux -- d'ou le meme
+ * echappement que jsonLd().
+ */
+export const jsonIsland = jsonLd;

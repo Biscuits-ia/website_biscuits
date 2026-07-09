@@ -85,7 +85,7 @@
   }
 </style>
 
-<script is:inline>
+<script is:inline nonce={Astro.locals.nonce}>
   (() => {
     const dlg       = document.getElementById('confirm-dialog');
     if (!dlg || dlg.dataset.bound === '1') return;

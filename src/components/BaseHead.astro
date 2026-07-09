@@ -35,7 +35,7 @@
 // ============================================================================
 import SEOHead from '@/components/SEO/SEOHead.astro';
 import SchemaOrg from '@/components/SEO/SchemaOrg.astro';
-import { jsonLd } from '@/lib/jsonLd';
+import { jsonLd, jsonIsland } from '@/lib/jsonLd';
 
 export interface Props {
   fullTitle: string;
@@ -112,7 +112,16 @@ const gtmEnabled = isProd && gtmId.length > 0;
 <meta name="referrer" content="strict-origin-when-cross-origin" />
 
 {gtmEnabled && (
-  <script is:inline nonce={nonce} define:vars={{ gtmId }}>
+  <>
+  {/* `define:vars` fait perdre l'attribut nonce au build : le script serait
+      bloque par la CSP SSR. On passe donc gtmId par un data-block JSON, non
+      executable, relu par le script nonce ci-dessous. Cf. lib/jsonLd.ts. */}
+  <script type="application/json" id="gtm-config" is:inline set:html={jsonIsland({ gtmId })} />
+  <script is:inline nonce={nonce}>
+    // IIFE : `define:vars` enveloppait deja le corps, on preserve la portee.
+    (() => {
+    const gtmId = JSON.parse(document.getElementById('gtm-config').textContent).gtmId;
+
     // Definition du dataLayer pour GTM (charge dynamiquement par CookieConsent)
     window.dataLayer = window.dataLayer || [];
 
@@ -168,5 +177,7 @@ const gtmEnabled = isProd && gtmId.length > 0;
         window.loadGTMIfConsented();
       }
     }
+    })();
   </script>
+  </>
 )}

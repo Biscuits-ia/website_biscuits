@@ -92,6 +92,93 @@ assert('aucun nonce fige dans le HTML prerendered', () => {
   return m ? `nonce statique trouve : ${m[1]}` : true;
 });
 
+// ── CSP / nonce : scripts inline des routes SSR ──────────────────────────────
+// Le middleware sert `script-src 'self' 'nonce-...' 'strict-dynamic'` sur les
+// routes SSR. Sous 'strict-dynamic', 'self' et 'unsafe-inline' sont IGNORES par
+// le navigateur : un <script> inline sans nonce est purement bloque.
+//
+// Deux pieges, tous deux invisibles en relisant src/ :
+//   * un script sans nonce fonctionne quand meme en `astro dev`, car le
+//     middleware y ajoute 'unsafe-inline' ;
+//   * `define:vars` fait PERDRE l'attribut nonce a la compilation, alors que
+//     `nonce={...}` figure bien dans le source et que `astro check` passe.
+//
+// Le 2026-07-08, la suppression de injectNonce() (qui taguait aveuglement tous
+// les <script> du HTML de sortie) a ainsi rendu muets : les 31 pages dashboard
+// (Toast, ConfirmDialog), la page projet benevole, le bandeau cookies, GTM et
+// deux formulaires formations. Aucun test ne l'avait vu.
+const SSR_DIR = '.vercel/output/functions/_render.func/dist/server';
+
+assert('aucun <script> inline sans nonce dans les chunks SSR', () => {
+  if (!fs.existsSync(SSR_DIR)) return `${SSR_DIR} absent : lancer 'astro build'`;
+
+  const files = fs.readdirSync(SSR_DIR, { recursive: true })
+    .filter((f) => typeof f === 'string' && f.endsWith('.mjs'))
+    .map((f) => path.join(SSR_DIR, f))
+    // render_*.mjs est le RUNTIME d'Astro, pas notre code. Il contient les
+    // gabarits d'hydratation des islands (<script> du custom element
+    // astro-island), que le framework emet sans nonce. Ils ne sont rendus que
+    // sur une page portant une directive client:*. Cf. l'assertion suivante.
+    .filter((f) => !path.basename(f).startsWith('render_'));
+
+  const offenders = [];
+  for (const file of files) {
+    // Les commentaires en debut de ligne (docs, exemple XSS de lib/jsonLd.ts)
+    // contiennent des balises <script> qui ne sont jamais emises.
+    const code = fs.readFileSync(file, 'utf8')
+      .split('\n')
+      .filter((line) => !/^\s*(\/\/|\*|\/\*)/.test(line))
+      .join('\n');
+
+    for (const m of code.matchAll(/<script([^>]{0,160})/g)) {
+      const attrs = m[1];
+      // Data-blocks (ld+json, json) : non executes, hors perimetre script-src.
+      if (/type="application\//.test(attrs)) continue;
+      if (/nonce/.test(attrs)) continue;
+      offenders.push(`${path.basename(file)} : <script${attrs.slice(0, 40).replace(/\s+/g, ' ')}`);
+    }
+  }
+  return offenders.length === 0
+    || `${offenders.length} script(s) sans nonce :\n      -> ${[...new Set(offenders)].join('\n      -> ')}`;
+});
+
+// Corollaire : tant que `security.csp` n'est pas active, Astro emet le bootstrap
+// des islands en <script> inline SANS nonce. Toute directive client:* sur une
+// page SSR est donc morte en production (elle marche en prerendu, ou le CSP de
+// vercel.json tolere 'unsafe-inline'). Cette assertion recense les pages SSR
+// qui montent un island, pour qu'aucune ne s'ajoute par inadvertance.
+assert('aucun island client:* sur une page SSR', () => {
+  const PAGES = 'src/pages';
+  const known = new Set([
+    // Connu et accepte : le calendrier admin ne s'hydrate pas en prod.
+    // Correctif = activer security.csp (cf. astro.config.mjs). Item d'audit dedie.
+    'dashboard/admin/appointments.astro',
+  ]);
+
+  const pages = fs.readdirSync(PAGES, { recursive: true })
+    .filter((f) => typeof f === 'string' && f.endsWith('.astro'));
+
+  const found = [];
+  for (const rel of pages) {
+    const src = fs.readFileSync(path.join(PAGES, rel), 'utf8');
+    if (/export const prerender = true/.test(src)) continue;
+
+    // Un island peut etre monte par un composant intermediaire : on suit les
+    // composants importes depuis la page (1 niveau, suffisant ici).
+    const bodies = [src];
+    for (const m of src.matchAll(/from '(?:@\/|\.{1,2}\/)[^']*\/([A-Z][\w-]*)\.astro'/g)) {
+      const hit = fs.readdirSync('src/components', { recursive: true })
+        .find((f) => typeof f === 'string' && path.basename(f) === `${m[1]}.astro`);
+      if (hit) bodies.push(fs.readFileSync(path.join('src/components', hit), 'utf8'));
+    }
+    if (bodies.some((b) => /\sclient:(load|idle|visible|only|media)/.test(b))) {
+      const key = rel.split(path.sep).join('/');
+      if (!known.has(key)) found.push(key);
+    }
+  }
+  return found.length === 0 || `island(s) non declare(s) sur page SSR : ${found.join(', ')}`;
+});
+
 // ── JSON-LD ──────────────────────────────────────────────────────────────────
 // jsonLd() doit echapper < > & : aucun de ces caracteres ne doit subsister
 // bruts dans un bloc ld+json, et le JSON doit rester parsable.

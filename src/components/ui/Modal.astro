@@ -14,7 +14,7 @@ const { id, title, class: className = '' } = Astro.props;
   </div>
 </dialog>
 
-<script is:inline>
+<script is:inline nonce={Astro.locals.nonce}>
   document.querySelectorAll('[data-close-modal]').forEach((btn) => {
     btn.addEventListener('click', () => {
       const id = btn.getAttribute('data-close-modal');

@@ -4,7 +4,7 @@
 
 <div id="toast-root" class="pointer-events-none fixed right-4 top-4 z-50 flex w-80 flex-col gap-2"></div>
 
-<script is:inline>
+<script is:inline nonce={Astro.locals.nonce}>
   window.showToast = (message, type = 'info') => {
     const root = document.getElementById('toast-root');
     if (!root) return;

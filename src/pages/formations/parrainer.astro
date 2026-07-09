@@ -197,7 +197,7 @@ const trainingOptions: TrainingOption[] = (trainings ?? [])
   </section>
 </Layout>
 
-<script is:inline>
+<script is:inline nonce={Astro.locals.nonce}>
   document.addEventListener('DOMContentLoaded', () => {
     const form = document.querySelector('form');
     if (!form) return;

@@ -3,6 +3,7 @@
 import DashboardLayout from '../../../../layouts/DashboardLayout.astro';
 import { requireBenevole } from '../../../../lib/auth';
 import { createSupabaseAdminClient } from '../../../../lib/supabase';
+import { jsonIsland } from '../../../../lib/jsonLd';
 
 const result = await requireBenevole(Astro);
 if (result instanceof Response) return result;
@@ -141,9 +142,6 @@ const memberOptions = members.map((m: Member) => ({
   id: m.user_id,
   name: profileMap[m.user_id]?.full_name ?? profileMap[m.user_id]?.email ?? m.user_id,
 }));
-
-// Sérialisation pour le script client (mentions @)
-const memberOptionsJson = JSON.stringify(memberOptions);
 ---
 
 <DashboardLayout title={project.title} role="benevole" activePage="projects" userName={userName} userEmail={user.email ?? ''} authResult={result}>
@@ -723,11 +721,22 @@ const memberOptionsJson = JSON.stringify(memberOptions);
   .mt-6               { margin-top: var(--space-xl); }
 </style>
 
-<script is:inline define:vars={{ projectId, memberOptionsJson, userId, isMember, isStaff, userName }}>
+{/* Donnees serveur -> client. `define:vars` faisait perdre l'attribut nonce au
+    build : toute cette page (kanban, chat, commentaires) etait bloquee par la
+    CSP en production. Un data-block JSON n'est pas execute, donc hors
+    script-src ; le script qui le lit porte le nonce. Cf. lib/jsonLd.ts. */}
+<script
+  type="application/json"
+  id="project-data"
+  is:inline
+  set:html={jsonIsland({ projectId, memberOptions, userId, userName })}
+/>
+<script is:inline nonce={Astro.locals.nonce}>
+  // IIFE : `define:vars` enveloppait deja le corps, on preserve la portee.
+  (() => {
   /* ── Helpers ──────────────────────────────────────────────────────────────── */
-  // memberOptionsJson is injected by <script is:inline define:vars>
-  // eslint-disable-next-line no-undef
-  const _memberOptions = JSON.parse(memberOptionsJson);
+  const { projectId, memberOptions: _memberOptions, userId, userName } =
+    JSON.parse(document.getElementById('project-data').textContent);
 
   function esc(str) {
     return String(str ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -1382,4 +1391,5 @@ const memberOptionsJson = JSON.stringify(memberOptions);
     });
 
     initChat();
+  })();
 </script>

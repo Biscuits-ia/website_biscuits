@@ -25,6 +25,7 @@
 // touche qu'a Vercel Insights et on emet l'event que BaseHead ecoute.
 
 import '@/styles/cookie-consent.css';
+import { jsonIsland } from '@/lib/jsonLd';
 
 interface Props {
   /** Incrementer pour re-demander le consentement apres un changement de politique. */
@@ -146,8 +147,16 @@ const nonce = Astro.locals.nonce;
   </div>
 </div>
 
-<script is:inline nonce={nonce} define:vars={{ consentVersion }}>
+{/* `define:vars` fait perdre l'attribut nonce au build : le bandeau etait
+    bloque par la CSP sur toutes les routes SSR. Data-block JSON + script
+    nonce a la place. Cf. lib/jsonLd.ts. */}
+<script type="application/json" id="cookie-consent-config" is:inline set:html={jsonIsland({ consentVersion })} />
+<script is:inline nonce={nonce}>
   (function () {
+    const consentVersion = JSON.parse(
+      document.getElementById('cookie-consent-config').textContent,
+    ).consentVersion;
+
     const banner = document.getElementById('cookie-banner');
     if (!banner) return;
 

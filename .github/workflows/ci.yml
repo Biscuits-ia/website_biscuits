@@ -6,7 +6,7 @@
 # du source.
 #
 # Etapes :
-#   1. install           -- dependances (lockfile)
+#   1. install           -- dependances (lockfile npm)
 #   2. type-check        -- astro check (TypeScript strict)
 #   3. build             -- astro build
 #   4. assert-invariants -- scripts/assert-build-invariants.mjs
@@ -37,19 +37,24 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
+      # Note : on utilise npm (et non bun) depuis P4 #28, qui a supprime
+      # bun.lock. Le projet n'a aucune dep "bun" ; `bun install --frozen-lockfile`
+      # ne trouve pas de lockfile et echoue. `npm ci` lit package-lock.json,
+      # qui est la source de verite unique depuis #28.
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
-          bun-version: 1.3.14
+          node-version: '20'
+          cache: 'npm'
 
       - name: Install dependencies
-        run: bun install --frozen-lockfile
+        run: npm ci
 
       - name: Type-check (astro check)
-        run: bunx astro check
+        run: npx astro check
 
       - name: Build (astro build)
-        run: bun run build
+        run: npm run build
         env:
           # Les variables d'env ne sont pas requises pour le build (elles ne
           # sont utilisees qu'au runtime). Mais certaines peuvent etre
@@ -69,7 +74,7 @@ jobs:
         # L'ancien format .eslintrc est obsolete avec ESLint 10.
         run: |
           if [ -f eslint.config.js ] || [ -f eslint.config.mjs ]; then
-            bun run lint
+            npm run lint
           else
             echo "::warning::Pas de eslint.config.js : lint skippe (TODO P2 #17)"
           fi

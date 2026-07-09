@@ -40,6 +40,14 @@ test_html.txt
 # Cache Prettier local
 .prettier-cache/
 
+# Artefacts Playwright (cf. P4 #34)
+# Ne pas versionner : traces, screenshots, html, blob reports. Ils sont
+# regeneres a chaque run et peuvent contenir des secrets (cookies, form
+# values), donc on les exclut aussi du repo public.
+playwright-report/
+test-results/
+playwright/.cache/
+
 # Assistants dev / IDE
 .claude/
 .agents/

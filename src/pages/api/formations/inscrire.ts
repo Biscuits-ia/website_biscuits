@@ -8,11 +8,12 @@ import { getFormString } from '@/types/formations';
 import { trainingRegistrationSchema, redemptionCodeSchema } from '@/lib/formations';
 import type { AtomicTrainingRegisterResult, RedeemSponsorshipResult } from '@/types/formations';
 import { enqueueEmail } from '@/lib/email-queue';
+import { getClientIp } from '@/lib/http';
 import { renderRegistrationConfirmation, type MailAddress } from '@/lib/mail';
 import { formatDateLong, formatTimeRange, formatPriceCents, isFreeTraining } from '@/types/formations';
 import { createHash } from 'node:crypto';
 
-export const POST: APIRoute = async ({ request, cookies, redirect }) => {
+export const POST: APIRoute = async ({ request, cookies, redirect, clientAddress }) => {
   const supabase = createSupabaseClient({ request, cookies });
 
   const { data: { user } } = await supabase.auth.getUser();
@@ -111,9 +112,11 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   // Enregistrer l\'acceptation des CGV (preuve juridique)
   try {
     const adminForAccept = createSupabaseAdminClient();
-    const ip = request.headers.get('cf-connecting-ip')
-      ?? request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
-      ?? 'unknown';
+    // getClientIp() ne lit que les headers ecrits par la plateforme. L'ancienne
+    // version lisait `cf-connecting-ip` / `x-forwarded-for`, forgeables : la
+    // preuve d'acceptation des CGV enregistrait l'IP dictee par le client.
+    // Cf. src/lib/http.ts.
+    const ip = getClientIp(request, clientAddress as string | undefined);
     const ipHash = createHash('sha256').update(ip).digest('hex');
     const userAgent = (request.headers.get('user-agent') ?? '').slice(0, 256);
     await adminForAccept.from('legal_acceptance').insert({

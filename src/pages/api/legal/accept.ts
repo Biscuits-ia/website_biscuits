@@ -8,6 +8,7 @@
 import type { APIRoute } from 'astro';
 import { z } from 'zod';
 import { createSupabaseClient, createSupabaseAdminClient } from '@/lib/supabase';
+import { getClientIp } from '@/lib/http';
 import { createHash } from 'node:crypto';
 
 const schema = z.object({
@@ -17,7 +18,7 @@ const schema = z.object({
   registration_id:  z.string().uuid().optional(),
 });
 
-export const POST: APIRoute = async ({ request, cookies }) => {
+export const POST: APIRoute = async ({ request, cookies, clientAddress }) => {
   const supabase = createSupabaseClient({ request, cookies });
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -60,10 +61,14 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     );
   }
 
-  // Hash de l\'IP (RGPD : on ne stocke pas l\'IP en clair)
-  const ip = request.headers.get('cf-connecting-ip')
-    ?? request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
-    ?? 'unknown';
+  // Hash de l\'IP (RGPD : on ne stocke pas l\'IP en clair).
+  //
+  // getClientIp() ne lit que `x-vercel-forwarded-for` (ecrase par la plateforme)
+  // et `clientAddress`. L\'ancienne version lisait `cf-connecting-ip` puis
+  // `x-forwarded-for`, deux headers librement choisis par l\'appelant : la trace
+  // juridique enregistrait donc l\'IP que le client voulait bien lui donner.
+  // Cf. src/lib/http.ts.
+  const ip = getClientIp(request, clientAddress as string | undefined);
   const ipHash = createHash('sha256').update(ip).digest('hex');
 
   // User agent tronque (256 chars max)

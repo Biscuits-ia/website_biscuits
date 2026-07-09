@@ -179,6 +179,30 @@ assert('aucun island client:* sur une page SSR', () => {
   return found.length === 0 || `island(s) non declare(s) sur page SSR : ${found.join(', ')}`;
 });
 
+// ── IP client : un seul point de verite ──────────────────────────────────────
+// `cf-connecting-ip`, `x-real-ip` et `x-forwarded-for` ne sont PAS ecrits par
+// Vercel : un appelant les choisit librement. Seul `x-vercel-forwarded-for`
+// (et `clientAddress` qui en derive) est ecrase par la plateforme.
+//
+// L'item P1 #3 a corrige `lib/http.ts`, mais deux routes lisaient encore ces
+// headers en direct pour horodater l'acceptation des CGV : la preuve juridique
+// enregistrait l'IP dictee par le client. Toute lecture directe est desormais
+// interdite hors de `lib/http.ts`.
+assert('aucune lecture directe d un header IP forgeable hors lib/http.ts', () => {
+  const ROOT = 'src';
+  const FORGEABLE = /headers\.get\(\s*['"](cf-connecting-ip|x-real-ip|x-forwarded-for)['"]\s*\)/;
+
+  const files = fs.readdirSync(ROOT, { recursive: true })
+    .filter((f) => typeof f === 'string' && /\.(ts|astro)$/.test(f))
+    .filter((f) => f.split(path.sep).join('/') !== 'lib/http.ts');
+
+  const offenders = files.filter((rel) =>
+    FORGEABLE.test(fs.readFileSync(path.join(ROOT, rel), 'utf8')),
+  );
+  return offenders.length === 0
+    || `header IP forgeable lu dans : ${offenders.join(', ')} -- utiliser getClientIp()`;
+});
+
 // ── JSON-LD ──────────────────────────────────────────────────────────────────
 // jsonLd() doit echapper < > & : aucun de ces caracteres ne doit subsister
 // bruts dans un bloc ld+json, et le JSON doit rester parsable.

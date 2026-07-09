@@ -1,23 +1,33 @@
 // ============================================================================
 // src/pages/llms-full.txt.ts
 // ----------------------------------------------------------------------------
-// Endpoint dynamique qui sert une representation markdown complete du site
-// pour les LLM crawlers (GPTBot, ClaudeBot, PerplexityBot, Google-Extended,
-// anthropic-ai, cohere-ai, Applebot-Extended, CCBot, Bytespider...).
+// Representation markdown complete du site pour les LLM crawlers (GPTBot,
+// ClaudeBot, PerplexityBot, Google-Extended, anthropic-ai, cohere-ai,
+// Applebot-Extended, CCBot, Bytespider...).
 // Spec : https://llmstxt.org/
 //
 // Le format est volontairement du markdown pur (pas de HTML, pas de JSON-LD)
 // car les LLM prefèrent le texte brut - moins de bruit, meilleure extraction.
+//
+// ── Prerendu (P4 #37) ───────────────────────────────────────────────────────
+// Ce contenu est statique par nature. En SSR, chaque crawl reveillait une
+// lambda ET ouvrait une connexion Supabase en `service_role` : du cout pur et
+// une surface d'attaque inutile, multiplies par N crawlers x N passages/jour.
+//
+// Consequences du passage a `prerender = true` :
+//   - le catalogue `trainings` est fige au build (rafraichi au prochain deploy) ;
+//   - les headers de la `Response` ci-dessous sont IGNORES : Astro ecrit le body
+//     dans `dist/client/llms-full.txt` et Vercel le sert depuis le CDN.
+//     Cache-Control et X-Robots-Tag sont donc poses dans `vercel.json`.
 // ============================================================================
 
 import type { APIRoute } from 'astro';
 import { getCollection } from 'astro:content';
-import { fetchRoleSecure } from '@/lib/auth';
 import { createSupabaseAdminClient } from '@/lib/supabase';
 
 const SITE = 'https://biscuits-ia.com';
 
-export const prerender = false;
+export const prerender = true;
 
 interface Section {
   title: string;
@@ -143,7 +153,9 @@ export const GET: APIRoute = async () => {
     .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
     .slice(0, 20);
 
-  // Charger les formations a venir
+  // Charger les formations a venir (au build : voir l'en-tete du fichier).
+  // Si la service_role key est absente de l'env de build (ex. CI), le catch
+  // degrade proprement : le document est publie sans le catalogue.
   let formationsMd = '';
   try {
     const admin = createSupabaseAdminClient();
@@ -173,7 +185,7 @@ export const GET: APIRoute = async () => {
   lines.push('# Biscuits IA - Documentation complete (llms-full.txt)');
   lines.push('> Version markdown complete du site, optimisee pour LLM crawlers.');
   lines.push('> Site principal : https://biscuits-ia.com');
-  lines.push('> Derniere generation : ' + new Date().toISOString());
+  lines.push('> Derniere generation (build) : ' + new Date().toISOString());
   lines.push('> Format : https://llmstxt.org/');
   lines.push('> Stack : Astro 7 + Supabase + TypeScript.');
   lines.push('');
@@ -236,14 +248,10 @@ export const GET: APIRoute = async () => {
 
   const body = lines.join('\n');
 
+  // Prerendu : seul le body est conserve (ecrit dans dist/client/llms-full.txt).
+  // Cache-Control et X-Robots-Tag sont poses par vercel.json.
   return new Response(body, {
     status: 200,
-    headers: {
-      'Content-Type': 'text/plain; charset=utf-8',
-      // Cache CDN 1h, on regenere a chaque requete apres
-      'Cache-Control': 'public, max-age=3600, s-maxage=3600, stale-while-revalidate=86400',
-      // Pas d'indexation par les moteurs classiques (ce fichier est pour les LLM)
-      'X-Robots-Tag': 'noindex, nofollow',
-    },
+    headers: { 'Content-Type': 'text/plain; charset=utf-8' },
   });
 };

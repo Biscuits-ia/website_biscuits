@@ -46,6 +46,14 @@ assert('robots.txt declare une policy GPTBot', () => read('robots.txt').includes
 assert('robots.txt pointe sur sitemap-index.xml', () => read('robots.txt').includes('sitemap-index.xml'));
 assert('robots.txt reference llms.txt', () => read('robots.txt').includes('llms.txt'));
 
+// ── llms-full.txt (P4 #37) ───────────────────────────────────────────────────
+// Doit etre PRERENDU. En SSR, chaque crawl reveillait une lambda et ouvrait une
+// connexion Supabase en service_role pour un contenu statique par nature.
+// `export const prerender = false` reintroduit ne se voit qu'ici : cote source,
+// le fichier a exactement la meme tete.
+assert('llms-full.txt est prerendu (fichier statique, pas une lambda)', () =>
+  exists('llms-full.txt') || 'dist/client/llms-full.txt absent : prerender = false ?');
+
 // ── sitemap ──────────────────────────────────────────────────────────────────
 assert('aucun sitemap.xml statique ne masque sitemap-index.xml', () => !exists('sitemap.xml') || 'public/sitemap.xml est revenu');
 assert('sitemap-index.xml genere', () => exists('sitemap-index.xml'));

@@ -1,0 +1,200 @@
+---
+// Les trois dialogues : modifier le projet, creer une tache, detail d'une tache
+// (description, commentaires + mentions @, watchers).
+import type { ProjectDetail } from '../../lib/project-detail';
+
+interface Props { detail: ProjectDetail; projectId: string; }
+const { detail, projectId } = Astro.props;
+const { project, memberOptions, canEdit } = detail;
+---
+
+  <!-- Modal : Modifier projet -->
+  {canEdit && (
+    <dialog id="modal-edit-project" class="modal">
+      <div class="modal-box">
+        <h2 class="modal-title">Modifier le projet</h2>
+        <form id="form-edit-project" class="form-stack">
+          <div class="field">
+            <label class="label" for="ep-title">Titre *</label>
+            <input type="text" id="ep-title" name="title" required class="input" value={project.title} maxlength="120" />
+          </div>
+          <div class="field">
+            <label class="label" for="ep-desc">Description</label>
+            <textarea id="ep-desc" name="description" class="input" rows="3" maxlength="800">{project.description ?? ''}</textarea>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label class="label" for="ep-status">Statut</label>
+              <select id="ep-status" name="status" class="input">
+                <option value="active"    selected={project.status === 'active'}>Actif</option>
+                <option value="on_hold"   selected={project.status === 'on_hold'}>En pause</option>
+                <option value="completed" selected={project.status === 'completed'}>Terminé</option>
+                <option value="archived"  selected={project.status === 'archived'}>Archivé</option>
+              </select>
+            </div>
+            <div class="field">
+              <label class="label" for="ep-priority">Priorité</label>
+              <select id="ep-priority" name="priority" class="input">
+                <option value="low"    selected={project.priority === 'low'}>Faible</option>
+                <option value="medium" selected={project.priority === 'medium'}>Moyenne</option>
+                <option value="high"   selected={project.priority === 'high'}>Haute</option>
+              </select>
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label class="label" for="ep-start-date">Date de début</label>
+              <input type="date" id="ep-start-date" name="start_date" class="input" value={project.start_date ?? ''} />
+            </div>
+            <div class="field">
+              <label class="label" for="ep-deadline">Échéance</label>
+              <input type="date" id="ep-deadline" name="deadline" class="input" value={project.deadline ?? ''} />
+            </div>
+          </div>
+          <div class="field">
+            <label class="label" for="ep-estimated-hours">Heures estimées</label>
+            <input type="number" id="ep-estimated-hours" name="estimated_hours" class="input" value={project.estimated_hours ?? ''} min="0" max="9999" placeholder="ex: 120" />
+          </div>
+          <div class="field">
+            <label class="label" for="ep-objective">Objectif</label>
+            <textarea id="ep-objective" name="objective" class="input" rows="2" maxlength="600">{project.objective ?? ''}</textarea>
+          </div>
+          <div class="field">
+            <label class="label" for="ep-deliverables">Livrables attendus</label>
+            <textarea id="ep-deliverables" name="expected_deliverables" class="input" rows="2" maxlength="600">{project.expected_deliverables ?? ''}</textarea>
+          </div>
+          <div class="field">
+            <label class="label" for="ep-tech-stack">Stack technique <small>(séparés par virgule)</small></label>
+            <input type="text" id="ep-tech-stack" name="tech_stack" class="input" value={(project.tech_stack ?? []).join(', ')} placeholder="ex: Astro, TypeScript, Supabase" />
+          </div>
+          <div class="field">
+            <label class="label" for="ep-tools">Outils <small>(séparés par virgule)</small></label>
+            <input type="text" id="ep-tools" name="tools" class="input" value={(project.tools ?? []).join(', ')} placeholder="ex: GitHub, Figma, Notion" />
+          </div>
+          <div class="field">
+            <label class="label" for="ep-repo">URL du dépôt</label>
+            <input type="url" id="ep-repo" name="repository_url" class="input" value={project.repository_url ?? ''} placeholder="https://github.com/..." />
+          </div>
+          <div class="field">
+            <label class="label" for="ep-doc">URL de la documentation</label>
+            <input type="url" id="ep-doc" name="document_url" class="input" value={project.document_url ?? ''} placeholder="https://notion.so/..." />
+          </div>
+          <div class="field">
+            <label class="label" for="ep-channel">Canal de communication</label>
+            <input type="text" id="ep-channel" name="communication_channel" class="input" value={project.communication_channel ?? ''} placeholder="ex: #projet-crm sur Discord" />
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="btn btn-ghost" id="btn-close-edit-modal">Annuler</button>
+            <button type="submit" class="btn btn-primary">Enregistrer</button>
+          </div>
+        </form>
+      </div>
+    </dialog>
+  )}
+
+  <!-- Modal : Créer tâche (rapide depuis le Kanban) -->
+  {canEdit && (
+    <dialog id="modal-add-task" class="modal">
+      <div class="modal-box">
+        <h2 class="modal-title">Nouvelle tâche</h2>
+        <form id="form-add-task" class="form-stack">
+          <input type="hidden" id="at-project-id" value={projectId} />
+          <input type="hidden" id="at-status" value="todo" />
+          <div class="field">
+            <label class="label" for="at-title">Titre *</label>
+            <input type="text" id="at-title" name="title" required class="input" maxlength="200" />
+          </div>
+          <div class="field">
+            <label class="label" for="at-desc">Description</label>
+            <textarea id="at-desc" name="description" class="input" rows="3" maxlength="1000"></textarea>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label class="label" for="at-priority">Priorité</label>
+              <select id="at-priority" name="priority" class="input">
+                <option value="low">Faible</option>
+                <option value="medium" selected>Moyenne</option>
+                <option value="high">Haute</option>
+              </select>
+            </div>
+            <div class="field">
+              <label class="label" for="at-deadline">Échéance</label>
+              <input type="date" id="at-deadline" name="deadline" class="input" />
+            </div>
+          </div>
+          <div class="field">
+            <label class="label" for="at-assignee">Assigné à</label>
+            <select id="at-assignee" name="assignee_id" class="input">
+              <option value="">— Libre —</option>
+              {memberOptions.map((m) => (
+                <option value={m.id}>{m.name}</option>
+              ))}
+            </select>
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="btn btn-ghost" id="btn-close-add-task">Annuler</button>
+            <button type="submit" class="btn btn-primary">Créer</button>
+          </div>
+        </form>
+      </div>
+    </dialog>
+  )}
+
+  <!-- Modal : Détail tâche + commentaires + watchers -->
+  <dialog id="modal-task-detail" class="modal modal--wide">
+    <div class="modal-box">
+      <div class="detail-header">
+        <h2 class="modal-title" id="detail-title">Tâche</h2>
+        <button class="btn btn-ghost btn-sm" id="btn-close-detail">✕</button>
+      </div>
+      <input type="hidden" id="detail-task-id" />
+
+      <div class="detail-meta" id="detail-meta"></div>
+
+      <div class="detail-body">
+        <!-- Colonne principale : description + commentaires -->
+        <div class="detail-main">
+          <p class="detail-description" id="detail-description"></p>
+
+          <div class="comments-section">
+            <h3 class="comments-title">Commentaires</h3>
+            <div id="comments-container" class="comments-list">
+              <p class="loading-text">Chargement…</p>
+            </div>
+
+            <!-- Formulaire commentaire -->
+            <form id="form-add-comment" class="comment-form" autocomplete="off">
+              <div id="reply-indicator" class="reply-indicator" style="display:none">
+                <span>↩ Réponse à <strong id="reply-to-name"></strong></span>
+                <button type="button" id="btn-cancel-reply" class="btn-cancel-reply">✕</button>
+              </div>
+              <input type="hidden" id="comment-parent-id" value="" />
+              <div class="comment-input-row">
+                <textarea
+                  id="comment-input"
+                  class="input comment-textarea"
+                  rows="2"
+                  maxlength="2000"
+                  placeholder="Écrire un commentaire… Utilisez @nom pour mentionner"
+                ></textarea>
+                <button type="submit" class="btn btn-primary btn-sm">Envoyer</button>
+              </div>
+              <!-- Autocomplete mentions -->
+              <ul id="mention-dropdown" class="mention-dropdown" style="display:none"></ul>
+            </form>
+          </div>
+        </div>
+
+        <!-- Colonne latérale : watchers -->
+        <div class="detail-sidebar">
+          <div class="sidebar-section">
+            <h4 class="sidebar-section-title">Watchers</h4>
+            <div id="watchers-container" class="watchers-list">
+              <p class="loading-text">Chargement…</p>
+            </div>
+            <button class="btn btn-ghost btn-xs" id="btn-toggle-watch">S'abonner</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </dialog>

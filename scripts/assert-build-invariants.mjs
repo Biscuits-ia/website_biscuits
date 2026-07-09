@@ -132,6 +132,11 @@ assert('aucun <script> inline sans nonce dans les chunks SSR', () => {
 
     for (const m of code.matchAll(/<script([^>]{0,160})/g)) {
       const attrs = m[1];
+      // Guillemets echappes => la balise vit dans un littéral de chaine JS
+      // (ex: le commentaire d'un fichier importe en `?raw`), elle n'est pas
+      // emise dans le HTML. Une vraie balise, elle, est ecrite en clair dans
+      // un template literal.
+      if (attrs.includes('\\"')) continue;
       // Data-blocks (ld+json, json) : non executes, hors perimetre script-src.
       if (/type="application\//.test(attrs)) continue;
       if (/nonce/.test(attrs)) continue;

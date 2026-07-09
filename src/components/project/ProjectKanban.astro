@@ -1,0 +1,79 @@
+---
+// Tableau kanban : 4 colonnes, cartes de taches draggables.
+import type { ProjectDetail } from '../../lib/project-detail';
+import { PRIORITY_CLASS, PRIORITY_LABEL } from '../../lib/project-detail';
+
+interface Props { detail: ProjectDetail; userId: string; isStaff: boolean; }
+const { detail, userId, isStaff } = Astro.props;
+const { columns, tasksByStatus, profileMap, isMember, canEdit } = detail;
+const priorityClass = PRIORITY_CLASS, priorityLabel = PRIORITY_LABEL;
+---
+
+  <!-- Kanban -->
+  <div class="kanban" id="kanban-board">
+    {columns.map((col) => (
+      <div class={`kanban-col kanban-col--${col.cls}`} data-status={col.key}>
+        <div class="kanban-col-header">
+          <span class="kanban-col-label">{col.label}</span>
+          <span class="kanban-col-count">{(tasksByStatus[col.key] ?? []).length}</span>
+        </div>
+        <div class="kanban-cards" data-status={col.key}>
+          {(tasksByStatus[col.key] ?? []).map((t) => {
+            const assignee = t.assignee_id ? (profileMap[t.assignee_id] ?? null) : null;
+            const assigneeName = assignee?.full_name ?? assignee?.email ?? null;
+            const isMine = t.assignee_id === userId;
+            const isCreator = t.created_by === userId;
+            const canDelete = isCreator || isStaff;
+            return (
+              <div
+                class={`task-card${isMine ? ' task-card--mine' : ''}`}
+                draggable="true"
+                tabindex="0"
+                data-task-id={t.id}
+                data-status={t.status}
+                data-title={t.title}
+                data-description={t.description ?? ''}
+                data-priority={t.priority}
+                data-deadline={t.deadline ?? ''}
+                data-assignee-name={assigneeName ?? ''}
+              >
+                <div class="task-card-title">{t.title}</div>
+                {t.description && <div class="task-card-desc">{t.description}</div>}
+                <div class="task-card-footer">
+                  <span class={`badge badge-${priorityClass[t.priority] ?? 'neutral'}`}>
+                    {priorityLabel[t.priority] ?? t.priority}
+                  </span>
+                  {t.deadline && (
+                    <span class="task-deadline">📅 {new Date(t.deadline).toLocaleDateString('fr-FR')}</span>
+                  )}
+                  {assigneeName ? (
+                    <span class="task-assignee">👤 {assigneeName}</span>
+                  ) : (
+                    <span class="task-assignee task-assignee--free">Libre</span>
+                  )}
+                  <span class="task-comments-count" data-task-id={t.id}>💬 …</span>
+                </div>
+                <div class="task-card-actions">
+                  {!t.assignee_id && (isMember || isStaff) && (
+                    <button class="btn-claim-task" data-id={t.id}>✋ Je prends</button>
+                  )}
+                  {t.assignee_id === userId && (
+                    <button class="btn-unclaim-task" data-id={t.id}>Libérer</button>
+                  )}
+                  {canDelete && (
+                    <button class="btn-icon btn-delete-task" data-id={t.id} aria-label="Supprimer">🗑</button>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+          {canEdit && (tasksByStatus[col.key] ?? []).length === 0 && (
+            <button class="btn-add-col-task" data-target-status={col.key}>+ Tâche</button>
+          )}
+          {canEdit && (tasksByStatus[col.key] ?? []).length > 0 && (
+            <button class="btn-add-col-task" data-target-status={col.key}>+ Tâche</button>
+          )}
+        </div>
+      </div>
+    ))}
+  </div>

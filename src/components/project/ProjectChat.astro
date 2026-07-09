@@ -1,0 +1,25 @@
+---
+// Chat du projet. Les messages sont charges cote client (Supabase Realtime,
+// repli sur un polling 30 s). Cf. scripts/project-detail.js.
+---
+
+  <!-- Chat du projet -->
+  <section class="chat-section mt-6" aria-label="Chat du projet">
+    <div class="chat-header">
+      <h2 class="chat-title">💬 Chat du projet</h2>
+      <span class="chat-subtitle">Messages en temps réel • membres et staff</span>
+    </div>
+    <div class="chat-messages" id="chat-messages" aria-live="polite">
+      <p class="chat-placeholder">Chargement…</p>
+    </div>
+    <form id="chat-form" class="chat-input-row" autocomplete="off">
+      <input
+        type="text"
+        id="chat-input"
+        class="input chat-input"
+        placeholder="Écrire un message… (Entrée pour envoyer)"
+        maxlength="2000"
+      />
+      <button type="submit" class="btn btn-primary btn-sm">Envoyer</button>
+    </form>
+  </section>

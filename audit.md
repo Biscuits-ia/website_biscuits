@@ -1299,12 +1299,12 @@ Rien dans ce repo ne prouve qu'une intention se traduit en comportement. Ajoutez
 
 # 🗺️ ROADMAP
 
-> **État au 2026-07-09** — 36 items faits sur 43, vérifiés dans le code et non
-> d'après les titres de commit. Restent 7 items ouverts + 1 partiel (#28).
-> Les items 41 à 43 ne figuraient pas dans l'audit initial : ils ont été
+> **État au 2026-07-09** — 37 items faits sur 43, vérifiés dans le code et non
+> d'après les titres de commit. Restent 6 items ouverts + 1 partiel (#28).
+> Les items 41 à 44 ne figuraient pas dans l'audit initial : ils ont été
 > découverts en cours de route. Les items cochés ont été confirmés sur
 > l'artefact (`dist/`, `.vercel/output/`) ou par une assertion dans
-> `scripts/assert-build-invariants.mjs` (22 assertions, dont 3 testées en négatif).
+> `scripts/assert-build-invariants.mjs` (23 assertions, dont 4 testées en négatif).
 
 ## PRIORITÉ 1 — Immédiat (aujourd'hui / cette semaine)
 
@@ -1421,6 +1421,24 @@ qu'à moitié, ce qui a cassé toutes les routes SSR pendant 24 h. Voir #41.
       `20260624_email_queue_and_refunds.sql` citée par l'ancien `refund.ts` n'existe
       pas). Créées à la main en console, ou jamais — auquel cas `refund.ts` échouait
       en silence depuis toujours. À vérifier.
+- [x] **44.** *(hors audit initial)* `Astro.locals` hors scope dans les composants enfants.
+      En Astro 7, le compilateur injecte `const Astro = $$result.createAstro(...)`
+      dans le frontmatter des **pages** (`src/pages/`) — mais pas dans le template
+      des **composants** enfants (`src/components/`). Le pattern
+      `nonce={Astro.locals.nonce}` y est émis tel quel dans le chunk compilé :
+      `Astro` n'étant pas défini dans le scope du `createComponent()`, le runtime
+      jetait un `ReferenceError` à la première requête sur la route.
+      Symptôme en prod : 100 % des pages avec `DashboardLayout` (`Toast`,
+      `ConfirmDialog`) et du layout public (`CookieConsent`) renvoyaient
+      0 octet de HTML (Vercel 500, middleware `logError` + re-throw). Le
+      pattern `astro check` et le build passaient ; seul le bundle SSR portait
+      la trace.
+      Fix : passer `nonce` en **prop** depuis le layout parent, comme
+      `BaseHead.astro` le faisait déjà. `DashboardLayout` et `Layout` alignés
+      sur ce pattern.
+      Verrouillé par une 23e assertion build-time, testée en négatif sur
+      deux composants distincts (`Toast` et un `<script>` ad-hoc dans
+      `ProjectHeader`) — détection confirmée.
 
 ---
 

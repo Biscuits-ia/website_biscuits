@@ -147,6 +147,68 @@ assert('aucun <script> inline sans nonce dans les chunks SSR', () => {
     || `${offenders.length} script(s) sans nonce :\n      -> ${[...new Set(offenders)].join('\n      -> ')}`;
 });
 
+// Corollaire architectural (P4 #44) : en Astro 7, `Astro.locals` n'est injecte
+// que dans le frontmatter des PAGES et des LAYOUTS (le compilateur emet
+// `const Astro = $$result.createAstro(...)` en tete de factory). Pour les
+// COMPOSANTS enfants (src/components/), `Astro` n'est pas dans le scope du
+// `createComponent(($$result, ...))`. Si un composant utilise
+// `Astro.locals.nonce` dans son template, le chunk compile contient
+// `addAttribute(Astro.locals...)` qui leve un ReferenceError au runtime.
+//
+// En relisant src/components/ui/Toast.astro on ne voit rien d'anormal. Le build
+// passe. C'est seulement a la 1re requete sur /dashboard/user que la page
+// renvoie 0 octet de HTML (Vercel 500, middleware logError + re-throw).
+//
+// On verifie donc que les chunks dont le source est sous src/components/ ne
+// referencent JAMAIS `Astro.locals` -- l'equivalent compile de l'acces fautif.
+assert('Astro.locals n est pas reference dans un composant (P4 #44)', () => {
+  if (!fs.existsSync(SSR_DIR)) return `${SSR_DIR} absent : lancer 'astro build'`;
+
+  const files = fs.readdirSync(SSR_DIR, { recursive: true })
+    .filter((f) => typeof f === 'string' && f.endsWith('.mjs'))
+    .map((f) => path.join(SSR_DIR, f))
+    .filter((f) => !path.basename(f).startsWith('render_'));
+
+  const offenders = [];
+  for (const file of files) {
+    const code = fs.readFileSync(file, 'utf8');
+    // Un chunk peut embarquer plusieurs fichiers (un pour chaque composant /
+    // page / module de données inline). Le compilateur delemite chacun par
+    // `//#region <path>` / `//#endregion`. On parcourt les regions une a une
+    // et on attribue chaque `Astro.locals` a la region qui le contient -- pas
+    // seulement la premiere (qui est souvent un module TS sans danger).
+    const regionRe = /\/\/#region\s+(\S+)/g;
+    const regions = [];
+    let m;
+    while ((m = regionRe.exec(code)) !== null) {
+      regions.push({ start: m.index, headerEnd: m.index + m[0].length, path: m[1] });
+    }
+    if (regions.length === 0) continue;
+    // Ferme chaque region a la suivante (ou fin de fichier).
+    for (let i = 0; i < regions.length; i++) {
+      const region = regions[i];
+      const bodyEnd = i + 1 < regions.length ? regions[i + 1].start : code.length;
+      const body = code.slice(region.headerEnd, bodyEnd);
+      // On ne flague que les regions dont la source est sous src/components/.
+      // Les pages (src/pages/) et les layouts (src/layouts/) ont leur propre
+      // frontmatter qui definit `Astro` via `$$result.createAstro(...)`.
+      const sourceRel = region.path.replace(/\\/g, '/');
+      if (!sourceRel.includes('src/components/')) continue;
+      // On retire les commentaires de la region pour eviter les faux positifs
+      // (un exemple XSS dans un JSDoc qui parle de `Astro.locals` n'est pas
+      // un acces reel au runtime).
+      const bodyNoComments = body.split('\n')
+        .filter((line) => !/^\s*(\/\/|\*|\/\*)/.test(line))
+        .join('\n');
+      if (/\bAstro\.locals\b/.test(bodyNoComments)) {
+        offenders.push(`${path.basename(file)} <- ${sourceRel}`);
+      }
+    }
+  }
+  return offenders.length === 0
+    || `${offenders.length} chunk(s) composent(s) reference(nt) Astro.locals :\n      -> ${offenders.join('\n      -> ')}`;
+});
+
 // Corollaire : tant que `security.csp` n'est pas active, Astro emet le bootstrap
 // des islands en <script> inline SANS nonce. Toute directive client:* sur une
 // page SSR est donc morte en production (elle marche en prerendu, ou le CSP de

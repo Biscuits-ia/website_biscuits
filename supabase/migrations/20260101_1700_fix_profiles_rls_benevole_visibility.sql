@@ -5,9 +5,12 @@
 --   → un bénévole ne peut lire que son propre profil
 --   → sur /projet : leader_id, assignee_id, member profiles → NULL
 --
--- Solution : les bénévoles/modérateurs/pm/tech_lead peuvent lire les profils
---   de tous les membres de l'espace bénévole (benevole + moderator + admin +
---   pm + tech_lead), ce qui est nécessaire pour afficher noms et avatars.
+-- Solution : les bénévoles / modérateurs / admins peuvent lire les profils
+--   de tous les membres de l'espace bénévole (benevole + moderator + admin),
+--   nécessaire pour afficher noms et avatars sur l'espace projet.
+--
+-- Note 2026-07-10 : 'pm' et 'tech_lead' ont été retirés des IN clauses.
+--   Ces rôles ne sont pas dans profiles_role_check → branches mortes.
 -- =============================================================================
 
 -- Politique : un bénévole ou supérieur peut lire les profils des collaborateurs
@@ -21,11 +24,11 @@ CREATE POLICY "profiles_benevole_read_team"
       SELECT 1
       FROM public.profiles me
       WHERE me.id   = auth.uid()
-        AND me.role IN ('benevole', 'moderator', 'admin', 'pm', 'tech_lead')
+        AND me.role IN ('benevole', 'moderator', 'admin')
     )
     AND
     -- La cible doit être un collaborateur (pas un simple "user")
-    role IN ('benevole', 'moderator', 'admin', 'pm', 'tech_lead')
+    role IN ('benevole', 'moderator', 'admin')
   );
 
 -- Politique : un bénévole peut toujours lire son propre profil (conservée)

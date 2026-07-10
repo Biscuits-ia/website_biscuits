@@ -140,17 +140,10 @@ CREATE INDEX IF NOT EXISTS idx_announcements_pinned
 -- ── projects ────────────────────────────────────────────────────────────────
 ALTER TABLE public.projects ENABLE ROW LEVEL SECURITY;
 
--- Lecture : bénévoles et admins
-DROP POLICY IF EXISTS "projects_benevole_read" ON public.projects;
-CREATE POLICY "projects_benevole_read"
-  ON public.projects FOR SELECT
-  USING (
-    EXISTS (
-      SELECT 1 FROM public.profiles
-      WHERE id = auth.uid()
-        AND role IN ('benevole', 'admin', 'moderator')
-    )
-  );
+-- Note : la policy `projects_benevole_read` est definie dans
+-- `20260101_1800_fix_projects_rls_listing.sql` (version plus stricte :
+-- restreint la lecture aux membres du projet, leader, createur, staff).
+-- On ne la declare pas ici pour eviter la double definition.
 
 -- Insertion : bénévoles et admins
 DROP POLICY IF EXISTS "projects_benevole_insert" ON public.projects;

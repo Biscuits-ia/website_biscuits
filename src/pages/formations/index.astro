@@ -7,15 +7,18 @@
 
 import Layout from '@/layouts/Layout.astro';
 import Breadcrumb from '@/components/Breadcrumb.astro';
-import { createSupabaseAdminClient } from '@/lib/supabase';
+import { createSupabaseClient } from '@/lib/supabase';
 import { formatDate, formatTimeRange, formatSlidingScale, isFreeTraining } from '@/types/formations';
 
 export const prerender = true;
 
-const admin = createSupabaseAdminClient(Astro);
+// Page statique (prerender = true) : on utilise le client standard (clé anon).
+// Le service_role n'est PAS exposé au build Vercel, et la RLS sur trainings /
+// training_sessions autorise de toute façon la lecture anon des lignes publiées.
+const supabase = createSupabaseClient(Astro);
 
 // Recuperation des formations publiees avec leur prochaine session (la plus proche)
-const { data: trainings, error } = await admin
+const { data: trainings, error } = await supabase
   .from('trainings')
   .select(`
     id, slug, title, short_description, category, level, duration_label,

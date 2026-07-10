@@ -72,6 +72,13 @@ CREATE POLICY "benevoles_public_read"
   FOR SELECT
   USING (actif = true);
 
+-- Grant au role anon pour la lecture publique.
+-- Sans ce GRANT, la policy ci-dessus ne suffit pas : Postgres refuse
+-- l'acces avant meme l'evaluation RLS. service_role bypasse les GRANTs,
+-- d'ou le fait que ce ne plantait pas avant le passage a prerender = true
+-- de la page /trombinoscope (cf. commit P4 #32).
+GRANT SELECT ON public.benevoles TO anon, authenticated;
+
 -- Écriture réservée aux administrateurs authentifiés
 DROP POLICY IF EXISTS "benevoles_admin_all" ON public.benevoles;
 CREATE POLICY "benevoles_admin_all"

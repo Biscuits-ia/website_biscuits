@@ -31,7 +31,14 @@ COMMENT ON TABLE public.app_runtime_config IS
 INSERT INTO public.app_runtime_config (key, value)
 VALUES
   ('email_worker_url',  'https://biscuits-ia.com/api/cron/email-outbox'),
-  ('email_worker_interval_minutes', '2')
+  ('email_worker_interval_minutes', '2'),
+  -- La cle 'cron_secret' est vide ici : la fonction invoke_email_outbox_worker()
+  -- la cherche en priorite dans vault.decrypted_secrets (crypte, role-only) puis
+  -- dans cette table (fallback dev/preview). Pour un deploiement de prod propre,
+  -- poser le secret dans vault via Supabase Studio > Database > Vault Secrets
+  -- (name=cron_secret, secret=<CRON_SECRET>), et laisser cette ligne vide.
+  -- Cf. AUDIT-MIGRATIONS, finding B4.
+  ('cron_secret', '')
 ON CONFLICT (key) DO NOTHING;
 
 ALTER TABLE public.app_runtime_config ENABLE ROW LEVEL SECURITY;
@@ -131,10 +138,12 @@ REVOKE ALL ON FUNCTION public.invoke_email_outbox_worker() FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.invoke_email_outbox_worker() TO postgres;
 
 -- 6. Planification : toutes les 2 minutes (UTC).
+--    Quote $cmd$...$cmd$ (et non $$, qui collisionne avec le $$ d'ouverture
+--    de la fonction invoke_email_outbox_worker declaree plus haut).
 SELECT cron.schedule(
   jobname   => 'email_outbox_worker',
   schedule  => '*/2 * * * *',
-  command   => \\ public.invoke_email_outbox_worker();\\$
+  command   => $cmd$ SELECT public.invoke_email_outbox_worker(); $cmd$
 );
 
 -- 7. Vue de monitoring : 100 dernieres executions avec status HTTP.
@@ -184,3 +193,6 @@ COMMENT ON FUNCTION public.get_pg_cron_jobs()
 
 REVOKE ALL ON FUNCTION public.get_pg_cron_jobs() FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.get_pg_cron_jobs() TO service_role;
+
+-- 20260709_1600_pg_cron_aggregate_downloads.sql recree la fonction ci-dessus
+-- avec un WHERE IN etendu a aggregate_downloads_worker (CREATE OR REPLACE).

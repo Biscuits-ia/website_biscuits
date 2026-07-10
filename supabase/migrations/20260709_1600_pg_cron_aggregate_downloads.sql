@@ -190,7 +190,7 @@ SET search_path = cron, public
 AS $$
   SELECT jobid, jobname, schedule, command, active
   FROM cron.job
-  WHERE jobname IN ('email_outbox_worker', 'aggregate_downloads_worker')
+  WHERE jobname IN ('email_outbox_worker', 'aggregate_downloads_worker', 'expire_pending_appointments')
   ORDER BY jobname;
 $$;
 

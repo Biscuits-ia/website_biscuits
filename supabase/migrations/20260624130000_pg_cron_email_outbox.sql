@@ -55,7 +55,7 @@ RETURNS void
 LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = public, extensions
-AS \$\$
+AS $$
 DECLARE
   v_url        text;
   v_secret     text;
@@ -109,7 +109,7 @@ BEGIN
     NULL;
   END;
 END;
-\$\$;
+$$;
 COMMENT ON FUNCTION public.invoke_email_outbox_worker()
   IS 'Job pg_cron : appelle /api/cron/email-outbox avec le CRON_SECRET. Fire-and-forget.';
 
@@ -182,12 +182,12 @@ RETURNS TABLE (
 LANGUAGE sql
 SECURITY DEFINER
 SET search_path = cron, public
-AS \$\$
+AS $$
   SELECT jobid, jobname, schedule, command, active
   FROM cron.job
   WHERE jobname IN ('email_outbox_worker')
   ORDER BY jobname;
-\$\$;
+$$;
 COMMENT ON FUNCTION public.get_pg_cron_jobs()
   IS 'Liste les jobs pg_cron de l''app. Utilise par scripts/cron-status.mjs.';
 

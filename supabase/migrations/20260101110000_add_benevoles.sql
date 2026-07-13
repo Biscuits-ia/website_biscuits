@@ -80,24 +80,19 @@ CREATE POLICY "benevoles_public_read"
 GRANT SELECT ON public.benevoles TO anon, authenticated;
 
 -- Écriture réservée aux administrateurs authentifiés
+--
+-- get_my_role() plutot qu'un EXISTS sur profiles (corrige le 2026-07-13) :
+-- une lecture de benevoles evaluait cette policy, qui traversait profiles,
+-- dont les policies bouclaient sur project_members et revenaient a profiles.
+-- Resultat : "infinite recursion detected in policy for relation profiles"
+-- des le prerendu de /trombinoscope. get_my_role() est SECURITY DEFINER et
+-- lit le JWT : aucune traversee de table, donc aucun cycle possible.
 DROP POLICY IF EXISTS "benevoles_admin_all" ON public.benevoles;
 CREATE POLICY "benevoles_admin_all"
   ON public.benevoles
   FOR ALL
-  USING (
-    EXISTS (
-      SELECT 1 FROM public.profiles
-      WHERE id = auth.uid()
-        AND role = 'admin'
-    )
-  )
-  WITH CHECK (
-    EXISTS (
-      SELECT 1 FROM public.profiles
-      WHERE id = auth.uid()
-        AND role = 'admin'
-    )
-  );
+  USING      (public.get_my_role() = 'admin')
+  WITH CHECK (public.get_my_role() = 'admin');
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- 5. Storage bucket pour les photos de bénévoles

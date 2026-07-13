@@ -272,17 +272,47 @@ CREATE INDEX IF NOT EXISTS idx_volunteer_appt_email     ON public.volunteer_appo
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- 2. Fonction helper : get_my_role()
---    Retourne le rôle de l'utilisateur courant depuis la table profiles.
---    Utilisée dans les RLS policies.
+--    Retourne le role de l'utilisateur courant. Utilisee par les RLS policies.
+--
+--    LIT LE JWT EN PRIORITE, pas la table profiles. C'est essentiel : de
+--    nombreuses policies (sur benevoles, project_members, projects...) doivent
+--    connaitre le role de l'appelant. Si elles le lisaient via
+--    `EXISTS (SELECT 1 FROM profiles ...)`, Postgres reevaluerait les policies
+--    de profiles -- lesquelles interrogent project_members, qui interroge
+--    profiles... => "infinite recursion detected in policy for relation
+--    profiles", et plus aucune lecture possible.
+--
+--    auth.jwt() est une lecture O(1) en memoire : aucune table traversee, donc
+--    aucun cycle possible. Le fallback sur profiles ne sert qu'aux contextes
+--    sans JWT (dev, tests, tokens emis avant la synchro).
+--
+--    La synchro profiles.role -> auth.users.raw_app_meta_data.role est assuree
+--    par le trigger sync_profile_role_to_jwt (20260709200000).
 -- ─────────────────────────────────────────────────────────────────────────────
 CREATE OR REPLACE FUNCTION public.get_my_role()
 RETURNS text
-LANGUAGE sql
+LANGUAGE plpgsql
 STABLE
 SECURITY DEFINER
 SET search_path = public
 AS $$
-  SELECT role FROM public.profiles WHERE id = auth.uid();
+DECLARE
+  v_jwt_role text;
+  v_db_role  text;
+BEGIN
+  BEGIN
+    v_jwt_role := auth.jwt() -> 'app_metadata' ->> 'role';
+  EXCEPTION WHEN undefined_function OR others THEN
+    v_jwt_role := NULL;
+  END;
+
+  IF v_jwt_role IS NOT NULL AND v_jwt_role <> '' THEN
+    RETURN v_jwt_role;
+  END IF;
+
+  SELECT role INTO v_db_role FROM public.profiles WHERE id = auth.uid();
+  RETURN v_db_role;
+END;
 $$;
 
 -- ─────────────────────────────────────────────────────────────────────────────

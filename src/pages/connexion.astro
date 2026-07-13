@@ -126,7 +126,7 @@ const nonce = Astro.locals.nonce;
       if (remember) localStorage.setItem('rememberedEmail', email);
       else          localStorage.removeItem('rememberedEmail');
 
-      window.location.href = '/dashboard/user/';
+       window.location.href = '/dashboard/';
 
     } catch (e) {
       showMsg('Une erreur est survenue. Veuillez réessayer.');

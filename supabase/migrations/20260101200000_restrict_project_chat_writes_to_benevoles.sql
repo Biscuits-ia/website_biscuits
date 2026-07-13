@@ -8,6 +8,10 @@
 -- standard membre pouvait ecrire un message qu'il ne pouvait pas relire).
 -- On aligne les trois policies sur le meme predicat.
 
+-- Note (2026-07-13) : les 3 OR EXISTS (... role = 'admin') ci-dessous sont
+-- remplaces par public.get_my_role() = 'admin' pour eviter SQLSTATE 42P01
+-- (et eliminer le cycle RLS profiles <-> project_members, cf. migration
+-- 20260709200000_fix_profiles_rls_recursion.sql).
 DROP POLICY IF EXISTS "pm_select" ON public.project_messages;
 
 CREATE POLICY "pm_select" ON public.project_messages FOR SELECT
@@ -20,12 +24,7 @@ CREATE POLICY "pm_select" ON public.project_messages FOR SELECT
         AND pm.user_id = auth.uid()
         AND p.role = 'benevole'
     )
-    OR EXISTS (
-      SELECT 1
-      FROM public.profiles p
-      WHERE p.id = auth.uid()
-        AND p.role = 'admin'
-    )
+    OR public.get_my_role() = 'admin'
   );
 
 DROP POLICY IF EXISTS "pm_insert" ON public.project_messages;
@@ -42,12 +41,7 @@ CREATE POLICY "pm_insert" ON public.project_messages FOR INSERT
           AND pm.user_id = auth.uid()
           AND p.role = 'benevole'
       )
-      OR EXISTS (
-        SELECT 1
-        FROM public.profiles p
-        WHERE p.id = auth.uid()
-          AND p.role = 'admin'
-      )
+      OR public.get_my_role() = 'admin'
     )
   );
 
@@ -63,10 +57,5 @@ CREATE POLICY "pm_delete" ON public.project_messages FOR DELETE
         AND pm.user_id = auth.uid()
         AND p.role = 'benevole'
     )
-    OR EXISTS (
-      SELECT 1
-      FROM public.profiles p
-      WHERE p.id = auth.uid()
-        AND p.role = 'admin'
-    )
+    OR public.get_my_role() = 'admin'
   );

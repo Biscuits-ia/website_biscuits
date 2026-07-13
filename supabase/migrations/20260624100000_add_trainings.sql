@@ -479,10 +479,10 @@ DROP POLICY IF EXISTS "trainings_admin_all" ON public.trainings;
 CREATE POLICY "trainings_admin_all"
   ON public.trainings FOR ALL
   USING (
-    EXISTS (SELECT 1 FROM public.profiles p WHERE p.id = auth.uid() AND p.role = 'admin')
+    public.get_my_role() = 'admin'
   )
   WITH CHECK (
-    EXISTS (SELECT 1 FROM public.profiles p WHERE p.id = auth.uid() AND p.role = 'admin')
+    public.get_my_role() = 'admin'
   );
 
 -- --- 9. RLS : training_sessions -----------------------------------------------
@@ -498,10 +498,10 @@ DROP POLICY IF EXISTS "training_sessions_admin_all" ON public.training_sessions;
 CREATE POLICY "training_sessions_admin_all"
   ON public.training_sessions FOR ALL
   USING (
-    EXISTS (SELECT 1 FROM public.profiles p WHERE p.id = auth.uid() AND p.role = 'admin')
+    public.get_my_role() = 'admin'
   )
   WITH CHECK (
-    EXISTS (SELECT 1 FROM public.profiles p WHERE p.id = auth.uid() AND p.role = 'admin')
+    public.get_my_role() = 'admin'
   );
 
 -- --- 10. RLS : training_registrations -----------------------------------------
@@ -520,7 +520,7 @@ DROP POLICY IF EXISTS "training_regs_select_admin" ON public.training_registrati
 CREATE POLICY "training_regs_select_admin"
   ON public.training_registrations FOR SELECT
   USING (
-    EXISTS (SELECT 1 FROM public.profiles p WHERE p.id = auth.uid() AND p.role = 'admin')
+    public.get_my_role() = 'admin'
   );
 
 DROP POLICY IF EXISTS "training_regs_insert_self" ON public.training_registrations;
@@ -538,10 +538,10 @@ DROP POLICY IF EXISTS "training_regs_admin_all" ON public.training_registrations
 CREATE POLICY "training_regs_admin_all"
   ON public.training_registrations FOR ALL
   USING (
-    EXISTS (SELECT 1 FROM public.profiles p WHERE p.id = auth.uid() AND p.role = 'admin')
+    public.get_my_role() = 'admin'
   )
   WITH CHECK (
-    EXISTS (SELECT 1 FROM public.profiles p WHERE p.id = auth.uid() AND p.role = 'admin')
+    public.get_my_role() = 'admin'
   );
 
 -- --- 11. RLS : training_payments ----------------------------------------------
@@ -565,17 +565,17 @@ DROP POLICY IF EXISTS "training_payments_select_admin" ON public.training_paymen
 CREATE POLICY "training_payments_select_admin"
   ON public.training_payments FOR SELECT
   USING (
-    EXISTS (SELECT 1 FROM public.profiles p WHERE p.id = auth.uid() AND p.role = 'admin')
+    public.get_my_role() = 'admin'
   );
 
 DROP POLICY IF EXISTS "training_payments_admin_all" ON public.training_payments;
 CREATE POLICY "training_payments_admin_all"
   ON public.training_payments FOR ALL
   USING (
-    EXISTS (SELECT 1 FROM public.profiles p WHERE p.id = auth.uid() AND p.role = 'admin')
+    public.get_my_role() = 'admin'
   )
   WITH CHECK (
-    EXISTS (SELECT 1 FROM public.profiles p WHERE p.id = auth.uid() AND p.role = 'admin')
+    public.get_my_role() = 'admin'
   );
 
 -- --- 12. RLS : training_sponsorships ------------------------------------------
@@ -593,17 +593,17 @@ DROP POLICY IF EXISTS "training_sponsorships_select_admin" ON public.training_sp
 CREATE POLICY "training_sponsorships_select_admin"
   ON public.training_sponsorships FOR SELECT
   USING (
-    EXISTS (SELECT 1 FROM public.profiles p WHERE p.id = auth.uid() AND p.role = 'admin')
+    public.get_my_role() = 'admin'
   );
 
 DROP POLICY IF EXISTS "training_sponsorships_admin_all" ON public.training_sponsorships;
 CREATE POLICY "training_sponsorships_admin_all"
   ON public.training_sponsorships FOR ALL
   USING (
-    EXISTS (SELECT 1 FROM public.profiles p WHERE p.id = auth.uid() AND p.role = 'admin')
+    public.get_my_role() = 'admin'
   )
   WITH CHECK (
-    EXISTS (SELECT 1 FROM public.profiles p WHERE p.id = auth.uid() AND p.role = 'admin')
+    public.get_my_role() = 'admin'
   );
 
 -- --- 13. RLS : training_free_seat_requests -------------------------------------
@@ -624,17 +624,17 @@ DROP POLICY IF EXISTS "training_free_req_select_admin" ON public.training_free_s
 CREATE POLICY "training_free_req_select_admin"
   ON public.training_free_seat_requests FOR SELECT
   USING (
-    EXISTS (SELECT 1 FROM public.profiles p WHERE p.id = auth.uid() AND p.role = 'admin')
+    public.get_my_role() = 'admin'
   );
 
 DROP POLICY IF EXISTS "training_free_req_admin_update" ON public.training_free_seat_requests;
 CREATE POLICY "training_free_req_admin_update"
   ON public.training_free_seat_requests FOR UPDATE
   USING (
-    EXISTS (SELECT 1 FROM public.profiles p WHERE p.id = auth.uid() AND p.role = 'admin')
+    public.get_my_role() = 'admin'
   )
   WITH CHECK (
-    EXISTS (SELECT 1 FROM public.profiles p WHERE p.id = auth.uid() AND p.role = 'admin')
+    public.get_my_role() = 'admin'
   );
 
 -- --- 14. GRANTs ---------------------------------------------------------------

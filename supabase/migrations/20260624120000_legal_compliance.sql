@@ -89,12 +89,14 @@ CREATE POLICY "legal_acceptance_select_own"
   ON public.legal_acceptance FOR SELECT
   USING (user_id = auth.uid());
 
+-- Note (2026-07-13) : migration du pattern EXISTS profiles -> public.get_my_role()
+-- pour eviter SQLSTATE 42P01 si profiles est indisponible au moment de l'evaluation
+-- de la policy, et pour supprimer la traversee de table (cf. migration
+-- 20260709200000_fix_profiles_rls_recursion.sql qui introduit get_my_role() JWT-first).
 DROP POLICY IF EXISTS "legal_acceptance_select_admin" ON public.legal_acceptance;
 CREATE POLICY "legal_acceptance_select_admin"
   ON public.legal_acceptance FOR SELECT
-  USING (
-    EXISTS (SELECT 1 FROM public.profiles p WHERE p.id = auth.uid() AND p.role = 'admin')
-  );
+  USING (public.get_my_role() = 'admin');
 
 -- Pas d'INSERT/UPDATE/DELETE pour anon/authenticated : tout passe par le service_role
 -- (route API /api/legal/accept). Cela empeche tout bypass.
@@ -109,12 +111,8 @@ CREATE POLICY "legal_compliance_select_public"
 DROP POLICY IF EXISTS "legal_compliance_admin_all" ON public.legal_compliance;
 CREATE POLICY "legal_compliance_admin_all"
   ON public.legal_compliance FOR ALL
-  USING (
-    EXISTS (SELECT 1 FROM public.profiles p WHERE p.id = auth.uid() AND p.role = 'admin')
-  )
-  WITH CHECK (
-    EXISTS (SELECT 1 FROM public.profiles p WHERE p.id = auth.uid() AND p.role = 'admin')
-  );
+  USING      (public.get_my_role() = 'admin')
+  WITH CHECK (public.get_my_role() = 'admin');
 
 -- 4. GRANTs --------------------------------------------------------------------
 

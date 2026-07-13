@@ -43,9 +43,12 @@ ON CONFLICT (key) DO NOTHING;
 
 ALTER TABLE public.app_runtime_config ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "app_runtime_config_admin_read" ON public.app_runtime_config;
+-- Note (2026-07-13) : get_my_role() lit auth.jwt() en O(1) (SECURITY DEFINER),
+-- pas de hit table profiles. Empeche SQLSTATE 42P01 sur les etats partiels
+-- et elimine le cycle RLS (cf. 20260709200000_fix_profiles_rls_recursion.sql).
 CREATE POLICY "app_runtime_config_admin_read"
   ON public.app_runtime_config FOR SELECT
-  USING (EXISTS (SELECT 1 FROM public.profiles p WHERE p.id = auth.uid() AND p.role = 'admin'));
+  USING (public.get_my_role() = 'admin');
 
 -- 3. Fonction appelee par pg_cron. Fire-and-forget : on lance le POST
 --    asynchrone via net.http_post et on n'attend pas la reponse (le worker
@@ -131,7 +134,7 @@ ALTER TABLE public.pg_cron_audit ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "pg_cron_audit_admin_read" ON public.pg_cron_audit;
 CREATE POLICY "pg_cron_audit_admin_read"
   ON public.pg_cron_audit FOR SELECT
-  USING (EXISTS (SELECT 1 FROM public.profiles p WHERE p.id = auth.uid() AND p.role = 'admin'));
+  USING (public.get_my_role() = 'admin');
 
 -- 5. Grant execute au role postgres (utilise par pg_cron).
 REVOKE ALL ON FUNCTION public.invoke_email_outbox_worker() FROM PUBLIC;

@@ -51,22 +51,24 @@ CREATE INDEX IF NOT EXISTS idx_helloasso_payments_registration
 ALTER TABLE public.helloasso_oauth_tokens ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.helloasso_payments  ENABLE ROW LEVEL SECURITY;
 
+-- Note (2026-07-13) : remplacement du pattern
+--   EXISTS (SELECT 1 FROM public.profiles p WHERE p.id = auth.uid() AND p.role = 'admin')
+-- par public.get_my_role() = 'admin'.
+-- get_my_role() est SECURITY DEFINER et lit auth.jwt() -> 'app_metadata' ->> 'role'
+-- (cf. migration 20260709200000_fix_profiles_rls_recursion.sql) :
+--   - pas de hit table -> pas de SQLSTATE 42P01 si profiles est absente
+--   - pas de cycle RLS profiles <-> autres tables
+--   - O(1) au lieu d'un EXISTS par evaluation
 DROP POLICY IF EXISTS "helloasso_tokens_admin_all" ON public.helloasso_oauth_tokens;
 CREATE POLICY "helloasso_tokens_admin_all"
   ON public.helloasso_oauth_tokens FOR ALL
-   USING (
-     EXISTS (SELECT 1 FROM public.profiles p WHERE p.id = auth.uid() AND p.role = 'admin')
-   )
-   WITH CHECK (
-     EXISTS (SELECT 1 FROM public.profiles p WHERE p.id = auth.uid() AND p.role = 'admin')
-   );
+   USING      (public.get_my_role() = 'admin')
+   WITH CHECK (public.get_my_role() = 'admin');
 
 DROP POLICY IF EXISTS "helloasso_payments_admin_select" ON public.helloasso_payments;
 CREATE POLICY "helloasso_payments_admin_select"
   ON public.helloasso_payments FOR SELECT
-   USING (
-     EXISTS (SELECT 1 FROM public.profiles p WHERE p.id = auth.uid() AND p.role = 'admin')
-   );
+   USING (public.get_my_role() = 'admin');
 
 DROP POLICY IF EXISTS "helloasso_payments_user_select_own" ON public.helloasso_payments;
 -- Un user peut voir les paiements lies a ses propres inscriptions

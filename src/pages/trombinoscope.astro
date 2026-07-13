@@ -1,7 +1,7 @@
 ---
 import Layout from '@/layouts/Layout.astro';
 import Breadcrumb from '@/components/Breadcrumb.astro';
-import { createSupabaseAdminClient } from '@/lib/supabase';
+import { createSupabaseClient } from '@/lib/supabase';
 import { jsonLd } from '@/lib/jsonLd';
 
 // ── Prerendu (P4 #32) ───────────────────────────────────────────────────────
@@ -37,7 +37,10 @@ const siteUrl = import.meta.env.SITE || 'https://biscuits-ia.com';
 // Declare AVANT photoUrl() : `function` est hoistee, `const` non. Lire cette
 // variable depuis photoUrl() alors qu'elle etait declaree plus bas jetait une
 // ReferenceError (TDZ) des qu'un benevole avait un photo_url relatif.
-const SUPABASE_URL = import.meta.env.SUPABASE_URL ?? '';
+// PUBLIC_ d'abord : cette page est prerendue, et Astro n'inline dans le bundle
+// de build que les variables prefixees PUBLIC_ (cf. resolveSupabaseUrl()).
+const SUPABASE_URL =
+  import.meta.env.PUBLIC_SUPABASE_URL ?? import.meta.env.SUPABASE_URL ?? '';
 
 function photoUrl(url: string | null): string {
   if (!url) return '/illustrations/avatar-placeholder.svg';
@@ -47,11 +50,14 @@ function photoUrl(url: string | null): string {
   return `${SUPABASE_URL}/storage/v1/object/public/benevoles/${url}`;
 }
 
-// Requete executee AU BUILD. Comme /ateliers (meme convention), on laisse
-// echouer bruyamment : sans credentials, ou si la requete casse, le build
-// s'arrete et le deploiement precedent reste en ligne. Degrader en silence
+// Requete executee AU BUILD. Comme /ateliers et /formations (meme convention),
+// on utilise le client standard (cle anon) -- le service_role n'est PAS expose
+// au build Vercel, et la policy `benevoles_public_read` (USING actif = true)
+// couvre la lecture anon. Le `WHERE actif = true` reste en defense en profondeur.
+// On laisse echouer bruyamment : sans credentials, ou si la requete casse, le
+// build s'arrete et le deploiement precedent reste en ligne. Degrader en silence
 // figerait une equipe vide pour tout le deploiement.
-const { data, error } = await createSupabaseAdminClient()
+const { data, error } = await createSupabaseClient(Astro)
   .from('benevoles')
   .select('id, prenom, nom, role, competences, photo_url, bio, lien')
   .eq('actif', true)

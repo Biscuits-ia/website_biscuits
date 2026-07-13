@@ -11,35 +11,35 @@ const prefilledEmail = (Astro.url.searchParams.get('email') ?? '').trim();
 ---
 
 <AuthLayout title="Vérifier le code" description="Entrez le code de vérification pour réinitialiser votre mot de passe.">
-	<div style="min-height:100vh; display:flex; align-items:center; justify-content:center; padding:2rem 1rem;">
-		<div style="width:100%; max-width:400px;">
-			<div style="background:#FDFAF4; border:1.5px solid #DDD0B8; border-radius:16px; padding:36px;">
-				<h1 style="font-size:22px; font-weight:500; color:#2C2014; margin-bottom:6px;">Vérifier le code</h1>
-				<p style="font-size:14px; color:#7A6040; line-height:1.6; margin-bottom:28px;">
+	<div class="auth-shell">
+		<div class="auth-card-wrap">
+			<div class="auth-card">
+				<h1 class="auth-title">Vérifier le code</h1>
+				<p class="auth-lead">
 					Entrez le code reçu par email. Une fois validé, vous pourrez définir un nouveau mot de passe.
 				</p>
 
-				<div style="margin-bottom:14px;">
+				<div class="auth-field-md">
 					<label for="email" class="auth-label">Adresse email</label>
 					<input type="email" id="email" placeholder="vous@exemple.com" autocomplete="email" class="auth-input" value={prefilledEmail} />
 				</div>
 
-				<div style="margin-bottom:24px;">
+				<div class="auth-field-lg">
 					<label for="token" class="auth-label">Code de vérification</label>
 					<input type="text" id="token" placeholder="123456" autocomplete="one-time-code" inputmode="numeric" class="auth-input" maxlength="10" />
 				</div>
 
 				<button id="verify-btn" class="auth-btn-primary" type="button">
 					<span id="btn-text">Vérifier le code</span>
-					<svg id="btn-loader" class="auth-spinner" style="display:none;" width="14" height="14"
+					<svg id="btn-loader" class="auth-spinner auth-hidden" width="14" height="14"
 							 viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
 						<path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
 					</svg>
 				</button>
 
-				<div id="msg" class="auth-msg" style="display:none;" role="alert"></div>
+				<div id="msg" class="auth-msg" hidden role="alert"></div>
 
-				<div style="text-align:center; margin-top:20px;">
+				<div class="auth-back-row">
 					<a href="/mot-de-passe-oublie" class="auth-link-back">← Demander un nouveau code</a>
 				</div>
 			</div>
@@ -48,62 +48,13 @@ const prefilledEmail = (Astro.url.searchParams.get('email') ?? '').trim();
 </AuthLayout>
 
 <style>
-	.auth-label {
-		display: block;
-		font-size: 11px;
-		font-family: 'Geist Mono', monospace;
-		color: #9A7E5A;
-		text-transform: uppercase;
-		letter-spacing: .08em;
-		margin-bottom: 7px;
-	}
-	.auth-input {
-		width: 100%;
-		padding: 11px 14px;
-		border: 1.5px solid #DDD0B8;
-		border-radius: 8px;
-		font-size: 14px;
-		color: #2C2014;
-		background: #F7F2E8;
-		font-family: 'Geist', sans-serif;
-		font-weight: 400;
-		box-sizing: border-box;
-		transition: border-color .15s, background .15s;
-	}
-	.auth-input:focus {
-		outline: none;
-		border-color: oklch(53.958% 0.10717 58.243);
-		background: #FDFAF4;
-		box-shadow: 0 0 0 3px rgba(196, 98, 58, .12);
-	}
-	.auth-input::placeholder { color: #C4B89A; }
-	.auth-btn-primary {
-		width: 100%;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		gap: 8px;
-		padding: 12px 20px;
-		background: oklch(53.958% 0.10717 58.243);
-		color: #FDFAF4;
-		font-size: 14px;
-		font-weight: 500;
-		border-radius: 8px;
-		cursor: pointer;
-		border: none;
-		font-family: 'Geist', sans-serif;
-		transition: background .15s;
-	}
-	.auth-btn-primary:hover   { background: #754819; }
-	.auth-btn-primary:active  { background: #8b5822; }
-	.auth-btn-primary:disabled { opacity:.6; cursor:not-allowed; }
-	.auth-msg { margin-top:14px; padding:10px 14px; border-radius:8px; font-size:13px; text-align:center; line-height:1.5; }
-	.auth-msg.error   { background:#FAEAE4; border:1px solid #E8B9A6; color:#8B3820; }
-	.auth-msg.success { background:#E8F0EA; border:1px solid #B5CDB9; color:#2E5A38; }
-	.auth-link-back { font-size:13px; color:#9A7E5A; transition:color .15s; }
-	.auth-link-back:hover { color:#2C2014; }
-	.auth-spinner { animation:spin .7s linear infinite; }
-	@keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+	/* Deltas propres a ce tunnel (brun oklch 53.958). Le reste vient de auth.css. */
+	.auth-lead { color: #7a6040; }
+	.auth-input:focus { border-color: oklch(53.958% 0.10717 58.243); }
+	.auth-input::placeholder { color: #c4b89a; }
+	.auth-btn-primary { background: oklch(53.958% 0.10717 58.243); }
+	.auth-btn-primary:hover { background: #754819; }
+	.auth-btn-primary:active { background: #8b5822; }
 </style>
 
 <script is:inline nonce={nonce}>

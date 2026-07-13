@@ -1,8 +1,8 @@
 ---
 import DashboardLayout from '../../../layouts/DashboardLayout.astro';
-import { requireAuth } from '../../../lib/auth';
+import { requireAssociation } from '../../../lib/auth';
 
-const result = await requireAuth(Astro);
+const result = await requireAssociation(Astro);
 if (result instanceof Response) return result;
 
 const { user, supabase } = result;

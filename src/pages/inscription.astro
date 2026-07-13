@@ -10,53 +10,53 @@ const nonce = Astro.locals.nonce;
 ---
 
 <AuthLayout title="Inscription" description="Créez votre compte Biscuits IA.">
-  <div style="min-height:100vh; display:flex; align-items:center; justify-content:center; padding:2rem 1rem;">
-    <div style="width:100%; max-width:400px;">
+  <div class="auth-shell">
+    <div class="auth-card-wrap">
 
-      <div style="background:#FDFAF4; border:1.5px solid #DDD0B8; border-radius:16px; padding:36px;">
-        <h1 style="font-size:22px; font-weight:500; color:#2C2014; margin-bottom:6px;">Créer un compte</h1>
-        <p style="font-size:14px; color:#7A6040; line-height:1.6; margin-bottom:28px;">
+      <div class="auth-card">
+        <h1 class="auth-title">Créer un compte</h1>
+        <p class="auth-lead">
           Rejoignez Biscuits IA. Nous vous enverrons un code de vérification par email.
         </p>
 
-        <div style="margin-bottom:18px;">
+        <div class="auth-field">
           <label for="email" class="auth-label">Adresse email</label>
           <input type="email" id="email" placeholder="vous@exemple.com" autocomplete="email" class="auth-input" />
         </div>
 
-        <div style="margin-bottom:10px;">
+        <div class="auth-field-sm">
           <label for="password" class="auth-label">Mot de passe</label>
           <input type="password" id="password" placeholder="••••••••" autocomplete="new-password" class="auth-input" />
         </div>
 
-        <div id="strength-wrap" style="display:none; margin-bottom:18px;" aria-live="polite">
-          <div style="display:flex; gap:4px; margin-bottom:5px;">
-            <div id="s1" class="seg"></div>
-            <div id="s2" class="seg"></div>
-            <div id="s3" class="seg"></div>
-            <div id="s4" class="seg"></div>
+        <div id="strength-wrap" class="auth-field" hidden aria-live="polite">
+          <div class="auth-strength-bar">
+            <div id="s1" class="auth-seg"></div>
+            <div id="s2" class="auth-seg"></div>
+            <div id="s3" class="auth-seg"></div>
+            <div id="s4" class="auth-seg"></div>
           </div>
-          <span id="strength-label" style="font-size:11px; font-family:'Geist Mono',monospace; color:#9A7E5A;"></span>
+          <span id="strength-label" class="auth-strength-label"></span>
         </div>
 
-        <div style="margin-bottom:24px;">
+        <div class="auth-field-lg">
           <label for="confirm" class="auth-label">Confirmer le mot de passe</label>
           <input type="password" id="confirm" placeholder="••••••••" autocomplete="new-password" class="auth-input" />
         </div>
 
         <button id="signup-btn" class="auth-btn-primary" type="button">
           <span id="btn-text">S'inscrire</span>
-          <svg id="btn-loader" class="auth-spinner" style="display:none;" width="14" height="14"
+          <svg id="btn-loader" class="auth-spinner auth-hidden" width="14" height="14"
                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
             <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
           </svg>
         </button>
 
-        <div id="msg" class="auth-msg" style="display:none;" role="alert"></div>
+        <div id="msg" class="auth-msg" hidden role="alert"></div>
 
         <div class="auth-divider"><span>ou</span></div>
 
-        <p style="text-align:center; font-size:13px; color:#9A7E5A;">
+        <p class="auth-foot auth-foot--sm">
           Déjà un compte ?
           <a href="/connexion" class="auth-link-primary">Se connecter →</a>
         </p>
@@ -66,69 +66,17 @@ const nonce = Astro.locals.nonce;
 </AuthLayout>
 
 <style>
-  .auth-label {
-    display: block;
-    font-size: 11px;
-    font-family: 'Geist Mono', monospace;
-    color: #9A7E5A;
-    text-transform: uppercase;
-    letter-spacing: .08em;
-    margin-bottom: 7px;
-  }
-  .auth-input {
-    width: 100%;
-    padding: 11px 14px;
-    border: 1.5px solid #1f1d18;
-    border-radius: 8px;
-    font-size: 14px;
-    color: #2C2014;
-    background: #F7F2E8;
-    font-family: 'Geist', sans-serif;
-    font-weight: 400;
-    box-sizing: border-box;
-    transition: border-color .15s, background .15s;
-  }
-  .auth-input:focus {
-    outline: none;
-    border-color: oklch(56.007% 0.1046 59.407);
-    background: #FDFAF4;
-    box-shadow: 0 0 0 3px rgba(196, 98, 58, .12);
-  }
+  /* Deltas propres a l'inscription. Le reste vient de auth.css. */
+  .auth-lead { color: #7a6040; }
+  .auth-input { border-color: #1f1d18; }
+  .auth-input:focus { border-color: oklch(56.007% 0.1046 59.407); }
   .auth-input::placeholder { color: oklch(55.697% 0.02027 59.139); }
-  .seg { height:3px; flex:1; border-radius:2px; background:#DDD0B8; transition:background .2s; }
-  .auth-btn-primary {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    padding: 12px 20px;
-    background: oklch(56.007% 0.1046 59.407);
-    color: oklch(93.534% 0.02803 62.211);
-    font-size: 14px;
-    font-weight: 600;
-    border-radius: 8px;
-    cursor: pointer;
-    border: none;
-    font-family: 'Geist', sans-serif;
-    transition: background .15s;
-  }
-  .auth-btn-primary:hover   { background: oklch(46.007% 0.1046 59.407); }
-  .auth-btn-primary:active  { background: oklch(36.007% 0.1046 59.407); }
-  .auth-btn-primary:disabled { opacity:.6; cursor:not-allowed; }
-  .auth-msg { margin-top:14px; padding:10px 14px; border-radius:8px; font-size:13px; text-align:center; line-height:1.5; }
-  .auth-msg.error   { background:#FAEAE4; border:1px solid #E8B9A6; color:#8B3820; }
-  .auth-msg.warn    { background:#FEF3E2; border:1px solid #E8CFA6; color:#7A4E0A; }
-  .auth-msg.success { background:#E8F0EA; border:1px solid #B5CDB9; color:#2E5A38; }
-  .auth-divider { display:flex; align-items:center; gap:12px; margin:20px 0; }
-  .auth-divider::before, .auth-divider::after { content:''; flex:1; height:1px; background:#DDD0B8; }
-  .auth-divider span { font-size:12px; color:#B8A88A; }
-  .auth-link-primary { color:#C4623A; font-weight:500; margin-left:4px; transition:opacity .15s; }
-  .auth-link-primary:hover { opacity:.75; }
-  .auth-link-green { color:#3D5A47; font-weight:500; margin-left:4px; transition:opacity .15s; }
-  .auth-link-green:hover { opacity:.75; }
-  .auth-spinner { animation:spin .7s linear infinite; }
-  @keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+  .auth-btn-primary { color: oklch(93.534% 0.02803 62.211); font-weight: 600; }
+  .auth-btn-primary:hover { background: oklch(46.007% 0.1046 59.407); }
+  .auth-btn-primary:active { background: oklch(36.007% 0.1046 59.407); }
+  .auth-foot--sm { font-size: 13px; color: #9a7e5a; }
+  .auth-link-primary { color: #c4623a; font-weight: 500; margin-left: 4px; transition: opacity 0.15s; }
+  .auth-link-primary:hover { opacity: 0.75; }
 </style>
 
 <script is:inline nonce={nonce}>

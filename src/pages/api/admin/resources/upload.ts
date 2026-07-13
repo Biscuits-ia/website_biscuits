@@ -1,6 +1,7 @@
 // src/pages/api/admin/resources/upload.ts
 import type { APIRoute } from 'astro';
-import { createSupabaseClient, createSupabaseAdminClient } from '@/lib/supabase';
+import { createSupabaseAdminClient } from '@/lib/supabase';
+import { requireAdmin } from '@/lib/auth';
 import { getFormString } from '@/types/ateliers';
 
 // `image/svg+xml` a ete RETIRE le 2026-07-08.
@@ -67,22 +68,14 @@ function magicBytesMatch(declaredType: string, header: Uint8Array): boolean {
 
 const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50 Mo
 
-export const POST: APIRoute = async ({ request, cookies, redirect }) => {
+export const POST: APIRoute = async (context) => {
   // ── Auth : admin uniquement ──────────────────────────────────────────────
-  const supabase = createSupabaseClient({ request, cookies });
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return redirect('/connexion');
+  const auth = await requireAdmin(context);
+  if (auth instanceof Response) return auth;
 
+  const { request, redirect } = context;
+  const { user } = auth;
   const adminDb = createSupabaseAdminClient();
-  const { data: profile } = await adminDb
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single();
-
-  if (profile?.role !== 'admin') {
-    return new Response('Accès interdit', { status: 403 });
-  }
 
   // ── Lecture du formulaire ────────────────────────────────────────────────
   const form        = await request.formData();

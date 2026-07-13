@@ -54,6 +54,9 @@ ALTER TABLE public.workshop_sessions
 
 -- ── 3. Mise à jour de la vue workshop_sessions_with_seats ────────────────────
 
+-- IF EXISTS : permet d'appliquer cette migration seule (la vue peut deja
+-- exister via 20251231_0000_initial_schema.sql, ou pas si la migration
+-- initiale n a pas ete appliquee avant).
 DROP VIEW IF EXISTS public.workshop_sessions_with_seats;
 
 CREATE OR REPLACE VIEW public.workshop_sessions_with_seats

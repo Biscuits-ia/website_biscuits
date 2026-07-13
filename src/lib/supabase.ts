@@ -51,6 +51,35 @@ function resolvePublishableKey(): string {
   return key;
 }
 
+/**
+ * URL du projet Supabase.
+ *
+ * PUBLIC_SUPABASE_URL d'abord, SUPABASE_URL en fallback -- pour la meme raison
+ * que resolvePublishableKey() : Astro n'inline dans le bundle que les variables
+ * prefixees PUBLIC_. Les autres n'existent qu'au runtime serveur.
+ *
+ * Sans le prefixe, les pages `prerender = true` (/ateliers, /formations,
+ * /trombinoscope) cassaient au BUILD avec "[supabase] SUPABASE_URL manquant" :
+ * elles s'executent pendant `astro build`, ou seul le bundle est disponible.
+ *
+ * L'URL du projet n'est pas un secret (elle part dans chaque requete du
+ * navigateur), donc l'exposer via PUBLIC_ ne change rien a la surface d'attaque.
+ */
+function resolveSupabaseUrl(): string {
+  const publicUrl = import.meta.env.PUBLIC_SUPABASE_URL;
+  const serverUrl = import.meta.env.SUPABASE_URL;
+  const url =
+    typeof publicUrl === 'string' && publicUrl.length > 0
+      ? publicUrl
+      : typeof serverUrl === 'string' && serverUrl.length > 0
+        ? serverUrl
+        : '';
+  if (!url) {
+    throw new Error('[supabase] URL manquante (PUBLIC_SUPABASE_URL ou SUPABASE_URL).');
+  }
+  return url;
+}
+
 interface AstroCookiesLike {
   get: (name: string) => unknown;
   set: (name: string, value: string, options?: Record<string, unknown>) => void;
@@ -72,8 +101,7 @@ interface AstroContextLike {
  * le client browser SDK ou via l'API Admin (service_role).
  */
 export function createSupabaseClient(context: AstroContextLike) {
-  const url = import.meta.env.SUPABASE_URL;
-  if (!url) throw new Error('[supabase] SUPABASE_URL manquant.');
+  const url = resolveSupabaseUrl();
 
   const cookieMethods: CookieMethodsServer = {
     // 'tokens-only' : on ne stocke QUE les tokens (access + refresh), pas

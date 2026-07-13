@@ -47,6 +47,7 @@ test_html.txt
 playwright-report/
 test-results/
 playwright/.cache/
+.playwright-mcp/
 
 # Assistants dev / IDE
 .claude/

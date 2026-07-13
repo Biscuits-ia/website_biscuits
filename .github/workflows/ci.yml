@@ -80,11 +80,11 @@ jobs:
           fi
 
   # ── Audit de contraste axe-core (cf. audit.md P2 #38) ──────────────────────
-  # Les gabarits statiques sont servis par le build (dist/client/). On lance
-  # `astro preview` au lieu de `astro dev` pour deux raisons : (a) le CSS est
-  # minifié comme en prod, donc les couleurs COMPUTED sont celles que les
-  # vrais utilisateurs voient ; (b) l'overlay DevTools d'astro dev n'est pas
-  # present, donc pas de faux positifs a11y.
+  # `astro preview` ne fonctionne pas avec l'adaptateur Vercel (message :
+  # "The @astrojs/vercel adapter does not support the preview command."). On
+  # sert donc le build statique (dist/client/) via un mini serveur Node lance
+  # en arriere-plan. Le spec s'appuie sur PLAYWRIGHT_BASE_URL pour pointer
+  # sur ce serveur.
   a11y-contrast:
     name: a11y contrast (axe-core)
     runs-on: ubuntu-latest
@@ -98,14 +98,40 @@ jobs:
           cache: 'npm'
       - run: npm ci
       - run: npx playwright install --with-deps chromium
-      - name: Build (pour astro preview)
+      - name: Build (pour servir dist/client/)
         run: npm run build
         env:
           SITE_URL: https://biscuits-ia.com
           PUBLIC_SITE_URL: https://biscuits-ia.com
+      - name: Serveur statique (dist/client/)
+        # Script minimal : sert les fichiers, resout les dossiers en
+        # index.html, fallback .html. Pas d'install : Node est deja la.
+        run: |
+          cat > /tmp/serve.mjs << 'EOF'
+          import { createServer } from 'http';
+          import { readFile, stat } from 'fs/promises';
+          import { join, extname } from 'path';
+          const ROOT = './dist/client';
+          const TYPES = { '.html': 'text/html', '.js': 'application/javascript', '.css': 'text/css', '.svg': 'image/svg+xml', '.webp': 'image/webp', '.woff2': 'font/woff2', '.json': 'application/json', '.xml': 'application/xml' };
+          createServer(async (req, res) => {
+            const p = req.url.split('?')[0];
+            try {
+              const file = p === '/' ? join(ROOT, 'index.html') : join(ROOT, p);
+              const s = await stat(file);
+              const target = s.isDirectory() ? join(file, 'index.html') : file;
+              const data = await readFile(target);
+              res.writeHead(200, { 'content-type': TYPES[extname(target)] || 'application/octet-stream' });
+              res.end(data);
+            } catch {
+              try { const d = await readFile(join(ROOT, p + '.html')); res.writeHead(200, { 'content-type': 'text/html' }); res.end(d); }
+              catch { res.writeHead(404); res.end('NF'); }
+            }
+          }).listen(4321, () => console.log('serveur 4321'));
+          EOF
+          (node /tmp/serve.mjs &) && sleep 2
       - name: Audit axe-core
         env:
-          # astro preview sert le build statique sur 4321 par defaut.
+          CI: 'true'   # spec : mode "barometre", ne fail pas (cf. entete du spec)
           PLAYWRIGHT_BASE_URL: http://localhost:4321
         run: npx playwright test tests/e2e/a11y-contrast.spec.ts
 

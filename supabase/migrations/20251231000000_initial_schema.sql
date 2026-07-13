@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS public.profiles (
   email           text NOT NULL,
   full_name       text,
   role            text NOT NULL DEFAULT 'user'
-                    CHECK (role IN ('user', 'moderator', 'admin')),
+                    CHECK (role IN ('user', 'moderator', 'admin', 'benevole', 'association')),
   reports_count   integer DEFAULT 0,
   last_sign_in_at timestamptz,
   created_at      timestamptz NOT NULL DEFAULT now()
@@ -209,12 +209,39 @@ CREATE TABLE IF NOT EXISTS public.volunteer_appointments (
   user_id         uuid REFERENCES auth.users(id) ON DELETE CASCADE,
   candidate_email text,
   status          text NOT NULL DEFAULT 'pending'
-                    CHECK (status IN ('pending', 'confirmed', 'cancelled')),
+                    CHECK (status IN ('pending', 'confirmed', 'cancelled', 'expired')),
   notes           text,
   created_at      timestamptz NOT NULL DEFAULT now(),
   updated_at      timestamptz NOT NULL DEFAULT now()
 );
 COMMENT ON TABLE public.volunteer_appointments IS 'Réservations de rendez-vous — utilisateurs et candidats';
+
+-- Colonne expires_at : politique de rétention (30j par défaut, mise via trigger).
+-- Index fonctionnel pour le worker pg_cron `expire_pending_appointments`.
+ALTER TABLE public.volunteer_appointments
+  ADD COLUMN IF NOT EXISTS expires_at timestamptz;
+
+CREATE INDEX IF NOT EXISTS idx_volunteer_appt_expires_at
+  ON public.volunteer_appointments (expires_at)
+  WHERE status = 'pending' AND expires_at IS NOT NULL;
+
+-- Trigger : à la création d'un RDV, pose expires_at à now() + 30 jours.
+CREATE OR REPLACE FUNCTION public.set_appointment_expiry()
+RETURNS trigger
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  IF NEW.expires_at IS NULL THEN
+    NEW.expires_at := now() + INTERVAL '30 days';
+  END IF;
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS trg_volunteer_appt_expiry ON public.volunteer_appointments;
+CREATE TRIGGER trg_volunteer_appt_expiry
+  BEFORE INSERT ON public.volunteer_appointments
+  FOR EACH ROW EXECUTE FUNCTION public.set_appointment_expiry();
 
 -- ── Index ───────────────────────────────────────────────────────────────────
 CREATE INDEX IF NOT EXISTS idx_profiles_role            ON public.profiles (role);
@@ -245,17 +272,47 @@ CREATE INDEX IF NOT EXISTS idx_volunteer_appt_email     ON public.volunteer_appo
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- 2. Fonction helper : get_my_role()
---    Retourne le rôle de l'utilisateur courant depuis la table profiles.
---    Utilisée dans les RLS policies.
+--    Retourne le role de l'utilisateur courant. Utilisee par les RLS policies.
+--
+--    LIT LE JWT EN PRIORITE, pas la table profiles. C'est essentiel : de
+--    nombreuses policies (sur benevoles, project_members, projects...) doivent
+--    connaitre le role de l'appelant. Si elles le lisaient via
+--    `EXISTS (SELECT 1 FROM profiles ...)`, Postgres reevaluerait les policies
+--    de profiles -- lesquelles interrogent project_members, qui interroge
+--    profiles... => "infinite recursion detected in policy for relation
+--    profiles", et plus aucune lecture possible.
+--
+--    auth.jwt() est une lecture O(1) en memoire : aucune table traversee, donc
+--    aucun cycle possible. Le fallback sur profiles ne sert qu'aux contextes
+--    sans JWT (dev, tests, tokens emis avant la synchro).
+--
+--    La synchro profiles.role -> auth.users.raw_app_meta_data.role est assuree
+--    par le trigger sync_profile_role_to_jwt (20260709200000).
 -- ─────────────────────────────────────────────────────────────────────────────
 CREATE OR REPLACE FUNCTION public.get_my_role()
 RETURNS text
-LANGUAGE sql
+LANGUAGE plpgsql
 STABLE
 SECURITY DEFINER
 SET search_path = public
 AS $$
-  SELECT role FROM public.profiles WHERE id = auth.uid();
+DECLARE
+  v_jwt_role text;
+  v_db_role  text;
+BEGIN
+  BEGIN
+    v_jwt_role := auth.jwt() -> 'app_metadata' ->> 'role';
+  EXCEPTION WHEN undefined_function OR others THEN
+    v_jwt_role := NULL;
+  END;
+
+  IF v_jwt_role IS NOT NULL AND v_jwt_role <> '' THEN
+    RETURN v_jwt_role;
+  END IF;
+
+  SELECT role INTO v_db_role FROM public.profiles WHERE id = auth.uid();
+  RETURN v_db_role;
+END;
 $$;
 
 -- ─────────────────────────────────────────────────────────────────────────────
@@ -899,6 +956,75 @@ CREATE POLICY "storage_resources_admin_select"
     bucket_id = 'resources'
     AND public.get_my_role() = 'admin'
   );
+
+-- ─────────────────────────────────────────────────────────────────────────────
+-- 7.5 email_outbox — file d'attente d'emails transactionnels
+--     Table nécessaire au worker pg_cron (cf. 20260624_pg_cron_email_outbox.sql).
+--     Le code applicatif (src/lib/email-queue.ts) écrit via createSupabaseAdminClient
+--     (service_role) qui bypasse la RLS, donc on ne GRANT INSERT/UPDATE
+--     qu'au service_role. Les admins lisent via SELECT.
+-- ─────────────────────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS public.email_outbox (
+  id              uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
+  to_email        text        NOT NULL,
+  to_name         text,
+  from_email      text        NOT NULL,
+  from_name       text,
+  reply_to_email  text,
+  subject         text        NOT NULL,
+  text_body       text,
+  html_body       text,
+  headers         jsonb       NOT NULL DEFAULT '{}',
+  status          text        NOT NULL DEFAULT 'pending'
+                    CHECK (status IN ('pending', 'sending', 'sent', 'failed', 'dead')),
+  attempts        integer     NOT NULL DEFAULT 0,
+  max_attempts    integer     NOT NULL DEFAULT 8,
+  last_error      text,
+  next_attempt_at timestamptz NOT NULL DEFAULT now(),
+  sent_at         timestamptz,
+  metadata        jsonb       NOT NULL DEFAULT '{}',
+  created_at      timestamptz NOT NULL DEFAULT now(),
+  updated_at      timestamptz NOT NULL DEFAULT now()
+);
+COMMENT ON TABLE public.email_outbox IS
+  'File d attente d emails transactionnels. Worker pg_cron = /api/cron/email-outbox.';
+
+CREATE INDEX IF NOT EXISTS idx_email_outbox_pending
+  ON public.email_outbox (next_attempt_at)
+  WHERE status IN ('pending', 'failed');
+
+CREATE INDEX IF NOT EXISTS idx_email_outbox_status
+  ON public.email_outbox (status, created_at DESC);
+
+-- Helper updated_at unique pour toutes les tables qui en ont besoin.
+-- Idempotent : CREATE OR REPLACE = pas de doublon si un autre fichier l'a
+-- deja declare avec le meme corps.
+CREATE OR REPLACE FUNCTION public.set_updated_at()
+RETURNS trigger
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  NEW.updated_at := now();
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS trg_email_outbox_updated_at ON public.email_outbox;
+CREATE TRIGGER trg_email_outbox_updated_at
+  BEFORE UPDATE ON public.email_outbox
+  FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+
+ALTER TABLE public.email_outbox ENABLE ROW LEVEL SECURITY;
+
+-- Lecture admin uniquement (les users ne lisent jamais directement).
+DROP POLICY IF EXISTS "email_outbox_admin_select" ON public.email_outbox;
+CREATE POLICY "email_outbox_admin_select"
+  ON public.email_outbox FOR SELECT
+  USING (public.get_my_role() = 'admin');
+
+-- Pas de policy INSERT/UPDATE/DELETE pour authenticated : tout passe par
+-- service_role (createSupabaseAdminClient dans src/lib/email-queue.ts et
+-- src/pages/api/cron/email-outbox.ts).
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- 8. Grants (sécurité : accès minimal pour le rôle anon/authenticated)

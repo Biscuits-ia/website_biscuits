@@ -1,11 +1,14 @@
 ---
 import BaseLayout from '@/layouts/Layout.astro';
-import { createSupabaseAdminClient } from '@/lib/supabase';
+import { createSupabaseClient } from '@/lib/supabase';
 import Breadcrumb from '@/components/Breadcrumb.astro';
 
 export const prerender = true;
 
-const { data: workshops, error } = await createSupabaseAdminClient(Astro)
+// Page statique (prerender = true) : on utilise le client standard (clé anon).
+// Le service_role n'est PAS exposé au build Vercel, et la RLS sur workshops
+// autorise de toute façon la lecture anon des lignes publiées.
+const { data: workshops, error } = await createSupabaseClient(Astro)
   .from('workshops')
   .select('id, title, description, category, level, price_cents, price_label, is_free')
   // RLS policies sur workshops permettent la lecture anon des lignes publies.

@@ -72,25 +72,27 @@ CREATE POLICY "benevoles_public_read"
   FOR SELECT
   USING (actif = true);
 
+-- Grant au role anon pour la lecture publique.
+-- Sans ce GRANT, la policy ci-dessus ne suffit pas : Postgres refuse
+-- l'acces avant meme l'evaluation RLS. service_role bypasse les GRANTs,
+-- d'ou le fait que ce ne plantait pas avant le passage a prerender = true
+-- de la page /trombinoscope (cf. commit P4 #32).
+GRANT SELECT ON public.benevoles TO anon, authenticated;
+
 -- Écriture réservée aux administrateurs authentifiés
+--
+-- get_my_role() plutot qu'un EXISTS sur profiles (corrige le 2026-07-13) :
+-- une lecture de benevoles evaluait cette policy, qui traversait profiles,
+-- dont les policies bouclaient sur project_members et revenaient a profiles.
+-- Resultat : "infinite recursion detected in policy for relation profiles"
+-- des le prerendu de /trombinoscope. get_my_role() est SECURITY DEFINER et
+-- lit le JWT : aucune traversee de table, donc aucun cycle possible.
 DROP POLICY IF EXISTS "benevoles_admin_all" ON public.benevoles;
 CREATE POLICY "benevoles_admin_all"
   ON public.benevoles
   FOR ALL
-  USING (
-    EXISTS (
-      SELECT 1 FROM public.profiles
-      WHERE id = auth.uid()
-        AND role = 'admin'
-    )
-  )
-  WITH CHECK (
-    EXISTS (
-      SELECT 1 FROM public.profiles
-      WHERE id = auth.uid()
-        AND role = 'admin'
-    )
-  );
+  USING      (public.get_my_role() = 'admin')
+  WITH CHECK (public.get_my_role() = 'admin');
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- 5. Storage bucket pour les photos de bénévoles
@@ -153,20 +155,18 @@ CREATE POLICY "benevoles_photos_admin_delete"
   );
 
 -- ─────────────────────────────────────────────────────────────────────────────
--- 6. Données de démonstration (à supprimer en production)
+-- 6. Pas de donnees de demonstration
 -- ─────────────────────────────────────────────────────────────────────────────
-INSERT INTO public.benevoles (prenom, nom, role, competences, bio, ordre) VALUES
-  -- Bureau
-  ('Marie',   'Dupont',    'membre_bureau', ARRAY['Direction', 'Gestion de projet', 'Communication'],       'Présidente de Biscuits IA, militante pour un numérique inclusif.', 1),
-  ('Thomas',  'Bernard',   'membre_bureau', ARRAY['Finance', 'Comptabilité', 'Droit associatif'],           'Trésorier, expert en gestion associative.', 2),
-  ('Leïla',   'Moussaoui', 'membre_bureau', ARRAY['Ressources humaines', 'Formation', 'Communication'],    'Secrétaire générale, coordinatrice des bénévoles.', 3),
-  -- CA
-  ('Julien',  'Martin',    'membre_ca',     ARRAY['IA', 'Python', 'Data science'],                          'Développeur IA bénévole depuis la création de l''asso.', 1),
-  ('Amina',   'Traoré',    'membre_ca',     ARRAY['UX Design', 'Accessibilité', 'Figma'],                   'Designer engagée pour l''inclusion numérique.', 2),
-  ('Pierre',  'Leblanc',   'membre_ca',     ARRAY['Droit', 'RGPD', 'Éthique du numérique'],                 'Juriste spécialisé en protection des données.', 3),
-  -- Bénévoles
-  ('Fatima',  'Osei',      'benevole',      ARRAY['Animation d''ateliers', 'Pédagogie', 'Médiation'],        'Animatrice d''ateliers en médiathèque.', 1),
-  ('Nicolas', 'Roux',      'benevole',      ARRAY['Développement web', 'Astro', 'TypeScript'],              'Développeur web qui aide à maintenir le site.', 2),
-  ('Sarah',   'Kim',       'benevole',      ARRAY['Rédaction', 'SEO', 'Réseaux sociaux'],                   'Rédactrice du blog et des ressources.', 3),
-  ('Karim',   'Benali',    'benevole',      ARRAY['Support technique', 'Linux', 'Cybersécurité'],           'Expert en sécurité informatique.', 4)
-ON CONFLICT DO NOTHING;
+-- Ce fichier inserait 10 benevoles fictifs (Marie Dupont, Thomas Bernard...),
+-- commentes « a supprimer en production ». Deux raisons de les retirer :
+--
+--   1. L'instance ciblee EST la production : ces noms se seraient affiches
+--      publiquement sur /trombinoscope.
+--   2. Le `ON CONFLICT DO NOTHING` n'avait aucune cible et `benevoles.id` est
+--      un gen_random_uuid() : sans contrainte unique sur laquelle s'appuyer,
+--      la clause ne se declenchait jamais et chaque rejeu de la migration
+--      REINSERAIT les 10 lignes en double.
+--
+-- Les vrais benevoles s'ajoutent via le dashboard admin (/dashboard/admin/
+-- trombinoscope). Tant que la table est vide, la page publique affiche son
+-- empty-state (« L'equipe sera presentee tres prochainement »).

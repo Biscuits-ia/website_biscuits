@@ -140,17 +140,10 @@ CREATE INDEX IF NOT EXISTS idx_announcements_pinned
 -- ── projects ────────────────────────────────────────────────────────────────
 ALTER TABLE public.projects ENABLE ROW LEVEL SECURITY;
 
--- Lecture : bénévoles et admins
-DROP POLICY IF EXISTS "projects_benevole_read" ON public.projects;
-CREATE POLICY "projects_benevole_read"
-  ON public.projects FOR SELECT
-  USING (
-    EXISTS (
-      SELECT 1 FROM public.profiles
-      WHERE id = auth.uid()
-        AND role IN ('benevole', 'admin', 'moderator')
-    )
-  );
+-- Note : la policy `projects_benevole_read` est definie dans
+-- `20260101_1800_fix_projects_rls_listing.sql` (version plus stricte :
+-- restreint la lecture aux membres du projet, leader, createur, staff).
+-- On ne la declare pas ici pour eviter la double definition.
 
 -- Insertion : bénévoles et admins
 DROP POLICY IF EXISTS "projects_benevole_insert" ON public.projects;
@@ -190,32 +183,29 @@ CREATE POLICY "projects_admin_delete"
 -- ── project_members ─────────────────────────────────────────────────────────
 ALTER TABLE public.project_members ENABLE ROW LEVEL SECURITY;
 
+-- CYCLE RLS (corrige le 2026-07-13) : ces deux policies faisaient
+--   EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() ...)
+-- alors que profiles.profiles_project_member_read fait, elle, un
+--   EXISTS (SELECT 1 FROM project_members ...)
+-- => profiles -> project_members -> profiles : recursion infinie.
+--    ERROR: infinite recursion detected in policy for relation "profiles"
+-- Toute lecture de profiles echouait, y compris en cascade depuis benevoles,
+-- ce qui cassait le prerendu de /trombinoscope au build.
+--
+-- Remede : get_my_role() (SECURITY DEFINER, lit le role dans le JWT) ne
+-- retouche jamais la table depuis l'evaluation d'une policy. Le cycle tombe.
 DROP POLICY IF EXISTS "project_members_benevole_read" ON public.project_members;
 CREATE POLICY "project_members_benevole_read"
   ON public.project_members FOR SELECT
   USING (
-    EXISTS (
-      SELECT 1 FROM public.profiles
-      WHERE id = auth.uid()
-        AND role IN ('benevole', 'admin', 'moderator')
-    )
+    public.get_my_role() IN ('benevole', 'admin', 'moderator')
   );
 
 DROP POLICY IF EXISTS "project_members_admin_write" ON public.project_members;
 CREATE POLICY "project_members_admin_write"
   ON public.project_members FOR ALL
-  USING (
-    EXISTS (
-      SELECT 1 FROM public.profiles
-      WHERE id = auth.uid() AND role IN ('admin', 'moderator')
-    )
-  )
-  WITH CHECK (
-    EXISTS (
-      SELECT 1 FROM public.profiles
-      WHERE id = auth.uid() AND role IN ('admin', 'moderator')
-    )
-  );
+  USING      (public.get_my_role() IN ('admin', 'moderator'))
+  WITH CHECK (public.get_my_role() IN ('admin', 'moderator'));
 
 -- ── project_tasks ───────────────────────────────────────────────────────────
 ALTER TABLE public.project_tasks ENABLE ROW LEVEL SECURITY;

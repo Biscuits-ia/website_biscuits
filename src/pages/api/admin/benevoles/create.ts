@@ -1,23 +1,16 @@
 // src/pages/api/admin/benevoles/create.ts
 import type { APIRoute } from 'astro';
-import { createSupabaseClient, createSupabaseAdminClient } from '@/lib/supabase';
+import { createSupabaseAdminClient } from '@/lib/supabase';
+import { requireAdmin } from '@/lib/auth';
 
 const ALLOWED_MIME = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/avif']);
 const MAX_PHOTO_SIZE = 2 * 1024 * 1024; // 2 Mo
 
-async function verifyAdmin(request: Request, cookies: any): Promise<string | null> {
-  const supabase = createSupabaseClient({ request, cookies });
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return null;
-  const adminDb = createSupabaseAdminClient();
-  const { data: profile } = await adminDb.from('profiles').select('role').eq('id', user.id).single();
-  return profile?.role === 'admin' ? user.id : null;
-}
+export const POST: APIRoute = async (context) => {
+  const auth = await requireAdmin(context);
+  if (auth instanceof Response) return auth;
 
-export const POST: APIRoute = async ({ request, cookies, redirect }) => {
-  const userId = await verifyAdmin(request, cookies);
-  if (!userId) return redirect('/connexion');
-
+  const { request, redirect } = context;
   const form = await request.formData();
 
   const prenom      = (form.get('prenom') as string | null)?.trim() ?? '';

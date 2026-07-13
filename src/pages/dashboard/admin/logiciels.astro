@@ -20,10 +20,10 @@ const { data: softwares } = await supabase
 
 <DashboardLayout title="Logiciels" activePage="logiciels" userName={userName} authResult={result}>
 
-  <div style="margin-bottom: 28px; display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap;">
+  <div class="page-head-row">
     <div>
       <h1>Gestion des logiciels</h1>
-      <p style="margin-top: 6px;">{softwares?.length ?? 0} logiciel{(softwares?.length ?? 0) > 1 ? 's' : ''} au total.</p>
+      <p class="page-head-sub">{softwares?.length ?? 0} logiciel{(softwares?.length ?? 0) > 1 ? 's' : ''} au total.</p>
     </div>
     <button class="btn btn-primary" data-modal-open="modal-logiciel">
       + Ajouter un logiciel
@@ -34,7 +34,7 @@ const { data: softwares } = await supabase
   {error  && <div class="flash flash-err" role="alert">âœ— {decodeURIComponent(error)}</div>}
 
   <!-- Tableau -->
-  <div class="card" style="padding: 0; overflow: hidden;">
+  <div class="card card-flush">
     <div class="table-wrap">
       <table>
         <thead>
@@ -50,9 +50,9 @@ const { data: softwares } = await supabase
           {softwares && softwares.map((sw: any) => (
             <tr>
               <td>
-                <div style="font-weight: 700;">{sw.name}</div>
+                <div class="cell-strong">{sw.name}</div>
                 {sw.description && (
-                  <div style="font-size: var(--text-xs); color: var(--text-muted); margin-top: 2px; max-width: 300px; white-space: normal;">
+                  <div class="cell-desc">
                     {sw.description.slice(0, 80)}{sw.description.length > 80 ? 'â€¦' : ''}
                   </div>
                 )}
@@ -67,16 +67,15 @@ const { data: softwares } = await supabase
                 <form method="POST" action="/api/admin/logiciels/toggle-visibilite">
                   <input type="hidden" name="software_id" value={sw.id} />
                   <input type="hidden" name="is_visible"  value={String(!sw.is_visible)} />
-                  <button type="submit" class={`badge ${sw.is_visible ? 'badge-ok' : 'badge-err'}`} style="cursor: pointer; border: none; background: none; padding: 3px 10px;">
+                  <button type="submit" class={`badge badge-btn ${sw.is_visible ? 'badge-ok' : 'badge-err'}`}>
                     {sw.is_visible ? 'Visible' : 'Masqué'}
                   </button>
                 </form>
               </td>
               <td>
-                <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                <div class="table-actions">
                   <button
-                    class="btn btn-ghost"
-                    style="font-size: 0.75rem; padding: 5px 10px; min-height: unset;"
+                    class="btn btn-ghost btn-table"
                     data-modal-open={`modal-edit-${sw.id}`}
                   >
                     Modifier
@@ -85,8 +84,7 @@ const { data: softwares } = await supabase
                     <input type="hidden" name="software_id" value={sw.id} />
                     <button
                       type="submit"
-                      class="btn btn-danger"
-                      style="font-size: 0.75rem; padding: 5px 10px; min-height: unset;"
+                      class="btn btn-danger btn-table"
                       data-confirm="'Supprimer ce logiciel ?'"
                     >
                       âœ•
@@ -108,7 +106,7 @@ const { data: softwares } = await supabase
           <span class="card-title">Modifier â€” {sw.name}</span>
           <button class="btn btn-ghost" data-modal-close={`modal-edit-${sw.id}`}>âœ•</button>
         </div>
-        <form method="POST" action="/api/admin/logiciels/modifier" style="display: flex; flex-direction: column; gap: 14px;">
+        <form method="POST" action="/api/admin/logiciels/modifier" class="modal-form">
           <input type="hidden" name="software_id" value={sw.id} />
           <div class="field">
             <label>Nom *</label>
@@ -116,7 +114,7 @@ const { data: softwares } = await supabase
           </div>
           <div class="field">
             <label>Description</label>
-            <textarea name="description" rows="3" style="resize: vertical;">{sw.description ?? ''}</textarea>
+            <textarea name="description" rows="3" class="resize-v">{sw.description ?? ''}</textarea>
           </div>
           <div class="field">
             <label>Catégorie</label>
@@ -134,17 +132,17 @@ const { data: softwares } = await supabase
             <label>Site web</label>
             <input type="url" name="website_url" value={sw.website_url ?? ''} placeholder="https://â€¦" />
           </div>
-          <div style="display: flex; gap: 20px;">
-            <label style="display: flex; align-items: center; gap: 8px; font-size: var(--text-sm); cursor: pointer;">
+          <div class="check-row">
+            <label class="check-label">
               <input type="checkbox" name="is_free"    value="true" checked={sw.is_free} />
               Gratuit
             </label>
-            <label style="display: flex; align-items: center; gap: 8px; font-size: var(--text-sm); cursor: pointer;">
+            <label class="check-label">
               <input type="checkbox" name="is_visible" value="true" checked={sw.is_visible} />
               Visible
             </label>
           </div>
-          <div style="display: flex; gap: 10px; margin-top: 4px;">
+          <div class="modal-actions">
             <button type="submit" class="btn btn-primary">Sauvegarder</button>
             <button type="button" class="btn btn-ghost" data-modal-close={`modal-edit-${sw.id}`}>Annuler</button>
           </div>
@@ -160,14 +158,14 @@ const { data: softwares } = await supabase
         <span class="card-title">Nouveau logiciel</span>
         <button class="btn btn-ghost" data-modal-close="modal-logiciel">âœ•</button>
       </div>
-      <form method="POST" action="/api/admin/logiciels/creer" style="display: flex; flex-direction: column; gap: 14px;">
+      <form method="POST" action="/api/admin/logiciels/creer" class="modal-form">
         <div class="field">
           <label>Nom *</label>
           <input type="text" name="name" required placeholder="LibreOffice" />
         </div>
         <div class="field">
           <label>Description</label>
-          <textarea name="description" rows="3" style="resize: vertical;" placeholder="Courte descriptionâ€¦"></textarea>
+          <textarea name="description" rows="3" class="resize-v" placeholder="Courte descriptionâ€¦"></textarea>
         </div>
         <div class="field">
           <label>Catégorie</label>
@@ -185,15 +183,15 @@ const { data: softwares } = await supabase
           <label>Site web</label>
           <input type="url" name="website_url" placeholder="https://â€¦" />
         </div>
-        <div style="display: flex; gap: 20px;">
-          <label style="display: flex; align-items: center; gap: 8px; font-size: var(--text-sm); cursor: pointer;">
+        <div class="check-row">
+          <label class="check-label">
             <input type="checkbox" name="is_free" value="true" checked /> Gratuit
           </label>
-          <label style="display: flex; align-items: center; gap: 8px; font-size: var(--text-sm); cursor: pointer;">
+          <label class="check-label">
             <input type="checkbox" name="is_visible" value="true" checked /> Visible immédiatement
           </label>
         </div>
-        <div style="display: flex; gap: 10px; margin-top: 4px;">
+        <div class="modal-actions">
           <button type="submit" class="btn btn-primary">Ajouter le logiciel</button>
           <button type="button" class="btn btn-ghost" data-modal-close="modal-logiciel">Annuler</button>
         </div>

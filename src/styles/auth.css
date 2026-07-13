@@ -1,0 +1,279 @@
+/* src/styles/auth.css
+ *
+ * Styles partages des pages du tunnel d'authentification :
+ *   connexion, inscription, mot-de-passe-oublie, reinitialisation-mot-de-passe,
+ *   verifier-code-inscription, verifier-code-reinitialisation.
+ *
+ * POURQUOI CE FICHIER (audit 2026-07-09, S4 / migration CSP)
+ * ----------------------------------------------------------
+ * 1. Ces 6 pages dupliquaient chacune le meme bloc `<style> .auth-* { ... }`.
+ * 2. Elles portaient ~13 attributs `style="..."` inline par page. Or, des que
+ *    `security.csp` sera actif, un hash sur `style-src` fait ignorer
+ *    'unsafe-inline' au navigateur (spec CSP3) : tout attribut `style=""`
+ *    casse. On remonte donc l'inline vers des classes ici.
+ *
+ * Importe une seule fois par AuthLayout.astro. Non scopee (globale) : les
+ * classes sont prefixees `auth-` pour eviter toute collision.
+ *
+ * Convention pour masquer/afficher : utiliser l'attribut HTML `hidden`, pas
+ * `style="display:none"`. Le JS bascule ensuite via `el.style.display = ...`
+ * (mutation CSSOM, NON soumise a la CSP).
+ */
+
+/* ── Shell de page (centrage vertical) ─────────────────────────────────────── */
+.auth-shell {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+}
+.auth-card-wrap {
+  width: 100%;
+  max-width: 400px;
+}
+.auth-card {
+  background: #fdfaf4;
+  border: 1.5px solid #ddd0b8;
+  border-radius: 16px;
+  padding: 36px;
+}
+
+/* ── Titres / textes d'introduction ────────────────────────────────────────── */
+.auth-title {
+  font-size: 22px;
+  font-weight: 500;
+  color: #2c2014;
+  margin-bottom: 6px;
+}
+.auth-lead {
+  font-size: 14px;
+  color: #271e13;
+  line-height: 1.6;
+  margin-bottom: 28px;
+}
+.auth-foot {
+  text-align: center;
+  font-size: 16px;
+  color: #514330;
+}
+
+/* ── Champs de formulaire ──────────────────────────────────────────────────── */
+.auth-field {
+  margin-bottom: 18px;
+}
+/* Variantes d'espacement (les pages du tunnel utilisent 10/14/18/24). */
+.auth-field-sm {
+  margin-bottom: 10px;
+}
+.auth-field-md {
+  margin-bottom: 14px;
+}
+.auth-field-lg {
+  margin-bottom: 24px;
+}
+.auth-field-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 7px;
+}
+.auth-label {
+  display: block;
+  font-size: 11px;
+  font-family: 'Geist Mono', monospace;
+  color: #9a7e5a;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 7px;
+}
+/* Variante en ligne (label + lien "Oublié ?" sur la meme ligne) : pas de marge. */
+.auth-label.is-inline {
+  margin-bottom: 0;
+}
+.auth-input {
+  width: 100%;
+  padding: 11px 14px;
+  border: 1.5px solid #ddd0b8;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #2c2014;
+  background: #f7f2e8;
+  font-family: 'Geist', sans-serif;
+  font-weight: 400;
+  transition: border-color 0.15s, background 0.15s;
+  box-sizing: border-box;
+}
+.auth-input:focus {
+  outline: none;
+  border-color: #c4623a;
+  background: #fdfaf4;
+  box-shadow: 0 0 0 3px rgba(196, 98, 58, 0.12);
+}
+.auth-input::placeholder {
+  color: #9a8a76;
+}
+.auth-checkbox {
+  width: 15px;
+  height: 15px;
+  accent-color: #5a483d;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.auth-remember {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 24px;
+}
+
+/* ── Bouton principal ──────────────────────────────────────────────────────── */
+.auth-btn-primary {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 20px;
+  background: oklch(56.007% 0.1046 59.407);
+  color: #fdfaf4;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 8px;
+  cursor: pointer;
+  border: none;
+  font-family: 'Geist', sans-serif;
+  transition: background 0.15s;
+}
+.auth-btn-primary:hover {
+  background: oklch(46% 0.1046 59.407);
+}
+.auth-btn-primary:active {
+  background: oklch(40% 0.1046 59.407);
+}
+.auth-btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ── Messages (erreur / avertissement / succes) ────────────────────────────── */
+.auth-msg {
+  margin-top: 14px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  text-align: center;
+  line-height: 1.5;
+}
+.auth-msg.error {
+  background: #faeae4;
+  border: 1px solid #e8b9a6;
+  color: #8b3820;
+}
+.auth-msg.warn {
+  background: #fef3e2;
+  border: 1px solid #e8cfa6;
+  color: #7a4e0a;
+}
+.auth-msg.success {
+  background: #e8f0ea;
+  border: 1px solid #b5cdb9;
+  color: #2e5a38;
+}
+
+/* ── Separateur "ou" ───────────────────────────────────────────────────────── */
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 20px 0;
+}
+.auth-divider::before,
+.auth-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: #ddd0b8;
+}
+.auth-divider span {
+  font-size: 12px;
+  color: #b8a88a;
+}
+
+/* ── Liens ─────────────────────────────────────────────────────────────────── */
+.auth-link-secondary {
+  font-size: 12px;
+  color: oklch(67.428% 0.139 70.073);
+  transition: opacity 0.15s;
+}
+.auth-link-secondary:hover {
+  opacity: 0.75;
+}
+.auth-link-green {
+  display: block;
+  margin-top: 0.8rem;
+  color: #e3e3e3;
+  font-weight: 500;
+  background-color: oklch(56.007% 0.1046 59.407);
+  padding: 10px 16px;
+  font-size: 18px;
+  border-radius: 8px;
+  transition: opacity 0.15s;
+  text-align: center;
+}
+.auth-link-green:hover {
+  opacity: 0.75;
+}
+/* Lien "retour" (← Retour a la connexion). Certaines pages en agrandissent la
+ * taille via un override scope (ex. reinitialisation : 15px). */
+.auth-back-row {
+  text-align: center;
+  margin-top: 20px;
+}
+.auth-link-back {
+  font-size: 13px;
+  color: #9a7e5a;
+  transition: color 0.15s;
+}
+.auth-link-back:hover {
+  color: #2c2014;
+}
+
+/* ── Indicateur de force du mot de passe (inscription, reinitialisation) ────── */
+.auth-strength-bar {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 5px;
+}
+.auth-seg {
+  height: 3px;
+  flex: 1;
+  border-radius: 2px;
+  background: #ddd0b8;
+  transition: background 0.2s;
+}
+.auth-strength-label {
+  font-size: 11px;
+  font-family: 'Geist Mono', monospace;
+  color: #9a7e5a;
+}
+
+/* Etat masque initial. Le JS bascule ensuite via `el.style.display` (CSSOM,
+ * non soumis a la CSP). Utilise sur les <svg>, ou l'attribut HTML `hidden`
+ * n'est pas reconnu par les types d'Astro. */
+.auth-hidden {
+  display: none;
+}
+
+/* ── Spinner de chargement ─────────────────────────────────────────────────── */
+.auth-spinner {
+  animation: auth-spin 0.7s linear infinite;
+}
+@keyframes auth-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}

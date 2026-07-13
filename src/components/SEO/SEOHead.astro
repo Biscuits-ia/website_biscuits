@@ -126,14 +126,25 @@ const seoTitle = title.length > 65
      - Google Search Console : https://search.google.com/search-console
      - Bing Webmaster Tools  : https://www.bing.com/webmasters
      ============================================ -->
-<meta name="google-site-verification" content="G-C0JDQG5D6Y" />
+{/* NEUTRALISE le 2026-07-09 : la valeur "G-C0JDQG5D6Y" est un ID de MESURE GA4,
+    PAS un jeton de verification Search Console (ceux-ci sont une longue chaine
+    base64url de ~43 caracteres). Avec cette valeur, la verification de propriete
+    echoue silencieusement -> on croit le site verifie alors qu'il ne l'est pas.
+    Recuperer le vrai jeton sur https://search.google.com/search-console puis
+    reactiver la ligne ci-dessous avec la bonne valeur. */}
+{/* <meta name="google-site-verification" content="LE_VRAI_JETON_ICI" /> */}
 <meta name="msvalidate.01" content="748E21A1FDE61F1B5D67115C71479EC5" />
 <!-- ============================================
      PERFORMANCE HINTS (Core Web Vitals)
      ============================================ -->
 <meta name="format-detection" content="telephone=no" />
-<link rel="dns-prefetch" href="https://www.google-analytics.com" />
-<link rel="preconnect" href="https://www.google-analytics.com" crossorigin="" />
+{/* RETIRE le 2026-07-09 : dns-prefetch + preconnect vers google-analytics.com.
+    Ils etablissaient une resolution DNS et une connexion TCP/TLS vers Google
+    sur CHAQUE page, AVANT tout consentement analytics -> l'IP du visiteur etait
+    transmise a Google sans opt-in (RGPD / CNIL). Cela contredisait la conception
+    de BaseHead ("Aucun prechauffage TCP/TLS vers Google sans opt-in"). Le
+    preconnect, s'il est souhaite, doit etre injecte APRES consentement (cf.
+    window.addGTMPreconnectIfConsented, non encore implemente). */}
 
 <!-- ============================================
      CONTENT RATING & AUDIENCE

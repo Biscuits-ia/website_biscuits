@@ -41,8 +41,8 @@ CREATE TABLE IF NOT EXISTS public.associations (
 
 COMMENT ON TABLE public.associations IS 'Profils des associations et TPE inscrits';
 COMMENT ON COLUMN public.associations.siret IS 'Numéro SIRET de la structure';
-COMMENT ON COLUMN public.associations.rna_number IS 'Numéro RNA de l\'association (optionnel)';
-COMMENT ON COLUMN public.associations.is_verified IS 'Vérification manuelle par l\'équipe Biscuits IA';
+COMMENT ON COLUMN public.associations.rna_number IS 'Numéro RNA de l''association (optionnel)';
+COMMENT ON COLUMN public.associations.is_verified IS 'Vérification manuelle par l''équipe Biscuits IA';
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- 3. Table association_projects (projets spécifiques aux associations)
@@ -82,7 +82,7 @@ CREATE TABLE IF NOT EXISTS public.association_requests (
   created_at        timestamptz NOT NULL DEFAULT now()
 );
 
-COMMENT ON TABLE public.association_requests IS 'Demandes d\'inscription des associations/TPE';
+COMMENT ON TABLE public.association_requests IS 'Demandes d''inscription des associations/TPE';
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- 5. Triggers updated_at

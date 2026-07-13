@@ -37,7 +37,10 @@ const siteUrl = import.meta.env.SITE || 'https://biscuits-ia.com';
 // Declare AVANT photoUrl() : `function` est hoistee, `const` non. Lire cette
 // variable depuis photoUrl() alors qu'elle etait declaree plus bas jetait une
 // ReferenceError (TDZ) des qu'un benevole avait un photo_url relatif.
-const SUPABASE_URL = import.meta.env.SUPABASE_URL ?? '';
+// PUBLIC_ d'abord : cette page est prerendue, et Astro n'inline dans le bundle
+// de build que les variables prefixees PUBLIC_ (cf. resolveSupabaseUrl()).
+const SUPABASE_URL =
+  import.meta.env.PUBLIC_SUPABASE_URL ?? import.meta.env.SUPABASE_URL ?? '';
 
 function photoUrl(url: string | null): string {
   if (!url) return '/illustrations/avatar-placeholder.svg';

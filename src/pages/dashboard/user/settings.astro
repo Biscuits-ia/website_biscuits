@@ -31,11 +31,11 @@ const assocMsg = Astro.url.searchParams.get('msg')   ?? '';
     </p>
   </div>
 
-  {saved   && <div class="flash flash-ok"  role="alert">âœ“ Profil mis à jour avec succès.</div>}
-  {pwSaved && <div class="flash flash-ok" role="alert">âœ“ Mot de passe mis à jour.</div>}
-  {error   && <div class="flash flash-err" role="alert">âœ— {decodeURIComponent(error)}</div>}
-  {assoc === 'ok'  && <div class="flash flash-ok"  role="alert">âœ“ {decodeURIComponent(assocMsg) || 'Profil association créé avec succès.'}</div>}
-  {assoc === 'err' && <div class="flash flash-err" role="alert">âœ— {decodeURIComponent(assocMsg) || 'Erreur lors de la création du profil association.'}</div>}
+  {saved   && <div class="flash flash-ok"  role="alert">✓ Profil mis à jour avec succès.</div>}
+  {pwSaved && <div class="flash flash-ok" role="alert">✓ Mot de passe mis à jour.</div>}
+  {error   && <div class="flash flash-err" role="alert">✗ {decodeURIComponent(error)}</div>}
+  {assoc === 'ok'  && <div class="flash flash-ok"  role="alert">✓ {decodeURIComponent(assocMsg) || 'Profil association créé avec succès.'}</div>}
+  {assoc === 'err' && <div class="flash flash-err" role="alert">✗ {decodeURIComponent(assocMsg) || 'Erreur lors de la création du profil association.'}</div>}
 
   <div class="flex flex-row gap-5 flex-wrap justify-between">
 
@@ -44,7 +44,7 @@ const assocMsg = Astro.url.searchParams.get('msg')   ?? '';
       <div class="card-header">
         <span class="card-title">Informations personnelles</span>
         <span class={`badge ${emailConfirmed ? 'badge-ok' : 'badge-warn'}`}>
-          {emailConfirmed ? 'âœ“ Email vérifié' : 'âš  Email non vérifié'}
+          {emailConfirmed ? '✓ Email vérifié' : '⚠ Email non vérifié'}
         </span>
       </div>
 
@@ -76,7 +76,7 @@ const assocMsg = Astro.url.searchParams.get('msg')   ?? '';
           />
           {!emailConfirmed && (
             <span class="text-xs text-warn mt-1 font-mono">
-              âš  Vérifiez votre boîte mail pour confirmer cette adresse.
+              ⚠ Vérifiez votre boîte mail pour confirmer cette adresse.
             </span>
           )}
         </div>
@@ -221,7 +221,7 @@ const assocMsg = Astro.url.searchParams.get('msg')   ?? '';
             type="password"
             id="current_password"
             name="current_password"
-            placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
+            placeholder="••••••••"
             autocomplete="current-password"
             class="border border-border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
@@ -233,7 +233,7 @@ const assocMsg = Astro.url.searchParams.get('msg')   ?? '';
             type="password"
             id="new_password"
             name="new_password"
-            placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
+            placeholder="••••••••"
             autocomplete="new-password"
             class="border border-border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
@@ -248,7 +248,7 @@ const assocMsg = Astro.url.searchParams.get('msg')   ?? '';
             type="password"
             id="confirm_password"
             name="confirm_password"
-            placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
+            placeholder="••••••••"
             autocomplete="new-password"
             class="border border-border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />

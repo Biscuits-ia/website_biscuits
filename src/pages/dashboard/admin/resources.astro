@@ -32,7 +32,7 @@ if (filterCat) query = query.eq('category', filterCat);
 const { data: resourcesRaw } = await query;
 const resources = (resourcesRaw ?? []) as Resource[];
 
-// â”€â”€ Pré-calcul (aucun < > dans le template) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Pré-calcul (aucun < > dans le template) ───────────────────────────────
 
 interface ResourceRow {
   r:            Resource;
@@ -73,8 +73,8 @@ const totalLabel     = `${resources.length} ressource${resources.length !== 1 ? 
     </button>
   </div>
 
-  {saved && <div class="flash flash-ok" role="alert">âœ“ Opération réussie.</div>}
-  {error  && <div class="flash flash-err" role="alert">âœ— {decodeURIComponent(error)}</div>}
+  {saved && <div class="flash flash-ok" role="alert">✓ Opération réussie.</div>}
+  {error  && <div class="flash flash-err" role="alert">✗ {decodeURIComponent(error)}</div>}
 
   <!-- Filtre par catégorie -->
   <form method="get" class="filters-bar">
@@ -85,7 +85,7 @@ const totalLabel     = `${resources.length} ressource${resources.length !== 1 ? 
       ))}
     </select>
     {hasFilter && (
-      <a href="/dashboard/admin/resources" class="btn btn-ghost btn-sm">Ã— Réinitialiser</a>
+      <a href="/dashboard/admin/resources" class="btn btn-ghost btn-sm">× Réinitialiser</a>
     )}
   </form>
 
@@ -136,7 +136,7 @@ const totalLabel     = `${resources.length} ressource${resources.length !== 1 ? 
                       type="submit"
                       class="btn btn-danger btn-xs"
                       data-confirm="'Supprimer cette ressource définitivement ?'"
-                    >âœ•</button>
+                    >✕</button>
                   </form>
                 </div>
               </td>
@@ -158,7 +158,7 @@ const totalLabel     = `${resources.length} ressource${resources.length !== 1 ? 
     <div class="modal-box">
       <div class="modal-header">
         <span class="card-title">Nouvelle ressource</span>
-        <button class="btn btn-ghost" data-modal-close="modal-add">âœ•</button>
+        <button class="btn btn-ghost" data-modal-close="modal-add">✕</button>
       </div>
       <form
         method="POST"
@@ -172,19 +172,19 @@ const totalLabel     = `${resources.length} ressource${resources.length !== 1 ? 
         </div>
         <div class="field">
           <label>Description</label>
-          <textarea name="description" rows={3} placeholder="Courte description de la ressourceâ€¦"></textarea>
+          <textarea name="description" rows={3} placeholder="Courte description de la ressource…"></textarea>
         </div>
         <div class="field">
           <label>Catégorie *</label>
           <select name="category" required>
-            <option value="">Choisir une catégorieâ€¦</option>
+            <option value="">Choisir une catégorie…</option>
             {RESOURCE_CATEGORIES.map((cat) => (
               <option value={cat}>{cat}</option>
             ))}
           </select>
         </div>
         <div class="field">
-          <label>Fichier * <span class="field-hint">(PDF, image, zip, vidéo â€” max 50 Mo)</span></label>
+          <label>Fichier * <span class="field-hint">(PDF, image, zip, vidéo — max 50 Mo)</span></label>
           <input type="file" name="file" required accept=".pdf,.png,.jpg,.jpeg,.gif,.webp,.svg,.zip,.docx,.xlsx,.pptx,.txt,.md,.csv,.mp4,.webm" />
         </div>
         <div class="checkbox-row">

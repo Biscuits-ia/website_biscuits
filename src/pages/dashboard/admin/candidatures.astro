@@ -57,8 +57,8 @@ const availabilityLabel: Record<string, string> = {
     <p class="page-head-sub">Gérez les candidatures reçues via le formulaire de recrutement.</p>
   </div>
 
-  {saved && <div class="flash flash-ok" role="alert">âœ“ Modifications sauvegardées.</div>}
-  {error  && <div class="flash flash-err" role="alert">âœ— {decodeURIComponent(error)}</div>}
+  {saved && <div class="flash flash-ok" role="alert">✓ Modifications sauvegardées.</div>}
+  {error  && <div class="flash flash-err" role="alert">✗ {decodeURIComponent(error)}</div>}
 
   <!-- Stats rapides -->
   <div class="stats-grid mb-6">
@@ -135,7 +135,7 @@ const availabilityLabel: Record<string, string> = {
 
           {s.admin_notes && (
             <div class="admin-notes">
-              <div class="admin-notes-header">ðŸ“ Notes admin</div>
+              <div class="admin-notes-header">📝 Notes admin</div>
               <div class="admin-notes-body">{s.admin_notes}</div>
             </div>
           )}
@@ -161,7 +161,7 @@ const availabilityLabel: Record<string, string> = {
               <textarea
                 name="admin_notes"
                 rows="2"
-                placeholder="Notes internes sur le candidatâ€¦"
+                placeholder="Notes internes sur le candidat…"
                 class="admin-textarea"
               >{s.admin_notes ?? ''}</textarea>
             </div>
@@ -179,7 +179,7 @@ const availabilityLabel: Record<string, string> = {
               href={`mailto:${s.email}?subject=${encodeURIComponent(`Votre candidature chez Biscuits IA`)}`}
               class="btn btn-ghost btn-sm-text"
             >
-              âœ‰ Contacter
+              ✉ Contacter
             </a>
             <form method="POST" action="/api/admin/candidatures/delete" class="form-inline">
               <input type="hidden" name="submission_id" value={s.id} />
@@ -197,7 +197,7 @@ const availabilityLabel: Record<string, string> = {
       );
     }) : (
       <div class="card empty-state">
-        <p class="empty-icon">ðŸ“‹</p>
+        <p class="empty-icon">📋</p>
         <p>{filter ? `Aucune candidature avec le statut "${statusLabel[filter] ?? filter}".` : 'Aucune candidature pour le moment.'}</p>
       </div>
     )}

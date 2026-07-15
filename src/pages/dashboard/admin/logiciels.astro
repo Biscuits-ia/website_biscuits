@@ -30,8 +30,8 @@ const { data: softwares } = await supabase
     </button>
   </div>
 
-  {saved && <div class="flash flash-ok" role="alert">âœ“ Modifications sauvegardées.</div>}
-  {error  && <div class="flash flash-err" role="alert">âœ— {decodeURIComponent(error)}</div>}
+  {saved && <div class="flash flash-ok" role="alert">✓ Modifications sauvegardées.</div>}
+  {error  && <div class="flash flash-err" role="alert">✗ {decodeURIComponent(error)}</div>}
 
   <!-- Tableau -->
   <div class="card card-flush">
@@ -53,11 +53,11 @@ const { data: softwares } = await supabase
                 <div class="cell-strong">{sw.name}</div>
                 {sw.description && (
                   <div class="cell-desc">
-                    {sw.description.slice(0, 80)}{sw.description.length > 80 ? 'â€¦' : ''}
+                    {sw.description.slice(0, 80)}{sw.description.length > 80 ? '…' : ''}
                   </div>
                 )}
               </td>
-              <td>{sw.category ?? 'â€”'}</td>
+              <td>{sw.category ?? '—'}</td>
               <td>
                 <span class={`badge ${sw.is_free ? 'badge-ok' : 'badge-neutral'}`}>
                   {sw.is_free ? 'Oui' : 'Non'}
@@ -87,7 +87,7 @@ const { data: softwares } = await supabase
                       class="btn btn-danger btn-table"
                       data-confirm="'Supprimer ce logiciel ?'"
                     >
-                      âœ•
+                      ✕
                     </button>
                   </form>
                 </div>
@@ -103,8 +103,8 @@ const { data: softwares } = await supabase
     <dialog id={`modal-edit-${sw.id}`} class="modal">
       <div class="modal-box">
         <div class="modal-header">
-          <span class="card-title">Modifier â€” {sw.name}</span>
-          <button class="btn btn-ghost" data-modal-close={`modal-edit-${sw.id}`}>âœ•</button>
+          <span class="card-title">Modifier — {sw.name}</span>
+          <button class="btn btn-ghost" data-modal-close={`modal-edit-${sw.id}`}>✕</button>
         </div>
         <form method="POST" action="/api/admin/logiciels/modifier" class="modal-form">
           <input type="hidden" name="software_id" value={sw.id} />
@@ -122,15 +122,15 @@ const { data: softwares } = await supabase
           </div>
           <div class="field">
             <label>URL du logo</label>
-            <input type="url" name="logo_url" value={sw.logo_url ?? ''} placeholder="https://â€¦" />
+            <input type="url" name="logo_url" value={sw.logo_url ?? ''} placeholder="https://…" />
           </div>
           <div class="field">
             <label>URL de téléchargement</label>
-            <input type="url" name="download_url" value={sw.download_url ?? ''} placeholder="https://â€¦" />
+            <input type="url" name="download_url" value={sw.download_url ?? ''} placeholder="https://…" />
           </div>
           <div class="field">
             <label>Site web</label>
-            <input type="url" name="website_url" value={sw.website_url ?? ''} placeholder="https://â€¦" />
+            <input type="url" name="website_url" value={sw.website_url ?? ''} placeholder="https://…" />
           </div>
           <div class="check-row">
             <label class="check-label">
@@ -156,7 +156,7 @@ const { data: softwares } = await supabase
     <div class="modal-box">
       <div class="modal-header">
         <span class="card-title">Nouveau logiciel</span>
-        <button class="btn btn-ghost" data-modal-close="modal-logiciel">âœ•</button>
+        <button class="btn btn-ghost" data-modal-close="modal-logiciel">✕</button>
       </div>
       <form method="POST" action="/api/admin/logiciels/creer" class="modal-form">
         <div class="field">
@@ -165,7 +165,7 @@ const { data: softwares } = await supabase
         </div>
         <div class="field">
           <label>Description</label>
-          <textarea name="description" rows="3" class="resize-v" placeholder="Courte descriptionâ€¦"></textarea>
+          <textarea name="description" rows="3" class="resize-v" placeholder="Courte description…"></textarea>
         </div>
         <div class="field">
           <label>Catégorie</label>
@@ -173,15 +173,15 @@ const { data: softwares } = await supabase
         </div>
         <div class="field">
           <label>URL du logo</label>
-          <input type="url" name="logo_url" placeholder="https://â€¦" />
+          <input type="url" name="logo_url" placeholder="https://…" />
         </div>
         <div class="field">
           <label>URL de téléchargement</label>
-          <input type="url" name="download_url" placeholder="https://â€¦" />
+          <input type="url" name="download_url" placeholder="https://…" />
         </div>
         <div class="field">
           <label>Site web</label>
-          <input type="url" name="website_url" placeholder="https://â€¦" />
+          <input type="url" name="website_url" placeholder="https://…" />
         </div>
         <div class="check-row">
           <label class="check-label">

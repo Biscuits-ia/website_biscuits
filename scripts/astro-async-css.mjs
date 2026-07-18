@@ -20,8 +20,8 @@
 // CSS ne s'applique jamais -> site sans aucun style en production (le CSP
 // n'est pas envoye par le serveur statique local utilise pour la verif,
 // d'ou l'ecart entre "ca marche en local" et "casse sur Vercel").
-// A la place : un unique <script> injecte par page fait le swap via JS
-// (addEventListener), ce que `script-src-elem 'unsafe-inline'` autorise.
+// A la place : un <script> inline colle apres chaque <link> fait le swap via
+// JS (addEventListener), ce que `script-src-elem 'unsafe-inline'` autorise.
 //
 // Ne touche que dist/client (sortie prerendered) : les routes SSR
 // (`export const prerender = false`, ex. /legal/cgu, /legal/cgv, dashboard,
@@ -47,32 +47,43 @@ async function walkHtmlFiles(dir) {
   return files;
 }
 
-// Script de swap : ecoute le 'load' de chaque <link data-async-css>, avec un
-// filet de securite pour les liens deja charges (cache HTTP) avant que ce
-// script ne s'execute, ou si l'evenement 'load' a deja ete manque.
-const SWAP_SCRIPT =
-  "<script>(function(){var l=document.querySelectorAll('link[data-async-css]');" +
-  'for(var i=0;i<l.length;i++){(function(link){' +
-  "link.addEventListener('load',function(){link.rel='stylesheet'});" +
-  'if(link.sheet||link.readyState===\'complete\'){link.rel=\'stylesheet\'}' +
-  '})(l[i])}})();</script>';
+// Script de swap : un <script> minuscule colle immediatement APRES chaque
+// <link data-async-css>, qui attache son listener 'load' sur
+// document.currentScript.previousElementSibling.
+//
+// Pourquoi pas un unique script partage en fin de page (version precedente) :
+// le <link rel=preload> est dans <head>, le script partage etait injecte
+// juste avant </body> -- sur un CSS deja en cache HTTP (visite repetee), le
+// navigateur peut declencher l'evenement 'load' du <link> PENDANT le parsing
+// du <body>, largement avant que le parser atteigne le script en fin de
+// page. L'ecouteur, attache trop tard, rate l'evenement. Le filet de
+// securite `link.sheet || link.readyState==='complete'` ne rattrape rien :
+// `.sheet` reste null pour un <link rel=preload> (ce n'est pas une feuille
+// de style tant que rel!=stylesheet) et `readyState` est une API IE morte,
+// absente de tout navigateur moderne. D'ou le CSS manquant ~1 fois sur 2,
+// correle au cache et a la vitesse de parsing, pas a un bug deterministe.
+//
+// Fix : le script s'execute en synchrone juste apres la creation du <link>
+// dans le DOM (pendant le parsing HTML), donc avant que le fetch de la
+// ressource ait pu se terminer et declencher 'load' -- plus de course.
+function swapScriptFor(href) {
+  return (
+    '<script>(function(){var l=document.currentScript.previousElementSibling;' +
+    "l.addEventListener('load',function(){l.rel='stylesheet'});" +
+    "if(l.sheet){l.rel='stylesheet'}" +
+    `})();</script><noscript><link rel="stylesheet" href="${href}"></noscript>`
+  );
+}
 
 function toAsyncCss(html) {
-  let sawStylesheet = false;
-  let next = html.replace(/<link\s+[^>]*rel="stylesheet"[^>]*>/g, (tag) => {
+  return html.replace(/<link\s+[^>]*rel="stylesheet"[^>]*>/g, (tag) => {
     const hrefMatch = tag.match(/href="([^"]+)"/);
     if (!hrefMatch) return tag;
-    sawStylesheet = true;
     const href = hrefMatch[1];
     return (
-      `<link rel="preload" as="style" href="${href}" data-async-css>` +
-      `<noscript><link rel="stylesheet" href="${href}"></noscript>`
+      `<link rel="preload" as="style" href="${href}" data-async-css>` + swapScriptFor(href)
     );
   });
-  if (sawStylesheet && next.includes('</body>')) {
-    next = next.replace('</body>', `${SWAP_SCRIPT}</body>`);
-  }
-  return next;
 }
 
 export default function asyncCss() {

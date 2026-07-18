@@ -9,27 +9,42 @@ import Layout from '@/layouts/Layout.astro';
 import Breadcrumb from '@/components/Breadcrumb.astro';
 import { createSupabaseClient } from '@/lib/supabase';
 import { formatDate, formatTimeRange, formatSlidingScale, isFreeTraining } from '@/types/formations';
+import { jsonLd } from '@/lib/jsonLd';
 
 export const prerender = true;
 
 // Page statique (prerender = true) : on utilise le client standard (clé anon).
 // Le service_role n'est PAS exposé au build Vercel, et la RLS sur trainings /
 // training_sessions autorise de toute façon la lecture anon des lignes publiées.
-const supabase = createSupabaseClient(Astro);
-
-// Recuperation des formations publiees avec leur prochaine session (la plus proche)
-const { data: trainings, error } = await supabase
-  .from('trainings')
-  .select(`
-    id, slug, title, short_description, category, level, duration_label,
-    is_paying, min_price_cents, suggested_price_cents, solidarity_price_cents,
-    display_order, cover_image_url,
-    training_sessions (
-      id, starts_at, ends_at, is_published, max_seats
-    )
-  `)
-  .eq('is_published', true)
-  .order('display_order', { ascending: true });
+//
+// try/catch : createSupabaseClient() lance une exception SYNCHRONE si
+// PUBLIC_SUPABASE_URL manque (cf. src/lib/supabase.ts) -- avant meme le
+// .from(), donc le destructuring { data, error } habituel ne l'attrape pas
+// et ca fait planter tout le build Vercel. On retombe sur la meme forme
+// { data: null, error } pour reutiliser l'empty-state deja present plus bas.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- meme forme que le retour non-type de supabase-js ici
+let trainings: any[] | null = null;
+let error: { message: string } | null = null;
+try {
+  const supabase = createSupabaseClient(Astro);
+  // Recuperation des formations publiees avec leur prochaine session (la plus proche)
+  const result = await supabase
+    .from('trainings')
+    .select(`
+      id, slug, title, short_description, category, level, duration_label,
+      is_paying, min_price_cents, suggested_price_cents, solidarity_price_cents,
+      display_order, cover_image_url,
+      training_sessions (
+        id, starts_at, ends_at, is_published, max_seats
+      )
+    `)
+    .eq('is_published', true)
+    .order('display_order', { ascending: true });
+  trainings = result.data;
+  error = result.error;
+} catch (e) {
+  error = { message: e instanceof Error ? e.message : 'Connexion a la base de donnees indisponible' };
+}
 
 const saved  = Astro.url.searchParams.get('saved') === '1';
 const errorParam = Astro.url.searchParams.get('error') ?? '';
@@ -78,6 +93,25 @@ const cards: TrainingCard[] = (trainings ?? []).map((t) => ({
 }));
 
 const hasCards = cards.length > 0;
+
+// ItemList JSON-LD : enumere les formations publiees, chacune reliee a sa
+// page detail (contrairement aux ateliers, qui n'ont pas de route /slug).
+const siteUrl = import.meta.env.SITE || 'https://biscuits-ia.com';
+const trainingsItemListSchema = {
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  "itemListElement": cards.map((c, i) => ({
+    "@type": "ListItem",
+    "position": i + 1,
+    "url": `${siteUrl}/formations/${c.slug}`,
+    "item": {
+      "@type": "Course",
+      "name": c.title,
+      "description": c.shortDescription,
+      "url": `${siteUrl}/formations/${c.slug}`,
+    },
+  })),
+};
 ---
 
 <Layout
@@ -197,6 +231,8 @@ const hasCards = cards.length > 0;
     </div>
   </section>
 </Layout>
+
+<script type="application/ld+json" set:html={jsonLd(trainingsItemListSchema)} />
 
 <style>
   .formations-hero {

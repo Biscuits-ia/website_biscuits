@@ -1,6 +1,7 @@
 ---
 import BaseLayout from "@/layouts/Layout.astro";
 import { createSupabaseClient } from "@/lib/supabase";
+import Breadcrumb from '@/components/Breadcrumb.astro';
 
 export const prerender = false;
 
@@ -38,6 +39,7 @@ const documents = [
   title="Documents legaux | Biscuits IA"
   description="Liste des documents legaux de Biscuits IA : mentions legales, CGV, CGU, RGPD, conditions de parrainage."
 >
+  <Breadcrumb />
   <section class="legal-page">
     <div class="container">
       <h1>Documents legaux</h1>

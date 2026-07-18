@@ -56,6 +56,12 @@ const seoTitle = title.length > 65
 <!-- Canonical URL (crucial pour éviter duplicate content) -->
 <link rel="canonical" href={canonical} />
 
+<!-- Site mono-langue (fr-FR) : x-default et fr pointent tous deux vers la
+     meme URL canonique. Evite tout signal de duplication cross-langue tant
+     qu'aucune version traduite n'existe. -->
+<link rel="alternate" hreflang="fr" href={canonical} />
+<link rel="alternate" hreflang="x-default" href={canonical} />
+
 <!-- ============================================
      OPEN GRAPH / FACEBOOK (Social SEO)
      ============================================ -->

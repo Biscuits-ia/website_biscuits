@@ -4,6 +4,7 @@
 // Version 1.0 - 24 juin 2026
 
 import BaseLayout from "@/layouts/Layout.astro";
+import Breadcrumb from '@/components/Breadcrumb.astro';
 
 export const prerender = true;
 ---
@@ -13,6 +14,7 @@ export const prerender = true;
   description="Regles du systeme de parrainage de places de formation de Biscuits IA : pool libre, places nominatives, codes de redemption."
   noindex={false}
 >
+  <Breadcrumb />
   <main class="legal-wrapper">
     <div class="container">
       <h1 class="title">Conditions de Parrainage</h1>

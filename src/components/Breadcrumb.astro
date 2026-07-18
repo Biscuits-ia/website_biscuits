@@ -12,6 +12,7 @@ export interface Props {
 
 const { labels = {}, compact = false } = Astro.props;
 
+const siteUrl = import.meta.env.SITE || 'https://biscuits-ia.com';
 const pathParts = Astro.url.pathname.split('/').filter(Boolean);
 
 const defaultLabels: Record<string, string> = {
@@ -30,13 +31,21 @@ const defaultLabels: Record<string, string> = {
   services: 'Services',
   contact: 'Contact',
   faq: 'FAQ',
-  legal: 'Mentions légales',
-  mentions: 'Mentions',
-  confidentialite: 'Confidentialité',
-  cookies: 'Cookies',
+  legal: 'Documents légaux',
+  cgu: 'CGU',
+  cgv: 'CGV',
+  cookies: 'Politique cookies',
+  exoneration: 'Places offertes',
+  parrainage: 'Parrainage',
+  'guide-relecture': 'Guide de relecture',
+  'mentions-legales': 'Mentions légales',
   'politique-de-confidentialite': 'Politique de confidentialité',
+  'a-qui-s-adresse': 'À qui ça s\'adresse',
+  'cas-d-usage': 'Cas d\'usage',
+  auteur: 'Auteurs',
   'nos-missions': 'Nos missions',
   'pourquoi-biscuits-ia': 'Pourquoi Biscuits IA',
+  pourquoi: 'Pourquoi Biscuits IA',
   'projects-collaboratif': 'Projets collaboratifs',
   'rejoignez-nous': 'Nous rejoindre',
   trombinoscope: 'Notre équipe',
@@ -62,7 +71,7 @@ const schema = {
     '@type': 'ListItem',
     position: i + 1,
     name: c.label,
-    item: `${Astro.site ?? 'https://biscuits-ia.com'}${c.href}`,
+    item: `${siteUrl}${c.href}`,
   })),
 };
 ---
@@ -91,9 +100,17 @@ const schema = {
   .breadcrumb {
     max-width: var(--container-xl, 1200px);
     margin: 0 auto;
-    padding: 1rem 1rem 0;
+    /* Header en position fixed (cf. Header.astro) : sans cet offset, le fil
+       d'Ariane se rend sous le header et devient invisible/inaccessible a la
+       souris, bien qu'il reste dans le DOM (lu par les lecteurs d'ecran). */
+    padding: calc(var(--header-height-desktop, 80px) + 1rem) 1rem 0;
     font-size: 0.875rem;
     color: var(--color-text-light);
+  }
+  @media (max-width: 768px) {
+    .breadcrumb {
+      padding-top: calc(var(--header-height-mobile, 70px) + 1rem);
+    }
   }
   .breadcrumb ol {
     list-style: none;

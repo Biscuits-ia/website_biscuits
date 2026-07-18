@@ -13,6 +13,7 @@ import { jsonLd } from '@/lib/jsonLd';
 // ============================================================================
 
 import BaseLayout from "@/layouts/Layout.astro";
+import Breadcrumb from '@/components/Breadcrumb.astro';
 
 export const prerender = true;
 
@@ -123,6 +124,7 @@ const description = author.bio.slice(0, 160);
     expertise: author.expertise[0],
   }}
 >
+  <Breadcrumb labels={{ [author.slug]: author.name }} />
   <section class="author-page">
     <div class="container">
       <header class="author-header">

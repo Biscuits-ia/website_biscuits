@@ -8,6 +8,7 @@ import Layout from '@/layouts/Layout.astro';
 import Breadcrumb from '@/components/Breadcrumb.astro';
 import { getCollection, type CollectionEntry } from 'astro:content';
 import type { GetStaticPaths } from 'astro';
+import { jsonLd } from '@/lib/jsonLd';
 
 // slugifyTag est defini dans getStaticPaths pour eviter les problemes de hoisting
 // avec le compilateur Astro. On declare ici une version pour le rendu HTML.
@@ -94,6 +95,26 @@ const relatedTags = Array.from(coOccurrence.entries())
 const pageTitle = `Articles sur ${tagDisplay} - Blog Biscuits IA`;
 const pageDescription = `Tous nos articles sur le theme ${tagDisplay} : tutoriels, guides pratiques et retours d'experience pour associations, collectivites et petites structures. ${articles.length} article${articles.length > 1 ? 's' : ''} disponible${articles.length > 1 ? 's' : ''}.`;
 const pageUrl = `/blog/tag/${tagSlug}`;
+
+// ItemList JSON-LD : enumere les articles de ce tag dans le graphe structure
+// (comme /ateliers et /formations). Contrairement a ces pages, chaque article
+// a sa propre URL -> on la fournit sur le ListItem pour un lien direct.
+const siteUrl = import.meta.env.SITE || 'https://biscuits-ia.com';
+const tagItemListSchema = {
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  "itemListElement": articles.map((article: CollectionEntry<'blog'>, i: number) => ({
+    "@type": "ListItem",
+    "position": i + 1,
+    "url": `${siteUrl}/blog/${article.id}`,
+    "item": {
+      "@type": "Article",
+      "name": article.data.title,
+      "description": article.data.description ?? '',
+      "url": `${siteUrl}/blog/${article.id}`,
+    },
+  })),
+};
 ---
 
 <Layout
@@ -187,6 +208,10 @@ const pageUrl = `/blog/tag/${tagSlug}`;
     </div>
   </main>
 </Layout>
+
+{articles.length > 0 && (
+  <script type="application/ld+json" set:html={jsonLd(tagItemListSchema)} />
+)}
 
 <style>
   .blog-wrapper { min-height: 60vh; background: var(--color-bg); }

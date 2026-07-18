@@ -2,6 +2,7 @@
 export const prerender = true;
 
 import Layout from '@/layouts/Layout.astro';
+import Breadcrumb from '@/components/Breadcrumb.astro';
 
 const combats = [
   {
@@ -50,6 +51,7 @@ const schema = {
   description="Cinq combats pour une IA accessible, utile, ouverte, partagée et citoyenne : fracture numérique, souveraineté, médiation, autonomie partagée."
   schema={schema}
 >
+  <Breadcrumb />
   <section class="combats-hero">
     <div class="container">
       <h1>Nos combats</h1>

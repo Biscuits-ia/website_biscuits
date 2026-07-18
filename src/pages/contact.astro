@@ -3,12 +3,15 @@ export const prerender = true;
 
 import BaseLayout from '@/layouts/Layout.astro';
 import ContactForm from '@/components/ContactForm.astro';
+import Breadcrumb from '@/components/Breadcrumb.astro';
 ---
 
 <BaseLayout
   title="Nous contacter ou demander un accompagnement | Biscuits IA"
   description="Une question, un projet, besoin d'un coup de main avec l'IA ? On est là — écrivez-nous."
+  schema={{ type: 'ContactPage', data: { name: 'Contact Biscuits IA', description: "Formulaire de contact et coordonnees de l'association Biscuits IA." } }}
 >
+  <Breadcrumb />
   <section class="quote-hero">
     <div class="container">
       <h1>On est là 👋</h1>

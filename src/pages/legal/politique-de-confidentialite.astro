@@ -4,6 +4,7 @@
 // Mise a jour : 24 juin 2026
 
 import BaseLayout from "@/layouts/Layout.astro";
+import Breadcrumb from '@/components/Breadcrumb.astro';
 
 export const prerender = true;
 ---
@@ -13,6 +14,7 @@ export const prerender = true;
   description="Politique de confidentialite de Biscuits IA, conformement au RGPD et a la loi Informatique et Libertes."
   noindex={false}
 >
+  <Breadcrumb />
   <main class="legal-wrapper">
     <div class="container">
       <h1 class="title">Politique de Confidentialite</h1>

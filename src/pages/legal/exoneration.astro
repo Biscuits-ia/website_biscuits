@@ -4,6 +4,7 @@
 // Version 1.0 - 24 juin 2026
 
 import BaseLayout from "@/layouts/Layout.astro";
+import Breadcrumb from '@/components/Breadcrumb.astro';
 
 export const prerender = true;
 ---
@@ -13,6 +14,7 @@ export const prerender = true;
   description="Criteres, procedure et modalites des demandes d\'exoneration de paiement pour les formations Biscuits IA."
   noindex={false}
 >
+  <Breadcrumb />
   <main class="legal-wrapper">
     <div class="container">
       <h1 class="title">Conditions d\'acces aux places offertes</h1>

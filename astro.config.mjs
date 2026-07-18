@@ -3,7 +3,7 @@ import { defineConfig } from 'astro/config';
 
 
 import robotsTxt from 'astro-robots-txt';
-import sitemap from '@astrojs/sitemap';
+import sitemap, { ChangeFreqEnum } from '@astrojs/sitemap';
 import tailwindcss from '@tailwindcss/vite';
 import icon from 'astro-icon';
 
@@ -11,6 +11,9 @@ import vercel from '@astrojs/vercel';
 import mdx from '@astrojs/mdx';
 
 import react from '@astrojs/react';
+
+import asyncCss from './scripts/astro-async-css.mjs';
+import rehypeLazyFigure from './scripts/rehype-lazy-figure.mjs';
 
 // ─── robots.txt ───────────────────────────────────────────────────────────────
 //
@@ -111,8 +114,56 @@ export default defineConfig({
           '/utilisateurs',
           '/verifier-code-inscription',
           '/verifier-code-reinitialisation',
+          // Aligne avec DISALLOW_SEARCH_ONLY (robots.txt) : page publique mais
+          // volontairement hors index (tunnel de paiement/parrainage).
+          '/formations/parrainer',
         ];
         return !excludePaths.some((path) => page.includes(path));
+      },
+      // Priorite/frequence differenciees par type de page plutot qu'une valeur
+      // uniforme (0.7/weekly) sur les ~130 URLs : signale aux crawlers ou
+      // concentrer le budget de crawl.
+      serialize(item) {
+        // @astrojs/sitemap ajoute toujours le trailing slash (sauf racine) :
+        // on le retire pour comparer les chemins sans dupliquer chaque regle
+        // en 2 variantes ("/ateliers" vs "/ateliers/").
+        const rawPath = new URL(item.url).pathname;
+        const path = rawPath !== '/' && rawPath.endsWith('/')
+          ? rawPath.slice(0, -1)
+          : rawPath;
+
+        if (path === '' || path === '/' || path === '/fr') {
+          return { ...item, changefreq: ChangeFreqEnum.DAILY, priority: 1.0 };
+        }
+        if (path === '/blog') {
+          return { ...item, changefreq: ChangeFreqEnum.DAILY, priority: 0.8 };
+        }
+        if (path.startsWith('/blog/tag/')) {
+          return { ...item, changefreq: ChangeFreqEnum.MONTHLY, priority: 0.5 };
+        }
+        if (path.startsWith('/blog/')) {
+          return { ...item, changefreq: ChangeFreqEnum.WEEKLY, priority: 0.8 };
+        }
+        if (path === '/piliers' || path.startsWith('/piliers/')) {
+          return { ...item, changefreq: ChangeFreqEnum.WEEKLY, priority: 0.9 };
+        }
+        if (
+          path === '/formations' ||
+          (path.startsWith('/formations/') && !path.includes('/inscription'))
+        ) {
+          return { ...item, changefreq: ChangeFreqEnum.WEEKLY, priority: 0.8 };
+        }
+        if (path === '/ateliers' || path.startsWith('/combats')) {
+          return { ...item, changefreq: ChangeFreqEnum.WEEKLY, priority: 0.8 };
+        }
+        if (path.startsWith('/legal/')) {
+          return { ...item, changefreq: ChangeFreqEnum.MONTHLY, priority: 0.3 };
+        }
+        if (path.startsWith('/auteur/')) {
+          return { ...item, changefreq: ChangeFreqEnum.MONTHLY, priority: 0.5 };
+        }
+
+        return item;
       },
       i18n: {
         defaultLocale: 'fr',
@@ -135,9 +186,16 @@ export default defineConfig({
     icon(),
     mdx(),
     react(),
+    asyncCss(),
   ],
 
   output: 'server',
+
+  markdown: {
+    // Images de prose (blog) : lazy-load + figure/figcaption automatiques.
+    // Cf. scripts/rehype-lazy-figure.mjs.
+    rehypePlugins: [rehypeLazyFigure],
+  },
 
   // ─── CSP : pourquoi `security.csp` n'est PAS active ────────────────────────
   //

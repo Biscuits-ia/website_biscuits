@@ -2,6 +2,7 @@
 export const prerender = true;
 
 import BaseLayout from '@/layouts/Layout.astro';
+import Breadcrumb from '@/components/Breadcrumb.astro';
 
 // Cas d'usage concrets avec probleme/solution/resultat - version pour associations
 const useCases = [
@@ -73,6 +74,7 @@ const useCases = [
     },
   }}
 >
+  <Breadcrumb />
   <!-- Hero -->
   <section class="cas-hero">
     <div class="container">

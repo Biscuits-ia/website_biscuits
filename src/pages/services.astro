@@ -1,6 +1,7 @@
 ---
 export const prerender = true;
 import BaseLayout from '@/layouts/Layout.astro';
+import Breadcrumb from '@/components/Breadcrumb.astro';
 
 const services = [
   {
@@ -8,8 +9,8 @@ const services = [
     label: 'Formation',
     title: 'Ateliers pratiques',
     description:
-      'Des sessions courtes et concr🤝étes pour apprivoiser l\'IA — sans jargon, avec des cas d\'usage r🤝éels tir🤝és du monde associatif et des TPE.',
-    points: ['D🤝écouverte IA (2h)', 'Atelier pratique IA (4h)', 'Cr🤝éer un site web'],
+      'Des sessions courtes et concrètes pour apprivoiser l\'IA — sans jargon, avec des cas d\'usage réels tirés du monde associatif et des TPE.',
+    points: ['Découverte IA (2h)', 'Atelier pratique IA (4h)', 'Créer un site web'],
     href: '/ateliers',
     cta: 'Voir les ateliers',
     featured: false,
@@ -17,10 +18,10 @@ const services = [
   {
     emoji: '🤝',
     label: 'Accompagnement',
-    title: 'Suivi personnalis🤝é',
+    title: 'Suivi personnalisé',
     description:
-      'Un 🤝échange individuel pour analyser vos besoins, identifier les outils adapt🤝és et construire un plan d\'action concret, 🤝 votre rythme.',
-    points: ['Diagnostic num🤝érique', 'Feuille de route sur mesure', 'Suivi post-atelier'],
+      'Un échange individuel pour analyser vos besoins, identifier les outils adaptés et construire un plan d\'action concret, à votre rythme.',
+    points: ['Diagnostic numérique', 'Feuille de route sur mesure', 'Suivi post-atelier'],
     href: '/rdv',
     featured: true,
   },
@@ -29,34 +30,35 @@ const services = [
     label: 'Ressources',
     title: 'Outils & guides libres',
     description:
-      'Des guides pratiques, mod🤝éles et outils open-source con§us pour 🤝tre r🤝éutilis🤝és, adapt🤝és et partag🤝és — sans friction, sans frais cach🤝és.',
-    points: ['Guides t🤝él🤝échargeables', 'Mod🤝éles pr🤝ts 🤝 l\'emploi', 'Veille & actualit🤝és'],
+      'Des guides pratiques, modèles et outils open-source conçus pour être réutilisés, adaptés et partagés — sans friction, sans frais cachés.',
+    points: ['Guides téléchargeables', 'Modèles prêts à l\'emploi', 'Veille & actualités'],
     href: '/ressources',
-    cta: 'Acc🤝éder aux ressources',
+    cta: 'Accéder aux ressources',
     featured: false,
   },
 ];
 
 const engagements = [
-  { emoji: '📂', title: 'Open source', text: 'Nos outils sont publics et librement r🤝éutilisables.' },
-  { emoji: '🧭', title: 'Ind🤝épendant', text: 'Aucune d🤝épendance 🤝 un 🤝éditeur ou 🤝 des services propri🤝étaires.' },
-  { emoji: '🌱', title: '🤝thique & responsable', text: 'Nous d🤝éfendons une IA sobre, inclusive et explicable.' },
-  { emoji: '💬', title: 'Humain avant tout', text: 'B🤝én🤝évoles disponibles, 🤝échanges directs, z🤝éro bullshit.' },
+  { emoji: '📂', title: 'Open source', text: 'Nos outils sont publics et librement réutilisables.' },
+  { emoji: '🧭', title: 'Indépendant', text: 'Aucune dépendance à un éditeur ou à des services propriétaires.' },
+  { emoji: '🌱', title: 'Éthique & responsable', text: 'Nous défendons une IA sobre, inclusive et explicable.' },
+  { emoji: '💬', title: 'Humain avant tout', text: 'Bénévoles disponibles, échanges directs, zéro bullshit.' },
 ];
 ---
 
 <BaseLayout
   title="Nos services | Biscuits IA"
-  description="Ateliers, accompagnement personnalis🤝é et ressources libres pour mettre l'IA au service des associations et TPE — sans jargon, sans friction."
-  schema={{ type: 'Service', data: { serviceType: 'Accompagnement IA', name: 'Services Biscuits IA', description: 'Ateliers, accompagnement personnalis🤝é et ressources libres pour associations et TPE.' } }}>
+  description="Ateliers, accompagnement personnalisé et ressources libres pour mettre l'IA au service des associations et TPE — sans jargon, sans friction."
+  schema={{ type: 'Service', data: { serviceType: 'Accompagnement IA', name: 'Services Biscuits IA', description: 'Ateliers, accompagnement personnalisé et ressources libres pour associations et TPE.' } }}>
 
+  <Breadcrumb />
   <!-- —— Hero —— -->
   <section class="hero">
     <div class="container">
       <span class="hero-eyebrow">Ce que nous faisons</span>
       <h1>Des services concrets,<br /><em>pas des promesses</em></h1>
       <p class="hero-sub">
-        Biscuits IA accompagne les associations et TPE pour int🤝égrer l'IA de fa§on utile, 🤝éthique et autonome — avec des ateliers, un suivi personnalis🤝é et des ressources libres.
+        Biscuits IA accompagne les associations et TPE pour intégrer l'IA de façon utile, éthique et autonome — avec des ateliers, un suivi personnalisé et des ressources libres.
       </p>
       <div class="hero-actions">
         <a href="/ateliers" class="btn-ghost">Voir les ateliers</a>
@@ -70,7 +72,7 @@ const engagements = [
       <div class="services-grid">
         {services.map((s) => (
           <article class={`service-card${s.featured ? ' featured' : ''}`}>
-            {s.featured && <div class="featured-pill">🤝­ Le plus demand🤝é</div>}
+            {s.featured && <div class="featured-pill">⭐ Le plus demandé</div>}
             <div class="service-top">
               <span class="service-emoji" aria-hidden="true">{s.emoji}</span>
               <span class="service-label">{s.label}</span>
@@ -104,7 +106,7 @@ const engagements = [
     <div class="container">
       <div class="engagements-header">
         <h2>Nos engagements</h2>
-        <p>Ce qui nous diff🤝érencie des prestataires classiques.</p>
+        <p>Ce qui nous différencie des prestataires classiques.</p>
       </div>
       <div class="engagements-grid">
         {engagements.map((e) => (
@@ -122,8 +124,8 @@ const engagements = [
   <section class="cta-section">
     <div class="container">
       <div class="cta-box">
-        <h2>Pas s»r🤝·e par o¹ commencer ?</h2>
-        <p>Un 🤝échange de 30 minutes suffit souvent 🤝 clarifier les priorit🤝és. C'est gratuit et sans engagement.</p>
+        <h2>Pas sûr·e par où commencer ?</h2>
+        <p>Un échange de 30 minutes suffit souvent à clarifier les priorités. C'est gratuit et sans engagement.</p>
         <div class="cta-actions">
           <a href="/rdv" class="btn-primary">Je prends rendez-vous</a>
           <a href="/contact" class="btn-ghost">Poser une question</a>

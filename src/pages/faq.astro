@@ -6,6 +6,7 @@
 export const prerender = true;
 
 import BaseLayout from '@/layouts/Layout.astro';
+import Breadcrumb from '@/components/Breadcrumb.astro';
 
 const faq = [
   {
@@ -36,6 +37,34 @@ const faq = [
     q: 'Vos outils sont-ils open source ?',
     a: 'Oui. Tous les outils que nous développons ou recommandons sont publiés en open source. Vous pouvez les auditer, les adapter, les redéployer.',
   },
+  {
+    q: 'Quelle est la différence entre un atelier et une formation ?',
+    a: "Les ateliers sont des sessions courtes (2h à 4h), gratuites, pour découvrir et pratiquer un sujet précis. Les formations sont plus longues et approfondies, au tarif conscient (voir question suivante), avec un accompagnement plus poussé.",
+  },
+  {
+    q: "Qu'est-ce que le tarif conscient (sliding scale) et combien coûtent vos formations ?",
+    a: "Le tarif conscient veut dire que vous choisissez librement le montant que vous versez, entre un prix minimum, un prix suggéré et un prix solidaire, selon vos moyens. Aucun justificatif n'est demandé. Le paiement se fait par virement bancaire.",
+  },
+  {
+    q: 'Puis-je avoir une place gratuite si je ne peux pas payer le tarif minimum ?',
+    a: "Oui. Vous pouvez demander une place offerte (exonération totale) directement depuis la page d'inscription à la formation, sans justificatif de ressources. La demande est examinée sous 48h ouvrées.",
+  },
+  {
+    q: 'Comment fonctionne le parrainage de formation ?',
+    a: "Une personne ou une entreprise peut financer une place pour un tiers, soit au pool commun (attribuée au premier demandeur éligible), soit nominativement (réservée à un email précis). Un code de parrainage à 8 caractères est généré, valable 24 mois, et ouvre droit à un reçu fiscal.",
+  },
+  {
+    q: 'Anti Pepins est-il vraiment gratuit ?',
+    a: "Oui, entièrement. Anti Pepins analyse vos SMS, e-mails et liens suspects en quelques secondes, sans compte à créer, sur anti-pepins.biscuits-ia.com. C'est un service public de l'association, financé par nos autres activités.",
+  },
+  {
+    q: 'Sous quelle licence sont publiés vos contenus et vos outils ?',
+    a: "Nos billets de blog, tutoriels et supports de formation sont le plus souvent partagés sous licence Creative Commons BY-SA 4.0 (libre de partage et d'adaptation, à condition de créditer et de repartager sous la même licence). Notre code source est publié en open source sur GitHub.",
+  },
+  {
+    q: "Comment signaler une arnaque ou un contenu suspect que j'ai reçu ?",
+    a: "Utilisez Anti Pepins pour une première analyse instantanée. Pour un signalement officiel, orientez-vous vers PHAROS (contenus illicites) ou le 3018 (violences numériques envers les mineurs) ; nous pouvons vous accompagner dans cette démarche via notre page Contact.",
+  },
 ];
 
 const schema = {
@@ -51,6 +80,7 @@ const schema = {
   description="Questions fréquentes sur Biscuits IA : ateliers, ressources, accompagnement, médiation numérique, open source."
   schema={schema}
 >
+  <Breadcrumb />
   <section class="simple-page">
     <div class="container">
       <header class="faq-header">

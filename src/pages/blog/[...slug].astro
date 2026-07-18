@@ -94,9 +94,13 @@ const sameTagArticles = publishedArticles
   .sort((a: CollectionEntry<'blog'>, b: CollectionEntry<'blog'>) => b.data.pubDate.getTime() - a.data.pubDate.getTime())
   .slice(0, 6);
 
-// SEO : Open Graph specifique a l'article.
+// SEO : Open Graph specifique a l'article. `ogImage` (prioritaire) ou
+// `thumbnail` du frontmatter si presents, sinon repli sur l'image par defaut.
 const siteUrl = import.meta.env.SITE || 'https://biscuits-ia.com';
-const ogImage = `${siteUrl}/og-default.webp`; // Placeholder : idealement une image generee par article
+const articleImage = entry.data.ogImage || entry.data.thumbnail;
+const ogImage = articleImage
+  ? (articleImage.startsWith('http') ? articleImage : `${siteUrl}${articleImage}`)
+  : `${siteUrl}/og-default.webp`;
 const seoTitle = entry.data.title;
 const seoDescription = entry.data.description || entry.data.title;
 
@@ -437,6 +441,28 @@ const articleSchema = {
   }
 
   .prose :global(pre code) { background: transparent; padding: 0; border: none; }
+
+  .prose :global(figure) {
+    margin: 2rem auto;
+  }
+
+  .prose :global(figure img) {
+    max-width: 100%;
+    height: auto;
+    border-radius: var(--radius-lg, 0);
+    margin: 0 auto;
+    display: block;
+    box-shadow: var(--shadow-md, 5px 5px 0 var(--color-border));
+    border: 2px solid var(--color-border);
+  }
+
+  .prose :global(figcaption) {
+    margin-top: 0.75rem;
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--color-text-light);
+    font-style: italic;
+  }
 
   .prose :global(img) {
     max-width: 100%;

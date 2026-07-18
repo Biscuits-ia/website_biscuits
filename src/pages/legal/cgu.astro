@@ -4,6 +4,7 @@
 // Version 1.0 - 24 juin 2026
 
 import BaseLayout from '@/layouts/Layout.astro';
+import Breadcrumb from '@/components/Breadcrumb.astro';
 
 export const prerender = false;
 ---
@@ -13,6 +14,7 @@ export const prerender = false;
   description="Conditions Generales d\'Utilisation du site biscuits-ia.com : acces, propriete intellectuelle, responsabilite, contact."
   noindex={false}
 >
+  <Breadcrumb />
   <article class="legal-page">
     <div class="container">
       <h1>Conditions Generales d\'Utilisation (CGU)</h1>

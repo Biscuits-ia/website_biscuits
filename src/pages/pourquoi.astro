@@ -2,6 +2,7 @@
 export const prerender = true;
 
 import BaseLayout from '@/layouts/Layout.astro';
+import Breadcrumb from '@/components/Breadcrumb.astro';
 
 // Pourquoi Biscuits IA - Nos valeurs différenciantes
 const values = [
@@ -77,6 +78,7 @@ const keyDifferences = [
     },
   }}
 >
+  <Breadcrumb />
   <section class="hero">
     <div class="container">
       <h1>Pourquoi Biscuits IA ?</h1>

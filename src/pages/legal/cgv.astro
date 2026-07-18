@@ -6,6 +6,7 @@
 // Representant legal : Alexis Gallard, President.
 
 import BaseLayout from '@/layouts/Layout.astro';
+import Breadcrumb from '@/components/Breadcrumb.astro';
 
 export const prerender = false;
 ---
@@ -15,6 +16,7 @@ export const prerender = false;
   description="Conditions Generales de Vente des formations payantes de Biscuits IA : tarifs, paiement, retractation, exoneration, parrainage, mediation."
   noindex={false}
 >
+  <Breadcrumb />
   <article class="legal-page">
     <div class="container">
       <h1>Conditions Generales de Vente (CGV)</h1>

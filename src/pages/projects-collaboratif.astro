@@ -3,16 +3,17 @@
 
 
 import BaseLayout from '@/layouts/Layout.astro';
---- 
+import Breadcrumb from '@/components/Breadcrumb.astro';
+---
 
 <BaseLayout
   title="Projets Collaboratifs | Biscuits IA"
   description="Venez construire des outils IA utiles avec nous — même sans compétences techniques."
 >
-  <!-- H1 de page rendu en premier pour respecter la hierarchie WCAG 1.3.1
-       (le Layout ajoute deja un h1 global Biscuits IA, ce h1 specifique prend
-       la suite logiquement comme sujet de la page). Visuellement cache car
-       le hero de la page n'en a pas besoin (sub-title + cards). -->
+  <Breadcrumb />
+  <!-- H1 de page visuellement cache : le hero n'a pas besoin d'un titre
+       affiche (sub-title + cards), mais chaque page garde un h1 unique
+       pour le plan du document. -->
   <h1 class="visually-hidden">Projets collaboratifs</h1>
   <section class="hero-modern">
     <div class="container">

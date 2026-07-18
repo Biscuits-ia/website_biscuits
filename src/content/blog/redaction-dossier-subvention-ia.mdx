@@ -1,0 +1,120 @@
+---
+title: "Rédiger un dossier de subvention avec l'IA : méthode, prompts et limites"
+description: "L'IA générative peut vous faire gagner des heures sur un dossier de subvention, à condition de savoir quoi lui demander et où s'arrêter. Méthode concrète et prompts prêts à l'emploi."
+pubDate: 2026-07-01T09:00:00Z
+author: "Biscuits IA"
+featured: false
+tags: ["ia", "subventions", "associations", "guide-pratique", "financement"]
+---
+
+import Callout from '@/components/Callout.astro';
+import ComparisonGrid from '@/components/ComparisonGrid.astro';
+
+Le CERFA 12156 (la fameuse "demande de subvention") fait partie des documents que personne dans une association n'a envie de remplir. Chiffres à retrouver, objectifs à reformuler dix fois, budget prévisionnel à justifier ligne par ligne.
+
+L'IA générative ne va pas remplir le dossier à votre place. Mais elle peut vous faire gagner un temps précieux sur la structuration, la reformulation et la relecture, si vous savez comment l'utiliser.
+
+Voici la méthode, sans survendre ce que l'IA sait vraiment faire 🥠
+
+<Callout type="info" title="Ce que l'IA fait bien, ce qu'elle ne fait pas">
+L'IA excelle pour reformuler, structurer et vérifier la cohérence d'un texte. Elle est mauvaise pour inventer des chiffres, connaître les critères précis d'un financeur, ou remplacer votre connaissance du terrain. Ne lui confiez jamais les données factuelles sans vérification.
+</Callout>
+
+---
+
+## 🎯 Où l'IA aide vraiment sur un dossier de subvention
+
+<ComparisonGrid
+  type="comparison"
+  items={[
+    { icon: '📝', title: 'Reformulation', description: 'Transformer des notes en vrac en un texte structuré et clair pour la partie "présentation du projet".' },
+    { icon: '🎯', title: 'Alignement aux critères', description: 'Reformuler votre projet en reprenant le vocabulaire exact utilisé dans l\'appel à projets (sans changer le fond).' },
+    { icon: '📊', title: 'Mise en cohérence budgétaire', description: 'Vérifier que le texte de présentation correspond bien aux lignes du budget prévisionnel.' },
+    { icon: '🔍', title: 'Relecture critique', description: 'Repérer les répétitions, les phrases floues, les objectifs mal formulés ou peu mesurables.' }
+  ]}
+/>
+
+### Ce qu'il ne faut jamais lui déléguer
+
+- Les montants et chiffres du budget prévisionnel
+- Les données réelles d'activité (nombre de bénéficiaires, statistiques)
+- La signature et l'engagement moral du dossier
+- La connaissance fine des critères d'éligibilité d'un financeur précis (à vérifier sur les textes officiels)
+
+<Callout type="warning" title="Le piège de l'hallucination">
+Un LLM peut inventer une loi, un dispositif de financement ou un chiffre qui n'existe pas, avec une confiance totale. Vérifiez systématiquement toute affirmation factuelle avant de l'intégrer à un dossier officiel.
+</Callout>
+
+---
+
+## 🧩 La méthode en 4 étapes
+
+### 1. Rassemblez vos notes brutes
+
+Avant d'ouvrir un assistant IA, réunissez ce que vous savez déjà : objectifs du projet, public visé, actions prévues, budget approximatif. Même en vrac, sous forme de liste à puces.
+
+### 2. Donnez le contexte complet à l'IA
+
+Plus le contexte est précis, meilleure est la reformulation. Collez le texte de l'appel à projets si vous l'avez, et précisez le type de structure (association loi 1901, nombre de bénévoles, ancienneté).
+
+<Callout type="tip" title="Exemple de prompt à adapter">
+"Voici mes notes brutes sur un projet [décrire en une phrase]. Reformule-les en un texte structuré de 300 mots pour une demande de subvention, en reprenant le ton professionnel et factuel attendu par une collectivité. Ne modifie aucun chiffre, n'invente aucune donnée : si une information manque, indique-le entre crochets pour que je la complète."
+</Callout>
+
+### 3. Vérifiez ligne par ligne
+
+Relisez chaque paragraphe généré en vous demandant : "est-ce que je peux prouver cette phrase si on me le demande ?" Si la réponse est non, corrigez ou supprimez.
+
+### 4. Adaptez le ton à chaque financeur
+
+Une mairie, une région, une fondation privée ou l'État n'attendent pas le même registre. Redemandez une reformulation ciblée pour chaque dossier plutôt que de recycler le même texte partout.
+
+<Callout type="tip" title="Prompt pour adapter le ton">
+"Reformule ce texte pour qu'il corresponde au style attendu par [nom du type de financeur, ex: une fondation privée axée sur l'innovation sociale], en gardant exactement les mêmes faits et chiffres."
+</Callout>
+
+---
+
+## ⚖️ Rester dans les clous côté éthique et transparence
+
+Utiliser l'IA pour rédiger une demande de subvention ne pose pas de problème éthique en soi : c'est un outil de rédaction, pas de fraude. Mais quelques principes à respecter :
+
+- **Ne jamais faire dire à l'IA des choses fausses** sur votre activité pour "faire mieux" dans le dossier
+- **Rester le seul responsable** du contenu final, IA ou pas
+- **Ne pas coller de données personnelles d'adhérents** dans un assistant IA grand public sans vérifier sa politique de confidentialité
+
+<Callout type="info" title="Et les outils souverains ?">
+Pour manipuler des données sensibles (listes de bénéficiaires, informations RGPD), privilégiez un modèle open source hébergé localement plutôt qu'un assistant cloud grand public. Voir notre article sur l'IA open source pour associations.
+</Callout>
+
+---
+
+## ✅ Checklist avant envoi du dossier
+
+- [ ] Tous les chiffres ont été vérifiés manuellement, aucun n'a été inventé par l'IA
+- [ ] Le texte reprend le vocabulaire de l'appel à projets sans dénaturer le fond
+- [ ] Le budget prévisionnel correspond exactement au texte de présentation
+- [ ] Aucune donnée personnelle d'adhérent n'a été collée dans un outil cloud non vérifié
+- [ ] Une personne de l'association a relu l'ensemble avant signature
+
+---
+
+## 🥠 Conclusion : un assistant de rédaction, pas un décideur
+
+L'IA peut transformer un après-midi de rédaction laborieuse en une heure de relecture concentrée. Mais le fond du dossier — les faits, les chiffres, l'engagement — reste entièrement de votre responsabilité.
+
+### Les 3 actions à faire pour votre prochain dossier
+
+1. 📋 **Rassemblez** vos notes en vrac avant d'ouvrir un assistant IA.
+2. 🎯 **Collez** le texte de l'appel à projets pour aligner le vocabulaire.
+3. 🔍 **Vérifiez** chaque chiffre un par un avant l'envoi.
+
+---
+
+<Callout type="tip" title="Besoin d'un accompagnement ?">
+Biscuits IA propose un accompagnement pour structurer vos dossiers de financement avec l'IA, en toute autonomie. Contactez-nous pour en discuter.
+</Callout>
+
+---
+
+*Un bon dossier de subvention se lit facilement, mais se vérifie ligne par ligne. Partagez cet article avec votre équipe projet 🍪*

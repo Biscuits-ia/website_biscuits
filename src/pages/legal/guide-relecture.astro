@@ -6,6 +6,7 @@
 // Lisible a l'ecran + imprimable (CSS print-friendly).
 
 import BaseLayout from "@/layouts/Layout.astro";
+import Breadcrumb from '@/components/Breadcrumb.astro';
 
 export const prerender = true;
 ---
@@ -14,6 +15,7 @@ export const prerender = true;
   title="Guide de relecture juridique | Biscuits IA"
   description="Checklist de relecture des CGV, CGU, RGPD et autres documents legaux de Biscuits IA avant activation."
 >
+  <Breadcrumb />
   <main class="legal-wrapper">
     <div class="container">
       <h1 class="title">Guide de relecture juridique</h1>

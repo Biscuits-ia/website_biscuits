@@ -2,6 +2,7 @@
 export const prerender = true;
 
 import BaseLayout from '@/layouts/Layout.astro';
+import Breadcrumb from '@/components/Breadcrumb.astro';
 
 // Publics cibles
 const publics = [
@@ -88,6 +89,7 @@ const notWhatWeDo = [
     },
   }}
 >
+  <Breadcrumb />
   <section class="hero">
     <div class="container">
       <h1>À qui s'adresse Biscuits IA ?</h1>

@@ -2,6 +2,7 @@
 export const prerender = true;
 
 import Layout from '@/layouts/Layout.astro';
+import Breadcrumb from '@/components/Breadcrumb.astro';
 
 const ressources = [
   {
@@ -36,6 +37,7 @@ const ressources = [
   title="Guides & Ressources | Biscuits IA"
   description="Téléchargez nos guides, checklists et templates gratuits pour votre association ou petite structure : RGPD, cybersécurité, outils numériques."
 >
+  <Breadcrumb />
   <section class="ressources-hero">
     <div class="ressources-hero__inner">
       <h1>Guides &amp; Ressources</h1>

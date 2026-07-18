@@ -21,7 +21,7 @@ let query = supabase
 
 if (filter) query = query.eq('status', filter);
 
-// PostgREST ne peut pas joindre `auth.users` â€” on enrichit via `profiles` côté serveur
+// PostgREST ne peut pas joindre `auth.users` — on enrichit via `profiles` côté serveur
 const { data: requestsRaw } = await query;
 const requests = requestsRaw ?? [];
 
@@ -61,8 +61,8 @@ const statusBadge: Record<string, string> = {
     <p class="page-head-sub">Répondez aux demandes d'accompagnement des membres.</p>
   </div>
 
-  {saved && <div class="flash flash-ok" role="alert">âœ“ Modifications sauvegardées.</div>}
-  {error  && <div class="flash flash-err" role="alert">âœ— {decodeURIComponent(error)}</div>}
+  {saved && <div class="flash flash-ok" role="alert">✓ Modifications sauvegardées.</div>}
+  {error  && <div class="flash flash-err" role="alert">✗ {decodeURIComponent(error)}</div>}
 
   <!-- Stats rapides -->
   <div class="stats-grid mb-6">
@@ -105,7 +105,7 @@ const statusBadge: Record<string, string> = {
       const badgeClass = statusBadge[req.status] ?? 'badge-neutral';
       const label      = statusLabel[req.status] ?? req.status;
       const profile    = profileMap[req.user_id];
-      const requester  = profile?.full_name ?? profile?.email ?? `Utilisateur ${req.user_id.slice(0, 8)}â€¦`;
+      const requester  = profile?.full_name ?? profile?.email ?? `Utilisateur ${req.user_id.slice(0, 8)}…`;
 
       return (
         <div class="card request-admin-card">
@@ -125,7 +125,7 @@ const statusBadge: Record<string, string> = {
 
           {req.admin_reply && (
             <div class="admin-reply">
-              <div class="admin-reply-header">ðŸ’¬ Réponse envoyée</div>
+              <div class="admin-reply-header">💬 Réponse envoyée</div>
               <div class="admin-reply-body">{req.admin_reply}</div>
             </div>
           )}
@@ -150,7 +150,7 @@ const statusBadge: Record<string, string> = {
               <textarea
                 name="admin_reply"
                 rows="3"
-                placeholder="Votre réponse visible par l'utilisateurâ€¦"
+                placeholder="Votre réponse visible par l'utilisateur…"
                 class="admin-textarea"
               >{req.admin_reply ?? ''}</textarea>
             </div>
@@ -162,7 +162,7 @@ const statusBadge: Record<string, string> = {
             </div>
           </form>
 
-          {/* Bouton supprimer â€” form indépendant (HTML n'autorise pas les forms imbriqués) */}
+          {/* Bouton supprimer — form indépendant (HTML n'autorise pas les forms imbriqués) */}
           <form method="POST" action="/api/admin/demandes/supprimer" class="admin-actions admin-actions--end">
             <input type="hidden" name="request_id" value={req.id} />
             <button
@@ -177,7 +177,7 @@ const statusBadge: Record<string, string> = {
       );
     }) : (
       <div class="card empty-state">
-        <p class="empty-icon">âœ…</p>
+        <p class="empty-icon">✅</p>
         <p>{filter ? `Aucune demande avec le statut "${statusLabel[filter] ?? filter}".` : 'Aucune demande pour le moment.'}</p>
       </div>
     )}

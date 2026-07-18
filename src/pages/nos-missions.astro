@@ -1,6 +1,7 @@
 ---export const prerender = true;
 
 import BaseLayout from '@/layouts/Layout.astro';
+import Breadcrumb from '@/components/Breadcrumb.astro';
 
 // Les 3 offres principales : Outils, Accompagnement, Ressources
 const offres = [
@@ -56,6 +57,7 @@ const offres = [
   title="Nos Missions & Engagements | Biscuits IA"
   description="Ce que fait Biscuits IA : ateliers, accompagnement, outils et ressources pour rendre l'IA accessible à toutes les structures, gratuitement."
 >
+  <Breadcrumb />
   <section class="services-hero">
     <div class="container">
       <h1>Ce qu'on fait, concrètement</h1>

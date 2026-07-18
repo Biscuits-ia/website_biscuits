@@ -1,0 +1,146 @@
+---
+title: "Ransomware et sauvegardes : le plan de continuité numérique pour petites structures"
+description: "Un ransomware peut paralyser une association en quelques minutes. Voici comment construire un plan de sauvegarde et de continuité simple, sans budget de grande entreprise."
+pubDate: 2026-06-26T09:00:00Z
+author: "Biscuits IA"
+featured: true
+tags: ["cybersecurite", "ransomware", "sauvegardes", "associations", "securite"]
+---
+
+import Callout from '@/components/Callout.astro';
+import ComparisonGrid from '@/components/ComparisonGrid.astro';
+
+Un matin, l'ordinateur de la trésorerie n'ouvre plus aucun fichier. À la place : un message en anglais qui réclame une rançon en cryptomonnaie pour tout récupérer. C'est un ransomware, et il ne prévient jamais avant de frapper.
+
+Pour une grande entreprise, c'est une mauvaise semaine. Pour une petite association sans service informatique, ça peut vouloir dire perdre d'un coup sa base d'adhérents, sa comptabilité et dix ans d'archives.
+
+La bonne nouvelle : se protéger ne coûte presque rien. Il faut juste le faire *avant*, pas après 🥠
+
+<Callout type="error" title="Un chiffre qui doit alerter">
+Les ransomwares ciblant les associations et petites structures ont fortement augmenté ces dernières années, notamment parce que ces organisations paient rarement pour une protection dédiée. Elles sont perçues comme des cibles faciles, pas comme des cibles pauvres.
+</Callout>
+
+---
+
+## 🦠 Comment un ransomware s'installe
+
+Dans l'immense majorité des cas, ce n'est pas un piratage sophistiqué. C'est une porte laissée ouverte.
+
+- 📎 **Une pièce jointe piégée** ouverte dans un email de phishing
+- 🔌 **Un logiciel non mis à jour** avec une faille connue depuis des mois
+- 🔑 **Un mot de passe faible** réutilisé sur plusieurs services
+- 💻 **Un accès à distance** (bureau à distance, VPN) mal sécurisé
+
+Une fois entré, le programme chiffre silencieusement les fichiers accessibles — y compris ceux sur les disques réseau et les clouds synchronisés. Le message de rançon n'apparaît qu'une fois tout verrouillé.
+
+<Callout type="warning" title="Payer ne garantit rien">
+Les autorités (ANSSI, cybermalveillance.gouv.fr) déconseillent formellement de payer la rançon. Une partie des victimes qui paient ne récupèrent jamais leurs données, et payer finance directement les réseaux criminels.
+</Callout>
+
+---
+
+## 💾 La règle 3-2-1, expliquée simplement
+
+C'est LA règle à retenir, et elle tient en une phrase :
+
+**3** copies de vos données, sur **2** supports différents, dont **1** copie hors site.
+
+<ComparisonGrid
+  type="comparison"
+  items={[
+    { icon: '💻', title: 'Copie 1 : l\'original', description: 'Le fichier que vous utilisez au quotidien, sur votre ordinateur ou votre cloud professionnel.' },
+    { icon: '💽', title: 'Copie 2 : un support local', description: 'Un disque dur externe ou un NAS, déconnecté du réseau après la sauvegarde pour échapper à un ransomware.' },
+    { icon: '☁️', title: 'Copie 3 : hors site', description: 'Un cloud (Google Drive, OneDrive, Backblaze...) ou un disque stocké physiquement ailleurs, chez un autre bénévole par exemple.' }
+  ]}
+/>
+
+Le point crucial : **au moins une copie doit être déconnectée** en permanence. Un ransomware qui a accès à un disque branché en continu peut aussi le chiffrer.
+
+### Ce qu'il faut sauvegarder en priorité
+
+- La base de données des adhérents
+- Les documents administratifs (statuts, PV d'AG, conventions, contrats)
+- La comptabilité et les justificatifs
+- Le contenu du site web et ses accès (identifiants d'hébergement, base de données)
+- Les emails importants et les modèles de documents
+
+### À quelle fréquence sauvegarder ?
+
+Ça dépend de ce que vous êtes prêt·e à reperdre si tout s'arrête aujourd'hui.
+
+- **Quotidienne** : comptabilité, base adhérents, emails
+- **Hebdomadaire** : documents administratifs, site web
+- **Automatique si possible** : la plupart des outils cloud (Google Workspace, Microsoft 365) proposent des sauvegardes programmées gratuites ou à faible coût
+
+<Callout type="tip" title="Automatisez, ne comptez pas sur la mémoire">
+Un bénévole qui doit "penser à sauvegarder" un vendredi soir finira par l'oublier. Programmez une sauvegarde automatique hebdomadaire, même basique, plutôt que de compter sur la discipline humaine.
+</Callout>
+
+---
+
+## 📋 Construire un plan de continuité en 5 étapes
+
+Un plan de continuité d'activité (PCA), ce n'est pas réservé aux grandes structures. Version simplifiée pour une association :
+
+1. **Listez** ce qui est indispensable pour fonctionner (outils, données, accès) et qui en a besoin.
+2. **Identifiez** qui détient les accès critiques (hébergement, banque en ligne, réseaux sociaux) — et prévoyez un accès de secours pour au moins deux personnes.
+3. **Testez** vos sauvegardes régulièrement : une sauvegarde jamais restaurée n'est pas une sauvegarde, c'est un espoir.
+4. **Documentez** la procédure sur papier ou dans un document accessible hors ligne — si l'ordinateur est chiffré, vous ne pourrez pas ouvrir votre propre PDF de procédure d'urgence.
+5. **Désignez** un référent numérique, même bénévole non-technique, qui saura qui contacter en cas d'incident.
+
+<ComparisonGrid
+  type="warning"
+  items={[
+    { icon: '🚫', title: 'Erreur n°1', description: 'Une seule personne détient tous les mots de passe critiques, et elle est en vacances le jour de l\'incident.' },
+    { icon: '🚫', title: 'Erreur n°2', description: 'La sauvegarde est sur un disque externe... resté branché en permanence sur l\'ordinateur infecté.' },
+    { icon: '🚫', title: 'Erreur n°3', description: 'Personne n\'a jamais essayé de restaurer un fichier depuis la sauvegarde pour vérifier qu\'elle fonctionne vraiment.' }
+  ]}
+/>
+
+---
+
+## 🚨 Si l'attaque a déjà eu lieu
+
+1. **Déconnectez** immédiatement la machine touchée du réseau (câble débranché, Wi-Fi coupé).
+2. **N'éteignez pas** l'ordinateur : cela peut détruire des preuves utiles.
+3. **Ne payez pas** la rançon.
+4. **Contactez** [cybermalveillance.gouv.fr](https://www.cybermalveillance.gouv.fr), le dispositif public gratuit d'assistance aux victimes.
+5. **Déposez plainte** — c'est nécessaire pour toute démarche d'assurance et pour la statistique nationale des attaques.
+6. **Restaurez** vos données depuis la copie de sauvegarde saine la plus récente, après avoir nettoyé ou réinstallé la machine infectée.
+
+<Callout type="info" title="Ressource officielle">
+cybermalveillance.gouv.fr propose un annuaire de prestataires labellisés et des fiches pratiques gratuites, spécifiquement pensées pour les structures sans service informatique dédié.
+</Callout>
+
+---
+
+## ✅ Checklist sauvegarde et continuité
+
+- [ ] Une sauvegarde automatique est active sur les données critiques
+- [ ] Au moins une copie de sauvegarde est déconnectée du réseau en permanence
+- [ ] La dernière sauvegarde a été testée par une vraie restauration
+- [ ] Au moins deux personnes ont accès aux comptes et outils critiques
+- [ ] La procédure d'urgence existe sur un support consultable hors ligne
+- [ ] L'équipe sait qui contacter en cas d'incident (cybermalveillance.gouv.fr)
+
+---
+
+## 🥠 Conclusion : la meilleure sauvegarde est celle que vous ne remarquez jamais
+
+Une bonne stratégie de sauvegarde, c'est une routine invisible qui tourne en arrière-plan, et qu'on ne remarque que le jour où elle nous sauve. Ce jour-là, elle vaut plus que n'importe quel outil informatique de l'association.
+
+### Les 3 actions à faire cette semaine
+
+1. 💾 **Vérifiez** où sont vos sauvegardes actuelles, et si elles existent vraiment.
+2. 🔌 **Déconnectez** au moins une copie du réseau en permanence.
+3. 🧪 **Testez** une restauration réelle d'un fichier, même un seul.
+
+---
+
+<Callout type="tip" title="Besoin d'aide ?">
+Biscuits IA accompagne les associations et petites structures pour mettre en place un plan de sauvegarde simple et réaliste, sans jargon technique. Contactez-nous pour en discuter.
+</Callout>
+
+---
+
+*Une sauvegarde qui n'a jamais été testée n'est qu'une intention. Partagez cet article avec votre trésorier·ère 🍪*

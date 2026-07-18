@@ -69,7 +69,7 @@ const rows: MembreRow[] = membres.map((m: Membre): MembreRow => ({
   roleBadge:  ROLE_BADGES[m.role] ?? 'badge-neutral',
   dateLabel:  new Date(m.created_at).toLocaleDateString('fr-FR'),
   fullName:   `${m.prenom} ${m.nom}`,
-  comptStr:   m.competences.join(', ') || 'â€”',
+  comptStr:   m.competences.join(', ') || '—',
 }));
 
 const totalLabel = `${membres.length} membre${membres.length !== 1 ? 's' : ''}`;
@@ -88,8 +88,8 @@ const hasFilter  = filter !== '';
     </button>
   </div>
 
-  {saved && <div class="flash flash-ok" role="alert">âœ“ Opération réussie.</div>}
-  {error  && <div class="flash flash-err" role="alert">âœ— {decodeURIComponent(error)}</div>}
+  {saved && <div class="flash flash-ok" role="alert">✓ Opération réussie.</div>}
+  {error  && <div class="flash flash-err" role="alert">✗ {decodeURIComponent(error)}</div>}
 
   <!-- Filtres -->
   <form method="get" class="filters-bar">
@@ -99,7 +99,7 @@ const hasFilter  = filter !== '';
       <option value="membre_ca"     selected={filter === 'membre_ca'}>Membres CA</option>
       <option value="membre_bureau" selected={filter === 'membre_bureau'}>Bureau</option>
     </select>
-    {hasFilter && <a href="/dashboard/admin/trombinoscope" class="btn btn-ghost btn-sm">Ã— Réinitialiser</a>}
+    {hasFilter && <a href="/dashboard/admin/trombinoscope" class="btn btn-ghost btn-sm">× Réinitialiser</a>}
   </form>
 
   <!-- Table -->
@@ -127,7 +127,7 @@ const hasFilter  = filter !== '';
                   </div>
                   <div>
                     <div class="member-name">{fullName}</div>
-                    {m.bio && <div class="member-bio">{m.bio.slice(0, 60)}{m.bio.length > 60 ? 'â€¦' : ''}</div>}
+                    {m.bio && <div class="member-bio">{m.bio.slice(0, 60)}{m.bio.length > 60 ? '…' : ''}</div>}
                   </div>
                 </div>
               </td>
@@ -170,7 +170,7 @@ const hasFilter  = filter !== '';
                       type="submit"
                       class="btn btn-danger btn-xs"
                       data-confirm="Supprimer ce membre définitivement ?"
-                    >âœ•</button>
+                    >✕</button>
                   </form>
                 </div>
               </td>
@@ -187,12 +187,12 @@ const hasFilter  = filter !== '';
     </div>
   </div>
 
-  <!-- â”€â”€ Modal : ajouter â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+  <!-- ── Modal : ajouter ─────────────────────────────────────────────────── -->
   <dialog id="modal-add" class="modal">
     <div class="modal-box">
       <div class="modal-header">
         <span class="card-title">Nouveau membre</span>
-        <button class="btn btn-ghost" type="button" data-close-modal="modal-add">âœ•</button>
+        <button class="btn btn-ghost" type="button" data-close-modal="modal-add">✕</button>
       </div>
       <form method="POST" action="/api/admin/benevoles/create" enctype="multipart/form-data" class="modal-form">
         <div class="field-row">
@@ -219,10 +219,10 @@ const hasFilter  = filter !== '';
         </div>
         <div class="field">
           <label>Bio <span class="field-hint">(facultatif, max 300 caractères)</span></label>
-          <textarea name="bio" rows={3} maxlength="300" placeholder="Courte présentationâ€¦"></textarea>
+          <textarea name="bio" rows={3} maxlength="300" placeholder="Courte présentation…"></textarea>
         </div>
         <div class="field">
-          <label>Lien <span class="field-hint">(portfolio, LinkedIn, site persoâ€¦)</span></label>
+          <label>Lien <span class="field-hint">(portfolio, LinkedIn, site perso…)</span></label>
           <input type="url" name="lien" placeholder="https://" />
         </div>
         <div class="field-row">
@@ -231,7 +231,7 @@ const hasFilter  = filter !== '';
             <input type="number" name="ordre" value="0" min="0" max="9999" />
           </div>
           <div class="field">
-            <label>Photo <span class="field-hint">(JPEG/PNG/WebP â€” max 2 Mo)</span></label>
+            <label>Photo <span class="field-hint">(JPEG/PNG/WebP — max 2 Mo)</span></label>
             <input type="file" name="photo" accept="image/jpeg,image/png,image/webp,image/avif" />
           </div>
         </div>
@@ -247,12 +247,12 @@ const hasFilter  = filter !== '';
     </div>
   </dialog>
 
-  <!-- â”€â”€ Modal : modifier â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+  <!-- ── Modal : modifier ────────────────────────────────────────────────── -->
   <dialog id="modal-edit" class="modal">
     <div class="modal-box">
       <div class="modal-header">
         <span class="card-title">Modifier le membre</span>
-        <button class="btn btn-ghost" type="button" data-close-modal="modal-edit">âœ•</button>
+        <button class="btn btn-ghost" type="button" data-close-modal="modal-edit">✕</button>
       </div>
       <form method="POST" action="/api/admin/benevoles/update" enctype="multipart/form-data" class="modal-form">
         <input type="hidden" id="edit-id" name="id" />
@@ -283,7 +283,7 @@ const hasFilter  = filter !== '';
           <textarea id="edit-bio" name="bio" rows={3} maxlength="300"></textarea>
         </div>
         <div class="field">
-          <label>Lien <span class="field-hint">(portfolio, LinkedIn, site persoâ€¦)</span></label>
+          <label>Lien <span class="field-hint">(portfolio, LinkedIn, site perso…)</span></label>
           <input type="url" id="edit-lien" name="lien" placeholder="https://" />
         </div>
         <div class="field-row">
@@ -404,7 +404,7 @@ const hasFilter  = filter !== '';
     (document.getElementById('modal-edit') as HTMLDialogElement).showModal();
   }
 
-  // â”€â”€ Event delegation (CSP-safe: no inline event attributes) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Event delegation (CSP-safe: no inline event attributes) ──────────────
   document.addEventListener('click', async (e) => {
     const el = e.target as Element;
 

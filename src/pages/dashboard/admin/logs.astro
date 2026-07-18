@@ -46,7 +46,7 @@ await supabase.rpc('log_level_counts');
     <button
       data-reload="1"
       class="btn btn-ghost btn-xs-text"
-    >âŸ³ Rafraîchir</button>
+    >⟳ Rafraîchir</button>
   </div>
 
   <!-- Filtres -->
@@ -67,7 +67,7 @@ await supabase.rpc('log_level_counts');
     </select>
     <button type="submit" class="btn btn-primary log-filter-btn">Filtrer</button>
     {(filterLvl || search) && (
-      <a href="/dashboard/admin/logs" class="btn btn-ghost btn-xs-text">Ã— Réinitialiser</a>
+      <a href="/dashboard/admin/logs" class="btn btn-ghost btn-xs-text">× Réinitialiser</a>
     )}
   </form>
 
@@ -80,7 +80,7 @@ await supabase.rpc('log_level_counts');
     ].map(({ level, cls }) => (
       <a href={`?level=${level}`} class={`badge badge-${cls} level-badge`}>
         {level}
-        {filterLvl === level && ' âœ“'}
+        {filterLvl === level && ' ✓'}
       </a>
     ))}
   </div>
@@ -98,7 +98,7 @@ await supabase.rpc('log_level_counts');
           </span>
           <span class={`log-level ${lvl}`}>{log.level}</span>
           <span class="log-svc">
-            {svc || 'â€”'}
+            {svc || '—'}
           </span>
           <span class="log-msg">{log.message}</span>
         </div>
@@ -114,11 +114,11 @@ await supabase.rpc('log_level_counts');
   {totalPages > 1 && (
     <div class="pager">
       {page > 1 && (
-        <a href={`?page=${page - 1}&level=${filterLvl}&q=${search}`} class="btn btn-ghost">â† Précédent</a>
+        <a href={`?page=${page - 1}&level=${filterLvl}&q=${search}`} class="btn btn-ghost">← Précédent</a>
       )}
       <span class="pager-info">{page} / {totalPages}</span>
       {page < totalPages && (
-        <a href={`?page=${page + 1}&level=${filterLvl}&q=${search}`} class="btn btn-ghost">Suivant â†’</a>
+        <a href={`?page=${page + 1}&level=${filterLvl}&q=${search}`} class="btn btn-ghost">Suivant →</a>
       )}
     </div>
   )}

@@ -52,11 +52,29 @@ const priceLabel = isFree
     );
 
 const hasSessions = (sessions ?? []).length > 0;
+
+const courseSchema = {
+  type: 'Course' as const,
+  data: {
+    name: training.title,
+    description: training.short_description ?? training.description ?? 'Formation IA accessible a tous.',
+    courseMode: 'blended' as const,
+    price: training.min_price_cents / 100,
+    level: training.level ?? undefined,
+    sessions: (sessions ?? []).map((s: TrainingSessionWithSeats) => ({
+      startDate: s.starts_at,
+      endDate: s.ends_at,
+      location: s.location,
+      online: s.online,
+    })),
+  },
+};
 ---
 
 <Layout
   title={`${training.title} | Formations | Biscuits IA`}
   description={training.short_description ?? training.description ?? 'Formation IA accessible a tous.'}
+  schema={courseSchema}
 >
   <Breadcrumb />
 

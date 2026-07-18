@@ -1,17 +1,33 @@
 {
+    "id": "/",
     "icons": [
         {
             "purpose": "any",
             "type": "image/png",
             "sizes": "180x180",
             "src": "/apple-touch-icon.png"
+        },
+        {
+            "purpose": "any",
+            "type": "image/png",
+            "sizes": "192x192",
+            "src": "/icon-192.png"
+        },
+        {
+            "purpose": "any",
+            "type": "image/png",
+            "sizes": "512x512",
+            "src": "/icon-512.png"
         }
     ],
     "description": "Association Loi 1901 - IA accessible, éthique et solidaire",
     "background_color": "#FDFAF4",
     "theme_color": "#FACA6F",
     "name": "Biscuits IA",
+    "short_name": "Biscuits IA",
     "start_url": "/",
     "display": "standalone",
-    "short_name": "Biscuits IA"
+    "orientation": "any",
+    "categories": ["education", "nonprofit"],
+    "lang": "fr-FR"
 }

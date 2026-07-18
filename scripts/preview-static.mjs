@@ -1,5 +1,11 @@
 ﻿// Mini static server for serving the dist/ build to test lighthouse.
 // Mimics what Vercel would do (basic static files + API routes -> 404 here).
+//
+// Sends the real Content-Security-Policy header from vercel.json on HTML
+// responses. Without it, a technique that silently relies on something the
+// CSP blocks (e.g. an inline onload="" attribute, blocked by
+// script-src-attr 'none') looks fine here but breaks in production --
+// exactly the async-CSS-swap regression this server failed to catch once.
 import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -8,6 +14,19 @@ import url from 'node:url';
 const ROOT = path.resolve(process.cwd(), 'dist/client');
 const PORT = Number(process.env.PORT ?? 4321);
 const HOST = process.env.HOST ?? '127.0.0.1';
+
+function loadCsp() {
+  try {
+    const vercelConfig = JSON.parse(fs.readFileSync(path.resolve(process.cwd(), 'vercel.json'), 'utf-8'));
+    const rule = vercelConfig.headers.find((h) => h.source === '/(.*)');
+    const csp = rule?.headers.find((h) => h.key === 'Content-Security-Policy');
+    return csp?.value ?? null;
+  } catch {
+    return null;
+  }
+}
+
+const CSP = loadCsp();
 
 const MIME = {
   '.html': 'text/html; charset=utf-8',
@@ -74,12 +93,16 @@ function serveFile(filePath, req, res) {
   const cacheControl = isAstro
     ? 'public, max-age=31536000, immutable'
     : 'public, max-age=300, s-maxage=86400, stale-while-revalidate=604800';
-  res.writeHead(200, {
+  const headers = {
     'Content-Type': type,
     'Content-Length': stat.size,
     'Cache-Control': cacheControl,
     'X-Content-Type-Options': 'nosniff',
-  });
+  };
+  if (ext === '.html' && CSP) {
+    headers['Content-Security-Policy'] = CSP;
+  }
+  res.writeHead(200, headers);
   fs.createReadStream(filePath).pipe(res);
 }
 

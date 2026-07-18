@@ -1,0 +1,111 @@
+---
+title: "IA et sobriété numérique : quel impact environnemental, et comment le réduire"
+description: "Entraîner et utiliser un modèle d'IA a un coût énergétique réel. Voici ce qu'il faut comprendre pour faire des choix plus sobres, sans renoncer aux bénéfices de l'IA."
+pubDate: 2026-07-04T09:00:00Z
+author: "Biscuits IA"
+featured: false
+tags: ["ia", "ethique", "environnement", "sobriete-numerique", "open-source"]
+---
+
+import Callout from '@/components/Callout.astro';
+import ComparisonGrid from '@/components/ComparisonGrid.astro';
+
+"L'IA va sauver la planète" et "l'IA va la détruire" sont les deux titres qu'on lit le plus souvent. La réalité, comme souvent, est plus nuancée et plus intéressante à comprendre.
+
+Pour une association qui défend une mission d'intérêt général, se poser la question de l'impact environnemental de ses outils n'est pas un détail. C'est cohérent avec sa raison d'être.
+
+Voici ce qu'il faut vraiment savoir, sans faire ni de l'IA-washing ni de la panique 🥠
+
+<Callout type="info" title="Deux impacts à distinguer">
+L'entraînement d'un modèle (la phase où il "apprend") est énergivore une seule fois. L'inférence (chaque fois qu'on lui pose une question) est plus légère à l'unité, mais se répète des milliards de fois par jour dans le monde. Les deux comptent, mais pas de la même façon.
+</Callout>
+
+---
+
+## ⚡ D'où vient réellement la consommation
+
+<ComparisonGrid
+  type="comparison"
+  items={[
+    { icon: '🏋️', title: 'L\'entraînement', description: 'Entraîner un très grand modèle peut consommer autant d\'électricité que plusieurs centaines de foyers sur une année entière. Ce coût n\'est payé qu\'une fois par le fournisseur du modèle.' },
+    { icon: '💬', title: 'L\'inférence (l\'usage)', description: 'Chaque requête à un assistant IA consomme de l\'électricité pour le calcul et le refroidissement des serveurs. Individuellement faible, mais multiplié par des milliards d\'usages quotidiens dans le monde.' },
+    { icon: '🧊', title: 'Le refroidissement des datacenters', description: 'Une part importante de l\'énergie ne sert pas au calcul lui-même mais à refroidir les serveurs qui chauffent. C\'est un poste souvent sous-estimé.' }
+  ]}
+/>
+
+<Callout type="warning" title="La difficulté de mesurer">
+Les grands fournisseurs d'IA (OpenAI, Google, Anthropic...) communiquent rarement de chiffres précis et vérifiables sur la consommation réelle de leurs modèles. La transparence progresse, mais reste partielle en 2026.
+</Callout>
+
+---
+
+## 🌱 Ce qui permet de réduire son impact, concrètement
+
+### 1. Choisir la taille du modèle en fonction du besoin réel
+
+Un modèle plus petit et plus spécialisé consomme nettement moins qu'un modèle généraliste surdimensionné pour une tâche simple. Résumer un compte-rendu ne nécessite pas le modèle le plus puissant du marché.
+
+<Callout type="tip" title="La bonne question à se poser">
+Avant de choisir un modèle, demandez-vous : "ai-je vraiment besoin du modèle le plus puissant, ou un modèle plus léger ferait-il aussi bien le travail ?" C'est souvent le cas.
+</Callout>
+
+### 2. Préférer l'open source auto-hébergé pour les usages répétitifs
+
+Pour un usage intensif et répétitif (chatbot interne, RAG sur vos documents), un modèle open source de taille raisonnée, hébergé localement, peut être plus sobre qu'un aller-retour permanent vers un cloud distant. Voir notre [comparatif des modèles IA open source](/blog/comparatif-ia-open-source-2026).
+
+### 3. Éviter les usages superflus
+
+Générer dix variantes d'une image pour n'en garder qu'une, ou relancer un prompt cinq fois par impatience plutôt que de le préciser une fois : ce sont des usages qui consomment sans bénéfice réel.
+
+### 4. Regrouper les tâches plutôt que les multiplier
+
+Un seul prompt bien construit qui traite plusieurs demandes en une fois consomme moins que dix allers-retours successifs pour arriver au même résultat.
+
+<ComparisonGrid
+  type="warning"
+  items={[
+    { icon: '🔁', title: 'Usage peu sobre', description: 'Relancer la génération d\'image ou de texte plusieurs fois sans préciser sa demande, en espérant "tomber sur" le bon résultat.' },
+    { icon: '🎯', title: 'Usage sobre', description: 'Prendre le temps de formuler une demande précise dès le départ (voir notre guide de prompt engineering) pour obtenir le bon résultat du premier coup.' }
+  ]}
+/>
+
+---
+
+## 🔍 Le compromis : ni diabolisation, ni solutionnisme
+
+L'IA générative peut aussi *réduire* certains impacts : optimisation de trajets, meilleure gestion de l'énergie dans un bâtiment, réduction du gaspillage grâce à de meilleures prévisions. Le bilan net dépend entièrement de l'usage qui en est fait.
+
+<Callout type="info" title="Notre position chez Biscuits IA">
+Nous défendons une IA sobre, inclusive et explicable, l'un des engagements de notre charte éthique. Cela veut dire choisir le bon outil pour le bon usage, pas renoncer à l'IA par principe ni l'utiliser sans discernement.
+</Callout>
+
+---
+
+## ✅ Checklist sobriété IA pour votre structure
+
+- [ ] Le modèle utilisé est adapté à la complexité réelle de la tâche (pas systématiquement le plus puissant disponible)
+- [ ] Les prompts sont formulés avec soin pour limiter les régénérations inutiles
+- [ ] Pour les usages répétitifs et sensibles, un modèle open source auto-hébergé a été envisagé
+- [ ] L'équipe a conscience que chaque requête a un coût, même minime
+
+---
+
+## 🥠 Conclusion : la sobriété, c'est un choix d'usage, pas un renoncement
+
+Utiliser l'IA de façon responsable ne veut pas dire s'en priver. Ça veut dire choisir le bon outil, au bon moment, pour le bon besoin — exactement la logique que nous défendons pour tous nos outils numériques.
+
+### Les 3 actions à faire cette semaine
+
+1. 🔍 **Vérifiez** si le modèle que vous utilisez est proportionné à vos besoins réels.
+2. ✍️ **Prenez le temps** de bien formuler vos prompts pour limiter les régénérations.
+3. 🌱 **Explorez** un modèle open source léger pour vos usages répétitifs.
+
+---
+
+<Callout type="tip" title="Envie d'aller plus loin ?">
+Biscuits IA accompagne les structures qui veulent utiliser l'IA de façon sobre et responsable, en cohérence avec leur mission d'intérêt général. Contactez-nous pour en parler.
+</Callout>
+
+---
+
+*Une IA plus sobre commence souvent par un prompt mieux réfléchi. Partagez cet article avec votre équipe 🍪*

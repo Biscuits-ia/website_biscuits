@@ -67,10 +67,10 @@
   --transition-slow: 0.5s ease;
 
   /* ☕ PALETTE CAFE / CHOCOLAT */
-  --color-primary: oklch(52% 0.08 45);      /* Moka */
+  --color-primary: oklch(46% 0.08 45);      /* Moka (assombri pour AA 4.5:1 sur --color-bg-alt) */
   --color-primary-light: oklch(62% 0.10 50); /* Caramel */
   --color-primary-dark: oklch(38% 0.06 38);  /* Espresso */
-  --color-secondary: oklch(58% 0.09 62);    /* Noisette */
+  --color-secondary: oklch(50% 0.09 62);    /* Noisette (assombri pour AA 4.5:1 en texte) */
   --color-first: oklch(66% 0.11 58);        /* Cappuccino */
   --color-second: oklch(74% 0.09 72);       /* Latte */
   --color-third: oklch(82% 0.08 85);        /* Mousse creme */

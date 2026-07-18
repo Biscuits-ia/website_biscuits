@@ -14,6 +14,7 @@ import react from '@astrojs/react';
 
 import asyncCss from './scripts/astro-async-css.mjs';
 import rehypeLazyFigure from './scripts/rehype-lazy-figure.mjs';
+import rehypeTaskListA11y from './scripts/rehype-task-list-a11y.mjs';
 
 // ─── robots.txt ───────────────────────────────────────────────────────────────
 //
@@ -194,7 +195,7 @@ export default defineConfig({
   markdown: {
     // Images de prose (blog) : lazy-load + figure/figcaption automatiques.
     // Cf. scripts/rehype-lazy-figure.mjs.
-    rehypePlugins: [rehypeLazyFigure],
+    rehypePlugins: [rehypeLazyFigure, rehypeTaskListA11y],
   },
 
   // ─── CSP : pourquoi `security.csp` n'est PAS active ────────────────────────

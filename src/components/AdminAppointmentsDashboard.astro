@@ -169,17 +169,17 @@ const { year, month, slots = [], appointments = [], selectedDay = null, nonce } 
   .btn-gcal-admin:hover { background-color: #e8f0fe; transform: translate(-1px, -1px); box-shadow: 4px 4px 0 #1a73e8; }
 </style>
 
-<script>
+<script is:inline nonce={nonce}>
   // ── Toggle de vue Tableau / Calendrier ───────────────────────────────────────
-  const viewButtons = document.querySelectorAll<HTMLButtonElement>('.view-toggle-btn');
-  const viewTable   = document.getElementById('view-table') as HTMLElement | null;
-  const viewCal     = document.getElementById('view-calendar') as HTMLElement | null;
+  var viewButtons = document.querySelectorAll('.view-toggle-btn');
+  var viewTable   = document.getElementById('view-table');
+  var viewCal     = document.getElementById('view-calendar');
 
-  viewButtons.forEach((btn) => {
-    btn.addEventListener('click', () => {
-      const view = btn.dataset.view;
-      viewButtons.forEach((b) => {
-        const active = b === btn;
+  viewButtons.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var view = btn.dataset.view;
+      viewButtons.forEach(function (b) {
+        var active = b === btn;
         b.classList.toggle('is-active', active);
         b.setAttribute('aria-selected', String(active));
       });
@@ -189,64 +189,111 @@ const { year, month, slots = [], appointments = [], selectedDay = null, nonce } 
   });
 
   // ── Vue tableau : chargement + actions ───────────────────────────────────────
-  const errorContainer = document.getElementById('error-container') as HTMLElement;
-  const contentDiv     = document.getElementById('content') as HTMLElement;
+  var errorContainer = document.getElementById('error-container');
+  var contentDiv     = document.getElementById('content');
 
-  function showError(msg: string) {
-    errorContainer.innerHTML = msg ? `<div class="error-alert">❌ ${msg}</div>` : '';
+  function showError(msg) {
+    if (errorContainer) errorContainer.innerHTML = msg ? '<div class="error-alert">❌ ' + msg + '</div>' : '';
   }
-  function toast(msg: string, type: 'success' | 'error' | 'info' = 'info') {
+  function toast(msg, type) {
     if (typeof window.showToast === 'function') window.showToast(msg, type);
   }
 
-  async function loadAppointments() {
-    try {
-      const response = await fetch('/api/admin/appointments', { credentials: 'include' });
-      if (!response.ok) {
-        const errText = await response.text();
-        throw new Error(`Erreur ${response.status}: ${errText}`);
-      }
-      const data: unknown = await response.json();
-      // /api/admin/appointments renvoie { data: [...], total, page, limit }
-      // depuis le patch pagination. On normalise pour accepter les deux formes.
-      const list: unknown[] = Array.isArray(data)
-        ? data
-        : (data && typeof data === "object" && Array.isArray((data as { data?: unknown[] }).data)
-            ? (data as { data: unknown[] }).data
-            : []);
-      renderAppointments(list as RenderedAppt[]);
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Erreur inconnue';
-      showError(msg);
-      contentDiv.innerHTML = '<div style="color: #dc2626; padding: 20px; text-align: center;">Erreur de chargement</div>';
-    }
+  function loadAppointments() {
+    fetch('/api/admin/appointments', { credentials: 'include' })
+      .then(function (response) {
+        if (!response.ok) return response.text().then(function (t) { throw new Error('Erreur ' + response.status + ': ' + t); });
+        return response.json();
+      })
+      .then(function (data) {
+        var list = Array.isArray(data) ? data : (data && typeof data === 'object' && Array.isArray(data.data) ? data.data : []);
+        renderAppointments(list);
+      })
+      .catch(function (err) {
+        var msg = err instanceof Error ? err.message : 'Erreur inconnue';
+        showError(msg);
+        if (contentDiv) contentDiv.innerHTML = '<div style="color: #dc2626; padding: 20px; text-align: center;">Erreur de chargement</div>';
+      });
   }
 
-  interface RenderedAppt {
-    id: string;
-    status: 'pending' | 'confirmed' | 'cancelled';
-    created_at: string;
-    candidate_email: string | null;
-    user_profile: { full_name: string | null; email: string | null } | null;
-    appointment_slots: { start_time: string; end_time: string } | null;
-  }
-
-  function temporalState(startIso: string, endIso: string): 'past' | 'in_progress' | 'upcoming' {
-    const now = Date.now();
-    const end = Date.parse(endIso);
+  function temporalState(startIso, endIso) {
+    var now = Date.now();
+    var end = Date.parse(endIso);
     if (!Number.isNaN(end) && now >= end) return 'past';
-    const start = Date.parse(startIso);
+    var start = Date.parse(startIso);
     if (!Number.isNaN(start) && now >= start) return 'in_progress';
     return 'upcoming';
   }
 
-  function renderAppointments(appointments: RenderedAppt[]) {
+  function pad(n) { return n.toString().padStart(2, '0'); }
+
+  function buildAdminGoogleCalUrl(appt) {
+    var slot = appt.appointment_slots;
+    if (!slot) return '#';
+    var start = new Date(slot.start_time);
+    var end   = new Date(slot.end_time);
+    var fmt = function (d) {
+      return d.getUTCFullYear() + pad(d.getUTCMonth() + 1) + pad(d.getUTCDate()) + 'T' + pad(d.getUTCHours()) + pad(d.getUTCMinutes()) + '00Z';
+    };
+    var name = (appt.user_profile && appt.user_profile.full_name) ||
+               (appt.user_profile && appt.user_profile.email) ||
+               appt.candidate_email ||
+               'Bénévole';
+    var params = new URLSearchParams({
+      action: 'TEMPLATE',
+      text: 'RDV Biscuits IA — ' + name,
+      dates: fmt(start) + '/' + fmt(end),
+      details: 'Rendez-vous avec ' + name + '.',
+    });
+    return 'https://calendar.google.com/calendar/render?' + params.toString();
+  }
+
+  function escapeHtml(s) {
+    return s.replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+
+  function updateAppointmentStatus(id, status) {
+    var actionLabel = status === 'confirmed' ? 'confirmer' : (status === 'cancelled' && id.charAt(0) === 'p') ? 'rejeter' : 'annuler';
+    var danger = status === 'cancelled';
+    var verb   = status === 'confirmed' ? 'Confirmer' : 'Annuler';
+
+    if (typeof window.showConfirm !== 'function') return;
+
+    window.showConfirm({
+      title: verb + ' la réservation',
+      message: 'Êtes-vous sûr de vouloir ' + actionLabel + ' cette réservation ?',
+      confirmLabel: verb,
+      danger: danger,
+    }).then(function (ok) {
+      if (!ok) return;
+      return fetch('/api/admin/appointments/' + id, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ status: status }),
+      });
+    }).then(function (response) {
+      if (!response || !response.ok) throw new Error('Erreur ' + (response ? response.status : 'inconnue'));
+      showError('');
+      toast(status === 'confirmed' ? '✓ Réservation confirmée' : '✓ Réservation annulée', 'success');
+      loadAppointments();
+    }).catch(function (err) {
+      var msg = err instanceof Error ? err.message : 'Erreur inconnue';
+      showError(msg);
+      toast(msg, 'error');
+    });
+  }
+
+  function renderAppointments(appointments) {
+    if (!contentDiv) return;
     if (appointments.length === 0) {
       contentDiv.innerHTML = '<div class="no-appointments">Aucune réservation pour le moment</div>';
       return;
     }
 
-    const html = `
+    var html = `
       <table class="appointments-table">
         <thead>
           <tr>
@@ -259,118 +306,52 @@ const { year, month, slots = [], appointments = [], selectedDay = null, nonce } 
           </tr>
         </thead>
         <tbody>
-          ${appointments.map((appt, idx) => {
-            const slot = appt.appointment_slots;
-            let slotLabel = '<em>Créneau supprimé</em>';
-            let temporalBadge = '';
+          ${appointments.map(function (appt, idx) {
+            var slot = appt.appointment_slots;
+            var slotLabel = '<em>Créneau supprimé</em>';
+            var temporalBadge = '';
             if (slot) {
-              const start = new Date(slot.start_time);
-              const end   = new Date(slot.end_time);
-              const pad   = (n: number) => n.toString().padStart(2, '0');
-              slotLabel = `${start.toLocaleDateString('fr-FR')} ${pad(start.getHours())}:${pad(start.getMinutes())} - ${pad(end.getHours())}:${pad(end.getMinutes())}`;
-              const ts = temporalState(slot.start_time, slot.end_time);
-              const tsLabel = ts === 'past' ? 'Passé' : ts === 'in_progress' ? 'En cours' : 'À venir';
-              temporalBadge = `<span class="temporal-badge temporal-${ts}">${tsLabel}</span>`;
+              var start = new Date(slot.start_time);
+              var end   = new Date(slot.end_time);
+              slotLabel = start.toLocaleDateString('fr-FR') + ' ' + pad(start.getHours()) + ':' + pad(start.getMinutes()) + ' - ' + pad(end.getHours()) + ':' + pad(end.getMinutes());
+              var ts = temporalState(slot.start_time, slot.end_time);
+              var tsLabel = ts === 'past' ? 'Passé' : ts === 'in_progress' ? 'En cours' : 'À venir';
+              temporalBadge = '<span class="temporal-badge temporal-' + ts + '">' + tsLabel + '</span>';
             }
-            const userName  = appt.user_profile?.full_name || appt.user_profile?.email || appt.candidate_email || '-';
-            const userEmail = appt.user_profile?.email || appt.candidate_email || '-';
-            const isPending   = appt.status === 'pending';
-            const isConfirmed = appt.status === 'confirmed';
-            return `
-              <tr class="${idx % 2 === 0 ? 'even' : 'odd'} status-${appt.status}">
-                <td>${escapeHtml(String(userName))}</td>
-                <td>${escapeHtml(String(userEmail))}</td>
-                <td class="monospace">${slotLabel}${temporalBadge}</td>
-                <td>
-                  <span class="badge ${appt.status === 'confirmed' ? 'badge-success' : appt.status === 'cancelled' ? 'badge-danger' : 'badge-pending'}">
-                    ${appt.status === 'confirmed' ? '✓ Confirmé' : appt.status === 'cancelled' ? '✗ Annulé' : '⏳ En attente'}
-                  </span>
-                </td>
-                <td>${new Date(appt.created_at).toLocaleDateString('fr-FR')}</td>
-                <td class="actions">
-                  ${isPending ? `
-                    <div class="actions-col">
-                      <button class="btn-confirm" data-id="${appt.id}">✓ Confirmer</button>
-                      <button class="btn-reject" data-id="${appt.id}">✗ Rejeter</button>
-                    </div>
-                  ` : isConfirmed ? `
-                    <div class="actions-col">
-                      <a href="${buildAdminGoogleCalUrl(appt)}" target="_blank" rel="noopener noreferrer" class="btn-gcal-admin">📅 Agenda</a>
-                      <button class="btn-reject" data-id="${appt.id}">✗ Annuler</button>
-                    </div>
-                  ` : `<span class="text-muted">—</span>`}
-                </td>
-              </tr>
-            `;
+            var userName  = (appt.user_profile && appt.user_profile.full_name) ||
+                            (appt.user_profile && appt.user_profile.email) ||
+                            appt.candidate_email ||
+                            '-';
+            var userEmail = (appt.user_profile && appt.user_profile.email) || appt.candidate_email || '-';
+            var isPending   = appt.status === 'pending';
+            var isConfirmed = appt.status === 'confirmed';
+            var actions = isPending
+              ? '<div class="actions-col"><button class="btn-confirm" data-id="' + escapeHtml(appt.id) + '">✓ Confirmer</button><button class="btn-reject" data-id="' + escapeHtml(appt.id) + '">✗ Rejeter</button></div>'
+              : isConfirmed
+              ? '<div class="actions-col"><a href="' + escapeHtml(buildAdminGoogleCalUrl(appt)) + '" target="_blank" rel="noopener noreferrer" class="btn-gcal-admin">📅 Agenda</a><button class="btn-reject" data-id="' + escapeHtml(appt.id) + '">✗ Annuler</button></div>'
+              : '<span class="text-muted">—</span>';
+            return '<tr class="' + (idx % 2 === 0 ? 'even' : 'odd') + ' status-' + escapeHtml(appt.status) + '">' +
+              '<td>' + escapeHtml(String(userName)) + '</td>' +
+              '<td>' + escapeHtml(String(userEmail)) + '</td>' +
+              '<td class="monospace">' + slotLabel + temporalBadge + '</td>' +
+              '<td><span class="badge ' + (appt.status === 'confirmed' ? 'badge-success' : appt.status === 'cancelled' ? 'badge-danger' : 'badge-pending') + '">' +
+                (appt.status === 'confirmed' ? '✓ Confirmé' : appt.status === 'cancelled' ? '✗ Annulé' : '⏳ En attente') +
+              '</span></td>' +
+              '<td>' + new Date(appt.created_at).toLocaleDateString('fr-FR') + '</td>' +
+              '<td class="actions">' + actions + '</td>' +
+            '</tr>';
           }).join('')}
         </tbody>
       </table>
     `;
     contentDiv.innerHTML = html;
 
-    document.querySelectorAll<HTMLButtonElement>('.btn-confirm').forEach((btn) => {
-      btn.addEventListener('click', () => updateAppointmentStatus(btn.dataset.id!, 'confirmed'));
+    document.querySelectorAll('.btn-confirm').forEach(function (btn) {
+      btn.addEventListener('click', function () { if (btn.dataset.id) updateAppointmentStatus(btn.dataset.id, 'confirmed'); });
     });
-    document.querySelectorAll<HTMLButtonElement>('.btn-reject').forEach((btn) => {
-      btn.addEventListener('click', () => updateAppointmentStatus(btn.dataset.id!, 'cancelled'));
+    document.querySelectorAll('.btn-reject').forEach(function (btn) {
+      btn.addEventListener('click', function () { if (btn.dataset.id) updateAppointmentStatus(btn.dataset.id, 'cancelled'); });
     });
-  }
-
-  async function updateAppointmentStatus(id: string, status: 'confirmed' | 'cancelled') {
-    const actionLabel = status === 'confirmed' ? 'confirmer' : (status === 'cancelled' && id.startsWith('p')) ? 'rejeter' : 'annuler';
-    const danger = status === 'cancelled';
-    const verb   = status === 'confirmed' ? 'Confirmer' : 'Annuler';
-
-    if (!window.showConfirm) {
-      // La modale n'est pas montée (layout sans ConfirmDialog) — fallback no-op.
-      return;
-    }
-    const ok = await window.showConfirm({
-      title: `${verb} la réservation`,
-      message: `Êtes-vous sûr de vouloir ${actionLabel} cette réservation ?`,
-      confirmLabel: verb,
-      danger,
-    });
-    if (!ok) return;
-
-    try {
-      const response = await fetch(`/api/admin/appointments/${id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ status }),
-      });
-      if (!response.ok) throw new Error(`Erreur ${response.status}`);
-      showError('');
-      toast(status === 'confirmed' ? '✓ Réservation confirmée' : '✓ Réservation annulée', 'success');
-      await loadAppointments();
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Erreur inconnue';
-      showError(msg);
-      toast(msg, 'error');
-    }
-  }
-
-  function buildAdminGoogleCalUrl(appt: RenderedAppt): string {
-    const slot = appt.appointment_slots;
-    if (!slot) return '#';
-    const start = new Date(slot.start_time);
-    const end   = new Date(slot.end_time);
-    const pad = (n: number) => n.toString().padStart(2, '0');
-    const fmt = (d: Date) =>
-      `${d.getUTCFullYear()}${pad(d.getUTCMonth() + 1)}${pad(d.getUTCDate())}T${pad(d.getUTCHours())}${pad(d.getUTCMinutes())}00Z`;
-    const name = appt.user_profile?.full_name || appt.user_profile?.email || appt.candidate_email || 'Bénévole';
-    const params = new URLSearchParams({
-      action: 'TEMPLATE',
-      text: `RDV Biscuits IA — ${name}`,
-      dates: `${fmt(start)}/${fmt(end)}`,
-      details: `Rendez-vous avec ${name}.`,
-    });
-    return `https://calendar.google.com/calendar/render?${params.toString()}`;
-  }
-
-  function escapeHtml(s: string): string {
-    return s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!));
   }
 
   loadAppointments();

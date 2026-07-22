@@ -70,10 +70,6 @@ function isSameDayUTC(a: Date, b: Date): boolean {
     && a.getUTCMonth() === b.getUTCMonth()
     && a.getUTCDate() === b.getUTCDate();
 }
-function formatTimeUTC(iso: string): string {
-  const d = new Date(iso);
-  return `${String(d.getUTCHours()).padStart(2, '0')}:${String(d.getUTCMinutes()).padStart(2, '0')}`;
-}
 function pageUrl(params: Record<string, string | number>): string {
   const base = new URLSearchParams({ y: String(year), m: String(month) });
   for (const [k, v] of Object.entries(params)) base.set(k, String(v));
@@ -81,7 +77,6 @@ function pageUrl(params: Record<string, string | number>): string {
 }
 
 const today = new Date();
-const todayKey = toDateKey(today);
 const monthLabel = `${MONTH_LABELS[cursor.getUTCMonth()]} ${cursor.getUTCFullYear()}`;
 
 const prevDate = new Date(Date.UTC(year, month - 2, 1));
@@ -112,10 +107,6 @@ for (const list of slotsByDay.values()) {
 }
 
 const selectedDate = selectedDay ? new Date(`${selectedDay}T00:00:00Z`) : null;
-const selectedKey = selectedDate ? toDateKey(selectedDate) : null;
-const selectedAppointments = selectedKey ? (apptsByDay.get(selectedKey) ?? []) : [];
-const selectedSlots = selectedKey ? (slotsByDay.get(selectedKey) ?? []) : [];
-const baseActionUrl = `/dashboard/admin/appointments?y=${year}&m=${month}`;
 
 interface DayCell {
   date: Date;
@@ -144,7 +135,8 @@ const ORDERED_STATUSES: AppointmentStatus[] = ['confirmed', 'pending', 'cancelle
 const STATUS_KEYS: AppointmentStatus[] = Object.keys(STATUS_COLORS) as AppointmentStatus[];
 ---
 
-<div class="appts-cal" data-base-action={baseActionUrl} data-selected-key={selectedKey ?? ''}>
+<div class="appts-cal">
+  <script type="application/json" is:inline data-cal-data set:html={JSON.stringify({ year, month, slots, appointments, selectedDay })}></script>
   <div class="appts-cal-toolbar">
     <div class="appts-cal-nav">
       <a href={prevUrl} class="btn btn-ghost btn-sm" aria-label="Mois précédent">‹</a>
@@ -172,8 +164,9 @@ const STATUS_KEYS: AppointmentStatus[] = Object.keys(STATUS_COLORS) as Appointme
       <div class="appts-cal-weekday" role="columnheader">{w}</div>
     ))}
     {dayCells.map((day) => (
-      <a
-        href={pageUrl({ d: day.key })}
+      <button
+        type="button"
+        data-day={day.key}
         role="gridcell"
         aria-selected={day.isSelected}
         class:list={[
@@ -202,113 +195,11 @@ const STATUS_KEYS: AppointmentStatus[] = Object.keys(STATUS_COLORS) as Appointme
             🕒 {day.daySlots.length}
           </span>
         )}
-      </a>
+      </button>
     ))}
   </div>
 
-  {selectedDate && (
-    <div class="appts-cal-detail">
-      <div class="appts-cal-detail-header">
-        <h3>
-          {selectedDate.toLocaleDateString('fr-FR', {
-            weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC',
-          })}
-        </h3>
-        <a href={pageUrl({})} class="btn btn-ghost btn-sm">Fermer</a>
-      </div>
-
-      <section class="appts-cal-section">
-        <header class="appts-cal-section-header">
-          <h4>🕒 Créneaux configurés <span class="appts-cal-section-count">{selectedSlots.length}</span></h4>
-        </header>
-
-        {selectedSlots.length === 0 ? (
-          <p class="appts-cal-empty">Aucun créneau configuré pour ce jour.</p>
-        ) : (
-          <ul class="appts-cal-slots-list">
-            {selectedSlots.map((s) => {
-              const taken = selectedAppointments.some((a) => a.start_time === s.start_time);
-              return (
-                <li class:list={['appts-cal-slot-item', { 'appts-cal-slot-item--taken': taken }, { 'appts-cal-slot-item--disabled': !s.is_available }]}>
-                  <span class="appts-cal-slot-time">
-                    {formatTimeUTC(s.start_time)} – {formatTimeUTC(s.end_time)}
-                  </span>
-                  <span class="appts-cal-slot-flags">
-                    {taken && <span class="appts-cal-flag appts-cal-flag--taken">Réservé</span>}
-                    {!s.is_available && <span class="appts-cal-flag appts-cal-flag--off">Désactivé</span>}
-                    {!taken && s.is_available && <span class="appts-cal-flag appts-cal-flag--free">Libre</span>}
-                  </span>
-                  <button
-                    type="button"
-                    class="appts-cal-slot-delete"
-                    data-delete-slot={s.id}
-                    data-time={formatTimeUTC(s.start_time)}
-                    aria-label={`Supprimer le créneau ${formatTimeUTC(s.start_time)}`}
-                    title="Supprimer"
-                  >
-                    🗑
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
-        )}
-
-        <form class="appts-cal-add-form" data-add-slot>
-          <div class="appts-cal-add-fields">
-            <label>
-              <span>Début</span>
-              <input type="time" name="start" value="09:00" required />
-            </label>
-            <label>
-              <span>Fin</span>
-              <input type="time" name="end" value="10:00" required />
-            </label>
-            <button type="submit" class="btn btn-primary btn-sm">+ Ajouter</button>
-          </div>
-          <p class="appts-cal-add-error" role="alert" hidden></p>
-          <p class="appts-cal-add-hint">
-            L'anti-chevauchement est vérifié côté serveur (chevauche un créneau existant → erreur 409).
-          </p>
-        </form>
-      </section>
-
-      <section class="appts-cal-section">
-        <header class="appts-cal-section-header">
-          <h4>📅 Rendez-vous <span class="appts-cal-section-count">{selectedAppointments.length}</span></h4>
-        </header>
-
-        {selectedAppointments.length === 0 ? (
-          <p class="appts-cal-empty">Aucun rendez-vous ce jour-là.</p>
-        ) : (
-          <ul class="appts-cal-list">
-            {selectedAppointments.map((a) => (
-              <li class="appts-cal-list-item">
-                <span
-                  class="appts-cal-status"
-                  style={{ backgroundColor: STATUS_COLORS[a.status] }}
-                  aria-label={STATUS_LABELS[a.status]}
-                />
-                <div class="appts-cal-list-body">
-                  <div class="appts-cal-list-time">
-                    {formatTimeUTC(a.start_time)} – {formatTimeUTC(a.end_time)}
-                  </div>
-                  <div class="appts-cal-list-who">
-                    {a.user_profile?.full_name ?? a.candidate_email ?? 'Anonyme'}
-                    {a.user_profile?.email && (
-                      <span class="appts-cal-list-email"> · {a.user_profile.email}</span>
-                    )}
-                  </div>
-                  {a.notes && <div class="appts-cal-list-notes">📝 {a.notes}</div>}
-                </div>
-                <span class="appts-cal-list-status-label">{STATUS_LABELS[a.status]}</span>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
-    </div>
-  )}
+  <div class="appts-cal-detail-host"></div>
 
   <div class="appts-cal-legend" aria-label="Légende des statuts">
     {STATUS_KEYS.map((s) => (
@@ -322,16 +213,223 @@ const STATUS_KEYS: AppointmentStatus[] = Object.keys(STATUS_COLORS) as Appointme
 
 <script is:inline nonce={nonce}>
   (function () {
-    var root = document.querySelector('.appts-cal');
-    if (!root) return;
-    var baseAction = root.getAttribute('data-base-action') || window.location.pathname + window.location.search;
-    var selectedKey = root.getAttribute('data-selected-key') || '';
+    const root = document.querySelector('.appts-cal');
+    const dataEl = document.querySelector('script[data-cal-data]');
+    if (!root || !dataEl) return;
+
+    const data = JSON.parse(dataEl.textContent);
+    const year = data.year;
+    const month = data.month;
+    let slots = data.slots || [];
+    let appointments = data.appointments || [];
+    let selectedKey = data.selectedDay || null;
+
+    const STATUS_LABELS = { pending: 'En attente', confirmed: 'Confirmé', cancelled: 'Annulé' };
+    const STATUS_COLORS = { pending: '#E89A3C', confirmed: '#3D5A47', cancelled: '#9A7E5A' };
+    const ORDERED_STATUSES = ['confirmed', 'pending', 'cancelled'];
+
+    function pad(n) { return n.toString().padStart(2, '0'); }
+    function toDateKey(d) {
+      return d.getUTCFullYear() + '-' + pad(d.getUTCMonth() + 1) + '-' + pad(d.getUTCDate());
+    }
+    function formatTimeUTC(iso) {
+      const d = new Date(iso);
+      return pad(d.getUTCHours()) + ':' + pad(d.getUTCMinutes());
+    }
+
+    function buildIndex() {
+      const apptsByDay = {};
+      const slotsByDay = {};
+      for (let i = 0; i < appointments.length; i++) {
+        const a = appointments[i];
+        const key = toDateKey(new Date(a.start_time));
+        if (!apptsByDay[key]) apptsByDay[key] = [];
+        apptsByDay[key].push(a);
+      }
+      for (let i = 0; i < slots.length; i++) {
+        const s = slots[i];
+        const key = toDateKey(new Date(s.start_time));
+        if (!slotsByDay[key]) slotsByDay[key] = [];
+        slotsByDay[key].push(s);
+      }
+      for (const key in apptsByDay) {
+        apptsByDay[key].sort(function (x, y) { return Date.parse(x.start_time) - Date.parse(y.start_time); });
+      }
+      for (const key in slotsByDay) {
+        slotsByDay[key].sort(function (x, y) { return Date.parse(x.start_time) - Date.parse(y.start_time); });
+      }
+      return { apptsByDay: apptsByDay, slotsByDay: slotsByDay };
+    }
+
+    let index = buildIndex();
+
+    function renderCalendarDots() {
+      index = buildIndex();
+      root.querySelectorAll('button[data-day]').forEach(function (btn) {
+        const key = btn.getAttribute('data-day');
+        const dayAppts = index.apptsByDay[key] || [];
+        const daySlots = index.slotsByDay[key] || [];
+        const counts = { pending: 0, confirmed: 0, cancelled: 0 };
+        for (let i = 0; i < dayAppts.length; i++) counts[dayAppts[i].status]++;
+
+        let dotsEl = btn.querySelector('.appts-cal-dots');
+        if (dayAppts.length > 0) {
+          if (!dotsEl) {
+            dotsEl = document.createElement('span');
+            dotsEl.className = 'appts-cal-dots';
+            btn.appendChild(dotsEl);
+          }
+          dotsEl.innerHTML = '';
+          for (let i = 0; i < ORDERED_STATUSES.length; i++) {
+            const s = ORDERED_STATUSES[i];
+            if (counts[s] > 0) {
+              const span = document.createElement('span');
+              span.className = 'appts-cal-dot';
+              span.style.backgroundColor = STATUS_COLORS[s];
+              span.title = counts[s] + ' ' + STATUS_LABELS[s];
+              dotsEl.appendChild(span);
+            }
+          }
+          dotsEl.setAttribute('aria-label', dayAppts.length + ' rendez-vous');
+        } else if (dotsEl) {
+          dotsEl.remove();
+        }
+
+        let slotsCountEl = btn.querySelector('.appts-cal-slots-count');
+        if (daySlots.length > 0) {
+          if (!slotsCountEl) {
+            slotsCountEl = document.createElement('span');
+            slotsCountEl.className = 'appts-cal-slots-count';
+            btn.appendChild(slotsCountEl);
+          }
+          slotsCountEl.textContent = '🕒 ' + daySlots.length;
+          slotsCountEl.title = daySlots.length + ' créneau(x) configuré(s)';
+        } else if (slotsCountEl) {
+          slotsCountEl.remove();
+        }
+      });
+    }
+
+    function escapeHtml(s) {
+      return String(s).replace(/[&<>"']/g, function (c) {
+        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+      });
+    }
+
+    function renderDetail() {
+      const host = root.querySelector('.appts-cal-detail-host');
+      if (!host) return;
+      if (!selectedKey) {
+        host.innerHTML = '';
+        return;
+      }
+
+      const date = new Date(selectedKey + 'T00:00:00Z');
+      const dateLabel = date.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
+      const daySlots = index.slotsByDay[selectedKey] || [];
+      const dayAppts = index.apptsByDay[selectedKey] || [];
+
+      let html = '<div class="appts-cal-detail">' +
+        '<div class="appts-cal-detail-header">' +
+          '<h3>' + dateLabel + '</h3>' +
+          '<button type="button" class="btn btn-ghost btn-sm" data-close-day>Fermer</button>' +
+        '</div>' +
+        '<section class="appts-cal-section">' +
+          '<header class="appts-cal-section-header">' +
+            '<h4>🕒 Créneaux configurés <span class="appts-cal-section-count">' + daySlots.length + '</span></h4>' +
+          '</header>';
+
+      if (daySlots.length === 0) {
+        html += '<p class="appts-cal-empty">Aucun créneau configuré pour ce jour.</p>';
+      } else {
+        html += '<ul class="appts-cal-slots-list">';
+        for (let i = 0; i < daySlots.length; i++) {
+          const s = daySlots[i];
+          let taken = false;
+          for (let j = 0; j < dayAppts.length; j++) {
+            if (dayAppts[j].start_time === s.start_time) { taken = true; break; }
+          }
+          let classes = 'appts-cal-slot-item';
+          if (taken) classes += ' appts-cal-slot-item--taken';
+          if (!s.is_available) classes += ' appts-cal-slot-item--disabled';
+          html += '<li class="' + classes + '">' +
+            '<span class="appts-cal-slot-time">' + escapeHtml(formatTimeUTC(s.start_time)) + ' – ' + escapeHtml(formatTimeUTC(s.end_time)) + '</span>' +
+            '<span class="appts-cal-slot-flags">' +
+              (taken ? '<span class="appts-cal-flag appts-cal-flag--taken">Réservé</span>' : '') +
+              (!s.is_available ? '<span class="appts-cal-flag appts-cal-flag--off">Désactivé</span>' : '') +
+              (!taken && s.is_available ? '<span class="appts-cal-flag appts-cal-flag--free">Libre</span>' : '') +
+            '</span>' +
+            '<button type="button" class="appts-cal-slot-delete" data-delete-slot="' + escapeHtml(s.id) + '" data-time="' + escapeHtml(formatTimeUTC(s.start_time)) + '" aria-label="Supprimer le créneau ' + escapeHtml(formatTimeUTC(s.start_time)) + '" title="Supprimer">🗑</button>' +
+          '</li>';
+        }
+        html += '</ul>';
+      }
+
+      html += '<form class="appts-cal-add-form" data-add-slot>' +
+        '<div class="appts-cal-add-fields">' +
+          '<label><span>Début</span><input type="time" name="start" value="09:00" required /></label>' +
+          '<label><span>Fin</span><input type="time" name="end" value="10:00" required /></label>' +
+          '<button type="submit" class="btn btn-primary btn-sm">+ Ajouter</button>' +
+        '</div>' +
+        '<p class="appts-cal-add-error" role="alert" hidden></p>' +
+        '<p class="appts-cal-add-hint">L\'anti-chevauchement est vérifié côté serveur (chevauche un créneau existant → erreur 409).</p>' +
+      '</form></section>';
+
+      html += '<section class="appts-cal-section">' +
+        '<header class="appts-cal-section-header">' +
+          '<h4>📅 Rendez-vous <span class="appts-cal-section-count">' + dayAppts.length + '</span></h4>' +
+        '</header>';
+
+      if (dayAppts.length === 0) {
+        html += '<p class="appts-cal-empty">Aucun rendez-vous ce jour-là.</p>';
+      } else {
+        html += '<ul class="appts-cal-list">';
+        for (let i = 0; i < dayAppts.length; i++) {
+          const a = dayAppts[i];
+          const who = a.user_profile && a.user_profile.full_name ? a.user_profile.full_name : (a.candidate_email ? a.candidate_email : 'Anonyme');
+          const email = a.user_profile && a.user_profile.email ? a.user_profile.email : null;
+          html += '<li class="appts-cal-list-item">' +
+            '<span class="appts-cal-status" style="background-color:' + STATUS_COLORS[a.status] + '" aria-label="' + STATUS_LABELS[a.status] + '"></span>' +
+            '<div class="appts-cal-list-body">' +
+              '<div class="appts-cal-list-time">' + escapeHtml(formatTimeUTC(a.start_time)) + ' – ' + escapeHtml(formatTimeUTC(a.end_time)) + '</div>' +
+              '<div class="appts-cal-list-who">' + escapeHtml(who) + (email ? ' <span class="appts-cal-list-email"> · ' + escapeHtml(email) + '</span>' : '') + '</div>' +
+              (a.notes ? '<div class="appts-cal-list-notes">📝 ' + escapeHtml(a.notes) + '</div>' : '') +
+            '</div>' +
+            '<span class="appts-cal-list-status-label">' + STATUS_LABELS[a.status] + '</span>' +
+          '</li>';
+        }
+        html += '</ul>';
+      }
+
+      html += '</section></div>';
+      host.innerHTML = html;
+
+      const closeBtn = host.querySelector('button[data-close-day]');
+      if (closeBtn) closeBtn.addEventListener('click', function () { selectDay(null); });
+
+      const addForm = host.querySelector('form[data-add-slot]');
+      if (addForm) addForm.addEventListener('submit', onAddSlot);
+
+      host.querySelectorAll('button[data-delete-slot]').forEach(function (btn) {
+        btn.addEventListener('click', onDeleteSlot);
+      });
+    }
+
+    function selectDay(key) {
+      selectedKey = key;
+      root.querySelectorAll('button[data-day]').forEach(function (btn) {
+        const isSelected = btn.getAttribute('data-day') === selectedKey;
+        btn.classList.toggle('appts-cal-cell--selected', isSelected);
+        btn.setAttribute('aria-selected', String(isSelected));
+      });
+      renderDetail();
+    }
 
     function toast(msg, type) {
       if (typeof window.showToast === 'function') window.showToast(msg, type);
     }
     function showAddError(form, msg) {
-      var el = form.querySelector('.appts-cal-add-error');
+      const el = form.querySelector('.appts-cal-add-error');
       if (!el) return;
       el.textContent = msg ? '❌ ' + msg : '';
       el.hidden = !msg;
@@ -341,79 +439,105 @@ const STATUS_KEYS: AppointmentStatus[] = Object.keys(STATUS_COLORS) as Appointme
       return new Date(dateKey + 'T' + time + ':00.000Z').toISOString();
     }
 
-    var addForm = root.querySelector('form[data-add-slot]');
-    if (addForm) {
-      addForm.addEventListener('submit', function (e) {
-        e.preventDefault();
-        var fd = new FormData(addForm);
-        var start = fd.get('start');
-        var end = fd.get('end');
-        var btn = addForm.querySelector('button[type="submit"]');
-        if (!start || !end) return;
-        if (start >= end) {
-          showAddError(addForm, "L'heure de fin doit être après l'heure de début.");
-          return;
-        }
-        if (btn) btn.disabled = true;
-        showAddError(addForm, '');
-        fetch('/api/appointment-slots', {
-          method: 'POST',
-          credentials: 'include',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            start_time: isoFromDateAndTime(selectedKey, start),
-            end_time: isoFromDateAndTime(selectedKey, end),
-          }),
-        })
-          .then(function (res) {
-            if (!res.ok) return res.json().then(function (data) { throw new Error(data.error || 'Erreur ' + res.status); });
-            toast('Créneau ajouté', 'success');
-            window.location.href = baseAction + '&d=' + selectedKey;
-          })
-          .catch(function (err) {
-            var msg = err instanceof Error ? err.message : 'Erreur';
-            showAddError(addForm, msg);
-            toast(msg, 'error');
-          })
-          .finally(function () {
-            if (btn) btn.disabled = false;
-          });
+    function reloadData() {
+      const start = new Date(Date.UTC(year, month - 1, 1)).toISOString();
+      const end = new Date(Date.UTC(year, month, 1)).toISOString();
+      return Promise.all([
+        fetch('/api/appointment-slots', { credentials: 'include' }).then(function (r) { if (!r.ok) throw new Error('Erreur ' + r.status); return r.json(); }),
+        fetch('/api/admin/appointments', { credentials: 'include' }).then(function (r) { if (!r.ok) throw new Error('Erreur ' + r.status); return r.json(); })
+      ]).then(function (results) {
+        slots = results[0] || [];
+        const rawAppts = results[1];
+        const apptList = Array.isArray(rawAppts) ? rawAppts : (rawAppts && typeof rawAppts === 'object' && Array.isArray(rawAppts.data) ? rawAppts.data : []);
+        appointments = apptList.map(function (a) {
+          const slot = a.appointment_slots;
+          return {
+            id: a.id,
+            status: a.status,
+            start_time: slot ? slot.start_time : a.start_time,
+            end_time: slot ? slot.end_time : a.end_time,
+            notes: a.notes,
+            candidate_email: a.candidate_email,
+            user_profile: a.user_profile || null,
+          };
+        });
+        slots = slots.filter(function (s) { return s.start_time >= start && s.start_time < end; });
+        appointments = appointments.filter(function (a) { return a.start_time >= start && a.start_time < end; });
+        index = buildIndex();
+        renderCalendarDots();
+        renderDetail();
+      }).catch(function (err) {
+        const msg = err instanceof Error ? err.message : 'Erreur';
+        toast(msg, 'error');
       });
     }
 
-    root.querySelectorAll('button[data-delete-slot]').forEach(function (btn) {
-      btn.addEventListener('click', function () {
-        var id = btn.getAttribute('data-delete-slot');
-        var time = btn.getAttribute('data-time') || 'ce créneau';
-        if (!id) return;
+    function onAddSlot(e) {
+      e.preventDefault();
+      const form = e.target;
+      const fd = new FormData(form);
+      const start = fd.get('start');
+      const end = fd.get('end');
+      const btn = form.querySelector('button[type="submit"]');
+      if (!start || !end) return;
+      if (start >= end) {
+        showAddError(form, "L'heure de fin doit être après l'heure de début.");
+        return;
+      }
+      if (btn) btn.disabled = true;
+      showAddError(form, '');
+      fetch('/api/appointment-slots', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          start_time: isoFromDateAndTime(selectedKey, start),
+          end_time: isoFromDateAndTime(selectedKey, end),
+        }),
+      })
+        .then(function (res) { if (!res.ok) return res.json().then(function (data) { throw new Error(data.error || 'Erreur ' + res.status); }); return res.json(); })
+        .then(function () { toast('Créneau ajouté', 'success'); return reloadData(); })
+        .catch(function (err) { const msg = err instanceof Error ? err.message : 'Erreur'; showAddError(form, msg); toast(msg, 'error'); })
+        .finally(function () { if (btn) btn.disabled = false; });
+    }
 
-        var okPromise;
-        if (typeof window.showConfirm === 'function') {
-          okPromise = window.showConfirm({
-            title: 'Supprimer ce créneau',
-            message: 'Cette action est définitive. Si un utilisateur a réservé ce créneau, sa réservation sera également supprimée.',
-            confirmLabel: 'Supprimer',
-            danger: true,
-          });
-        } else {
-          okPromise = Promise.resolve(window.confirm('Supprimer ce créneau ?'));
-        }
+    function onDeleteSlot(e) {
+      const btn = e.currentTarget;
+      const id = btn.getAttribute('data-delete-slot');
+      const time = btn.getAttribute('data-time') || 'ce créneau';
+      if (!id) return;
 
-        okPromise.then(function (ok) {
-          if (!ok) return;
-          return fetch('/api/appointment-slots/' + id, { method: 'DELETE', credentials: 'include' })
-            .then(function (res) {
-              if (!res.ok) return res.json().then(function (data) { throw new Error(data.error || 'Erreur ' + res.status); });
-              toast('Créneau ' + time + ' supprimé', 'success');
-              window.location.href = baseAction + '&d=' + selectedKey;
-            })
-            .catch(function (err) {
-              var msg = err instanceof Error ? err.message : 'Erreur';
-              toast(msg, 'error');
-            });
+      let okPromise;
+      if (typeof window.showConfirm === 'function') {
+        okPromise = window.showConfirm({
+          title: 'Supprimer ce créneau',
+          message: 'Cette action est définitive. Si un utilisateur a réservé ce créneau, sa réservation sera également supprimée.',
+          confirmLabel: 'Supprimer',
+          danger: true,
         });
+      } else {
+        okPromise = Promise.resolve(window.confirm('Supprimer ce créneau ?'));
+      }
+
+      okPromise.then(function (ok) {
+        if (!ok) return;
+        return fetch('/api/appointment-slots/' + id, { method: 'DELETE', credentials: 'include' })
+          .then(function (res) { if (!res.ok) return res.json().then(function (data) { throw new Error(data.error || 'Erreur ' + res.status); }); return res.json(); })
+          .then(function () { toast('Créneau ' + time + ' supprimé', 'success'); return reloadData(); })
+          .catch(function (err) { const msg = err instanceof Error ? err.message : 'Erreur'; toast(msg, 'error'); });
+      });
+    }
+
+    root.querySelectorAll('button[data-day]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        const key = btn.getAttribute('data-day');
+        if (key === selectedKey) return;
+        selectDay(key);
       });
     });
+
+    renderCalendarDots();
+    renderDetail();
   })();
 </script>
 
@@ -444,9 +568,10 @@ const STATUS_KEYS: AppointmentStatus[] = Object.keys(STATUS_COLORS) as Appointme
   }
   .appts-cal-cell {
     min-height: 90px; padding: 4px 6px;
-    border-right: var(--brutal-border-thin); border-bottom: var(--brutal-border-thin);
+    border: none; border-right: var(--brutal-border-thin); border-bottom: var(--brutal-border-thin);
     display: flex; flex-direction: column; gap: 2px; overflow: hidden;
     text-decoration: none; color: inherit; background: var(--surface);
+    text-align: left; font: inherit; cursor: pointer;
   }
   .appts-cal-cell:hover { filter: brightness(.97); }
   .appts-cal-cell--out { background: color-mix(in srgb, var(--surface) 40%, transparent); color: var(--text-muted); }

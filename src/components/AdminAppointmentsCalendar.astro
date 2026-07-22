@@ -1,0 +1,509 @@
+---
+// src/components/AdminAppointmentsCalendar.astro
+//
+// Vue calendrier mensuel admin des rendez-vous et créneaux.
+// REMPLACE l'ancien composant React client:load qui ne s'hydratait jamais en
+// production (Astro émet le bootstrap des islands en balise script inline sans
+// nonce, bloqué par le CSP du middleware).
+//
+// Ce composant est rendu intégralement côté serveur. Les données sont passées
+// par la page parente. Une petite couche de JS vanilla (nonce={nonce}) gère
+// l'ajout et la suppression de créneaux sans recharger toute la page.
+
+import type { AppointmentSlot, AppointmentStatus } from '@/types/appointments';
+
+interface CalendarAppointment {
+  id: string;
+  status: AppointmentStatus;
+  start_time: string;
+  end_time: string;
+  notes: string | null;
+  candidate_email: string | null;
+  user_profile: { full_name: string | null; email: string | null } | null;
+}
+
+export interface Props {
+  year: number;
+  month: number;
+  slots: AppointmentSlot[];
+  appointments: CalendarAppointment[];
+  selectedDay: string | null;
+  nonce?: string;
+}
+
+const { year, month, slots, appointments, selectedDay, nonce } = Astro.props;
+
+const WEEKDAY_LABELS = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
+const MONTH_LABELS = [
+  'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
+  'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre',
+];
+
+const STATUS_LABELS: Record<AppointmentStatus, string> = {
+  pending:   'En attente',
+  confirmed: 'Confirmé',
+  cancelled: 'Annulé',
+};
+
+const STATUS_COLORS: Record<AppointmentStatus, string> = {
+  pending:   '#E89A3C',
+  confirmed: '#3D5A47',
+  cancelled: '#9A7E5A',
+};
+
+const now = new Date();
+const cursor = new Date(Date.UTC(year, month - 1, 1));
+const cells: Date[] = [];
+const first = new Date(Date.UTC(year, month - 1, 1));
+const firstWeekday = (first.getUTCDay() + 6) % 7;
+for (let i = 0; i < 42; i++) {
+  const day = new Date(first);
+  day.setUTCDate(first.getUTCDate() - firstWeekday + i);
+  cells.push(day);
+}
+
+function toDateKey(d: Date): string {
+  return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(d.getUTCDate()).padStart(2, '0')}`;
+}
+function isSameDayUTC(a: Date, b: Date): boolean {
+  return a.getUTCFullYear() === b.getUTCFullYear()
+    && a.getUTCMonth() === b.getUTCMonth()
+    && a.getUTCDate() === b.getUTCDate();
+}
+function formatTimeUTC(iso: string): string {
+  const d = new Date(iso);
+  return `${String(d.getUTCHours()).padStart(2, '0')}:${String(d.getUTCMinutes()).padStart(2, '0')}`;
+}
+function pageUrl(params: Record<string, string | number>): string {
+  const base = new URLSearchParams({ y: String(year), m: String(month) });
+  for (const [k, v] of Object.entries(params)) base.set(k, String(v));
+  return `/dashboard/admin/appointments?${base.toString()}`;
+}
+
+const today = new Date();
+const todayKey = toDateKey(today);
+const monthLabel = `${MONTH_LABELS[cursor.getUTCMonth()]} ${cursor.getUTCFullYear()}`;
+
+const prevDate = new Date(Date.UTC(year, month - 2, 1));
+const nextDate = new Date(Date.UTC(year, month, 1));
+const prevUrl = pageUrl({ y: prevDate.getUTCFullYear(), m: prevDate.getUTCMonth() + 1 });
+const nextUrl = pageUrl({ y: nextDate.getUTCFullYear(), m: nextDate.getUTCMonth() + 1 });
+const todayUrl = pageUrl({ y: now.getUTCFullYear(), m: now.getUTCMonth() + 1 });
+
+const apptsByDay = new Map<string, CalendarAppointment[]>();
+const slotsByDay = new Map<string, AppointmentSlot[]>();
+for (const a of appointments) {
+  const key = toDateKey(new Date(a.start_time));
+  const list = apptsByDay.get(key);
+  if (list) list.push(a);
+  else apptsByDay.set(key, [a]);
+}
+for (const s of slots) {
+  const key = toDateKey(new Date(s.start_time));
+  const list = slotsByDay.get(key);
+  if (list) list.push(s);
+  else slotsByDay.set(key, [s]);
+}
+for (const list of apptsByDay.values()) {
+  list.sort((x, y) => Date.parse(x.start_time) - Date.parse(y.start_time));
+}
+for (const list of slotsByDay.values()) {
+  list.sort((x, y) => Date.parse(x.start_time) - Date.parse(y.start_time));
+}
+
+const selectedDate = selectedDay ? new Date(`${selectedDay}T00:00:00Z`) : null;
+const selectedKey = selectedDate ? toDateKey(selectedDate) : null;
+const selectedAppointments = selectedKey ? (apptsByDay.get(selectedKey) ?? []) : [];
+const selectedSlots = selectedKey ? (slotsByDay.get(selectedKey) ?? []) : [];
+const baseActionUrl = `/dashboard/admin/appointments?y=${year}&m=${month}`;
+
+interface DayCell {
+  date: Date;
+  key: string;
+  inMonth: boolean;
+  isToday: boolean;
+  isSelected: boolean;
+  dayAppts: CalendarAppointment[];
+  daySlots: AppointmentSlot[];
+  counts: { pending: number; confirmed: number; cancelled: number };
+}
+
+const dayCells: DayCell[] = cells.map((d) => {
+  const key = toDateKey(d);
+  const inMonth = d.getUTCMonth() === cursor.getUTCMonth();
+  const isToday = isSameDayUTC(d, today);
+  const isSelected = selectedDate ? isSameDayUTC(d, selectedDate) : false;
+  const dayAppts = apptsByDay.get(key) ?? [];
+  const daySlots = slotsByDay.get(key) ?? [];
+  const counts = { pending: 0, confirmed: 0, cancelled: 0 };
+  for (const a of dayAppts) counts[a.status]++;
+  return { date: d, key, inMonth, isToday, isSelected, dayAppts, daySlots, counts };
+});
+
+const ORDERED_STATUSES: AppointmentStatus[] = ['confirmed', 'pending', 'cancelled'];
+const STATUS_KEYS: AppointmentStatus[] = Object.keys(STATUS_COLORS) as AppointmentStatus[];
+---
+
+<div class="appts-cal" data-base-action={baseActionUrl} data-selected-key={selectedKey ?? ''}>
+  <div class="appts-cal-toolbar">
+    <div class="appts-cal-nav">
+      <a href={prevUrl} class="btn btn-ghost btn-sm" aria-label="Mois précédent">‹</a>
+      <h2 class="appts-cal-title">{monthLabel}</h2>
+      <a href={nextUrl} class="btn btn-ghost btn-sm" aria-label="Mois suivant">›</a>
+    </div>
+    <div class="appts-cal-actions">
+      <a href={todayUrl} class="btn btn-ghost btn-sm">Aujourd'hui</a>
+      <a href={Astro.url.pathname + Astro.url.search} class="btn btn-ghost btn-sm">↻ Rafraîchir</a>
+    </div>
+  </div>
+
+  {appointments.length === 0 && slots.length === 0 && !selectedDate && (
+    <div class="appts-cal-welcome" role="status">
+      <div class="appts-cal-welcome-icon" aria-hidden="true">📅</div>
+      <div class="appts-cal-welcome-body">
+        <strong>Le calendrier est vide.</strong>
+        <p>Cliquez sur n'importe quel jour pour ajouter un créneau de rendez-vous disponible.</p>
+      </div>
+    </div>
+  )}
+
+  <div class="appts-cal-grid" role="grid" aria-label={`Calendrier ${monthLabel}`}>
+    {WEEKDAY_LABELS.map((w) => (
+      <div class="appts-cal-weekday" role="columnheader">{w}</div>
+    ))}
+    {dayCells.map((day) => (
+      <a
+        href={pageUrl({ d: day.key })}
+        role="gridcell"
+        aria-selected={day.isSelected}
+        class:list={[
+          'appts-cal-cell',
+          { 'appts-cal-cell--out': !day.inMonth },
+          { 'appts-cal-cell--today': day.isToday },
+          { 'appts-cal-cell--selected': day.isSelected },
+        ]}
+      >
+        <span class="appts-cal-day-num">{day.date.getUTCDate()}</span>
+        {day.dayAppts.length > 0 && (
+          <span class="appts-cal-dots" aria-label={`${day.dayAppts.length} rendez-vous`}>
+            {ORDERED_STATUSES.map((s) =>
+              day.counts[s] > 0 ? (
+                <span
+                  class="appts-cal-dot"
+                  style={{ backgroundColor: STATUS_COLORS[s] }}
+                  title={`${day.counts[s]} ${STATUS_LABELS[s]}`}
+                />
+              ) : null
+            )}
+          </span>
+        )}
+        {day.daySlots.length > 0 && (
+          <span class="appts-cal-slots-count" title={`${day.daySlots.length} créneau(x) configuré(s)`}>
+            🕒 {day.daySlots.length}
+          </span>
+        )}
+      </a>
+    ))}
+  </div>
+
+  {selectedDate && (
+    <div class="appts-cal-detail">
+      <div class="appts-cal-detail-header">
+        <h3>
+          {selectedDate.toLocaleDateString('fr-FR', {
+            weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC',
+          })}
+        </h3>
+        <a href={pageUrl({})} class="btn btn-ghost btn-sm">Fermer</a>
+      </div>
+
+      <section class="appts-cal-section">
+        <header class="appts-cal-section-header">
+          <h4>🕒 Créneaux configurés <span class="appts-cal-section-count">{selectedSlots.length}</span></h4>
+        </header>
+
+        {selectedSlots.length === 0 ? (
+          <p class="appts-cal-empty">Aucun créneau configuré pour ce jour.</p>
+        ) : (
+          <ul class="appts-cal-slots-list">
+            {selectedSlots.map((s) => {
+              const taken = selectedAppointments.some((a) => a.start_time === s.start_time);
+              return (
+                <li class:list={['appts-cal-slot-item', { 'appts-cal-slot-item--taken': taken }, { 'appts-cal-slot-item--disabled': !s.is_available }]}>
+                  <span class="appts-cal-slot-time">
+                    {formatTimeUTC(s.start_time)} – {formatTimeUTC(s.end_time)}
+                  </span>
+                  <span class="appts-cal-slot-flags">
+                    {taken && <span class="appts-cal-flag appts-cal-flag--taken">Réservé</span>}
+                    {!s.is_available && <span class="appts-cal-flag appts-cal-flag--off">Désactivé</span>}
+                    {!taken && s.is_available && <span class="appts-cal-flag appts-cal-flag--free">Libre</span>}
+                  </span>
+                  <button
+                    type="button"
+                    class="appts-cal-slot-delete"
+                    data-delete-slot={s.id}
+                    data-time={formatTimeUTC(s.start_time)}
+                    aria-label={`Supprimer le créneau ${formatTimeUTC(s.start_time)}`}
+                    title="Supprimer"
+                  >
+                    🗑
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+
+        <form class="appts-cal-add-form" data-add-slot>
+          <div class="appts-cal-add-fields">
+            <label>
+              <span>Début</span>
+              <input type="time" name="start" value="09:00" required />
+            </label>
+            <label>
+              <span>Fin</span>
+              <input type="time" name="end" value="10:00" required />
+            </label>
+            <button type="submit" class="btn btn-primary btn-sm">+ Ajouter</button>
+          </div>
+          <p class="appts-cal-add-error" role="alert" hidden></p>
+          <p class="appts-cal-add-hint">
+            L'anti-chevauchement est vérifié côté serveur (chevauche un créneau existant → erreur 409).
+          </p>
+        </form>
+      </section>
+
+      <section class="appts-cal-section">
+        <header class="appts-cal-section-header">
+          <h4>📅 Rendez-vous <span class="appts-cal-section-count">{selectedAppointments.length}</span></h4>
+        </header>
+
+        {selectedAppointments.length === 0 ? (
+          <p class="appts-cal-empty">Aucun rendez-vous ce jour-là.</p>
+        ) : (
+          <ul class="appts-cal-list">
+            {selectedAppointments.map((a) => (
+              <li class="appts-cal-list-item">
+                <span
+                  class="appts-cal-status"
+                  style={{ backgroundColor: STATUS_COLORS[a.status] }}
+                  aria-label={STATUS_LABELS[a.status]}
+                />
+                <div class="appts-cal-list-body">
+                  <div class="appts-cal-list-time">
+                    {formatTimeUTC(a.start_time)} – {formatTimeUTC(a.end_time)}
+                  </div>
+                  <div class="appts-cal-list-who">
+                    {a.user_profile?.full_name ?? a.candidate_email ?? 'Anonyme'}
+                    {a.user_profile?.email && (
+                      <span class="appts-cal-list-email"> · {a.user_profile.email}</span>
+                    )}
+                  </div>
+                  {a.notes && <div class="appts-cal-list-notes">📝 {a.notes}</div>}
+                </div>
+                <span class="appts-cal-list-status-label">{STATUS_LABELS[a.status]}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+    </div>
+  )}
+
+  <div class="appts-cal-legend" aria-label="Légende des statuts">
+    {STATUS_KEYS.map((s) => (
+      <span class="appts-cal-legend-item">
+        <span class="appts-cal-dot" style={{ backgroundColor: STATUS_COLORS[s] }} />
+        {STATUS_LABELS[s]}
+      </span>
+    ))}
+  </div>
+</div>
+
+<script is:inline nonce={nonce}>
+  (function () {
+    var root = document.querySelector('.appts-cal');
+    if (!root) return;
+    var baseAction = root.getAttribute('data-base-action') || window.location.pathname + window.location.search;
+    var selectedKey = root.getAttribute('data-selected-key') || '';
+
+    function toast(msg, type) {
+      if (typeof window.showToast === 'function') window.showToast(msg, type);
+    }
+    function showAddError(form, msg) {
+      var el = form.querySelector('.appts-cal-add-error');
+      if (!el) return;
+      el.textContent = msg ? '❌ ' + msg : '';
+      el.hidden = !msg;
+    }
+
+    function isoFromDateAndTime(dateKey, time) {
+      return new Date(dateKey + 'T' + time + ':00.000Z').toISOString();
+    }
+
+    var addForm = root.querySelector('form[data-add-slot]');
+    if (addForm) {
+      addForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+        var fd = new FormData(addForm);
+        var start = fd.get('start');
+        var end = fd.get('end');
+        var btn = addForm.querySelector('button[type="submit"]');
+        if (!start || !end) return;
+        if (start >= end) {
+          showAddError(addForm, "L'heure de fin doit être après l'heure de début.");
+          return;
+        }
+        if (btn) btn.disabled = true;
+        showAddError(addForm, '');
+        fetch('/api/appointment-slots', {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            start_time: isoFromDateAndTime(selectedKey, start),
+            end_time: isoFromDateAndTime(selectedKey, end),
+          }),
+        })
+          .then(function (res) {
+            if (!res.ok) return res.json().then(function (data) { throw new Error(data.error || 'Erreur ' + res.status); });
+            toast('Créneau ajouté', 'success');
+            window.location.href = baseAction + '&d=' + selectedKey;
+          })
+          .catch(function (err) {
+            var msg = err instanceof Error ? err.message : 'Erreur';
+            showAddError(addForm, msg);
+            toast(msg, 'error');
+          })
+          .finally(function () {
+            if (btn) btn.disabled = false;
+          });
+      });
+    }
+
+    root.querySelectorAll('button[data-delete-slot]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var id = btn.getAttribute('data-delete-slot');
+        var time = btn.getAttribute('data-time') || 'ce créneau';
+        if (!id) return;
+
+        var okPromise;
+        if (typeof window.showConfirm === 'function') {
+          okPromise = window.showConfirm({
+            title: 'Supprimer ce créneau',
+            message: 'Cette action est définitive. Si un utilisateur a réservé ce créneau, sa réservation sera également supprimée.',
+            confirmLabel: 'Supprimer',
+            danger: true,
+          });
+        } else {
+          okPromise = Promise.resolve(window.confirm('Supprimer ce créneau ?'));
+        }
+
+        okPromise.then(function (ok) {
+          if (!ok) return;
+          return fetch('/api/appointment-slots/' + id, { method: 'DELETE', credentials: 'include' })
+            .then(function (res) {
+              if (!res.ok) return res.json().then(function (data) { throw new Error(data.error || 'Erreur ' + res.status); });
+              toast('Créneau ' + time + ' supprimé', 'success');
+              window.location.href = baseAction + '&d=' + selectedKey;
+            })
+            .catch(function (err) {
+              var msg = err instanceof Error ? err.message : 'Erreur';
+              toast(msg, 'error');
+            });
+        });
+      });
+    });
+  })();
+</script>
+
+<style>
+  .appts-cal { font-family: var(--font-sans, system-ui, sans-serif); }
+  .appts-cal-toolbar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 16px; }
+  .appts-cal-nav { display: flex; align-items: center; gap: 8px; }
+  .appts-cal-title { font-size: var(--text-xl, 1.25rem); font-weight: 700; margin: 0; }
+  .appts-cal-actions { display: flex; gap: 6px; }
+  .appts-cal-loading { padding: 40px; text-align: center; color: var(--text-muted); }
+
+  .appts-cal-welcome {
+    display: flex; gap: 12px; align-items: flex-start;
+    padding: 16px; margin-bottom: 16px;
+    background: var(--surface-raised); border: var(--brutal-border-thin); border-radius: 8px;
+  }
+  .appts-cal-welcome-icon { font-size: 1.5rem; }
+  .appts-cal-welcome-body p { margin: 4px 0 0; color: var(--text-muted); }
+
+  .appts-cal-grid {
+    display: grid; grid-template-columns: repeat(7, 1fr);
+    border-top: var(--brutal-border-thin); border-left: var(--brutal-border-thin);
+  }
+  .appts-cal-weekday {
+    font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em;
+    color: var(--text-muted); text-align: center; padding: 6px 0;
+    background: var(--surface); border-right: var(--brutal-border-thin); border-bottom: var(--brutal-border-thin);
+  }
+  .appts-cal-cell {
+    min-height: 90px; padding: 4px 6px;
+    border-right: var(--brutal-border-thin); border-bottom: var(--brutal-border-thin);
+    display: flex; flex-direction: column; gap: 2px; overflow: hidden;
+    text-decoration: none; color: inherit; background: var(--surface);
+  }
+  .appts-cal-cell:hover { filter: brightness(.97); }
+  .appts-cal-cell--out { background: color-mix(in srgb, var(--surface) 40%, transparent); color: var(--text-muted); }
+  .appts-cal-cell--today { background: color-mix(in srgb, var(--accent) 6%, transparent); }
+  .appts-cal-cell--selected { box-shadow: inset 0 0 0 2px var(--accent); }
+  .appts-cal-day-num { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); margin-bottom: 2px; }
+  .appts-cal-cell--today .appts-cal-day-num { color: var(--accent); }
+
+  .appts-cal-dots { display: flex; gap: 3px; flex-wrap: wrap; margin-top: auto; }
+  .appts-cal-dot { width: 7px; height: 7px; border-radius: 50%; }
+  .appts-cal-slots-count { font-size: 0.65rem; color: var(--text-muted); margin-top: 2px; }
+
+  .appts-cal-detail { margin-top: var(--space-lg); border: var(--brutal-border-thin); border-radius: 8px; overflow: hidden; }
+  .appts-cal-detail-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: var(--surface); border-bottom: var(--brutal-border-thin); }
+  .appts-cal-detail-header h3 { margin: 0; font-size: var(--text-lg); }
+  .appts-cal-section { padding: 16px; border-bottom: var(--brutal-border-thin); }
+  .appts-cal-section:last-child { border-bottom: none; }
+  .appts-cal-section-header h4 { margin: 0 0 12px; font-size: var(--text-md); }
+  .appts-cal-section-count { font-weight: 400; color: var(--text-muted); }
+  .appts-cal-empty { color: var(--text-muted); font-size: var(--text-sm); }
+
+  .appts-cal-slots-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; }
+  .appts-cal-slot-item {
+    display: flex; align-items: center; gap: 10px; padding: 6px 8px;
+    background: var(--surface-raised); border-left: 3px solid var(--border-mid);
+  }
+  .appts-cal-slot-item--taken { border-left-color: var(--warn); }
+  .appts-cal-slot-item--disabled { opacity: .7; background: var(--surface); }
+  .appts-cal-slot-time { font-family: var(--font-mono); font-size: var(--text-sm); }
+  .appts-cal-slot-flags { display: flex; gap: 6px; margin-left: auto; }
+  .appts-cal-flag { font-size: 0.65rem; padding: 1px 5px; border-radius: 2px; }
+  .appts-cal-flag--taken { color: var(--warn-fg); background: var(--warn-bg); }
+  .appts-cal-flag--off { color: var(--text-muted); background: var(--surface); border: 1px solid var(--border-mid); }
+  .appts-cal-flag--free { color: var(--ok-fg); background: var(--ok-bg); }
+  .appts-cal-slot-delete { background: none; border: none; cursor: pointer; font-size: 1rem; padding: 2px 4px; }
+  .appts-cal-slot-delete:hover { opacity: .7; }
+
+  .appts-cal-add-form { margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--border-mid); }
+  .appts-cal-add-fields { display: flex; align-items: flex-end; gap: 10px; flex-wrap: wrap; }
+  .appts-cal-add-fields label { display: flex; flex-direction: column; gap: 4px; font-size: var(--text-xs); color: var(--text-muted); }
+  .appts-cal-add-fields input { padding: 4px 6px; border: var(--brutal-border-thin); border-radius: 4px; }
+  .appts-cal-add-error { color: var(--err); font-size: var(--text-sm); margin: 8px 0 0; }
+  .appts-cal-add-hint { font-size: var(--text-xs); color: var(--text-muted); margin: 8px 0 0; }
+
+  .appts-cal-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
+  .appts-cal-list-item {
+    display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px;
+    background: var(--surface-raised); border-radius: 6px;
+  }
+  .appts-cal-status { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; margin-top: 6px; }
+  .appts-cal-list-body { flex: 1; }
+  .appts-cal-list-time { font-weight: 600; }
+  .appts-cal-list-who { font-size: var(--text-sm); color: var(--text-secondary); }
+  .appts-cal-list-email { color: var(--text-muted); }
+  .appts-cal-list-notes { font-size: var(--text-sm); color: var(--text-secondary); margin-top: 4px; }
+  .appts-cal-list-status-label { font-size: var(--text-xs); color: var(--text-muted); white-space: nowrap; }
+
+  .appts-cal-legend { display: flex; gap: 16px; margin-top: var(--space-md); padding-top: var(--space-sm); border-top: 1px solid var(--border-mid); flex-wrap: wrap; }
+  .appts-cal-legend-item { display: flex; align-items: center; gap: 6px; font-size: var(--text-xs); color: var(--text-muted); }
+</style>

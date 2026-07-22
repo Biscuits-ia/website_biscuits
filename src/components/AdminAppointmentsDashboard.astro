@@ -2,12 +2,34 @@
 // src/components/AdminAppointmentsDashboard.astro
 //
 // Vue admin des réservations avec toggle Tableau / Calendrier (F1).
-// La vue calendrier monte <AdminAppointmentsCalendar /> en client:load.
+// La vue calendrier monte <AdminAppointmentsCalendar /> côté serveur.
 // La vue tableau garde la liste plate (rendu côté client via <script>).
 // Modale de confirmation : window.showConfirm() (monté globalement dans DashboardLayout).
 // Toast : window.showToast() (monté globalement dans DashboardLayout).
 
-import AdminAppointmentsCalendar from './react/AdminAppointmentsCalendar.tsx';
+import AdminAppointmentsCalendar from './AdminAppointmentsCalendar.astro';
+import type { AppointmentSlot, AppointmentStatus } from '@/types/appointments';
+
+interface Props {
+  year: number;
+  month: number;
+  slots?: AppointmentSlot[];
+  appointments?: CalendarAppointment[];
+  selectedDay?: string | null;
+  nonce?: string;
+}
+
+interface CalendarAppointment {
+  id: string;
+  status: AppointmentStatus;
+  start_time: string;
+  end_time: string;
+  notes: string | null;
+  candidate_email: string | null;
+  user_profile: { full_name: string | null; email: string | null } | null;
+}
+
+const { year, month, slots = [], appointments = [], selectedDay = null, nonce } = Astro.props;
 ---
 
 <div class="dashboard-container">
@@ -36,7 +58,7 @@ import AdminAppointmentsCalendar from './react/AdminAppointmentsCalendar.tsx';
 
   <!-- Vue calendrier -->
   <div id="view-calendar" class="view-pane" hidden>
-    <AdminAppointmentsCalendar client:load />
+    <AdminAppointmentsCalendar year={year} month={month} slots={slots} appointments={appointments} selectedDay={selectedDay} nonce={nonce} />
   </div>
 </div>
 

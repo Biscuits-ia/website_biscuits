@@ -2,14 +2,130 @@
 import AdminAppointmentsDashboard from '@/components/AdminAppointmentsDashboard.astro';
 import DashboardLayout from '@/layouts/DashboardLayout.astro';
 import { requireAdmin } from '@/lib/auth';
+import { createSupabaseAdminClient } from '@/lib/supabase';
+import type { AppointmentStatus, AppointmentSlot } from '@/types/appointments';
 
-const result = await requireAdmin(Astro);
-if (result instanceof Response) return result;
+const authResult = await requireAdmin(Astro);
+if (authResult instanceof Response) return authResult;
 
-const { user } = result;
+const { user } = authResult;
 const userName = user.user_metadata?.full_name ?? user.email?.split('@')[0] ?? 'Admin';
+
+// ── Période affichée ─────────────────────────────────────────────────────────
+const now = new Date();
+const params = Astro.url.searchParams;
+const year = Math.max(2000, Math.min(2100, parseInt(params.get('y') ?? String(now.getFullYear()), 10) || now.getFullYear()));
+const month = Math.max(1, Math.min(12, parseInt(params.get('m') ?? String(now.getMonth() + 1), 10) || now.getMonth() + 1));
+const selectedDay = params.get('d');
+
+const rangeStart = new Date(Date.UTC(year, month - 1, 1));
+const rangeEnd = new Date(Date.UTC(year, month, 1));
+const fromIso = rangeStart.toISOString();
+const toIso = rangeEnd.toISOString();
+
+interface CalendarAppointment {
+  id: string;
+  status: AppointmentStatus;
+  start_time: string;
+  end_time: string;
+  notes: string | null;
+  candidate_email: string | null;
+  user_profile: { full_name: string | null; email: string | null } | null;
+}
+
+const adminDb = createSupabaseAdminClient();
+
+// ── Créneaux du mois ─────────────────────────────────────────────────────────
+let slots: AppointmentSlot[] = [];
+try {
+  const { data, error } = await adminDb
+    .from('appointment_slots')
+    .select('*')
+    .gte('start_time', fromIso)
+    .lt('start_time', toIso)
+    .order('start_time', { ascending: true });
+  if (error) throw error;
+  slots = (data ?? []) as AppointmentSlot[];
+} catch (err) {
+  console.error('[appointments page] slots fetch error:', err);
+  slots = [];
+}
+
+// ── Rendez-vous du mois (jointure sur le créneau pour obtenir les dates) ─────
+interface RawAppointment {
+  id: string;
+  status: AppointmentStatus;
+  notes: string | null;
+  candidate_email: string | null;
+  user_id: string | null;
+  appointment_slots: { start_time: string; end_time: string } | null;
+}
+
+let rawAppointments: RawAppointment[] = [];
+try {
+  const { data, error } = await adminDb
+    .from('volunteer_appointments')
+    .select('id, status, notes, candidate_email, user_id, appointment_slots!inner(start_time, end_time)')
+    .gte('appointment_slots.start_time', fromIso)
+    .lt('appointment_slots.start_time', toIso);
+  if (error) throw error;
+  rawAppointments = ((data ?? []) as unknown[]).map((a: any) => {
+    const slotRaw = a.appointment_slots;
+    const slot = Array.isArray(slotRaw) ? slotRaw[0] : slotRaw;
+    return {
+      id: a.id,
+      status: a.status,
+      notes: a.notes,
+      candidate_email: a.candidate_email,
+      user_id: a.user_id,
+      appointment_slots: slot ? { start_time: slot.start_time, end_time: slot.end_time } : null,
+    };
+  }) as RawAppointment[];
+} catch (err) {
+  console.error('[appointments page] appointments fetch error:', err);
+  rawAppointments = [];
+}
+
+// ── Profils des utilisateurs liés ────────────────────────────────────────────
+const userIds = [...new Set(rawAppointments.map((a) => a.user_id).filter(Boolean))];
+let profilesMap: Record<string, { full_name: string | null; email: string | null }> = {};
+if (userIds.length > 0) {
+  try {
+    const { data: profiles } = await adminDb
+      .from('profiles')
+      .select('id, full_name, email')
+      .in('id', userIds);
+    for (const p of profiles ?? []) {
+      profilesMap[p.id] = { full_name: p.full_name, email: p.email };
+    }
+  } catch (err) {
+    console.error('[appointments page] profiles fetch error:', err);
+  }
+}
+
+// ── Normalisation au format attendu par le calendrier ────────────────────────
+const appointments: CalendarAppointment[] = rawAppointments
+  .filter((a) => a.appointment_slots !== null)
+  .map((a) => ({
+    id: a.id,
+    status: a.status,
+    start_time: a.appointment_slots!.start_time,
+    end_time: a.appointment_slots!.end_time,
+    notes: a.notes,
+    candidate_email: a.candidate_email,
+    user_profile: a.user_id ? (profilesMap[a.user_id] ?? null) : null,
+  }));
+
+const nonce = (Astro.locals as { nonce?: string }).nonce;
 ---
 
-<DashboardLayout title="Gestion des rendez-vous" activePage="appointments" userName={userName} authResult={result}>
-  <AdminAppointmentsDashboard />
+<DashboardLayout title="Gestion des rendez-vous" activePage="appointments" userName={userName} authResult={authResult}>
+  <AdminAppointmentsDashboard
+    year={year}
+    month={month}
+    slots={slots}
+    appointments={appointments}
+    selectedDay={selectedDay}
+    nonce={nonce}
+  />
 </DashboardLayout>

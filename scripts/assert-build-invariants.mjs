@@ -217,9 +217,8 @@ assert('Astro.locals n est pas reference dans un composant (P4 #44)', () => {
 assert('aucun island client:* sur une page SSR', () => {
   const PAGES = 'src/pages';
   const known = new Set([
-    // Connu et accepte : le calendrier admin ne s'hydrate pas en prod.
-    // Correctif = activer security.csp (cf. astro.config.mjs). Item d'audit dedie.
-    'dashboard/admin/appointments.astro',
+    // Aucune page SSR ne monte d'island client:* depuis le remplacement du
+    // calendrier admin React par un composant serveur Astro + JS vanilla inline.
   ]);
 
   const pages = fs.readdirSync(PAGES, { recursive: true })

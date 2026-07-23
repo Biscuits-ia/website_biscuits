@@ -1,6 +1,19 @@
-import { useCallback, useState, type ChangeEvent, type SyntheticEvent } from 'react';
+import { useCallback, useEffect, useState, type ChangeEvent, type SyntheticEvent } from 'react';
 import '@/styles/recruitment-form.css';
 import { EMAIL_RE, MAX_NAME } from '@/lib/validation';
+
+interface RecruitmentSession {
+  id: string;
+  title: string;
+  description: string | null;
+  scheduled_at: string;
+  duration_minutes: number;
+  location: string | null;
+  max_candidates: number;
+  status: string;
+  candidate_count: number;
+  places_remaining: number;
+}
 
 interface RecruitmentFormData {
   first_name: string;
@@ -9,11 +22,12 @@ interface RecruitmentFormData {
   skills: string;
   availability: string;
   motivation: string;
+  session_id: string;
 }
 
 interface RecruitmentApiResponse {
   message?: string;
-  errors?: Partial<Record<'first_name' | 'last_name' | 'email', string[]>>;
+  errors?: Partial<Record<'first_name' | 'last_name' | 'email' | 'session_id', string[]>>;
 }
 
 type RecruitmentFieldId = 'first_name' | 'last_name' | 'email';
@@ -25,6 +39,7 @@ const INITIAL_FORM_DATA: RecruitmentFormData = {
   skills: '',
   availability: '',
   motivation: '',
+  session_id: '',
 };
 
 export default function RecruitmentFormClient() {
@@ -33,6 +48,29 @@ export default function RecruitmentFormClient() {
   const [serverError, setServerError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [confirmation, setConfirmation] = useState<{ fullName: string; email: string } | null>(null);
+  const [sessions, setSessions] = useState<RecruitmentSession[]>([]);
+  const [sessionsLoading, setSessionsLoading] = useState(true);
+  const [sessionsError, setSessionsError] = useState('');
+
+  useEffect(() => {
+    let cancelled = false;
+    async function loadSessions() {
+      try {
+        const res = await fetch('/api/recruitment/sessions', {
+          headers: { Accept: 'application/json' },
+        });
+        if (!res.ok) throw new Error('Erreur lors du chargement des sessions');
+        const data = (await res.json()) as RecruitmentSession[];
+        if (!cancelled) setSessions(data);
+      } catch (err) {
+        if (!cancelled) setSessionsError(err instanceof Error ? err.message : 'Erreur');
+      } finally {
+        if (!cancelled) setSessionsLoading(false);
+      }
+    }
+    void loadSessions();
+    return () => { cancelled = true; };
+  }, []);
 
   const clearFieldError = useCallback((field: RecruitmentFieldId) => {
     setFieldErrors((current) => {
@@ -58,6 +96,10 @@ export default function RecruitmentFormClient() {
 
       if (name === 'first_name' || name === 'last_name' || name === 'email') {
         clearFieldError(name);
+      }
+
+      if (name === 'session_id') {
+        // ne rien faire de spécial ; la valeur est mise à jour ci-dessus
       }
 
       if (serverError) {
@@ -117,6 +159,7 @@ export default function RecruitmentFormClient() {
             motivation: formData.motivation.trim() || null,
             skills: formData.skills.trim() || null,
             availability: formData.availability || null,
+            session_id: formData.session_id || null,
           }),
         });
 
@@ -219,6 +262,43 @@ export default function RecruitmentFormClient() {
           <label className="field__label" htmlFor="email">Email <span className="field__required" aria-hidden="true">*</span></label>
           <input id="email" name="email" className="field__input" type="email" placeholder="marie.dupont@exemple.fr" autoComplete="email" aria-required="true" aria-invalid={fieldErrors.email ? 'true' : 'false'} value={formData.email} onChange={handleInputChange} />
           <span className="field__error" role="alert" style={{ display: fieldErrors.email ? 'block' : 'none' }}>{fieldErrors.email}</span>
+        </div>
+
+        <div className="field">
+          <label className="field__label" htmlFor="session">Session de recrutement</label>
+          {sessionsLoading ? (
+            <p className="field__hint">Chargement des sessions…</p>
+          ) : sessionsError ? (
+            <p className="field__hint field__hint--error">{sessionsError}</p>
+          ) : sessions.length === 0 ? (
+            <p className="field__hint">Aucune session disponible pour le moment. Vous pouvez tout de même envoyer une candidature spontanée.</p>
+          ) : (
+            <div className="session-options" role="radiogroup" aria-label="Choisir une session de recrutement">
+              <label className={`session-option ${formData.session_id === '' ? 'session-option--selected' : ''}`}>
+                <input type="radio" name="session_id" value="" checked={formData.session_id === ''} onChange={handleInputChange} />
+                <span className="session-option__title">Aucune préférence</span>
+                <span className="session-option__meta">Candidature spontanée</span>
+              </label>
+              {sessions.map((s) => {
+                const scheduled = new Date(s.scheduled_at);
+                const full = s.places_remaining === 0;
+                return (
+                  <label key={s.id} className={`session-option ${formData.session_id === s.id ? 'session-option--selected' : ''} ${full ? 'session-option--full' : ''}`}>
+                    <input type="radio" name="session_id" value={s.id} checked={formData.session_id === s.id} onChange={handleInputChange} disabled={full} />
+                    <span className="session-option__title">{s.title}</span>
+                    <span className="session-option__meta">
+                      {scheduled.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })}
+                      {' · '}{s.duration_minutes} min
+                      {s.location && ` · ${s.location}`}
+                    </span>
+                    <span className={`session-option__badge ${full ? 'session-option__badge--full' : ''}`}>
+                      {full ? 'Complet' : `${s.places_remaining} place${s.places_remaining > 1 ? 's' : ''}`}
+                    </span>
+                  </label>
+                );
+              })}
+            </div>
+          )}
         </div>
 
         <div className="field">

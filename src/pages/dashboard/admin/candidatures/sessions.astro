@@ -1,0 +1,321 @@
+---
+// src/pages/dashboard/admin/candidatures/sessions.astro
+import DashboardLayout from '@/layouts/DashboardLayout.astro';
+import { requireAdmin } from '@/lib/auth';
+import { createSupabaseAdminClient } from '@/lib/supabase';
+import type { RecruitmentSession } from '@/types/recruitment';
+
+const result = await requireAdmin(Astro);
+if (result instanceof Response) return result;
+
+const { user } = result;
+const adminSupabase = createSupabaseAdminClient();
+const userName = user.user_metadata?.full_name ?? user.email?.split('@')[0] ?? 'Admin';
+
+const statusFilter = Astro.url.searchParams.get('status') ?? '';
+
+let query = adminSupabase
+  .from('recruitment_sessions')
+  .select('*')
+  .order('scheduled_at', { ascending: true });
+
+if (statusFilter) query = query.eq('status', statusFilter);
+
+const { data: sessionsRaw, error: sessionsError } = await query;
+
+if (sessionsError) {
+  console.error('[admin/recruitment-sessions] error:', sessionsError.message);
+}
+
+const sessions = (sessionsRaw ?? []) as unknown as RecruitmentSession[];
+
+// Comptage des candidats par session
+const sessionIds = sessions.map((s) => s.id);
+let candidateCounts: Record<string, number> = {};
+if (sessionIds.length > 0) {
+  const { data: countsRaw } = await adminSupabase
+    .from('recruitment_submissions')
+    .select('session_id')
+    .in('session_id', sessionIds)
+    .neq('status', 'declined');
+
+  for (const row of (countsRaw ?? []) as { session_id: string | null }[]) {
+    if (row.session_id) {
+      candidateCounts[row.session_id] = (candidateCounts[row.session_id] ?? 0) + 1;
+    }
+  }
+}
+
+const statusLabel: Record<string, string> = {
+  open: 'Ouverte',
+  closed: 'Fermée',
+  cancelled: 'Annulée',
+  done: 'Terminée',
+};
+
+const statusClass: Record<string, string> = {
+  open: 'ok',
+  closed: 'warn',
+  cancelled: 'err',
+  done: 'neutral',
+};
+
+function formatSessionDate(iso: string): string {
+  return new Date(iso).toLocaleDateString('fr-FR', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}
+---
+
+<DashboardLayout title="Sessions de recrutement" activePage="recruitment-sessions" userName={userName} authResult={result}>
+  <div class="page-header mb-6">
+    <div>
+      <h1 class="page-title">Sessions de recrutement</h1>
+      <p class="description">{sessions.length} session{sessions.length > 1 ? 's' : ''} planifiée{sessions.length > 1 ? 's' : ''}</p>
+    </div>
+    <div class="page-actions">
+      <a href="/dashboard/admin/candidatures" class="btn btn-ghost">Voir les candidatures</a>
+      <button class="btn btn-primary" id="btn-open-create" type="button">Nouvelle session</button>
+    </div>
+  </div>
+
+  <form method="GET" class="filters mb-5">
+    <select name="status" class="input input-sm" data-autosubmit="1">
+      <option value="">Tous les statuts</option>
+      <option value="open" selected={statusFilter === 'open'}>Ouvertes</option>
+      <option value="closed" selected={statusFilter === 'closed'}>Fermées</option>
+      <option value="cancelled" selected={statusFilter === 'cancelled'}>Annulées</option>
+      <option value="done" selected={statusFilter === 'done'}>Terminées</option>
+    </select>
+    {statusFilter && <a href="/dashboard/admin/candidatures/sessions" class="btn btn-ghost btn-sm">Réinitialiser</a>}
+  </form>
+
+  <div class="card card-flush">
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Session</th>
+            <th>Date</th>
+            <th>Inscrits</th>
+            <th>Statut</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {sessions.length > 0 ? sessions.map((s) => {
+            const count = candidateCounts[s.id] ?? 0;
+            const full = count >= s.max_candidates;
+            return (
+              <tr>
+                <td>
+                  <div class="session-cell">
+                    <a href={`/dashboard/admin/candidatures/sessions/${s.id}`} class="session-title-link">{s.title}</a>
+                    {s.description && <span class="session-desc">{s.description}</span>}
+                    {s.location && <span class="session-location">📍 {s.location}</span>}
+                  </div>
+                </td>
+                <td class="mono xs">{formatSessionDate(s.scheduled_at)}</td>
+                <td>
+                  <span class={`badge ${full ? 'badge-err' : 'badge-info'}`}>
+                    {count} / {s.max_candidates}
+                  </span>
+                </td>
+                <td>
+                  <span class={`badge badge-${statusClass[s.status] ?? 'neutral'}`}>{statusLabel[s.status] ?? s.status}</span>
+                </td>
+                <td>
+                  <div class="row-actions">
+                    <a class="btn btn-ghost btn-xs" href={`/dashboard/admin/candidatures/sessions/${s.id}`}>Gérer</a>
+                    <select class="input input-xs js-status" data-id={s.id}>
+                      <option value="open" selected={s.status === 'open'}>Ouverte</option>
+                      <option value="closed" selected={s.status === 'closed'}>Fermée</option>
+                      <option value="cancelled" selected={s.status === 'cancelled'}>Annulée</option>
+                      <option value="done" selected={s.status === 'done'}>Terminée</option>
+                    </select>
+                    <button type="button" class="btn btn-ghost btn-xs js-delete" data-id={s.id}>Suppr.</button>
+                  </div>
+                </td>
+              </tr>
+            );
+          }) : (
+            <tr>
+              <td colspan="5" class="empty-row">Aucune session de recrutement.</td>
+            </tr>
+          )}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Modal création -->
+  <dialog id="create-session-modal" class="modal">
+    <form method="dialog" class="modal-card" id="create-session-form">
+      <h2 class="modal-title">Nouvelle session de recrutement</h2>
+      <div class="form-grid">
+        <label>
+          <span>Titre *</span>
+          <input type="text" name="title" required class="input" maxlength="200" placeholder="Ex: Session de recrutement bénévole — Septembre" />
+        </label>
+        <label>
+          <span>Description</span>
+          <textarea name="description" class="input" maxlength="2000" rows="3" placeholder="Objectif, public visé, déroulé..."></textarea>
+        </label>
+        <div class="grid-2">
+          <label>
+            <span>Date et heure *</span>
+            <input type="datetime-local" name="scheduled_at" required class="input" />
+          </label>
+          <label>
+            <span>Durée (min) *</span>
+            <input type="number" name="duration_minutes" min="1" max="480" value="90" required class="input" />
+          </label>
+        </div>
+        <div class="grid-2">
+          <label>
+            <span>Places max *</span>
+            <input type="number" name="max_candidates" min="1" max="100" value="10" required class="input" />
+          </label>
+          <label>
+            <span>Lieu / Lien visio</span>
+            <input type="text" name="location" class="input" maxlength="300" placeholder="Salle XYZ ou https://..." />
+          </label>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" id="btn-close-create">Annuler</button>
+        <button type="submit" class="btn btn-primary">Créer</button>
+      </div>
+    </form>
+  </dialog>
+
+</DashboardLayout>
+
+<style>
+  .page-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap; }
+  .page-title { font-size: var(--text-xl); font-weight: 700; }
+  .page-actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .filters { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .input { border: var(--brutal-border-thin); background: var(--surface-raised); padding: 6px 10px; font-family: var(--font-sans); font-size: var(--text-sm); outline: none; }
+  .input:focus { box-shadow: var(--shadow-sm); }
+  .input-sm { padding: 4px 8px; font-size: var(--text-xs); }
+  .input-xs { padding: 2px 6px; font-size: 0.72rem; }
+
+  .session-cell { display: flex; flex-direction: column; gap: 4px; }
+  .session-title-link { color: var(--accent); text-decoration: none; font-weight: 600; }
+  .session-title-link:hover { text-decoration: underline; }
+  .session-desc { font-size: var(--text-xs); color: var(--text-muted); white-space: pre-wrap; }
+  .session-location { font-size: 0.68rem; color: var(--accent-dark); }
+  .row-actions { display: flex; align-items: center; gap: 6px; }
+  .mono { font-family: var(--font-mono); }
+  .xs { font-size: 0.75rem; }
+  .empty-row { text-align: center; color: var(--text-muted); padding: 24px; }
+
+  .modal { border: none; padding: 0; background: transparent; }
+  .modal::backdrop { background: rgba(15, 23, 42, 0.35); }
+  .modal-card { width: min(560px, 94vw); border: var(--brutal-border); background: var(--surface-raised); box-shadow: var(--shadow-lg); padding: var(--space-lg); display: flex; flex-direction: column; gap: var(--space-md); }
+  .modal-title { font-size: var(--text-lg); font-weight: 700; margin: 0; }
+  .form-grid { display: flex; flex-direction: column; gap: 10px; }
+  .form-grid label { display: flex; flex-direction: column; gap: 4px; font-size: var(--text-xs); color: var(--text-muted); }
+  .grid-2 { display: grid; gap: 10px; grid-template-columns: 1fr 1fr; }
+  .modal-actions { display: flex; justify-content: flex-end; gap: 8px; }
+
+  .mb-5 { margin-bottom: var(--space-lg); }
+  .mb-6 { margin-bottom: var(--space-xl); }
+
+  @media (max-width: 760px) {
+    .grid-2 { grid-template-columns: 1fr; }
+  }
+</style>
+
+<script>
+  const createModal = document.getElementById('create-session-modal');
+  const btnOpenCreate = document.getElementById('btn-open-create');
+  const btnCloseCreate = document.getElementById('btn-close-create');
+  const createForm = document.getElementById('create-session-form');
+
+  btnOpenCreate?.addEventListener('click', () => {
+    if (createModal instanceof HTMLDialogElement) createModal.showModal();
+  });
+
+  btnCloseCreate?.addEventListener('click', () => {
+    if (createModal instanceof HTMLDialogElement) createModal.close();
+  });
+
+  createForm?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!(createForm instanceof HTMLFormElement)) return;
+
+    const fd = new FormData(createForm);
+    const scheduledAt = String(fd.get('scheduled_at') ?? '');
+
+    const payload = {
+      title: String(fd.get('title') ?? '').trim(),
+      description: String(fd.get('description') ?? '').trim() || null,
+      scheduled_at: scheduledAt ? new Date(scheduledAt).toISOString() : '',
+      duration_minutes: Number(fd.get('duration_minutes') ?? 90),
+      max_candidates: Number(fd.get('max_candidates') ?? 10),
+      location: String(fd.get('location') ?? '').trim() || null,
+      status: 'open',
+    };
+
+    const res = await fetch('/api/admin/recruitment-sessions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+
+    if (!res.ok) {
+      const out = await res.json().catch(() => ({ error: 'Erreur inconnue' }));
+      alert(out.error ?? 'Erreur lors de la création');
+      return;
+    }
+
+    window.location.reload();
+  });
+
+  document.querySelectorAll('.js-status').forEach((el) => {
+    el.addEventListener('change', async () => {
+      if (!(el instanceof HTMLSelectElement)) return;
+      const id = el.getAttribute('data-id');
+      const status = el.value;
+      if (!id) return;
+
+      const res = await fetch(`/api/admin/recruitment-sessions/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status }),
+      });
+
+      if (!res.ok) {
+        alert('Erreur lors de la mise à jour.');
+        window.location.reload();
+      }
+    });
+  });
+
+  document.querySelectorAll('.js-delete').forEach((el) => {
+    el.addEventListener('click', async () => {
+      const id = el.getAttribute('data-id');
+      if (!id) return;
+      if (!confirm('Supprimer cette session ? Les candidatures associées seront désaffectées.')) return;
+
+      const res = await fetch(`/api/admin/recruitment-sessions/${id}`, {
+        method: 'DELETE',
+      });
+
+      if (!res.ok) {
+        const out = await res.json().catch(() => ({ error: 'Erreur' }));
+        alert(out.error ?? 'Erreur lors de la suppression.');
+        return;
+      }
+
+      window.location.reload();
+    });
+  });
+</script>

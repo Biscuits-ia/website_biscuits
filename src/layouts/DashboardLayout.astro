@@ -79,6 +79,7 @@ const adminNav: NavItem[] = [
   { id: 'demandes',        label: 'Demandes',        icon: 'inbox',        badge: null  },
   { id: 'contacts',        label: 'Contacts',        icon: 'mail',         badge: null  },
   { id: 'candidatures',    label: 'Candidatures',    icon: 'user-plus',    badge: null  },
+  { id: 'recruitment-sessions', label: 'Sessions recrutement', icon: 'calendar-users', badge: null, href: '/dashboard/admin/candidatures/sessions' },
   { id: 'appointments',    label: 'Rendez-vous',     icon: 'calendar',     badge: null  },
   { id: 'ateliers',        label: 'Ateliers',        icon: 'calendar',     badge: null  },
   { id: 'formations',        label: 'Formations',        icon: 'graduation',     badge: null  },
@@ -127,6 +128,7 @@ const icons: Record<string, string> = {
   terminal:     `<svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="2.5" width="14" height="11" rx="1.5"/><polyline points="4,6.5 7,9 4,11.5"/><line x1="8.5" y1="11.5" x2="12" y2="11.5"/></svg>`,
   bell:         `<svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 1.5a4.5 4.5 0 00-4.5 4.5v3l-1.5 2h12l-1.5-2V6A4.5 4.5 0 008 1.5z"/><path d="M6.5 13a1.5 1.5 0 003 0"/></svg>`,
   package:      `<svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1.5 4.5l6-3 6 3v7l-6 3-6-3v-7z"/><path d="M1.5 4.5L7.5 7.5 13.5 4.5"/><line x1="7.5" y1="7.5" x2="7.5" y2="14.5"/></svg>`,
+  'calendar-users': `<svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1.5" y="2.5" width="13" height="12" rx="1.5"/><line x1="1.5" y1="6.5" x2="14.5" y2="6.5"/><line x1="5" y1="1" x2="5" y2="4"/><line x1="11" y1="1" x2="11" y2="4"/><circle cx="11.5" cy="11" r="1.8"/><path d="M14 14c0-1.5-1.1-2.5-2.5-2.5S9 12.5 9 14"/></svg>`,
 };
 
 const initials = displayName.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2);

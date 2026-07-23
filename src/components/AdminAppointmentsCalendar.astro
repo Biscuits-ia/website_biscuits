@@ -365,15 +365,11 @@ const STATUS_KEYS: AppointmentStatus[] = Object.keys(STATUS_COLORS) as Appointme
         html += '</ul>';
       }
 
-      html += '<form class="appts-cal-add-form" data-add-slot>' +
-        '<div class="appts-cal-add-fields">' +
-          '<label><span>Début</span><input type="time" name="start" value="09:00" required /></label>' +
-          '<label><span>Fin</span><input type="time" name="end" value="10:00" required /></label>' +
-          '<button type="submit" class="btn btn-primary btn-sm">+ Ajouter</button>' +
-        '</div>' +
-        '<p class="appts-cal-add-error" role="alert" hidden></p>' +
-        '<p class="appts-cal-add-hint">L\'anti-chevauchement est vérifié côté serveur (chevauche un créneau existant → erreur 409).</p>' +
-      '</form></section>';
+      html += '<div class="appts-cal-add-actions">' +
+        '<button type="button" class="btn btn-primary btn-sm" data-open-slot-modal>+ Ajouter un créneau</button>' +
+      '</div>' +
+      '<p class="appts-cal-add-hint">L\'anti-chevauchement est vérifié côté serveur (chevauche un créneau existant → erreur 409).</p>' +
+      '</section>';
 
       html += '<section class="appts-cal-section">' +
         '<header class="appts-cal-section-header">' +
@@ -407,8 +403,8 @@ const STATUS_KEYS: AppointmentStatus[] = Object.keys(STATUS_COLORS) as Appointme
       const closeBtn = host.querySelector('button[data-close-day]');
       if (closeBtn) closeBtn.addEventListener('click', function () { selectDay(null); });
 
-      const addForm = host.querySelector('form[data-add-slot]');
-      if (addForm) addForm.addEventListener('submit', onAddSlot);
+      const openModalBtn = host.querySelector('button[data-open-slot-modal]');
+      if (openModalBtn) openModalBtn.addEventListener('click', function () { openSlotModal(selectedKey); });
 
       host.querySelectorAll('button[data-delete-slot]').forEach(function (btn) {
         btn.addEventListener('click', onDeleteSlot);
@@ -437,6 +433,100 @@ const STATUS_KEYS: AppointmentStatus[] = Object.keys(STATUS_COLORS) as Appointme
 
     function isoFromDateAndTime(dateKey, time) {
       return new Date(dateKey + 'T' + time + ':00.000Z').toISOString();
+    }
+
+    function formatDateLabel(dateKey) {
+      const d = new Date(dateKey + 'T00:00:00Z');
+      return d.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
+    }
+
+    function closeSlotModal() {
+      const modal = document.querySelector('.appts-cal-modal');
+      if (!modal) return;
+      modal.remove();
+      document.removeEventListener('keydown', onModalKey);
+    }
+
+    function onModalKey(e) {
+      if (e.key === 'Escape') closeSlotModal();
+    }
+
+    function openSlotModal(dayKey) {
+      closeSlotModal();
+      const dateLabel = formatDateLabel(dayKey);
+      const modal = document.createElement('div');
+      modal.className = 'appts-cal-modal';
+      modal.setAttribute('role', 'dialog');
+      modal.setAttribute('aria-modal', 'true');
+      modal.setAttribute('aria-labelledby', 'appts-cal-modal-title');
+      modal.innerHTML =
+        '<div class="appts-cal-modal-backdrop" data-close-modal></div>' +
+        '<div class="appts-cal-modal-window" role="document">' +
+          '<div class="appts-cal-modal-header">' +
+            '<h3 id="appts-cal-modal-title">Ajouter un créneau</h3>' +
+            '<button type="button" class="appts-cal-modal-close" data-close-modal aria-label="Fermer">×</button>' +
+          '</div>' +
+          '<form class="appts-cal-modal-form" data-add-slot-form>' +
+            '<div class="appts-cal-modal-field">' +
+              '<label for="appts-cal-modal-day">Jour</label>' +
+              '<input id="appts-cal-modal-day" type="text" value="' + escapeHtml(dateLabel) + '" readonly />' +
+            '</div>' +
+            '<div class="appts-cal-modal-row">' +
+              '<div class="appts-cal-modal-field">' +
+                '<label for="appts-cal-modal-start">Heure de début</label>' +
+                '<input id="appts-cal-modal-start" type="time" name="start" value="09:00" required />' +
+              '</div>' +
+              '<div class="appts-cal-modal-field">' +
+                '<label for="appts-cal-modal-end">Heure de fin</label>' +
+                '<input id="appts-cal-modal-end" type="time" name="end" value="10:00" required />' +
+              '</div>' +
+            '</div>' +
+            '<p class="appts-cal-add-error" role="alert" hidden></p>' +
+            '<div class="appts-cal-modal-actions">' +
+              '<button type="button" class="btn btn-ghost btn-sm" data-close-modal>Annuler</button>' +
+              '<button type="submit" class="btn btn-primary btn-sm">+ Ajouter</button>' +
+            '</div>' +
+          '</form>' +
+        '</div>';
+      document.body.appendChild(modal);
+
+      const startInput = modal.querySelector('input[name="start"]');
+      if (startInput) startInput.focus();
+
+      modal.querySelectorAll('[data-close-modal]').forEach(function (el) {
+        el.addEventListener('click', function (e) { if (e.target === el) closeSlotModal(); });
+      });
+      modal.querySelector('form[data-add-slot-form]').addEventListener('submit', onAddSlot);
+      document.addEventListener('keydown', onModalKey);
+    }
+
+    function onAddSlot(e) {
+      e.preventDefault();
+      const form = e.target;
+      const fd = new FormData(form);
+      const start = fd.get('start');
+      const end = fd.get('end');
+      const btn = form.querySelector('button[type="submit"]');
+      if (!start || !end) return;
+      if (start >= end) {
+        showAddError(form, "L'heure de fin doit être après l'heure de début.");
+        return;
+      }
+      if (btn) btn.disabled = true;
+      showAddError(form, '');
+      fetch('/api/appointment-slots', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          start_time: isoFromDateAndTime(selectedKey, start),
+          end_time: isoFromDateAndTime(selectedKey, end),
+        }),
+      })
+        .then(function (res) { if (!res.ok) return res.json().then(function (data) { throw new Error(data.error || 'Erreur ' + res.status); }); return res.json(); })
+        .then(function () { closeSlotModal(); toast('Créneau ajouté', 'success'); return reloadData(); })
+        .catch(function (err) { const msg = err instanceof Error ? err.message : 'Erreur'; showAddError(form, msg); toast(msg, 'error'); })
+        .finally(function () { if (btn) btn.disabled = false; });
     }
 
     function reloadData() {
@@ -609,12 +699,45 @@ const STATUS_KEYS: AppointmentStatus[] = Object.keys(STATUS_COLORS) as Appointme
   .appts-cal-slot-delete { background: none; border: none; cursor: pointer; font-size: 1rem; padding: 2px 4px; }
   .appts-cal-slot-delete:hover { opacity: .7; }
 
-  .appts-cal-add-form { margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--border-mid); }
-  .appts-cal-add-fields { display: flex; align-items: flex-end; gap: 10px; flex-wrap: wrap; }
-  .appts-cal-add-fields label { display: flex; flex-direction: column; gap: 4px; font-size: var(--text-xs); color: var(--text-muted); }
-  .appts-cal-add-fields input { padding: 4px 6px; border: var(--brutal-border-thin); border-radius: 4px; }
+  .appts-cal-add-actions { margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--border-mid); }
   .appts-cal-add-error { color: var(--err); font-size: var(--text-sm); margin: 8px 0 0; }
   .appts-cal-add-hint { font-size: var(--text-xs); color: var(--text-muted); margin: 8px 0 0; }
+
+  .appts-cal-modal {
+    position: fixed; inset: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .appts-cal-modal-backdrop {
+    position: absolute; inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+  }
+  .appts-cal-modal-window {
+    position: relative; z-index: 1;
+    width: min(420px, calc(100vw - 32px));
+    background: var(--surface); border: var(--brutal-border-thin); border-radius: 8px;
+    box-shadow: 4px 4px 0 #000;
+  }
+  .appts-cal-modal-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 14px 16px; border-bottom: var(--brutal-border-thin); background: var(--surface-raised);
+  }
+  .appts-cal-modal-header h3 { margin: 0; font-size: var(--text-md); }
+  .appts-cal-modal-close {
+    background: none; border: none; cursor: pointer; font-size: 1.4rem; line-height: 1; color: var(--text-muted); padding: 0 4px;
+  }
+  .appts-cal-modal-close:hover { color: var(--text-primary); }
+  .appts-cal-modal-form { padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+  .appts-cal-modal-field { display: flex; flex-direction: column; gap: 4px; }
+  .appts-cal-modal-field label { font-size: var(--text-xs); color: var(--text-muted); font-weight: 600; }
+  .appts-cal-modal-field input {
+    padding: 6px 8px; border: var(--brutal-border-thin); border-radius: 4px;
+    background: var(--surface); color: var(--text-primary); font-family: inherit;
+  }
+  .appts-cal-modal-field input[readonly] { background: var(--surface-raised); color: var(--text-muted); }
+  .appts-cal-modal-field input:focus { outline: none; box-shadow: 0 0 0 2px var(--accent); }
+  .appts-cal-modal-row { display: flex; gap: 12px; }
+  .appts-cal-modal-row .appts-cal-modal-field { flex: 1; }
+  .appts-cal-modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 4px; }
 
   .appts-cal-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
   .appts-cal-list-item {

@@ -68,6 +68,15 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       );
     }
 
+    // Le créneau ne doit pas être déjà passé
+    const slotStart = new Date(slot.start_time);
+    if (Number.isNaN(slotStart.getTime()) || slotStart <= new Date()) {
+      return new Response(
+        JSON.stringify({ error: 'Ce créneau est déjà passé ou invalide' }),
+        { status: 400 }
+      );
+    }
+
     // Vérifier que l'utilisateur n'a pas déjà réservé ce créneau (pending OU confirmed)
     const { data: existing } = await supabase
       .from('volunteer_appointments')

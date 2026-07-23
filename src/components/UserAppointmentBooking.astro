@@ -226,17 +226,18 @@
               <div class="day-group-slots">
                 ${daySlots.map((slot) => {
                   const isBooked = bookedSlotIds.has(slot.id);
+                  const isPast = new Date(slot.start_time) <= new Date();
                   const time = formatSlot(slot).time;
                   return `
-                    <div class="slot-card ${isBooked ? 'booked' : ''}">
+                    <div class="slot-card ${isBooked ? 'booked' : ''}" data-slot-id="${slot.id}" data-time="${escapeHtml(time)}" data-booked="${isBooked ? '1' : '0'}">
                       <div class="slot-info">
-                        <div class="slot-time">${escapeHtml(time)}</div>
+                        <div class="slot-time">${escapeHtml(time)}${isPast ? ' <span class="slot-past-badge">Passé</span>' : ''}</div>
                       </div>
                       <button
                         class="btn btn-book"
                         data-id="${slot.id}"
-                        ${isBooked ? 'disabled' : ''}
-                      >${isBooked ? '✓ Reserve' : 'Reserver'}</button>
+                        ${isBooked || isPast ? 'disabled' : ''}
+                      >${isBooked ? '✓ Reserve' : isPast ? 'Indisponible' : 'Reserver'}</button>
                     </div>
                   `;
                 }).join('')}
@@ -252,9 +253,68 @@
     document.querySelectorAll<HTMLButtonElement>('.btn-book:not(:disabled)').forEach((btn) => {
       btn.addEventListener('click', () => {
         const id = btn.dataset.id;
-        if (id) void bookSlot(id);
+        if (id) showBookingForm(id);
       });
     });
+  }
+
+  function getSlotCard(slotId: string): HTMLElement | null {
+    return document.querySelector(`.slot-card[data-slot-id="${slotId}"]`);
+  }
+
+  function showBookingForm(slotId: string) {
+    const card = getSlotCard(slotId);
+    if (!card) return;
+    const time = card.dataset.time || '';
+    card.innerHTML = `
+      <div class="booking-form">
+        <div class="booking-form-header">
+          <span class="slot-time">${escapeHtml(time)}</span>
+          <span class="booking-form-hint">Motif / notes (optionnel)</span>
+        </div>
+        <textarea
+          class="booking-notes"
+          id="booking-notes-${slotId}"
+          maxlength="1000"
+          rows="2"
+          placeholder="Expliquez brievement le sujet du rendez-vous..."
+        ></textarea>
+        <div class="booking-actions">
+          <button class="btn btn-book" data-id="${slotId}">Confirmer</button>
+          <button class="btn btn-secondary btn-cancel-book" data-id="${slotId}">Annuler</button>
+        </div>
+      </div>
+    `;
+
+    const confirmBtn = card.querySelector<HTMLButtonElement>('.btn-book');
+    const cancelBtn = card.querySelector<HTMLButtonElement>('.btn-cancel-book');
+    const textarea = card.querySelector<HTMLTextAreaElement>('.booking-notes');
+
+    confirmBtn?.addEventListener('click', () => {
+      const notes = textarea?.value.trim() || '';
+      void bookSlot(slotId, notes);
+    });
+    cancelBtn?.addEventListener('click', () => hideBookingForm(slotId));
+    textarea?.focus();
+  }
+
+  function hideBookingForm(slotId: string) {
+    const card = getSlotCard(slotId);
+    if (!card) return;
+    const time = card.dataset.time || '';
+    const isBooked = card.dataset.booked === '1';
+    card.innerHTML = `
+      <div class="slot-info">
+        <div class="slot-time">${escapeHtml(time)}</div>
+      </div>
+      <button
+        class="btn btn-book"
+        data-id="${slotId}"
+        ${isBooked ? 'disabled' : ''}
+      >${isBooked ? '✓ Reserve' : 'Reserver'}</button>
+    `;
+    const btn = card.querySelector<HTMLButtonElement>('.btn-book:not(:disabled)');
+    btn?.addEventListener('click', () => showBookingForm(slotId));
   }
 
   async function cancelAppointment(id: string) {
@@ -287,13 +347,13 @@
     }
   }
 
-  async function bookSlot(slotId: string) {
+  async function bookSlot(slotId: string, notes?: string) {
     try {
       const res = await fetch('/api/user-appointments', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ slot_id: slotId }),
+        body: JSON.stringify({ slot_id: slotId, notes: notes?.trim() || undefined }),
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
@@ -447,4 +507,29 @@
   .appointment-card.status-pending   { border-left: 4px solid #f59e0b; }
   .appointment-card.status-confirmed { border-left: 4px solid #10b981; }
   .appointment-card.status-cancelled { border-left: 4px solid #ef4444; opacity: 0.7; }
+
+  /* Formulaire inline de reservation */
+  .booking-form { display: flex; flex-direction: column; gap: 8px; width: 100%; }
+  .booking-form-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 4px; }
+  .booking-form-hint { font-size: 12px; color: #6b7280; }
+  .booking-notes {
+    width: 100%; min-width: 0; resize: vertical;
+    padding: 8px 10px; font-size: 13px; font-family: inherit;
+    border: 1.5px solid #000; border-radius: 4px;
+    background: #fff; color: #1f2937;
+  }
+  .booking-notes:focus { outline: none; box-shadow: 0 0 0 2px #f59e0b; }
+  .booking-actions { display: flex; gap: 8px; justify-content: flex-end; }
+  .btn-secondary {
+    background-color: #fff; color: #1f2937;
+    border: 2px solid #000; box-shadow: 2px 2px 0 #000;
+    font-weight: 700; padding: 8px 14px; font-size: 13px;
+  }
+  .btn-secondary:hover { transform: translate(-1px, -1px); box-shadow: 3px 3px 0 #000; }
+  .slot-past-badge {
+    display: inline-block; margin-left: 6px; padding: 1px 6px;
+    border-radius: 4px; font-size: 10px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.05em;
+    background: #E5E7EB; color: #6B7280;
+  }
 </style>

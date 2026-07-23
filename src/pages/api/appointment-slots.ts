@@ -47,11 +47,19 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     }
 
     const body = await request.json() as Record<string, unknown>;
-    const { start_time, end_time } = body;
+    const { start_time, end_time, title } = body;
 
     if (typeof start_time !== 'string' || !start_time || typeof end_time !== 'string' || !end_time) {
       return new Response(
         JSON.stringify({ error: 'start_time et end_time sont requis (chaînes ISO)' }),
+        { status: 400, headers: JSON_HEADERS },
+      );
+    }
+
+    const slotTitle = typeof title === 'string' && title.trim() ? title.trim() : null;
+    if (slotTitle && slotTitle.length > 200) {
+      return new Response(
+        JSON.stringify({ error: 'Le titre est trop long (max 200 caractères)' }),
         { status: 400, headers: JSON_HEADERS },
       );
     }
@@ -96,7 +104,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 
     const { data, error } = await adminDb
       .from('appointment_slots')
-      .insert({ start_time, end_time, is_available: true })
+      .insert({ start_time, end_time, title: slotTitle, is_available: true })
       .select()
       .single();
 

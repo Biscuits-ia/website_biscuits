@@ -8,6 +8,7 @@ export interface AppointmentSlot {
   id: string;
   start_time: string; // ISO 8601 timestamptz
   end_time: string; // ISO 8601 timestamptz
+  title: string | null;
   is_available: boolean;
   created_at: string;
   updated_at: string;

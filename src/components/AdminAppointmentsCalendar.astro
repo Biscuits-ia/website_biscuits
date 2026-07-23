@@ -353,7 +353,10 @@ const STATUS_KEYS: AppointmentStatus[] = Object.keys(STATUS_COLORS) as Appointme
           if (taken) classes += ' appts-cal-slot-item--taken';
           if (!s.is_available) classes += ' appts-cal-slot-item--disabled';
           html += '<li class="' + classes + '">' +
-            '<span class="appts-cal-slot-time">' + escapeHtml(formatTimeUTC(s.start_time)) + ' – ' + escapeHtml(formatTimeUTC(s.end_time)) + '</span>' +
+            '<div class="appts-cal-slot-main">' +
+              (s.title ? '<span class="appts-cal-slot-title">' + escapeHtml(s.title) + '</span>' : '') +
+              '<span class="appts-cal-slot-time">' + escapeHtml(formatTimeUTC(s.start_time)) + ' – ' + escapeHtml(formatTimeUTC(s.end_time)) + '</span>' +
+            '</div>' +
             '<span class="appts-cal-slot-flags">' +
               (taken ? '<span class="appts-cal-flag appts-cal-flag--taken">Réservé</span>' : '') +
               (!s.is_available ? '<span class="appts-cal-flag appts-cal-flag--off">Désactivé</span>' : '') +
@@ -481,6 +484,10 @@ const STATUS_KEYS: AppointmentStatus[] = Object.keys(STATUS_COLORS) as Appointme
                 '<input id="appts-cal-modal-end" type="time" name="end" value="10:00" required />' +
               '</div>' +
             '</div>' +
+            '<div class="appts-cal-modal-field">' +
+              '<label for="appts-cal-modal-title">Nature du créneau</label>' +
+              '<input id="appts-cal-modal-title" type="text" name="title" maxlength="200" placeholder="Ex: Recrutement bénévole, Entretien candidat…" />' +
+            '</div>' +
             '<p class="appts-cal-add-error" role="alert" hidden></p>' +
             '<div class="appts-cal-modal-actions">' +
               '<button type="button" class="btn btn-ghost btn-sm" data-close-modal>Annuler</button>' +
@@ -506,6 +513,7 @@ const STATUS_KEYS: AppointmentStatus[] = Object.keys(STATUS_COLORS) as Appointme
       const fd = new FormData(form);
       const start = fd.get('start');
       const end = fd.get('end');
+      const title = fd.get('title');
       const btn = form.querySelector('button[type="submit"]');
       if (!start || !end) return;
       if (start >= end) {
@@ -521,6 +529,7 @@ const STATUS_KEYS: AppointmentStatus[] = Object.keys(STATUS_COLORS) as Appointme
         body: JSON.stringify({
           start_time: isoFromDateAndTime(selectedKey, start),
           end_time: isoFromDateAndTime(selectedKey, end),
+          title: typeof title === 'string' ? title.trim() : '',
         }),
       })
         .then(function (res) { if (!res.ok) return res.json().then(function (data) { throw new Error(data.error || 'Erreur ' + res.status); }); return res.json(); })
@@ -690,8 +699,10 @@ const STATUS_KEYS: AppointmentStatus[] = Object.keys(STATUS_COLORS) as Appointme
   }
   .appts-cal-slot-item--taken { border-left-color: var(--warn); }
   .appts-cal-slot-item--disabled { opacity: .7; background: var(--surface); }
-  .appts-cal-slot-time { font-family: var(--font-mono); font-size: var(--text-sm); }
-  .appts-cal-slot-flags { display: flex; gap: 6px; margin-left: auto; }
+  .appts-cal-slot-main { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
+  .appts-cal-slot-title { font-weight: 700; font-size: var(--text-sm); color: var(--text-primary); }
+  .appts-cal-slot-time { font-family: var(--font-mono); font-size: var(--text-sm); color: var(--text-muted); }
+  .appts-cal-slot-flags { display: flex; gap: 6px; margin-left: auto; flex-shrink: 0; }
   .appts-cal-flag { font-size: 0.65rem; padding: 1px 5px; border-radius: 2px; }
   .appts-cal-flag--taken { color: var(--warn-fg); background: var(--warn-bg); }
   .appts-cal-flag--off { color: var(--text-muted); background: var(--surface); border: 1px solid var(--border-mid); }
@@ -704,40 +715,69 @@ const STATUS_KEYS: AppointmentStatus[] = Object.keys(STATUS_COLORS) as Appointme
   .appts-cal-add-hint { font-size: var(--text-xs); color: var(--text-muted); margin: 8px 0 0; }
 
   .appts-cal-modal {
-    position: fixed; inset: 0; z-index: 100;
+    position: fixed; inset: 0; z-index: 200;
     display: flex; align-items: center; justify-content: center;
+    padding: 16px;
+    animation: appts-modal-fade .18s ease;
+  }
+  @keyframes appts-modal-fade {
+    from { opacity: 0; }
+    to   { opacity: 1; }
   }
   .appts-cal-modal-backdrop {
     position: absolute; inset: 0;
-    background: rgba(0, 0, 0, 0.45);
+    background: rgba(12, 10, 9, 0.55);
+    backdrop-filter: blur(2px);
   }
   .appts-cal-modal-window {
     position: relative; z-index: 1;
-    width: min(420px, calc(100vw - 32px));
-    background: var(--surface); border: var(--brutal-border-thin); border-radius: 8px;
-    box-shadow: 4px 4px 0 #000;
+    width: min(460px, 100%);
+    background: var(--surface);
+    border: var(--brutal-border-thin);
+    border-radius: 12px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25), 4px 4px 0 #000;
+    overflow: hidden;
+    animation: appts-modal-slide .2s ease;
+  }
+  @keyframes appts-modal-slide {
+    from { transform: translateY(12px); opacity: 0; }
+    to   { transform: translateY(0); opacity: 1; }
   }
   .appts-cal-modal-header {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 14px 16px; border-bottom: var(--brutal-border-thin); background: var(--surface-raised);
+    display: flex; justify-content: space-between; align-items: center; gap: 12px;
+    padding: 18px 20px;
+    background: var(--surface-raised);
+    border-bottom: var(--brutal-border-thin);
   }
-  .appts-cal-modal-header h3 { margin: 0; font-size: var(--text-md); }
+  .appts-cal-modal-header h3 { margin: 0; font-size: var(--text-lg); font-weight: 700; }
   .appts-cal-modal-close {
-    background: none; border: none; cursor: pointer; font-size: 1.4rem; line-height: 1; color: var(--text-muted); padding: 0 4px;
+    background: var(--surface); border: var(--brutal-border-thin); border-radius: 6px;
+    cursor: pointer; font-size: 1.25rem; line-height: 1; color: var(--text-muted);
+    padding: 4px 10px; transition: all .12s;
   }
-  .appts-cal-modal-close:hover { color: var(--text-primary); }
-  .appts-cal-modal-form { padding: 16px; display: flex; flex-direction: column; gap: 12px; }
-  .appts-cal-modal-field { display: flex; flex-direction: column; gap: 4px; }
-  .appts-cal-modal-field label { font-size: var(--text-xs); color: var(--text-muted); font-weight: 600; }
+  .appts-cal-modal-close:hover { color: var(--err); background: var(--err-bg); border-color: var(--err); }
+  .appts-cal-modal-form { padding: 20px; display: flex; flex-direction: column; gap: 16px; }
+  .appts-cal-modal-field { display: flex; flex-direction: column; gap: 6px; }
+  .appts-cal-modal-field label { font-size: var(--text-xs); color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
   .appts-cal-modal-field input {
-    padding: 6px 8px; border: var(--brutal-border-thin); border-radius: 4px;
-    background: var(--surface); color: var(--text-primary); font-family: inherit;
+    padding: 10px 12px; border: var(--brutal-border-thin); border-radius: 6px;
+    background: var(--surface); color: var(--text-primary); font-family: inherit; font-size: var(--text-sm);
+    transition: box-shadow .12s, border-color .12s;
   }
+  .appts-cal-modal-field input::placeholder { color: var(--text-muted); opacity: .7; }
   .appts-cal-modal-field input[readonly] { background: var(--surface-raised); color: var(--text-muted); }
-  .appts-cal-modal-field input:focus { outline: none; box-shadow: 0 0 0 2px var(--accent); }
-  .appts-cal-modal-row { display: flex; gap: 12px; }
+  .appts-cal-modal-field input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent); }
+  .appts-cal-modal-row { display: flex; gap: 14px; }
   .appts-cal-modal-row .appts-cal-modal-field { flex: 1; }
-  .appts-cal-modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 4px; }
+  .appts-cal-modal-actions {
+    display: flex; justify-content: flex-end; gap: 10px;
+    margin-top: 4px; padding-top: 16px; border-top: 1px dashed var(--border-mid);
+  }
+  .appts-cal-modal-actions .btn { padding: 10px 18px; font-size: var(--text-sm); font-weight: 700; border-radius: 6px; }
+  .appts-cal-modal-actions .btn-primary { box-shadow: 3px 3px 0 #000; }
+  .appts-cal-modal-actions .btn-primary:hover:not(:disabled) { transform: translate(-1px, -1px); box-shadow: 4px 4px 0 #000; }
+  .appts-cal-modal-actions .btn-ghost { border: var(--brutal-border-thin); }
+  .appts-cal-modal-actions .btn-ghost:hover { background: var(--surface-raised); }
 
   .appts-cal-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
   .appts-cal-list-item {

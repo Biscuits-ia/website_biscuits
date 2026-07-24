@@ -1,6 +1,6 @@
 ---
 // src/pages/rejoignez-nous.astro
-// Page dédiée au recrutement bénévole : sessions ouvertes + formulaire.
+// Page dédiée au recrutement bénévole : sessions ouvertes + candidature par session.
 
 import Layout from '@/layouts/Layout.astro';
 import Breadcrumb from '@/components/Breadcrumb.astro';
@@ -68,7 +68,7 @@ const schema = {
         logiciels libres, Anti Pepins et recherche participative.
       </p>
       <div class="hero-cta">
-        <a href="#formulaire" class="btn-primary">Candidater</a>
+        <a href="#sessions" class="btn-primary">Voir les sessions</a>
         <a href="https://www.jeveuxaider.gouv.fr/organisations/34315-biscuits-ia" target="_blank" rel="noopener noreferrer" class="btn-ghost">
           Voir sur jeveuxaider.gouv
         </a>
@@ -96,55 +96,74 @@ const schema = {
     </div>
   </section>
 
-  {hasSessions && (
-    <section class="recruit-sessions">
-      <div class="container">
-        <h2>Sessions de recrutement ouvertes</h2>
-        <p class="recruit-sessions__intro">
-          Candidatez à l'une de ces sessions collectives. Nous vous présenterons l'association, nos besoins et répondrons à vos questions.
-        </p>
-        <ul class="recruit-sessions__list">
-          {sessionsWithPlaces.map((s) => {
-            const scheduled = new Date(s.scheduled_at);
-            const full = s.remaining === 0;
-            return (
-              <li class={`recruit-sessions__card ${full ? 'recruit-sessions__card--full' : ''}`}>
-                <div class="recruit-sessions__main">
-                  <div class="recruit-sessions__title">{s.title}</div>
-                  <div class="recruit-sessions__meta">
-                    {scheduled.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })}
-                    {' · '}{s.duration_minutes ?? 90} min
-                    {s.location && ` · ${s.location}`}
+  <section class="recruit-sessions" id="sessions">
+    <div class="container">
+      <h2>Sessions de recrutement</h2>
+      {hasSessions ? (
+        <>
+          <p class="recruit-sessions__intro">
+            Choisissez une session collective. Nous vous présenterons l'association, nos besoins et répondrons à vos questions.
+          </p>
+          <ul class="recruit-sessions__list">
+            {sessionsWithPlaces.map((s) => {
+              const scheduled = new Date(s.scheduled_at);
+              const full = s.remaining === 0;
+              return (
+                <li class={`recruit-sessions__card ${full ? 'recruit-sessions__card--full' : ''}`} data-session-id={s.id}>
+                  <div class="recruit-sessions__main">
+                    <div class="recruit-sessions__title">{s.title}</div>
+                    <div class="recruit-sessions__meta">
+                      {scheduled.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })}
+                      {' · '}{s.duration_minutes ?? 90} min
+                      {s.location && ` · ${s.location}`}
+                    </div>
+                    {s.description && <p class="recruit-sessions__desc">{s.description}</p>}
                   </div>
-                  {s.description && <p class="recruit-sessions__desc">{s.description}</p>}
-                </div>
-                <span class={`recruit-sessions__badge ${full ? 'recruit-sessions__badge--full' : ''}`}>
-                  {full ? 'Complet' : `${s.remaining} place${s.remaining > 1 ? 's' : ''}`}
-                </span>
-              </li>
-            );
-          })}
-        </ul>
-      </div>
-    </section>
-  )}
+                  <div class="recruit-sessions__actions">
+                    <span class={`recruit-sessions__badge ${full ? 'recruit-sessions__badge--full' : ''}`}>
+                      {full ? 'Complet' : `${s.remaining} place${s.remaining > 1 ? 's' : ''}`}
+                    </span>
+                    <button
+                      type="button"
+                      class="btn-primary btn-sm js-apply"
+                      data-session-id={s.id}
+                      data-session-title={s.title}
+                      disabled={full}
+                    >
+                      {full ? 'Complet' : 'Candidater'}
+                    </button>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        </>
+      ) : (
+        <p class="recruit-sessions__empty">
+          Aucune session de recrutement n'est ouverte pour le moment. Vous pouvez tout de même nous envoyer une candidature spontanée ci-dessous.
+        </p>
+      )}
+    </div>
+  </section>
 
-  <section class="recruit-form" id="formulaire">
+  <section class="recruit-form" id="formulaire" data-requires-auth={!user}>
     <div class="container">
       {!user && (
         <div class="recruit-form__notice" role="note">
-          💡 <strong>Vous n'êtes pas connecté.</strong> Vous pouvez candidater sans compte, mais en vous connectant
-          votre candidature sera liée à votre profil et vous pourrez suivre son avancement dans votre espace personnel.
-          <a href={`/connexion?redirect=/rejoignez-nous&message=candidater`}>Se connecter pour candidater</a>.
+          💡 <strong>Vous n'êtes pas connecté.</strong>
+          <a href="/connexion?redirect=/rejoignez-nous&message=candidater">Connectez-vous</a> pour candidater à une session.
+          Vous pourrez suivre votre candidature dans votre espace personnel.
         </div>
       )}
       {user && (
         <div class="recruit-form__notice recruit-form__notice--ok" role="note">
-          ✅ Vous êtes connecté. Votre candidature sera liée à votre compte.
+          ✅ Sélectionnez une session ci-dessus ou envoyez une candidature spontanée.
         </div>
       )}
-      <h2>Envoyer ma candidature</h2>
-      <RecruitmentForm />
+      <h2>Ma candidature</h2>
+      <div id="recruitment-form-root">
+        <RecruitmentForm preselectedSessionId="" />
+      </div>
     </div>
   </section>
 
@@ -167,7 +186,68 @@ const schema = {
       </dl>
     </div>
   </section>
+
+  <dialog id="apply-modal" class="apply-modal">
+    <div class="apply-modal__card">
+      <button type="button" class="apply-modal__close js-modal-close" aria-label="Fermer">×</button>
+      <h2 class="apply-modal__title" id="apply-modal-title">Candidater à une session</h2>
+      <p class="apply-modal__session" id="apply-modal-session"></p>
+      <div id="apply-modal-form">
+        <RecruitmentForm preselectedSessionId="" />
+      </div>
+    </div>
+  </dialog>
 </Layout>
+
+<script nonce={Astro.locals.nonce}>
+  const applyButtons = document.querySelectorAll('.js-apply');
+  const modal = document.getElementById('apply-modal');
+  const modalTitle = document.getElementById('apply-modal-title');
+  const modalSession = document.getElementById('apply-modal-session');
+  const modalClose = document.querySelector('.js-modal-close');
+  const isAuthRequired = document.querySelector('[data-requires-auth="true"]') !== null;
+
+  const AUTH_REDIRECT = '/connexion?redirect=/rejoignez-nous&message=candidater';
+
+  applyButtons.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      if (isAuthRequired) {
+        window.location.href = AUTH_REDIRECT;
+        return;
+      }
+
+      const sessionId = btn.getAttribute('data-session-id');
+      const sessionTitle = btn.getAttribute('data-session-title') || 'Session sélectionnée';
+      if (!sessionId || !modal || !modalSession) return;
+
+      if (modalTitle) modalTitle.textContent = 'Candidater à cette session';
+      modalSession.textContent = sessionTitle;
+
+      // Met à jour les radios de session dans la modale
+      const formRoot = document.getElementById('apply-modal-form');
+      if (formRoot) {
+        const radios = formRoot.querySelectorAll('input[type="radio"][name="session_id"]');
+        radios.forEach((radio) => {
+          radio.checked = radio.value === sessionId;
+        });
+      }
+
+      if (modal instanceof HTMLDialogElement) {
+        modal.showModal();
+      }
+    });
+  });
+
+  modalClose?.addEventListener('click', () => {
+    if (modal instanceof HTMLDialogElement) modal.close();
+  });
+
+  modal?.addEventListener('click', (e) => {
+    if (e.target === modal && modal instanceof HTMLDialogElement) {
+      modal.close();
+    }
+  });
+</script>
 
 <style>
   .recruit-hero {
@@ -213,7 +293,9 @@ const schema = {
   }
 
   .btn-primary {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     padding: 0.85rem 1.5rem;
     background: var(--color-primary);
     color: var(--color-bg-alt);
@@ -222,13 +304,25 @@ const schema = {
     text-decoration: none;
   }
 
-  .btn-primary:hover {
+  .btn-primary:hover:not(:disabled) {
     transform: translate(-2px, -2px);
     box-shadow: 4px 4px 0 var(--color-border);
   }
 
+  .btn-primary:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  .btn-sm {
+    padding: 0.55rem 1rem;
+    font-size: 0.85rem;
+  }
+
   .btn-ghost {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     padding: 0.85rem 1.5rem;
     background: transparent;
     color: var(--color-text);
@@ -301,6 +395,13 @@ const schema = {
     margin: 0 0 2rem;
   }
 
+  .recruit-sessions__empty {
+    text-align: center;
+    color: var(--color-text-light);
+    line-height: 1.6;
+    margin: 0;
+  }
+
   .recruit-sessions__list {
     list-style: none;
     margin: 0;
@@ -348,8 +449,15 @@ const schema = {
     margin: 0.25rem 0 0;
   }
 
-  .recruit-sessions__badge {
+  .recruit-sessions__actions {
     flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.5rem;
+  }
+
+  .recruit-sessions__badge {
     font-size: 0.7rem;
     font-weight: 800;
     text-transform: uppercase;
@@ -424,10 +532,61 @@ const schema = {
     margin: 0;
   }
 
+  .apply-modal {
+    border: none;
+    padding: 0;
+    background: transparent;
+    max-width: none;
+    max-height: none;
+  }
+
+  .apply-modal::backdrop {
+    background: rgba(15, 23, 42, 0.35);
+  }
+
+  .apply-modal__card {
+    width: min(680px, 94vw);
+    max-height: 90vh;
+    overflow-y: auto;
+    border: var(--brutal-border, 2px solid var(--color-border));
+    background: var(--color-bg);
+    padding: 2rem;
+    position: relative;
+  }
+
+  .apply-modal__close {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    width: 36px;
+    height: 36px;
+    border: 2px solid var(--color-border);
+    background: var(--color-bg-alt);
+    font-size: 1.5rem;
+    line-height: 1;
+    cursor: pointer;
+  }
+
+  .apply-modal__title {
+    font-size: 1.5rem;
+    font-weight: 800;
+    margin: 0 0 0.25rem;
+    color: var(--color-text);
+  }
+
+  .apply-modal__session {
+    color: var(--color-text-light);
+    margin: 0 0 1.25rem;
+  }
+
   @media (max-width: 640px) {
     .recruit-sessions__card {
       flex-direction: column;
       gap: 0.75rem;
+    }
+
+    .recruit-sessions__actions {
+      align-items: flex-start;
     }
 
     .hero-cta {
@@ -438,6 +597,12 @@ const schema = {
     .btn-primary,
     .btn-ghost {
       text-align: center;
+    }
+
+    .apply-modal__card {
+      width: 100vw;
+      max-height: 100vh;
+      padding: 1.25rem;
     }
   }
 </style>

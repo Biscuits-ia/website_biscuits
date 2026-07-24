@@ -32,18 +32,24 @@ interface RecruitmentApiResponse {
 
 type RecruitmentFieldId = 'first_name' | 'last_name' | 'email';
 
-const INITIAL_FORM_DATA: RecruitmentFormData = {
-  first_name: '',
-  last_name: '',
-  email: '',
-  skills: '',
-  availability: '',
-  motivation: '',
-  session_id: '',
-};
+interface RecruitmentFormProps {
+  preselectedSessionId?: string;
+}
 
-export default function RecruitmentFormClient() {
-  const [formData, setFormData] = useState<RecruitmentFormData>(INITIAL_FORM_DATA);
+function buildInitialData(preselectedSessionId?: string): RecruitmentFormData {
+  return {
+    first_name: '',
+    last_name: '',
+    email: '',
+    skills: '',
+    availability: '',
+    motivation: '',
+    session_id: preselectedSessionId ?? '',
+  };
+}
+
+export default function RecruitmentFormClient({ preselectedSessionId }: RecruitmentFormProps = {}) {
+  const [formData, setFormData] = useState<RecruitmentFormData>(() => buildInitialData(preselectedSessionId));
   const [fieldErrors, setFieldErrors] = useState<Partial<Record<RecruitmentFieldId, string>>>({});
   const [serverError, setServerError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);

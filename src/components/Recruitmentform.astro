@@ -1,5 +1,11 @@
 ---
 import RecruitmentFormClient from './react/RecruitmentFormClient';
+
+interface Props {
+  preselectedSessionId?: string;
+}
+
+const { preselectedSessionId } = Astro.props;
 ---
 
-<RecruitmentFormClient client:load />
+<RecruitmentFormClient client:load preselectedSessionId={preselectedSessionId} />

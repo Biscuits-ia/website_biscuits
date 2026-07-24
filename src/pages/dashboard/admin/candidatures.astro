@@ -62,8 +62,11 @@ const availabilityLabel: Record<string, string> = {
 <DashboardLayout title="Candidatures" activePage="candidatures" userName={userName} authResult={result}>
 
   <div class="page-head">
-    <h1>Candidatures bénévoles</h1>
-    <p class="page-head-sub">Gérez les candidatures reçues via le formulaire de recrutement.</p>
+    <div>
+      <h1>Candidatures bénévoles</h1>
+      <p class="page-head-sub">Gérez les candidatures reçues via le formulaire de recrutement.</p>
+    </div>
+    <a href="/dashboard/admin/candidatures/sessions" class="btn btn-primary">Gérer les sessions</a>
   </div>
 
   {saved && <div class="flash flash-ok" role="alert">✓ Modifications sauvegardées.</div>}
@@ -267,7 +270,7 @@ const availabilityLabel: Record<string, string> = {
   .assigned-badge { display: inline-flex; align-items: center; gap: 10px; margin-top: 8px; padding: 8px 12px; background: var(--ok-bg); color: var(--ok-fg); border: 1px solid var(--ok); font-size: var(--text-sm); }
 </style>
 
-<script>
+<script nonce={Astro.locals.nonce}>
   document.querySelectorAll('.assign-form').forEach((form) => {
     form.addEventListener('submit', async (e) => {
       e.preventDefault();

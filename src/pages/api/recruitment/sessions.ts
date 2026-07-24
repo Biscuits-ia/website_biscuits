@@ -13,6 +13,7 @@ export const GET: APIRoute = async ({ request, cookies }) => {
     .order('scheduled_at', { ascending: true });
 
   if (error) {
+    console.error('[api/recruitment/sessions] erreur:', error.message, error.details);
     return new Response(JSON.stringify({ error: 'Erreur lors du chargement des sessions.' }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' },

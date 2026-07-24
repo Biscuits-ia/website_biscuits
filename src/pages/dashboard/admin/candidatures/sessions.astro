@@ -72,13 +72,16 @@ function formatSessionDate(iso: string): string {
 }
 ---
 
-<DashboardLayout title="Sessions de recrutement" activePage="candidatures" userName={userName} authResult={result}>
+<DashboardLayout title="Sessions de recrutement" activePage="recruitment-sessions" userName={userName} authResult={result}>
   <div class="page-header mb-6">
     <div>
       <h1 class="page-title">Sessions de recrutement</h1>
       <p class="description">{sessions.length} session{sessions.length > 1 ? 's' : ''} planifiée{sessions.length > 1 ? 's' : ''}</p>
     </div>
-    <button class="btn btn-primary" id="btn-open-create" type="button">Nouvelle session</button>
+    <div class="page-actions">
+      <a href="/dashboard/admin/candidatures" class="btn btn-ghost">Voir les candidatures</a>
+      <button class="btn btn-primary" id="btn-open-create" type="button">Nouvelle session</button>
+    </div>
   </div>
 
   <form method="GET" class="filters mb-5">
@@ -196,6 +199,7 @@ function formatSessionDate(iso: string): string {
 <style>
   .page-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap; }
   .page-title { font-size: var(--text-xl); font-weight: 700; }
+  .page-actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
   .filters { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
   .input { border: var(--brutal-border-thin); background: var(--surface-raised); padding: 6px 10px; font-family: var(--font-sans); font-size: var(--text-sm); outline: none; }
   .input:focus { box-shadow: var(--shadow-sm); }
@@ -229,7 +233,7 @@ function formatSessionDate(iso: string): string {
   }
 </style>
 
-<script>
+<script nonce={Astro.locals.nonce}>
   const createModal = document.getElementById('create-session-modal');
   const btnOpenCreate = document.getElementById('btn-open-create');
   const btnCloseCreate = document.getElementById('btn-close-create');

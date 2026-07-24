@@ -193,7 +193,7 @@ function formatSessionDate(iso: string): string {
   }
 </style>
 
-<script define:vars={{ sessionId }}>
+<script define:vars={{ sessionId }} nonce={Astro.locals.nonce}>
   const addForm = document.getElementById('form-add-candidate');
 
   addForm?.addEventListener('submit', async (e) => {

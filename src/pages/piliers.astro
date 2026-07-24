@@ -2,11 +2,46 @@
 // src/pages/piliers.astro
 // Hub des 5 piliers de l'association : presentation detaillee et navigation par pilier.
 
-export const prerender = true;
-
 import Layout from '@/layouts/Layout.astro';
 import Breadcrumb from '@/components/Breadcrumb.astro';
 import PillarsGrid from '@/components/PillarsGrid.astro';
+import { createSupabaseClient } from '@/lib/supabase';
+
+const supabase = Astro.locals.supabase ?? createSupabaseClient(Astro);
+const { data: { user } } = await supabase.auth.getUser();
+
+const now = new Date().toISOString();
+const { data: sessionsRaw } = await supabase
+  .from('recruitment_sessions')
+  .select('*')
+  .eq('status', 'open')
+  .gt('scheduled_at', now)
+  .order('scheduled_at', { ascending: true });
+
+const sessions = sessionsRaw ?? [];
+
+const sessionCounts: Record<string, number> = {};
+if (sessions.length > 0) {
+  const { data: counts } = await supabase
+    .from('recruitment_submissions')
+    .select('session_id')
+    .in('session_id', sessions.map((s) => s.id))
+    .neq('status', 'declined');
+  for (const row of (counts ?? []) as { session_id: string | null }[]) {
+    if (row.session_id) {
+      sessionCounts[row.session_id] = (sessionCounts[row.session_id] ?? 0) + 1;
+    }
+  }
+}
+
+const sessionsWithPlaces = sessions.map((s) => {
+  const count = sessionCounts[s.id] ?? 0;
+  const remaining = Math.max(0, (s.max_candidates ?? 0) - count);
+  return { ...s, remaining };
+});
+
+const candidaterHref = user ? '/rejoignez-nous' : '/connexion?redirect=/rejoignez-nous&message=candidater';
+const candidaterLabel = user ? 'Candidater' : 'Candidater (connexion requise)';
 
 const schema = {
   type: 'WebPage' as const,
@@ -40,6 +75,55 @@ const schema = {
     intro="Decouvrez en detail ce que nous faisons sur chaque front."
     showCta={false}
   />
+
+  {sessionsWithPlaces.length > 0 && (
+    <section class="recruitment-preview">
+      <div class="container">
+        <div class="recruitment-preview__header">
+          <h2>Sessions de recrutement ouvertes</h2>
+          <p>Rejoignez Biscuits IA en bénévole. Voici les prochaines sessions collectives auxquelles vous pouvez candidater.</p>
+        </div>
+        <ul class="recruitment-preview__list">
+          {sessionsWithPlaces.map((s) => {
+            const scheduled = new Date(s.scheduled_at);
+            const full = s.remaining === 0;
+            return (
+              <li class={`recruitment-preview__card ${full ? 'recruitment-preview__card--full' : ''}`}>
+                <div class="recruitment-preview__main">
+                  <div class="recruitment-preview__title">{s.title}</div>
+                  <div class="recruitment-preview__meta">
+                    {scheduled.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })}
+                    {' · '}{s.duration_minutes ?? 90} min
+                    {s.location && ` · ${s.location}`}
+                  </div>
+                  {s.description && <p class="recruitment-preview__desc">{s.description}</p>}
+                </div>
+                <span class={`recruitment-preview__badge ${full ? 'recruitment-preview__badge--full' : ''}`}>
+                  {full ? 'Complet' : `${s.remaining} place${s.remaining > 1 ? 's' : ''}`}
+                </span>
+              </li>
+            );
+          })}
+        </ul>
+        <div class="recruitment-preview__cta">
+          <a href={candidaterHref} class="btn-primary">{candidaterLabel}</a>
+        </div>
+      </div>
+    </section>
+  )}
+
+  <section class="about-preview">
+    <div class="container">
+      <h2>Qui sommes-nous ?</h2>
+      <p class="about-preview__lead">
+        Biscuits IA est une association loi 1901 qui vise à rendre le numérique utile, sûr et accessible aux associations, collectivités et citoyens. Nous travaillons sur cinq piliers : accompagnement à l'IA, lutte contre la cybercriminalité, logiciels libres, Anti Pepins (détecteur d'arnaques) et recherche participative.
+      </p>
+      <p>
+        Notre modèle est simple : pas d'actionnaires, pas de croissance à tout prix. Chaque contribution — adhésion, don, don de temps — finance directement l'impact sur le terrain.
+      </p>
+      <a href="/pourquoi" class="btn-secondary">Pourquoi Biscuits IA ?</a>
+    </div>
+  </section>
 
   <section class="engagement">
     <div class="container">
@@ -211,5 +295,134 @@ const schema = {
 
   .btn-ghost:hover {
     background: rgba(255, 255, 255, 0.12);
+  }
+
+  .about-preview {
+    padding: 4rem 1.5rem;
+    background: var(--color-bg);
+    text-align: center;
+  }
+
+  .about-preview .container {
+    max-width: 820px;
+    margin: 0 auto;
+  }
+
+  .about-preview h2 {
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    margin: 0 0 1rem;
+    color: var(--color-text);
+  }
+
+  .about-preview p {
+    color: var(--color-text-light);
+    line-height: 1.6;
+    margin: 0 0 1rem;
+  }
+
+  .about-preview__lead {
+    font-size: 1.1rem;
+  }
+
+  .recruitment-preview {
+    padding: 4rem 1.5rem;
+    background: var(--color-bg-alt);
+  }
+
+  .recruitment-preview .container {
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .recruitment-preview__header {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+
+  .recruitment-preview__header h2 {
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    margin: 0 0 0.75rem;
+    color: var(--color-text);
+  }
+
+  .recruitment-preview__header p {
+    color: var(--color-text-light);
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  .recruitment-preview__list {
+    list-style: none;
+    margin: 0 0 1.5rem;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .recruitment-preview__card {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    justify-content: space-between;
+    padding: 1.25rem;
+    background: var(--color-bg);
+    border: 2px solid var(--color-border);
+  }
+
+  .recruitment-preview__card--full {
+    opacity: 0.7;
+  }
+
+  .recruitment-preview__main {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+
+  .recruitment-preview__title {
+    font-weight: 800;
+    font-size: 1.1rem;
+    color: var(--color-text);
+  }
+
+  .recruitment-preview__meta {
+    font-size: 0.85rem;
+    color: var(--color-text-light);
+  }
+
+  .recruitment-preview__desc {
+    font-size: 0.9rem;
+    color: var(--color-text-light);
+    line-height: 1.5;
+    margin: 0.25rem 0 0;
+  }
+
+  .recruitment-preview__badge {
+    flex-shrink: 0;
+    font-size: 0.7rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    padding: 0.35rem 0.65rem;
+    border: 2px solid var(--color-border);
+    background: var(--color-bg-alt);
+    color: var(--color-text);
+  }
+
+  .recruitment-preview__badge--full {
+    background: color-mix(in srgb, var(--color-danger) 12%, transparent);
+    color: var(--color-danger);
+    border-color: var(--color-danger);
+  }
+
+  .recruitment-preview__cta {
+    text-align: center;
+  }
+
+  @media (max-width: 640px) {
+    .recruitment-preview__card {
+      flex-direction: column;
+      gap: 0.75rem;
+    }
   }
 </style>

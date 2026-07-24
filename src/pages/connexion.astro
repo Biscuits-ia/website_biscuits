@@ -8,6 +8,11 @@ const supabase = Astro.locals.supabase ?? createSupabaseClient(Astro);
 const { data: { user } } = await supabase.auth.getUser();
 if (user) return Astro.redirect('/dashboard/user/');
 const nonce = Astro.locals.nonce;
+const redirectTo = Astro.url.searchParams.get('redirect') ?? '/dashboard/';
+const message = Astro.url.searchParams.get('message') ?? '';
+const messageText = message === 'candidater'
+  ? 'Connectez-vous pour candidater à une session de recrutement Biscuits IA.'
+  : '';
 ---
 
 <AuthLayout title="Connexion" description="Connectez-vous à votre compte Biscuits IA.">
@@ -17,7 +22,7 @@ const nonce = Astro.locals.nonce;
       <div class="auth-card">
         <h1 class="auth-title">Bonjour 👋</h1>
         <p class="auth-lead">
-          Connectez-vous pour accéder à vos ateliers et ressources.
+          {messageText || 'Connectez-vous pour accéder à vos ateliers et ressources.'}
         </p>
 
         <div class="auth-field">
@@ -126,7 +131,9 @@ const nonce = Astro.locals.nonce;
       if (remember) localStorage.setItem('rememberedEmail', email);
       else          localStorage.removeItem('rememberedEmail');
 
-       window.location.href = '/dashboard/';
+      const url = new URL(window.location.href);
+      const redirectTarget = url.searchParams.get('redirect') || '/dashboard/';
+      window.location.href = redirectTarget;
 
     } catch (e) {
       showMsg('Une erreur est survenue. Veuillez réessayer.');

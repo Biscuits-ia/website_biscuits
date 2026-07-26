@@ -16,11 +16,13 @@ interface Props {
   slots?: AppointmentSlot[];
   appointments?: CalendarAppointment[];
   selectedDay?: string | null;
+  initialView?: 'table' | 'calendar';
   nonce?: string;
 }
 
 interface CalendarAppointment {
   id: string;
+  slot_id: string | null;
   status: AppointmentStatus;
   start_time: string;
   end_time: string;
@@ -29,7 +31,8 @@ interface CalendarAppointment {
   user_profile: { full_name: string | null; email: string | null } | null;
 }
 
-const { year, month, slots = [], appointments = [], selectedDay = null, nonce } = Astro.props;
+const { year, month, slots = [], appointments = [], selectedDay = null, initialView = 'table', nonce } = Astro.props;
+const calendarActive = initialView === 'calendar';
 ---
 
 <div class="dashboard-container">
@@ -39,10 +42,10 @@ const { year, month, slots = [], appointments = [], selectedDay = null, nonce } 
   </div>
 
   <nav class="view-toggle" role="tablist" aria-label="Mode d'affichage">
-    <button type="button" class="view-toggle-btn is-active" role="tab" aria-selected="true" data-view="table">
+    <button type="button" class:list={['view-toggle-btn', { 'is-active': !calendarActive }]} role="tab" aria-selected={!calendarActive} data-view="table">
       📋 Tableau
     </button>
-    <button type="button" class="view-toggle-btn" role="tab" aria-selected="false" data-view="calendar">
+    <button type="button" class:list={['view-toggle-btn', { 'is-active': calendarActive }]} role="tab" aria-selected={calendarActive} data-view="calendar">
       🗓 Calendrier
     </button>
   </nav>
@@ -50,14 +53,14 @@ const { year, month, slots = [], appointments = [], selectedDay = null, nonce } 
   <div id="error-container"></div>
 
   <!-- Vue tableau -->
-  <div id="view-table" class="view-pane">
+  <div id="view-table" class="view-pane" hidden={calendarActive}>
     <div id="content">
       <div class="loading">⏳ Chargement...</div>
     </div>
   </div>
 
   <!-- Vue calendrier -->
-  <div id="view-calendar" class="view-pane" hidden>
+  <div id="view-calendar" class="view-pane" hidden={!calendarActive}>
     <AdminAppointmentsCalendar year={year} month={month} slots={slots} appointments={appointments} selectedDay={selectedDay} nonce={nonce} />
   </div>
 </div>
@@ -134,6 +137,8 @@ const { year, month, slots = [], appointments = [], selectedDay = null, nonce } 
   .badge-success { background-color: #d1fae5; color: #065f46; }
   .badge-pending { background-color: #fef3c7; color: #92400e; }
   .badge-danger  { background-color: #fee2e2; color: #991b1b; }
+  .badge-muted   { background-color: #e5e7eb; color: #4b5563; }
+  .table-notice  { margin: 12px 0 0; font-size: 13px; color: #6b7280; }
   .temporal-badge {
     display: inline-block; margin-left: 6px; padding: 2px 8px;
     border-radius: 99px; font-size: 10px; font-weight: 700;
@@ -167,6 +172,16 @@ const { year, month, slots = [], appointments = [], selectedDay = null, nonce } 
     color: #1a73e8; background: #fff; white-space: nowrap; transition: all 0.15s;
   }
   .btn-gcal-admin:hover { background-color: #e8f0fe; transform: translate(-1px, -1px); box-shadow: 4px 4px 0 #1a73e8; }
+
+  /* Le tableau a 6 colonnes deborde sur mobile : on le fait defiler dans son
+     propre conteneur plutot que de faire defiler toute la page. */
+  #content { overflow-x: auto; }
+  .appointments-table { min-width: 720px; }
+  @media (max-width: 640px) {
+    .dashboard-container { padding: 16px; }
+    .header h1 { font-size: 22px; }
+    .actions-col { flex-direction: row; flex-wrap: wrap; }
+  }
 </style>
 
 <script is:inline nonce={nonce}>
@@ -185,6 +200,13 @@ const { year, month, slots = [], appointments = [], selectedDay = null, nonce } 
       });
       if (viewTable) viewTable.hidden = view !== 'table';
       if (viewCal)   viewCal.hidden   = view !== 'calendar';
+      // Memorise la vue dans l'URL : la navigation mensuelle du calendrier
+      // recharge la page et retombait sinon systematiquement sur le tableau.
+      try {
+        const url = new URL(window.location.href);
+        url.searchParams.set('view', view);
+        window.history.replaceState(null, '', url.toString());
+      } catch (_) { /* history indisponible : non bloquant */ }
     });
   });
 
@@ -199,15 +221,20 @@ const { year, month, slots = [], appointments = [], selectedDay = null, nonce } 
     if (typeof window.showToast === 'function') window.showToast(msg, type);
   }
 
+  // L'API pagine (defaut 50, max 200). Sans limite explicite les reservations
+  // au-dela de la 50e n'apparaissaient nulle part, sans aucun indicateur.
+  const PAGE_SIZE = 200;
+
   function loadAppointments() {
-    fetch('/api/admin/appointments', { credentials: 'include' })
+    fetch('/api/admin/appointments?limit=' + PAGE_SIZE, { credentials: 'include' })
       .then(function (response) {
         if (!response.ok) return response.text().then(function (t) { throw new Error('Erreur ' + response.status + ': ' + t); });
         return response.json();
       })
       .then(function (data) {
         var list = Array.isArray(data) ? data : (data && typeof data === 'object' && Array.isArray(data.data) ? data.data : []);
-        renderAppointments(list);
+        var total = (data && typeof data.total === 'number') ? data.total : list.length;
+        renderAppointments(list, total);
       })
       .catch(function (err) {
         var msg = err instanceof Error ? err.message : 'Erreur inconnue';
@@ -226,6 +253,22 @@ const { year, month, slots = [], appointments = [], selectedDay = null, nonce } 
   }
 
   function pad(n) { return n.toString().padStart(2, '0'); }
+
+  // Heure de Paris, comme la vue calendrier. Avant, ce tableau affichait
+  // l'heure locale du navigateur : deux heures differentes pour le meme
+  // creneau sur la meme page selon l'onglet Tableau / Calendrier.
+  const SITE_TZ = 'Europe/Paris';
+  const timeFmt = new Intl.DateTimeFormat('fr-FR', { timeZone: SITE_TZ, hour: '2-digit', minute: '2-digit', hour12: false });
+  const dateFmt = new Intl.DateTimeFormat('fr-FR', { timeZone: SITE_TZ, day: '2-digit', month: '2-digit', year: 'numeric' });
+
+  // 'expired' est pose par le job pg_cron sur les RDV pending perimes.
+  // Sans entree ici, le tableau affichait le libelle "En attente" pour eux.
+  const STATUS_BADGE = {
+    confirmed: { cls: 'badge-success', label: '✓ Confirmé' },
+    cancelled: { cls: 'badge-danger',  label: '✗ Annulé' },
+    expired:   { cls: 'badge-muted',   label: '⌛ Expiré' },
+    pending:   { cls: 'badge-pending', label: '⏳ En attente' },
+  };
 
   function buildAdminGoogleCalUrl(appt) {
     var slot = appt.appointment_slots;
@@ -254,10 +297,13 @@ const { year, month, slots = [], appointments = [], selectedDay = null, nonce } 
     });
   }
 
-  function updateAppointmentStatus(id, status) {
-    var actionLabel = status === 'confirmed' ? 'confirmer' : (status === 'cancelled' && id.charAt(0) === 'p') ? 'rejeter' : 'annuler';
+  // `currentStatus` sert uniquement a choisir le bon verbe : on "rejette" une
+  // demande en attente, on "annule" un rendez-vous deja confirme.
+  function updateAppointmentStatus(id, status, currentStatus) {
+    var isReject = status === 'cancelled' && currentStatus === 'pending';
+    var actionLabel = status === 'confirmed' ? 'confirmer' : isReject ? 'rejeter' : 'annuler';
     var danger = status === 'cancelled';
-    var verb   = status === 'confirmed' ? 'Confirmer' : 'Annuler';
+    var verb   = status === 'confirmed' ? 'Confirmer' : isReject ? 'Rejeter' : 'Annuler';
 
     if (typeof window.showConfirm !== 'function') return;
 
@@ -286,12 +332,15 @@ const { year, month, slots = [], appointments = [], selectedDay = null, nonce } 
     });
   }
 
-  function renderAppointments(appointments) {
+  function renderAppointments(appointments, total) {
     if (!contentDiv) return;
     if (appointments.length === 0) {
       contentDiv.innerHTML = '<div class="no-appointments">Aucune réservation pour le moment</div>';
       return;
     }
+    const truncatedNotice = (typeof total === 'number' && total > appointments.length)
+      ? '<p class="table-notice">Affichage des ' + appointments.length + ' réservations les plus récentes sur ' + total + '.</p>'
+      : '';
 
     var html = `
       <table class="appointments-table">
@@ -311,9 +360,9 @@ const { year, month, slots = [], appointments = [], selectedDay = null, nonce } 
             var slotLabel = '<em>Créneau supprimé</em>';
             var temporalBadge = '';
             if (slot) {
-              var start = new Date(slot.start_time);
-              var end   = new Date(slot.end_time);
-              slotLabel = start.toLocaleDateString('fr-FR') + ' ' + pad(start.getHours()) + ':' + pad(start.getMinutes()) + ' - ' + pad(end.getHours()) + ':' + pad(end.getMinutes());
+              slotLabel = dateFmt.format(new Date(slot.start_time)) + ' ' +
+                          timeFmt.format(new Date(slot.start_time)) + ' - ' +
+                          timeFmt.format(new Date(slot.end_time));
               var ts = temporalState(slot.start_time, slot.end_time);
               var tsLabel = ts === 'past' ? 'Passé' : ts === 'in_progress' ? 'En cours' : 'À venir';
               temporalBadge = '<span class="temporal-badge temporal-' + ts + '">' + tsLabel + '</span>';
@@ -326,31 +375,30 @@ const { year, month, slots = [], appointments = [], selectedDay = null, nonce } 
             var isPending   = appt.status === 'pending';
             var isConfirmed = appt.status === 'confirmed';
             var actions = isPending
-              ? '<div class="actions-col"><button class="btn-confirm" data-id="' + escapeHtml(appt.id) + '">✓ Confirmer</button><button class="btn-reject" data-id="' + escapeHtml(appt.id) + '">✗ Rejeter</button></div>'
+              ? '<div class="actions-col"><button class="btn-confirm" data-id="' + escapeHtml(appt.id) + '" data-status="pending">✓ Confirmer</button><button class="btn-reject" data-id="' + escapeHtml(appt.id) + '" data-status="pending">✗ Rejeter</button></div>'
               : isConfirmed
-              ? '<div class="actions-col"><a href="' + escapeHtml(buildAdminGoogleCalUrl(appt)) + '" target="_blank" rel="noopener noreferrer" class="btn-gcal-admin">📅 Agenda</a><button class="btn-reject" data-id="' + escapeHtml(appt.id) + '">✗ Annuler</button></div>'
+              ? '<div class="actions-col"><a href="' + escapeHtml(buildAdminGoogleCalUrl(appt)) + '" target="_blank" rel="noopener noreferrer" class="btn-gcal-admin">📅 Agenda</a><button class="btn-reject" data-id="' + escapeHtml(appt.id) + '" data-status="confirmed">✗ Annuler</button></div>'
               : '<span class="text-muted">—</span>';
+            const badge = STATUS_BADGE[appt.status] || STATUS_BADGE.pending;
             return '<tr class="' + (idx % 2 === 0 ? 'even' : 'odd') + ' status-' + escapeHtml(appt.status) + '">' +
               '<td>' + escapeHtml(String(userName)) + '</td>' +
               '<td>' + escapeHtml(String(userEmail)) + '</td>' +
               '<td class="monospace">' + slotLabel + temporalBadge + '</td>' +
-              '<td><span class="badge ' + (appt.status === 'confirmed' ? 'badge-success' : appt.status === 'cancelled' ? 'badge-danger' : 'badge-pending') + '">' +
-                (appt.status === 'confirmed' ? '✓ Confirmé' : appt.status === 'cancelled' ? '✗ Annulé' : '⏳ En attente') +
-              '</span></td>' +
-              '<td>' + new Date(appt.created_at).toLocaleDateString('fr-FR') + '</td>' +
+              '<td><span class="badge ' + badge.cls + '">' + badge.label + '</span></td>' +
+              '<td>' + dateFmt.format(new Date(appt.created_at)) + '</td>' +
               '<td class="actions">' + actions + '</td>' +
             '</tr>';
           }).join('')}
         </tbody>
       </table>
     `;
-    contentDiv.innerHTML = html;
+    contentDiv.innerHTML = html + truncatedNotice;
 
-    document.querySelectorAll('.btn-confirm').forEach(function (btn) {
-      btn.addEventListener('click', function () { if (btn.dataset.id) updateAppointmentStatus(btn.dataset.id, 'confirmed'); });
+    contentDiv.querySelectorAll('.btn-confirm').forEach(function (btn) {
+      btn.addEventListener('click', function () { if (btn.dataset.id) updateAppointmentStatus(btn.dataset.id, 'confirmed', btn.dataset.status); });
     });
-    document.querySelectorAll('.btn-reject').forEach(function (btn) {
-      btn.addEventListener('click', function () { if (btn.dataset.id) updateAppointmentStatus(btn.dataset.id, 'cancelled'); });
+    contentDiv.querySelectorAll('.btn-reject').forEach(function (btn) {
+      btn.addEventListener('click', function () { if (btn.dataset.id) updateAppointmentStatus(btn.dataset.id, 'cancelled', btn.dataset.status); });
     });
   }
 

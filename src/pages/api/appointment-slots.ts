@@ -15,16 +15,43 @@ export const GET: APIRoute = async ({ request, cookies }) => {
     }
 
     const role = await fetchRoleSecure(user.id);
+    const isAdmin = role === 'admin';
 
     let query = supabase.from('appointment_slots').select('*');
-    if (role !== 'admin') {
-      query = query.eq('is_available', true);
+    if (!isAdmin) {
+      // Un non-admin ne voit que les creneaux ouverts et encore a venir.
+      query = query.eq('is_available', true).gt('start_time', new Date().toISOString());
     }
 
     const { data, error } = await query.order('start_time', { ascending: true });
     if (error) throw error;
 
-    return new Response(JSON.stringify(data ?? []), { status: 200, headers: JSON_HEADERS });
+    let slots = data ?? [];
+
+    // Un creneau deja pris par quelqu'un d'autre n'est pas "disponible" : sans
+    // ce filtre l'utilisateur voit un bouton "Reserver" qui repond 409.
+    // Le RLS empeche l'utilisateur de voir les RDV des autres -> client admin.
+    if (!isAdmin && slots.length > 0) {
+      const { data: taken, error: takenErr } = await createSupabaseAdminClient()
+        .from('volunteer_appointments')
+        .select('slot_id, user_id')
+        .in('slot_id', slots.map((s) => s.id))
+        .in('status', ['pending', 'confirmed']);
+
+      if (takenErr) {
+        console.error('[appointment-slots] GET taken check error:', takenErr);
+        return new Response(JSON.stringify({ error: 'Erreur serveur' }), { status: 500, headers: JSON_HEADERS });
+      }
+
+      // On garde les creneaux que l'utilisateur a lui-meme reserves : le front
+      // les affiche desactives avec le libelle "Reserve".
+      const takenByOthers = new Set(
+        (taken ?? []).filter((t) => t.user_id !== user.id).map((t) => t.slot_id),
+      );
+      slots = slots.filter((s) => !takenByOthers.has(s.id));
+    }
+
+    return new Response(JSON.stringify(slots), { status: 200, headers: JSON_HEADERS });
   } catch (err) {
     console.error('[appointment-slots] GET error:', err);
     return new Response(JSON.stringify({ error: 'Erreur serveur' }), { status: 500, headers: JSON_HEADERS });

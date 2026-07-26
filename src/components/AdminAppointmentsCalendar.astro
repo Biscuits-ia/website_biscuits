@@ -11,9 +11,11 @@
 // l'ajout et la suppression de créneaux sans recharger toute la page.
 
 import type { AppointmentSlot, AppointmentStatus } from '@/types/appointments';
+import { siteDateKey } from '@/lib/dateHelpers';
 
 interface CalendarAppointment {
   id: string;
+  slot_id: string | null;
   status: AppointmentStatus;
   start_time: string;
   end_time: string;
@@ -43,12 +45,14 @@ const STATUS_LABELS: Record<AppointmentStatus, string> = {
   pending:   'En attente',
   confirmed: 'Confirmé',
   cancelled: 'Annulé',
+  expired:   'Expiré',
 };
 
 const STATUS_COLORS: Record<AppointmentStatus, string> = {
   pending:   '#E89A3C',
   confirmed: '#3D5A47',
   cancelled: '#9A7E5A',
+  expired:   '#B4B4B4',
 };
 
 const now = new Date();
@@ -62,21 +66,19 @@ for (let i = 0; i < 42; i++) {
   cells.push(day);
 }
 
+// Cle de la case du calendrier : les cellules sont des dates UTC synthetiques
+// (minuit UTC), donc getUTC* donne bien le jour calendaire voulu.
 function toDateKey(d: Date): string {
   return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(d.getUTCDate()).padStart(2, '0')}`;
 }
-function isSameDayUTC(a: Date, b: Date): boolean {
-  return a.getUTCFullYear() === b.getUTCFullYear()
-    && a.getUTCMonth() === b.getUTCMonth()
-    && a.getUTCDate() === b.getUTCDate();
-}
+// La navigation garde la vue calendrier active (sinon retour au tableau).
 function pageUrl(params: Record<string, string | number>): string {
-  const base = new URLSearchParams({ y: String(year), m: String(month) });
+  const base = new URLSearchParams({ y: String(year), m: String(month), view: 'calendar' });
   for (const [k, v] of Object.entries(params)) base.set(k, String(v));
   return `/dashboard/admin/appointments?${base.toString()}`;
 }
 
-const today = new Date();
+const todayKey = siteDateKey(new Date());
 const monthLabel = `${MONTH_LABELS[cursor.getUTCMonth()]} ${cursor.getUTCFullYear()}`;
 
 const prevDate = new Date(Date.UTC(year, month - 2, 1));
@@ -85,16 +87,18 @@ const prevUrl = pageUrl({ y: prevDate.getUTCFullYear(), m: prevDate.getUTCMonth(
 const nextUrl = pageUrl({ y: nextDate.getUTCFullYear(), m: nextDate.getUTCMonth() + 1 });
 const todayUrl = pageUrl({ y: now.getUTCFullYear(), m: now.getUTCMonth() + 1 });
 
+// Groupement par jour a l'heure de Paris : un creneau a 00h30 heure de Paris
+// est stocke la veille en UTC et tomberait sur la mauvaise case autrement.
 const apptsByDay = new Map<string, CalendarAppointment[]>();
 const slotsByDay = new Map<string, AppointmentSlot[]>();
 for (const a of appointments) {
-  const key = toDateKey(new Date(a.start_time));
+  const key = siteDateKey(a.start_time);
   const list = apptsByDay.get(key);
   if (list) list.push(a);
   else apptsByDay.set(key, [a]);
 }
 for (const s of slots) {
-  const key = toDateKey(new Date(s.start_time));
+  const key = siteDateKey(s.start_time);
   const list = slotsByDay.get(key);
   if (list) list.push(s);
   else slotsByDay.set(key, [s]);
@@ -106,8 +110,6 @@ for (const list of slotsByDay.values()) {
   list.sort((x, y) => Date.parse(x.start_time) - Date.parse(y.start_time));
 }
 
-const selectedDate = selectedDay ? new Date(`${selectedDay}T00:00:00Z`) : null;
-
 interface DayCell {
   date: Date;
   key: string;
@@ -116,22 +118,22 @@ interface DayCell {
   isSelected: boolean;
   dayAppts: CalendarAppointment[];
   daySlots: AppointmentSlot[];
-  counts: { pending: number; confirmed: number; cancelled: number };
+  counts: Record<AppointmentStatus, number>;
 }
 
 const dayCells: DayCell[] = cells.map((d) => {
   const key = toDateKey(d);
   const inMonth = d.getUTCMonth() === cursor.getUTCMonth();
-  const isToday = isSameDayUTC(d, today);
-  const isSelected = selectedDate ? isSameDayUTC(d, selectedDate) : false;
   const dayAppts = apptsByDay.get(key) ?? [];
   const daySlots = slotsByDay.get(key) ?? [];
-  const counts = { pending: 0, confirmed: 0, cancelled: 0 };
-  for (const a of dayAppts) counts[a.status]++;
-  return { date: d, key, inMonth, isToday, isSelected, dayAppts, daySlots, counts };
+  const counts: Record<AppointmentStatus, number> = { pending: 0, confirmed: 0, cancelled: 0, expired: 0 };
+  for (const a of dayAppts) {
+    if (counts[a.status] !== undefined) counts[a.status]++;
+  }
+  return { date: d, key, inMonth, isToday: key === todayKey, isSelected: key === selectedDay, dayAppts, daySlots, counts };
 });
 
-const ORDERED_STATUSES: AppointmentStatus[] = ['confirmed', 'pending', 'cancelled'];
+const ORDERED_STATUSES: AppointmentStatus[] = ['confirmed', 'pending', 'cancelled', 'expired'];
 const STATUS_KEYS: AppointmentStatus[] = Object.keys(STATUS_COLORS) as AppointmentStatus[];
 ---
 
@@ -149,7 +151,7 @@ const STATUS_KEYS: AppointmentStatus[] = Object.keys(STATUS_COLORS) as Appointme
     </div>
   </div>
 
-  {appointments.length === 0 && slots.length === 0 && !selectedDate && (
+  {appointments.length === 0 && slots.length === 0 && !selectedDay && (
     <div class="appts-cal-welcome" role="status">
       <div class="appts-cal-welcome-icon" aria-hidden="true">📅</div>
       <div class="appts-cal-welcome-body">
@@ -224,17 +226,32 @@ const STATUS_KEYS: AppointmentStatus[] = Object.keys(STATUS_COLORS) as Appointme
     let appointments = data.appointments || [];
     let selectedKey = data.selectedDay || null;
 
-    const STATUS_LABELS = { pending: 'En attente', confirmed: 'Confirmé', cancelled: 'Annulé' };
-    const STATUS_COLORS = { pending: '#E89A3C', confirmed: '#3D5A47', cancelled: '#9A7E5A' };
-    const ORDERED_STATUSES = ['confirmed', 'pending', 'cancelled'];
+    const STATUS_LABELS = { pending: 'En attente', confirmed: 'Confirmé', cancelled: 'Annulé', expired: 'Expiré' };
+    const STATUS_COLORS = { pending: '#E89A3C', confirmed: '#3D5A47', cancelled: '#9A7E5A', expired: '#B4B4B4' };
+    const ORDERED_STATUSES = ['confirmed', 'pending', 'cancelled', 'expired'];
+    const ACTIVE_STATUSES = ['pending', 'confirmed'];
+    const SITE_TZ = 'Europe/Paris';
 
-    function pad(n) { return n.toString().padStart(2, '0'); }
-    function toDateKey(d) {
-      return d.getUTCFullYear() + '-' + pad(d.getUTCMonth() + 1) + '-' + pad(d.getUTCDate());
-    }
-    function formatTimeUTC(iso) {
-      const d = new Date(iso);
-      return pad(d.getUTCHours()) + ':' + pad(d.getUTCMinutes());
+    // Toutes les heures sont affichees et saisies en heure de Paris, pas dans le
+    // fuseau du navigateur : sinon un admin en deplacement voit d'autres heures
+    // que celles vues par les utilisateurs.
+    const timeFmt = new Intl.DateTimeFormat('fr-FR', { timeZone: SITE_TZ, hour: '2-digit', minute: '2-digit', hour12: false });
+    const dayKeyFmt = new Intl.DateTimeFormat('en-CA', { timeZone: SITE_TZ, year: 'numeric', month: '2-digit', day: '2-digit' });
+
+    function toDateKey(d) { return dayKeyFmt.format(d); }
+    function formatTime(iso) { return timeFmt.format(new Date(iso)); }
+
+    function tzOffsetMs(date) {
+      const parts = new Intl.DateTimeFormat('en-US', {
+        timeZone: SITE_TZ, hour12: false,
+        year: 'numeric', month: '2-digit', day: '2-digit',
+        hour: '2-digit', minute: '2-digit', second: '2-digit',
+      }).formatToParts(date);
+      const get = function (type) {
+        const found = parts.find(function (p) { return p.type === type; });
+        return Number(found ? found.value : 0);
+      };
+      return Date.UTC(get('year'), get('month') - 1, get('day'), get('hour') % 24, get('minute'), get('second')) - date.getTime();
     }
 
     function buildIndex() {
@@ -269,8 +286,10 @@ const STATUS_KEYS: AppointmentStatus[] = Object.keys(STATUS_COLORS) as Appointme
         const key = btn.getAttribute('data-day');
         const dayAppts = index.apptsByDay[key] || [];
         const daySlots = index.slotsByDay[key] || [];
-        const counts = { pending: 0, confirmed: 0, cancelled: 0 };
-        for (let i = 0; i < dayAppts.length; i++) counts[dayAppts[i].status]++;
+        const counts = { pending: 0, confirmed: 0, cancelled: 0, expired: 0 };
+        for (let i = 0; i < dayAppts.length; i++) {
+          if (counts[dayAppts[i].status] !== undefined) counts[dayAppts[i].status]++;
+        }
 
         let dotsEl = btn.querySelector('.appts-cal-dots');
         if (dayAppts.length > 0) {
@@ -345,9 +364,14 @@ const STATUS_KEYS: AppointmentStatus[] = Object.keys(STATUS_COLORS) as Appointme
         html += '<ul class="appts-cal-slots-list">';
         for (let i = 0; i < daySlots.length; i++) {
           const s = daySlots[i];
+          // "Reserve" = un RDV ACTIF sur ce slot precis. Comparer les heures de
+          // debut marquait aussi les creneaux dont le RDV etait annule/expire.
           let taken = false;
           for (let j = 0; j < dayAppts.length; j++) {
-            if (dayAppts[j].start_time === s.start_time) { taken = true; break; }
+            if (dayAppts[j].slot_id === s.id && ACTIVE_STATUSES.indexOf(dayAppts[j].status) !== -1) {
+              taken = true;
+              break;
+            }
           }
           let classes = 'appts-cal-slot-item';
           if (taken) classes += ' appts-cal-slot-item--taken';
@@ -355,14 +379,14 @@ const STATUS_KEYS: AppointmentStatus[] = Object.keys(STATUS_COLORS) as Appointme
           html += '<li class="' + classes + '">' +
             '<div class="appts-cal-slot-main">' +
               (s.title ? '<span class="appts-cal-slot-title">' + escapeHtml(s.title) + '</span>' : '') +
-              '<span class="appts-cal-slot-time">' + escapeHtml(formatTimeUTC(s.start_time)) + ' – ' + escapeHtml(formatTimeUTC(s.end_time)) + '</span>' +
+              '<span class="appts-cal-slot-time">' + escapeHtml(formatTime(s.start_time)) + ' – ' + escapeHtml(formatTime(s.end_time)) + '</span>' +
             '</div>' +
             '<span class="appts-cal-slot-flags">' +
               (taken ? '<span class="appts-cal-flag appts-cal-flag--taken">Réservé</span>' : '') +
               (!s.is_available ? '<span class="appts-cal-flag appts-cal-flag--off">Désactivé</span>' : '') +
               (!taken && s.is_available ? '<span class="appts-cal-flag appts-cal-flag--free">Libre</span>' : '') +
             '</span>' +
-            '<button type="button" class="appts-cal-slot-delete" data-delete-slot="' + escapeHtml(s.id) + '" data-time="' + escapeHtml(formatTimeUTC(s.start_time)) + '" aria-label="Supprimer le créneau ' + escapeHtml(formatTimeUTC(s.start_time)) + '" title="Supprimer">🗑</button>' +
+            '<button type="button" class="appts-cal-slot-delete" data-delete-slot="' + escapeHtml(s.id) + '" data-time="' + escapeHtml(formatTime(s.start_time)) + '" aria-label="Supprimer le créneau ' + escapeHtml(formatTime(s.start_time)) + '" title="Supprimer">🗑</button>' +
           '</li>';
         }
         html += '</ul>';
@@ -390,7 +414,7 @@ const STATUS_KEYS: AppointmentStatus[] = Object.keys(STATUS_COLORS) as Appointme
           html += '<li class="appts-cal-list-item">' +
             '<span class="appts-cal-status" style="background-color:' + STATUS_COLORS[a.status] + '" aria-label="' + STATUS_LABELS[a.status] + '"></span>' +
             '<div class="appts-cal-list-body">' +
-              '<div class="appts-cal-list-time">' + escapeHtml(formatTimeUTC(a.start_time)) + ' – ' + escapeHtml(formatTimeUTC(a.end_time)) + '</div>' +
+              '<div class="appts-cal-list-time">' + escapeHtml(formatTime(a.start_time)) + ' – ' + escapeHtml(formatTime(a.end_time)) + '</div>' +
               '<div class="appts-cal-list-who">' + escapeHtml(who) + (email ? ' <span class="appts-cal-list-email"> · ' + escapeHtml(email) + '</span>' : '') + '</div>' +
               (a.notes ? '<div class="appts-cal-list-notes">📝 ' + escapeHtml(a.notes) + '</div>' : '') +
             '</div>' +
@@ -434,8 +458,16 @@ const STATUS_KEYS: AppointmentStatus[] = Object.keys(STATUS_COLORS) as Appointme
       el.hidden = !msg;
     }
 
+    // L'admin saisit une heure de Paris ; on la convertit en instant UTC reel.
+    // (Avant : la saisie etait stockee telle quelle comme heure UTC, donc un
+    // creneau "09:00" tombait a 11:00 heure de Paris pour l'utilisateur.)
     function isoFromDateAndTime(dateKey, time) {
-      return new Date(dateKey + 'T' + time + ':00.000Z').toISOString();
+      const naive = new Date(dateKey + 'T' + time + ':00.000Z');
+      const naiveOffset = tzOffsetMs(naive);
+      let instant = new Date(naive.getTime() - naiveOffset);
+      const settled = tzOffsetMs(instant);
+      if (settled !== naiveOffset) instant = new Date(naive.getTime() - settled);
+      return instant.toISOString();
     }
 
     function formatDateLabel(dateKey) {
@@ -443,19 +475,43 @@ const STATUS_KEYS: AppointmentStatus[] = Object.keys(STATUS_COLORS) as Appointme
       return d.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
     }
 
+    let lastFocusedBeforeModal = null;
+
     function closeSlotModal() {
       const modal = document.querySelector('.appts-cal-modal');
       if (!modal) return;
       modal.remove();
       document.removeEventListener('keydown', onModalKey);
+      // Rend le focus au bouton d'ouverture : sans ca le focus repart en debut
+      // de page apres fermeture (navigation clavier / lecteur d'ecran).
+      if (lastFocusedBeforeModal && document.contains(lastFocusedBeforeModal)) {
+        lastFocusedBeforeModal.focus();
+      }
+      lastFocusedBeforeModal = null;
     }
 
     function onModalKey(e) {
-      if (e.key === 'Escape') closeSlotModal();
+      if (e.key === 'Escape') { closeSlotModal(); return; }
+      if (e.key !== 'Tab') return;
+      const modal = document.querySelector('.appts-cal-modal');
+      if (!modal) return;
+      const focusables = modal.querySelectorAll('button, input, [href], textarea, select');
+      if (focusables.length === 0) return;
+      const firstEl = focusables[0];
+      const lastEl = focusables[focusables.length - 1];
+      if (e.shiftKey && document.activeElement === firstEl) {
+        e.preventDefault();
+        lastEl.focus();
+      } else if (!e.shiftKey && document.activeElement === lastEl) {
+        e.preventDefault();
+        firstEl.focus();
+      }
     }
 
     function openSlotModal(dayKey) {
+      const opener = document.activeElement;
       closeSlotModal();
+      lastFocusedBeforeModal = opener;
       const dateLabel = formatDateLabel(dayKey);
       const modal = document.createElement('div');
       modal.className = 'appts-cal-modal';
@@ -539,29 +595,35 @@ const STATUS_KEYS: AppointmentStatus[] = Object.keys(STATUS_COLORS) as Appointme
     }
 
     function reloadData() {
-      const start = new Date(Date.UTC(year, month - 1, 1)).toISOString();
-      const end = new Date(Date.UTC(year, month, 1)).toISOString();
+      // Bornes larges d'un jour : le mois affiche est un mois "heure de Paris",
+      // decale par rapport aux bornes UTC.
+      const start = new Date(Date.UTC(year, month - 1, 0)).toISOString();
+      const end = new Date(Date.UTC(year, month, 2)).toISOString();
+      const inRange = function (iso) { return iso >= start && iso < end; };
       return Promise.all([
         fetch('/api/appointment-slots', { credentials: 'include' }).then(function (r) { if (!r.ok) throw new Error('Erreur ' + r.status); return r.json(); }),
-        fetch('/api/admin/appointments', { credentials: 'include' }).then(function (r) { if (!r.ok) throw new Error('Erreur ' + r.status); return r.json(); })
+        fetch('/api/admin/appointments?limit=200', { credentials: 'include' }).then(function (r) { if (!r.ok) throw new Error('Erreur ' + r.status); return r.json(); })
       ]).then(function (results) {
         slots = results[0] || [];
         const rawAppts = results[1];
         const apptList = Array.isArray(rawAppts) ? rawAppts : (rawAppts && typeof rawAppts === 'object' && Array.isArray(rawAppts.data) ? rawAppts.data : []);
-        appointments = apptList.map(function (a) {
-          const slot = a.appointment_slots;
-          return {
-            id: a.id,
-            status: a.status,
-            start_time: slot ? slot.start_time : a.start_time,
-            end_time: slot ? slot.end_time : a.end_time,
-            notes: a.notes,
-            candidate_email: a.candidate_email,
-            user_profile: a.user_profile || null,
-          };
-        });
-        slots = slots.filter(function (s) { return s.start_time >= start && s.start_time < end; });
-        appointments = appointments.filter(function (a) { return a.start_time >= start && a.start_time < end; });
+        appointments = apptList
+          .filter(function (a) { return a.appointment_slots; })
+          .map(function (a) {
+            const slot = a.appointment_slots;
+            return {
+              id: a.id,
+              slot_id: a.slot_id || slot.id || null,
+              status: a.status,
+              start_time: slot.start_time,
+              end_time: slot.end_time,
+              notes: a.notes,
+              candidate_email: a.candidate_email,
+              user_profile: a.user_profile || null,
+            };
+          });
+        slots = slots.filter(function (s) { return inRange(s.start_time); });
+        appointments = appointments.filter(function (a) { return inRange(a.start_time); });
         index = buildIndex();
         renderCalendarDots();
         renderDetail();
@@ -569,35 +631,6 @@ const STATUS_KEYS: AppointmentStatus[] = Object.keys(STATUS_COLORS) as Appointme
         const msg = err instanceof Error ? err.message : 'Erreur';
         toast(msg, 'error');
       });
-    }
-
-    function onAddSlot(e) {
-      e.preventDefault();
-      const form = e.target;
-      const fd = new FormData(form);
-      const start = fd.get('start');
-      const end = fd.get('end');
-      const btn = form.querySelector('button[type="submit"]');
-      if (!start || !end) return;
-      if (start >= end) {
-        showAddError(form, "L'heure de fin doit être après l'heure de début.");
-        return;
-      }
-      if (btn) btn.disabled = true;
-      showAddError(form, '');
-      fetch('/api/appointment-slots', {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          start_time: isoFromDateAndTime(selectedKey, start),
-          end_time: isoFromDateAndTime(selectedKey, end),
-        }),
-      })
-        .then(function (res) { if (!res.ok) return res.json().then(function (data) { throw new Error(data.error || 'Erreur ' + res.status); }); return res.json(); })
-        .then(function () { toast('Créneau ajouté', 'success'); return reloadData(); })
-        .catch(function (err) { const msg = err instanceof Error ? err.message : 'Erreur'; showAddError(form, msg); toast(msg, 'error'); })
-        .finally(function () { if (btn) btn.disabled = false; });
     }
 
     function onDeleteSlot(e) {
@@ -610,7 +643,7 @@ const STATUS_KEYS: AppointmentStatus[] = Object.keys(STATUS_COLORS) as Appointme
       if (typeof window.showConfirm === 'function') {
         okPromise = window.showConfirm({
           title: 'Supprimer ce créneau',
-          message: 'Cette action est définitive. Si un utilisateur a réservé ce créneau, sa réservation sera également supprimée.',
+          message: 'Cette action est définitive. Un créneau ayant une réservation active ne peut pas être supprimé : annulez d\'abord la réservation depuis la vue Tableau.',
           confirmLabel: 'Supprimer',
           danger: true,
         });
@@ -794,4 +827,26 @@ const STATUS_KEYS: AppointmentStatus[] = Object.keys(STATUS_COLORS) as Appointme
 
   .appts-cal-legend { display: flex; gap: 16px; margin-top: var(--space-md); padding-top: var(--space-sm); border-top: 1px solid var(--border-mid); flex-wrap: wrap; }
   .appts-cal-legend-item { display: flex; align-items: center; gap: 6px; font-size: var(--text-xs); color: var(--text-muted); }
+
+  /* Mobile : on garde les 7 colonnes (un calendrier a 3 colonnes ne veut rien
+     dire) et on laisse la grille defiler horizontalement dans son conteneur. */
+  @media (max-width: 640px) {
+    .appts-cal-grid {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(46px, 1fr));
+      min-width: 322px;
+    }
+    .appts-cal { overflow-x: auto; }
+    .appts-cal-cell { min-height: 62px; padding: 3px 4px; }
+    .appts-cal-slots-count { font-size: 0.6rem; }
+    .appts-cal-toolbar { align-items: flex-start; }
+    .appts-cal-slot-item { flex-wrap: wrap; }
+    .appts-cal-slot-flags { margin-left: 0; }
+    .appts-cal-modal-row { flex-direction: column; gap: 12px; }
+  }
+
+  /* Cible tactile minimale sur le bouton de suppression d'un creneau. */
+  .appts-cal-slot-delete { min-width: 32px; min-height: 32px; border-radius: 4px; }
+  .appts-cal-slot-delete:focus-visible,
+  .appts-cal-cell:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
 </style>

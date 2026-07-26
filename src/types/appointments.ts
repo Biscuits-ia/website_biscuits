@@ -2,7 +2,13 @@
 // Source de vérité = schéma BDD réel (tables appointment_slots, volunteer_appointments).
 // Pas d'invention : tout champ listé ici doit exister dans la BDD.
 
-export type AppointmentStatus = 'pending' | 'confirmed' | 'cancelled';
+// 'expired' est pose par le job pg_cron `expire_pending_appointments`
+// (migration 20260623100000) sur les RDV pending dont expires_at est depasse.
+// Il fait partie du CHECK constraint en BDD : toute UI doit savoir l'afficher.
+export type AppointmentStatus = 'pending' | 'confirmed' | 'cancelled' | 'expired';
+
+/** Statuts qui bloquent le creneau (un seul RDV actif par slot). */
+export const ACTIVE_APPOINTMENT_STATUSES: AppointmentStatus[] = ['pending', 'confirmed'];
 
 export interface AppointmentSlot {
   id: string;

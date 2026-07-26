@@ -44,8 +44,17 @@ if (viewParam === 'week') {
   rangeEnd   = new Date(viewYear, viewMonth, 0); // dernier jour du mois
 }
 
-const rangeStartStr = rangeStart.toISOString().split('T')[0];
-const rangeEndStr   = rangeEnd.toISOString().split('T')[0];
+// Cle jour calendaire a partir des composantes locales de la Date.
+// `toISOString()` convertit en UTC : pour une Date construite a minuit local,
+// tout fuseau positif (France = UTC+1/+2) renvoie le jour PRECEDENT. Les taches
+// tombaient alors sur la mauvaise case et celles du dernier jour du mois
+// sortaient de la plage interrogee.
+function dateKey(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+const rangeStartStr = dateKey(rangeStart);
+const rangeEndStr   = dateKey(rangeEnd);
 
 // Tâches avec deadline dans la période (assignées à l'utilisateur ou qu'il crée)
 const { data: tasksRaw } = await supabase
@@ -104,7 +113,7 @@ for (let i = 0; i < 7; i++) {
 }
 
 // Helpers
-const todayStr = now.toISOString().split('T')[0];
+const todayStr = dateKey(now);
 const monthName = rangeStart.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
 const priorityClass: Record<string, string> = { low: 'neutral', medium: 'info', high: 'err' };
 
@@ -150,6 +159,7 @@ const weekViewUrl   = navUrl({ view: 'week' });
   </div>
 
   {viewParam === 'month' ? (
+    <div class="cal-month-scroll">
     <div class="cal-month">
       {/* En-têtes jours */ }
       {weekDayLabels.map(d => (
@@ -158,14 +168,18 @@ const weekViewUrl   = navUrl({ view: 'week' });
       {/* Cellules */ }
       {monthGrid.map(date => {
         if (!date) return <div class="cal-cell cal-cell--empty" />;
-        const key     = date.toISOString().split('T')[0];
+        const key     = dateKey(date);
         const dayTasks = tasksByDate[key] ?? [];
         const isToday  = key === todayStr;
         const isPast   = key < todayStr;
+        // La cellule n'affiche que 2 taches : le "+N autres" comptait un
+        // debordement qui n'existait pas, toutes les taches etant rendues.
+        const shownTasks = dayTasks.slice(0, 2);
+        const hiddenCount = dayTasks.length - shownTasks.length;
         return (
           <div class={`cal-cell${isToday ? ' cal-cell--today' : ''}${isPast && dayTasks.length > 0 ? ' cal-cell--overdue' : ''}`}>
             <span class="cal-day-num">{date.getDate()}</span>
-            {dayTasks.map(t => (
+            {shownTasks.map(t => (
               <a
                 href={`/dashboard/benevole/project/${t.project_id}`}
                 class={`cal-task cal-task--${priorityClass[t.priority] ?? 'neutral'}`}
@@ -175,17 +189,18 @@ const weekViewUrl   = navUrl({ view: 'week' });
                 <span class="cal-task-label">{t.title}</span>
               </a>
             ))}
-            {dayTasks.length > 2 && (
-              <span class="cal-more">+{dayTasks.length - 2} autre{dayTasks.length - 2 > 1 ? 's' : ''}</span>
+            {hiddenCount > 0 && (
+              <span class="cal-more">+{hiddenCount} autre{hiddenCount > 1 ? 's' : ''}</span>
             )}
           </div>
         );
       })}
     </div>
+    </div>
   ) : (
     <div class="cal-week">
       {weekDays.map(date => {
-        const key      = date.toISOString().split('T')[0];
+        const key      = dateKey(date);
         const dayTasks = tasksByDate[key] ?? [];
         const isToday  = key === todayStr;
         const isPast   = key < todayStr;
@@ -282,8 +297,15 @@ const weekViewUrl   = navUrl({ view: 'week' });
   .legend-dot--info   { background: var(--info); }
   .legend-dot--err    { background: var(--err); }
 
+  /* Mobile : on conserve les 7 colonnes. Passer a 3 colonnes desalignait les
+     jours de leur en-tete de semaine (le 1er du mois ne tombait plus sous le
+     bon jour) et masquait 4 en-tetes sur 7. On fait defiler a la place. */
   @media (max-width: 700px) {
-    .cal-month { grid-template-columns: repeat(3, 1fr); }
-    .cal-dow-header:nth-child(n+4) { display: none; }
+    .cal-month {
+      grid-template-columns: repeat(7, minmax(46px, 1fr));
+      min-width: 322px;
+    }
+    .cal-month-scroll { overflow-x: auto; }
+    .cal-cell { min-height: 62px; }
   }
 </style>

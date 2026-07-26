@@ -17,14 +17,19 @@ const params = Astro.url.searchParams;
 const year = Math.max(2000, Math.min(2100, parseInt(params.get('y') ?? String(now.getFullYear()), 10) || now.getFullYear()));
 const month = Math.max(1, Math.min(12, parseInt(params.get('m') ?? String(now.getMonth() + 1), 10) || now.getMonth() + 1));
 const selectedDay = params.get('d');
+const initialView = params.get('view') === 'calendar' ? 'calendar' : 'table';
 
-const rangeStart = new Date(Date.UTC(year, month - 1, 1));
-const rangeEnd = new Date(Date.UTC(year, month, 1));
+// Bornes elargies d'un jour de chaque cote : le calendrier groupe les creneaux
+// par jour *heure de Paris*, decale de 1 a 2 h par rapport aux bornes UTC.
+// Sans cette marge, un creneau du 1er a 00h30 (Paris) manquerait au mois.
+const rangeStart = new Date(Date.UTC(year, month - 1, 0));
+const rangeEnd = new Date(Date.UTC(year, month, 2));
 const fromIso = rangeStart.toISOString();
 const toIso = rangeEnd.toISOString();
 
 interface CalendarAppointment {
   id: string;
+  slot_id: string | null;
   status: AppointmentStatus;
   start_time: string;
   end_time: string;
@@ -54,6 +59,7 @@ try {
 // ── Rendez-vous du mois (jointure sur le créneau pour obtenir les dates) ─────
 interface RawAppointment {
   id: string;
+  slot_id: string | null;
   status: AppointmentStatus;
   notes: string | null;
   candidate_email: string | null;
@@ -65,7 +71,7 @@ let rawAppointments: RawAppointment[] = [];
 try {
   const { data, error } = await adminDb
     .from('volunteer_appointments')
-    .select('id, status, notes, candidate_email, user_id, appointment_slots!inner(start_time, end_time)')
+    .select('id, slot_id, status, notes, candidate_email, user_id, appointment_slots!inner(start_time, end_time)')
     .gte('appointment_slots.start_time', fromIso)
     .lt('appointment_slots.start_time', toIso);
   if (error) throw error;
@@ -74,6 +80,7 @@ try {
     const slot = Array.isArray(slotRaw) ? slotRaw[0] : slotRaw;
     return {
       id: a.id,
+      slot_id: a.slot_id ?? null,
       status: a.status,
       notes: a.notes,
       candidate_email: a.candidate_email,
@@ -108,6 +115,7 @@ const appointments: CalendarAppointment[] = rawAppointments
   .filter((a) => a.appointment_slots !== null)
   .map((a) => ({
     id: a.id,
+    slot_id: a.slot_id,
     status: a.status,
     start_time: a.appointment_slots!.start_time,
     end_time: a.appointment_slots!.end_time,
@@ -126,6 +134,7 @@ const nonce = (Astro.locals as { nonce?: string }).nonce;
     slots={slots}
     appointments={appointments}
     selectedDay={selectedDay}
+    initialView={initialView}
     nonce={nonce}
   />
 </DashboardLayout>

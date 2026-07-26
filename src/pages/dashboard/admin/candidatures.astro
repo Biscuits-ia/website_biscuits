@@ -2,6 +2,8 @@
 // src/pages/dashboard/admin/candidatures.astro
 import DashboardLayout from '../../../layouts/DashboardLayout.astro';
 import { requireAdmin } from '../../../lib/auth';
+import { countActiveCandidatesBySession } from '@/lib/recruitmentSessions';
+import { formatDate, formatDateTimeLong } from '@/lib/dateHelpers';
 
 const result = await requireAdmin(Astro);
 if (result instanceof Response) return result;
@@ -30,6 +32,32 @@ const { data: openSessionsRaw } = await supabase
   .order('scheduled_at', { ascending: true });
 
 const openSessions = (openSessionsRaw ?? []) as { id: string; title: string; scheduled_at: string; max_candidates: number }[];
+
+// Places restantes par session ouverte : sans cela, l'admin pouvait choisir
+// une session pleine dans la liste et se prendre un 409 apres coup.
+const openSessionCounts = await countActiveCandidatesBySession(openSessions.map((s) => s.id));
+const assignableSessions = openSessions.map((s) => {
+  const taken = openSessionCounts[s.id] ?? 0;
+  return { ...s, taken, remaining: Math.max(0, s.max_candidates - taken) };
+});
+
+// Sessions deja rattachees aux candidatures affichees : la carte indiquait
+// seulement « Affecté à une session », sans dire laquelle.
+const assignedSessionIds = [
+  ...new Set(((submissions ?? []) as { session_id: string | null }[])
+    .map((s) => s.session_id)
+    .filter((id): id is string => Boolean(id))),
+];
+const assignedSessions: Record<string, { title: string; scheduled_at: string }> = {};
+if (assignedSessionIds.length > 0) {
+  const { data: assignedRaw } = await supabase
+    .from('recruitment_sessions')
+    .select('id, title, scheduled_at')
+    .in('id', assignedSessionIds);
+  for (const row of (assignedRaw ?? []) as { id: string; title: string; scheduled_at: string }[]) {
+    assignedSessions[row.id] = { title: row.title, scheduled_at: row.scheduled_at };
+  }
+}
 
 const { count: newCount }       = await supabase.from('recruitment_submissions').select('*', { count: 'exact', head: true }).eq('status', 'new');
 const { count: reviewingCount } = await supabase.from('recruitment_submissions').select('*', { count: 'exact', head: true }).eq('status', 'reviewing');
@@ -111,7 +139,6 @@ const availabilityLabel: Record<string, string> = {
   <!-- Liste des candidatures -->
   <div class="admin-list">
     {submissions && submissions.length > 0 ? submissions.map((s: any) => {
-      const date       = new Date(s.created_at);
       const badgeClass = statusBadge[s.status] ?? 'badge-neutral';
       const label      = statusLabel[s.status] ?? s.status;
       const fullName   = `${s.first_name} ${s.last_name}`;
@@ -124,7 +151,13 @@ const availabilityLabel: Record<string, string> = {
               <div class="admin-detail-title">{fullName}</div>
               <div class="admin-detail-meta">
                 <a href={`mailto:${s.email}`} class="recruit-email">{s.email}</a>
-                · {date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
+                {/* user_id non NULL = adresse imposée par le compte connecté,
+                    donc identité vérifiée. NULL = candidature spontanée
+                    anonyme, l'email n'a été confirmé par personne. */}
+                {s.user_id
+                  ? <span class="identity-badge identity-badge--verified" title="Candidature déposée depuis un compte : adresse email vérifiée">✓ Compte</span>
+                  : <span class="identity-badge" title="Candidature spontanée anonyme : adresse email non vérifiée">Anonyme</span>}
+                · {formatDate(s.created_at)}
                 {s.availability && ` · Dispo : ${availabilityLabel[s.availability] ?? s.availability}`}
               </div>
             </div>
@@ -185,15 +218,18 @@ const availabilityLabel: Record<string, string> = {
             </div>
           </form>
 
-          {openSessions.length > 0 && !s.session_id && (
+          {assignableSessions.length > 0 && !s.session_id && (
             <form class="admin-form assign-form" data-submission-id={s.id}>
               <div class="admin-form-row">
                 <label class="admin-form-label">Affecter à une session :</label>
                 <select name="session_id" class="filter-input admin-select" required>
                   <option value="">Choisir une session…</option>
-                  {openSessions.map((session) => (
-                    <option value={session.id}>
-                      {session.title} · {new Date(session.scheduled_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                  {assignableSessions.map((session) => (
+                    <option value={session.id} disabled={session.remaining === 0}>
+                      {session.title} · {formatDateTimeLong(session.scheduled_at)}
+                      {session.remaining === 0
+                        ? ' · COMPLET'
+                        : ` · ${session.remaining}/${session.max_candidates} place${session.remaining > 1 ? 's' : ''}`}
                     </option>
                   ))}
                 </select>
@@ -204,7 +240,9 @@ const availabilityLabel: Record<string, string> = {
 
           {s.session_id && (
             <div class="assigned-badge">
-              ✅ Affecté à une session
+              ✅ Affecté à : {assignedSessions[s.session_id]
+                ? `${assignedSessions[s.session_id].title} (${formatDateTimeLong(assignedSessions[s.session_id].scheduled_at)})`
+                : 'session inconnue'}
               <button type="button" class="btn btn-ghost btn-xs js-unassign" data-submission-id={s.id}>Désaffecter</button>
             </div>
           )}
@@ -266,11 +304,30 @@ const availabilityLabel: Record<string, string> = {
   .flash-ok  { background: var(--ok-bg);  color: var(--ok-fg);  border-color: var(--ok); }
   .flash-err { background: var(--err-bg); color: var(--err-fg); border-color: var(--err); }
 
+  .identity-badge {
+    display: inline-block; margin: 0 4px; padding: 1px 6px;
+    font-size: 0.65rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.04em; border: 1px solid var(--border-mid);
+    background: var(--surface); color: var(--text-muted);
+  }
+  .identity-badge--verified { border-color: var(--ok); background: var(--ok-bg); color: var(--ok-fg); }
+
   .assign-form { margin-top: 8px; padding-top: 12px; border-top: var(--brutal-border-thin); }
   .assigned-badge { display: inline-flex; align-items: center; gap: 10px; margin-top: 8px; padding: 8px 12px; background: var(--ok-bg); color: var(--ok-fg); border: 1px solid var(--ok); font-size: var(--text-sm); }
 </style>
 
 <script nonce={Astro.locals.nonce}>
+  // Toast / modale montes globalement par DashboardLayout.
+  function toast(msg, type) {
+    if (typeof window.showToast === 'function') window.showToast(msg, type);
+    else alert(msg);
+  }
+
+  function confirmAction(options) {
+    if (typeof window.showConfirm === 'function') return window.showConfirm(options);
+    return Promise.resolve(window.confirm(options.message));
+  }
+
   document.querySelectorAll('.assign-form').forEach((form) => {
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -281,19 +338,25 @@ const availabilityLabel: Record<string, string> = {
       const sessionId = String(fd.get('session_id') ?? '');
       if (!submissionId || !sessionId) return;
 
-      const res = await fetch(`/api/admin/recruitment-sessions/${sessionId}/assign`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ submission_id: submissionId }),
-      });
+      const submitBtn = form.querySelector('button[type="submit"]');
+      if (submitBtn) submitBtn.disabled = true;
+      try {
+        const res = await fetch(`/api/admin/recruitment-sessions/${sessionId}/assign`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ submission_id: submissionId }),
+        });
 
-      if (!res.ok) {
-        const out = await res.json().catch(() => ({ error: 'Erreur' }));
-        alert(out.error ?? 'Erreur lors de l\'affectation');
-        return;
+        if (!res.ok) {
+          const out = await res.json().catch(() => ({ error: 'Erreur' }));
+          toast(out.error ?? 'Erreur lors de l\'affectation', 'error');
+          return;
+        }
+
+        window.location.reload();
+      } finally {
+        if (submitBtn) submitBtn.disabled = false;
       }
-
-      window.location.reload();
     });
   });
 
@@ -301,10 +364,16 @@ const availabilityLabel: Record<string, string> = {
     btn.addEventListener('click', async () => {
       const submissionId = btn.getAttribute('data-submission-id');
       if (!submissionId) return;
-      if (!confirm('Retirer ce candidat de sa session ?')) return;
 
-      // On n'a pas l'ID de session ici : l'API assign DELETE le retrouve via eq session_id.
-      // On utilise une route dédiée de désaffectation.
+      const ok = await confirmAction({
+        title: 'Retirer de la session',
+        message: 'Le candidat sera retiré de sa session et recevra un email l\'en informant. Sa candidature reste enregistrée.',
+        confirmLabel: 'Retirer',
+        danger: true,
+      });
+      if (!ok) return;
+
+      // On n'a pas l'ID de session ici : route dédiée de désaffectation.
       const res = await fetch('/api/admin/candidatures/unassign', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -312,7 +381,8 @@ const availabilityLabel: Record<string, string> = {
       });
 
       if (!res.ok) {
-        alert('Erreur lors de la désaffectation.');
+        const out = await res.json().catch(() => ({ error: 'Erreur lors de la désaffectation.' }));
+        toast(out.error ?? 'Erreur lors de la désaffectation.', 'error');
         return;
       }
 

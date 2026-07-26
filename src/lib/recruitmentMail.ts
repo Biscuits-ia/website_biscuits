@@ -1,18 +1,12 @@
 import { enqueueEmail } from './email-queue';
+import { formatDateTimeLong } from './dateHelpers';
 import type { RecruitmentSession, RecruitmentSubmission } from '@/types/recruitment';
 
 const FROM = { email: import.meta.env.SMTP_FROM || 'noreply@biscuits-ia.com', name: 'Biscuits IA' };
 
-function formatSessionDate(iso: string): string {
-  return new Date(iso).toLocaleDateString('fr-FR', {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-}
+// Heure de Paris explicite : ce code tourne sur Vercel, dont le fuseau serveur
+// est UTC. Sans cela, le candidat recevait une convocation decalee de 1 a 2 h.
+const formatSessionDate = formatDateTimeLong;
 
 function emailWrapper(title: string, body: string, preheader?: string): { html: string; text: string } {
   const html = `<!DOCTYPE html>
@@ -45,12 +39,24 @@ function emailWrapper(title: string, body: string, preheader?: string): { html: 
 </body>
 </html>`;
 
-  // Version texte simple (strip tags)
-  const text = html
-    .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
-    .replace(/<[^>]+>/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
+  // Version texte : construite depuis le corps seul. La derivation depuis le
+  // HTML complet embarquait le contenu de <head> (lang, <title>, CSS residuel)
+  // en tete du message texte.
+  const text = `${title}\n\n${body
+    .replace(/<\/(p|dd|dt|div|li)>/gi, '\n')
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<[^>]+>/g, '')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/[ \t]+/g, ' ')
+    .replace(/\n{3,}/g, '\n\n')
+    .split('\n')
+    .map((line) => line.trim())
+    .join('\n')
+    .trim()}`;
 
   return { html, text };
 }

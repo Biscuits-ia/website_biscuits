@@ -15,7 +15,7 @@
     <p>Reservez un creneau disponible</p>
   </div>
 
-  <div id="error-container"></div>
+  <div id="error-container" role="status" aria-live="polite"></div>
 
   <div id="my-appointments" style="margin-bottom: 30px;"></div>
 
@@ -34,15 +34,29 @@
     id: string;
     start_time: string;
     end_time: string;
+    title: string | null;
     is_available: boolean;
   }
+
+  // 'expired' est pose par le job pg_cron sur les demandes restees en attente.
+  type ApptStatus = 'pending' | 'confirmed' | 'cancelled' | 'expired';
 
   interface Appointment {
     id: string;
     slot_id: string;
-    status: 'pending' | 'confirmed' | 'cancelled';
+    status: ApptStatus;
     appointment_slots: Slot | null;
   }
+
+  /** Statuts qui immobilisent le creneau (cf. uniq_active_appointment_per_slot). */
+  const ACTIVE_STATUSES: ApptStatus[] = ['pending', 'confirmed'];
+
+  // Heure de Paris pour tout le monde : le fuseau du navigateur ferait diverger
+  // l'affichage utilisateur de celui de l'admin.
+  const SITE_TZ = 'Europe/Paris';
+  const timeFmt = new Intl.DateTimeFormat('fr-FR', { timeZone: SITE_TZ, hour: '2-digit', minute: '2-digit', hour12: false });
+  const dateLongFmt = new Intl.DateTimeFormat('fr-FR', { timeZone: SITE_TZ, weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  const dayKeyFmt = new Intl.DateTimeFormat('en-CA', { timeZone: SITE_TZ, year: 'numeric', month: '2-digit', day: '2-digit' });
 
   function showError(msg: string) {
     if (!errorContainer) return;
@@ -71,13 +85,9 @@
   }
 
   function formatSlot(slot: Slot) {
-    const start = new Date(slot.start_time);
-    const end = new Date(slot.end_time);
     return {
-      dateLong: start.toLocaleDateString('fr-FR', {
-        weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
-      }),
-      time: `${start.getHours().toString().padStart(2, '0')}:${start.getMinutes().toString().padStart(2, '0')} - ${end.getHours().toString().padStart(2, '0')}:${end.getMinutes().toString().padStart(2, '0')}`,
+      dateLong: dateLongFmt.format(new Date(slot.start_time)),
+      time: `${timeFmt.format(new Date(slot.start_time))} - ${timeFmt.format(new Date(slot.end_time))}`,
     };
   }
 
@@ -114,7 +124,12 @@
       const myAppointmentsRaw = await appRes.json();
       const myAppointments: Appointment[] = Array.isArray(myAppointmentsRaw) ? myAppointmentsRaw : [];
 
-      const bookedSlotIds = new Set<string>(myAppointments.map((a) => a.slot_id));
+      // Seuls les RDV ACTIFS immobilisent un creneau. Sans ce filtre, un
+      // creneau annule restait affiche "Reserve" et non reservable, alors que
+      // le serveur accepte parfaitement une nouvelle reservation.
+      const bookedSlotIds = new Set<string>(
+        myAppointments.filter((a) => ACTIVE_STATUSES.includes(a.status)).map((a) => a.slot_id),
+      );
 
       renderMyAppointments(myAppointments);
       renderAvailableSlots(availableSlots, bookedSlotIds);
@@ -135,27 +150,52 @@
       return;
     }
 
+    const STATUS_BADGE: Record<ApptStatus, { cls: string; label: string }> = {
+      confirmed: { cls: 'badge-confirmed', label: '✓ Confirmee' },
+      cancelled: { cls: 'badge-cancelled', label: '✗ Annulee' },
+      expired:   { cls: 'badge-expired',   label: '⌛ Expiree (sans reponse)' },
+      pending:   { cls: 'badge-pending',   label: '⏳ En attente de confirmation' },
+    };
+
+    // Les RDV a venir d'abord (le plus proche en tete), l'historique ensuite.
+    const withSlot = appointments.filter((a) => a.appointment_slots);
+    if (withSlot.length === 0) {
+      myAppointmentsDiv.innerHTML = '';
+      return;
+    }
+    const now = Date.now();
+    const startOf = (a: Appointment) => Date.parse(a.appointment_slots!.start_time);
+    withSlot.sort((a, b) => {
+      const aUpcoming = startOf(a) >= now;
+      const bUpcoming = startOf(b) >= now;
+      if (aUpcoming !== bUpcoming) return aUpcoming ? -1 : 1;
+      return aUpcoming ? startOf(a) - startOf(b) : startOf(b) - startOf(a);
+    });
+
     const html = `
       <h2>📅 Mes reservations</h2>
       <div class="my-appointments">
-        ${appointments.map((app) => {
-          if (!app.appointment_slots) return '';
-          const slot = formatSlot(app.appointment_slots);
-          const tsBadge = temporalBadgeHtml(app.appointment_slots);
+        ${withSlot.map((app) => {
+          const rawSlot = app.appointment_slots!;
+          const slot = formatSlot(rawSlot);
+          const tsBadge = temporalBadgeHtml(rawSlot);
+          const badge = STATUS_BADGE[app.status] ?? STATUS_BADGE.pending;
+          // Annuler / ajouter a l'agenda n'a de sens que pour un RDV actif
+          // qui n'est pas deja termine.
+          const isActionable = ACTIVE_STATUSES.includes(app.status)
+            && temporalState(rawSlot.start_time, rawSlot.end_time) !== 'past';
           return `
             <div class="appointment-card status-${app.status}">
               <div class="appointment-info">
                 <div class="appointment-date">${escapeHtml(slot.dateLong)}</div>
                 <div class="appointment-time">${escapeHtml(slot.time)}${tsBadge}</div>
                 <div class="appointment-status">
-                  <span class="badge ${app.status === 'confirmed' ? 'badge-confirmed' : app.status === 'cancelled' ? 'badge-cancelled' : 'badge-pending'}">
-                    ${app.status === 'confirmed' ? '✓ Confirmee' : app.status === 'cancelled' ? '✗ Annulee' : '⏳ En attente de confirmation'}
-                  </span>
+                  <span class="badge ${badge.cls}">${badge.label}</span>
                 </div>
               </div>
               <div class="appointment-actions">
-                ${app.status !== 'cancelled' ? `<a href="${buildGoogleCalendarUrl(app.appointment_slots)}" target="_blank" rel="noopener noreferrer" class="btn btn-gcal">📅 Agenda</a>` : ''}
-                ${app.status !== 'cancelled' ? `<button class="btn btn-danger btn-cancel" data-id="${app.id}">Annuler</button>` : ''}
+                ${isActionable ? `<a href="${buildGoogleCalendarUrl(rawSlot)}" target="_blank" rel="noopener noreferrer" class="btn btn-gcal">📅 Agenda</a>` : ''}
+                ${isActionable ? `<button class="btn btn-danger btn-cancel" data-id="${app.id}">Annuler</button>` : ''}
               </div>
             </div>
           `;
@@ -165,7 +205,7 @@
 
     myAppointmentsDiv.innerHTML = html;
 
-    document.querySelectorAll<HTMLButtonElement>('.btn-cancel').forEach((btn) => {
+    myAppointmentsDiv.querySelectorAll<HTMLButtonElement>('.btn-cancel').forEach((btn) => {
       btn.addEventListener('click', () => {
         const id = btn.dataset.id;
         if (id) void cancelAppointment(id);
@@ -187,11 +227,10 @@
       return;
     }
 
-    // Grouper par date locale (YYYY-MM-DD)
+    // Grouper par jour calendaire heure de Paris (YYYY-MM-DD)
     const byDate = new Map<string, Slot[]>();
     for (const s of slots) {
-      const d = new Date(s.start_time);
-      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      const key = dayKeyFmt.format(new Date(s.start_time));
       const list = byDate.get(key);
       if (list) list.push(s);
       else byDate.set(key, [s]);
@@ -202,20 +241,15 @@
 
     // Date du jour et demain (cles) pour l'ouverture par defaut
     const today = new Date();
-    const todayKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    const tomorrowKey = `${tomorrow.getFullYear()}-${String(tomorrow.getMonth() + 1).padStart(2, '0')}-${String(tomorrow.getDate()).padStart(2, '0')}`;
+    const todayKey = dayKeyFmt.format(today);
+    const tomorrowKey = dayKeyFmt.format(new Date(today.getTime() + 24 * 60 * 60 * 1000));
 
     const html = `
       <h2>Creneaux disponibles</h2>
       <div class="day-groups">
         ${sortedKeys.map((key) => {
           const daySlots = byDate.get(key)!;
-          const sampleDate = new Date(daySlots[0].start_time);
-          const dateLabel = sampleDate.toLocaleDateString('fr-FR', {
-            weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
-          });
+          const dateLabel = dateLongFmt.format(new Date(daySlots[0].start_time));
           const isOpen = key === todayKey || key === tomorrowKey;
           return `
             <details class="day-group" ${isOpen ? 'open' : ''}>
@@ -228,14 +262,17 @@
                   const isBooked = bookedSlotIds.has(slot.id);
                   const isPast = new Date(slot.start_time) <= new Date();
                   const time = formatSlot(slot).time;
+                  const titleHtml = slot.title ? `<div class="slot-title">${escapeHtml(slot.title)}</div>` : '';
                   return `
-                    <div class="slot-card ${isBooked ? 'booked' : ''}" data-slot-id="${slot.id}" data-time="${escapeHtml(time)}" data-booked="${isBooked ? '1' : '0'}">
+                    <div class="slot-card ${isBooked ? 'booked' : ''}" data-slot-id="${slot.id}" data-time="${escapeHtml(time)}" data-title="${escapeHtml(slot.title ?? '')}" data-booked="${isBooked ? '1' : '0'}" data-past="${isPast ? '1' : '0'}">
                       <div class="slot-info">
+                        ${titleHtml}
                         <div class="slot-time">${escapeHtml(time)}${isPast ? ' <span class="slot-past-badge">Passé</span>' : ''}</div>
                       </div>
                       <button
                         class="btn btn-book"
                         data-id="${slot.id}"
+                        aria-label="${isBooked ? 'Créneau déjà réservé' : isPast ? 'Créneau passé' : `Reserver le créneau de ${escapeHtml(time)}`}"
                         ${isBooked || isPast ? 'disabled' : ''}
                       >${isBooked ? '✓ Reserve' : isPast ? 'Indisponible' : 'Reserver'}</button>
                     </div>
@@ -266,10 +303,11 @@
     const card = getSlotCard(slotId);
     if (!card) return;
     const time = card.dataset.time || '';
+    const title = card.dataset.title || '';
     card.innerHTML = `
       <div class="booking-form">
         <div class="booking-form-header">
-          <span class="slot-time">${escapeHtml(time)}</span>
+          <span class="slot-time">${escapeHtml(title ? `${title} · ${time}` : time)}</span>
           <span class="booking-form-hint">Motif / notes (optionnel)</span>
         </div>
         <textarea
@@ -292,6 +330,11 @@
 
     confirmBtn?.addEventListener('click', () => {
       const notes = textarea?.value.trim() || '';
+      // Verrou anti double-clic : deux POST concurrents partaient sinon et le
+      // second retombait sur un 409 affiche comme une erreur a l'utilisateur.
+      if (confirmBtn.disabled) return;
+      confirmBtn.disabled = true;
+      confirmBtn.textContent = 'Envoi...';
       void bookSlot(slotId, notes);
     });
     cancelBtn?.addEventListener('click', () => hideBookingForm(slotId));
@@ -302,16 +345,21 @@
     const card = getSlotCard(slotId);
     if (!card) return;
     const time = card.dataset.time || '';
+    const title = card.dataset.title || '';
     const isBooked = card.dataset.booked === '1';
+    // On restaure aussi l'etat "passe" : sans lui, annuler le formulaire
+    // reactivait le bouton d'un creneau deja ecoule.
+    const isPast = card.dataset.past === '1';
     card.innerHTML = `
       <div class="slot-info">
-        <div class="slot-time">${escapeHtml(time)}</div>
+        ${title ? `<div class="slot-title">${escapeHtml(title)}</div>` : ''}
+        <div class="slot-time">${escapeHtml(time)}${isPast ? ' <span class="slot-past-badge">Passé</span>' : ''}</div>
       </div>
       <button
         class="btn btn-book"
         data-id="${slotId}"
-        ${isBooked ? 'disabled' : ''}
-      >${isBooked ? '✓ Reserve' : 'Reserver'}</button>
+        ${isBooked || isPast ? 'disabled' : ''}
+      >${isBooked ? '✓ Reserve' : isPast ? 'Indisponible' : 'Reserver'}</button>
     `;
     const btn = card.querySelector<HTMLButtonElement>('.btn-book:not(:disabled)');
     btn?.addEventListener('click', () => showBookingForm(slotId));
@@ -366,6 +414,12 @@
       const msg = err instanceof Error ? err.message : 'Erreur inconnue';
       showError(msg);
       toast(msg, 'error');
+      // Reactive le bouton pour permettre un nouvel essai sans recharger.
+      const retryBtn = getSlotCard(slotId)?.querySelector<HTMLButtonElement>('.btn-book');
+      if (retryBtn) {
+        retryBtn.disabled = false;
+        retryBtn.textContent = 'Confirmer';
+      }
     }
   }
 
@@ -492,6 +546,7 @@
   .badge-confirmed { background-color: #d1fae5; color: #065f46; }
   .badge-pending   { background-color: #fef3c7; color: #92400e; }
   .badge-cancelled { background-color: #fee2e2; color: #991b1b; }
+  .badge-expired   { background-color: #e5e7eb; color: #4b5563; }
 
   /* F3 : Badge temporel */
   .temporal-badge {
@@ -507,6 +562,21 @@
   .appointment-card.status-pending   { border-left: 4px solid #f59e0b; }
   .appointment-card.status-confirmed { border-left: 4px solid #10b981; }
   .appointment-card.status-cancelled { border-left: 4px solid #ef4444; opacity: 0.7; }
+  .appointment-card.status-expired   { border-left: 4px solid #9ca3af; opacity: 0.7; }
+
+  /* Intitule du creneau saisi par l'admin ("Recrutement benevole", ...). */
+  .slot-title {
+    font-size: 12px; font-weight: 700; color: #3D5A47;
+    text-transform: uppercase; letter-spacing: 0.03em; margin-bottom: 2px;
+  }
+  .slot-info { min-width: 0; }
+
+  @media (max-width: 560px) {
+    .appointments-container { padding: 12px; }
+    .appointment-card { flex-direction: column; align-items: flex-start; gap: 10px; }
+    .appointment-actions { width: 100%; }
+    .day-group-slots { grid-template-columns: 1fr; }
+  }
 
   /* Formulaire inline de reservation */
   .booking-form { display: flex; flex-direction: column; gap: 8px; width: 100%; }

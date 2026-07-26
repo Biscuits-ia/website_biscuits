@@ -3,6 +3,7 @@
 import DashboardLayout from '@/layouts/DashboardLayout.astro';
 import { requireAdmin } from '@/lib/auth';
 import { createSupabaseAdminClient } from '@/lib/supabase';
+import { formatDateTimeLong } from '@/lib/dateHelpers';
 import type { RecruitmentSession, RecruitmentSubmission } from '@/types/recruitment';
 
 const result = await requireAdmin(Astro);
@@ -67,16 +68,8 @@ const sessionStatusLabel: Record<string, string> = {
   done: 'Terminée',
 };
 
-function formatSessionDate(iso: string): string {
-  return new Date(iso).toLocaleDateString('fr-FR', {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-}
+// Heure de Paris (page SSR, serveur Vercel en UTC).
+const formatSessionDate = formatDateTimeLong;
 ---
 
 <DashboardLayout title={`Session : ${session.title}`} activePage="candidatures" userName={userName} authResult={result}>
@@ -194,6 +187,18 @@ function formatSessionDate(iso: string): string {
 </style>
 
 <script define:vars={{ sessionId }} nonce={Astro.locals.nonce}>
+  // Toast / modale montes globalement par DashboardLayout ; repli sur les
+  // primitives natives si la page est rendue sans ce layout.
+  function toast(msg, type) {
+    if (typeof window.showToast === 'function') window.showToast(msg, type);
+    else alert(msg);
+  }
+
+  function confirmAction(options) {
+    if (typeof window.showConfirm === 'function') return window.showConfirm(options);
+    return Promise.resolve(window.confirm(options.message));
+  }
+
   const addForm = document.getElementById('form-add-candidate');
 
   addForm?.addEventListener('submit', async (e) => {
@@ -204,26 +209,39 @@ function formatSessionDate(iso: string): string {
     const submissionId = String(fd.get('submission_id') ?? '');
     if (!submissionId) return;
 
-    const res = await fetch(`/api/admin/recruitment-sessions/${sessionId}/assign`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ submission_id: submissionId }),
-    });
+    const submitBtn = addForm.querySelector('button[type="submit"]');
+    if (submitBtn) submitBtn.disabled = true;
+    try {
+      const res = await fetch(`/api/admin/recruitment-sessions/${sessionId}/assign`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ submission_id: submissionId }),
+      });
 
-    if (!res.ok) {
-      const out = await res.json().catch(() => ({ error: 'Erreur' }));
-      alert(out.error ?? 'Erreur lors de l\'affectation');
-      return;
+      if (!res.ok) {
+        const out = await res.json().catch(() => ({ error: 'Erreur' }));
+        toast(out.error ?? 'Erreur lors de l\'affectation', 'error');
+        return;
+      }
+
+      window.location.reload();
+    } finally {
+      if (submitBtn) submitBtn.disabled = false;
     }
-
-    window.location.reload();
   });
 
   document.querySelectorAll('.js-remove').forEach((el) => {
     el.addEventListener('click', async () => {
       const submissionId = el.getAttribute('data-id');
       if (!submissionId) return;
-      if (!confirm('Retirer ce candidat de la session ?')) return;
+
+      const ok = await confirmAction({
+        title: 'Retirer ce candidat',
+        message: 'Le candidat sera retiré de cette session et recevra un email l\'en informant. Sa candidature reste enregistrée.',
+        confirmLabel: 'Retirer',
+        danger: true,
+      });
+      if (!ok) return;
 
       const res = await fetch(`/api/admin/recruitment-sessions/${sessionId}/assign`, {
         method: 'DELETE',
@@ -232,7 +250,8 @@ function formatSessionDate(iso: string): string {
       });
 
       if (!res.ok) {
-        alert('Erreur lors du retrait.');
+        const out = await res.json().catch(() => ({ error: 'Erreur lors du retrait.' }));
+        toast(out.error ?? 'Erreur lors du retrait.', 'error');
         return;
       }
 

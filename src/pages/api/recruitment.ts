@@ -1,6 +1,6 @@
 // src/pages/api/recruitment.ts
 import type { APIRoute } from 'astro';
-import { createSupabaseAdminClient } from '@/lib/supabase';
+import { createSupabaseAdminClient, createSupabaseClient } from '@/lib/supabase';
 import { EMAIL_RE, MAX_NAME, isValidUUID } from '@/lib/validation';
 import { rateLimitRoute } from '@/lib/rateLimit';
 import { getClientIp } from '@/lib/http';
@@ -67,7 +67,7 @@ function validateRecruitmentFields(fields: {
   return errors;
 }
 
-export const POST: APIRoute = async ({ request, clientAddress }) => {
+export const POST: APIRoute = async ({ request, cookies, clientAddress }) => {
   // 1. Rate-limit IP avant tout parsing.
   const ip = getClientIp(request, clientAddress as string | undefined);
   const blocked = await rateLimitRoute(ip, '/api/recruitment', RECRUITMENT_LIMIT, RECRUITMENT_WINDOW_MS);
@@ -94,7 +94,31 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
     );
   }
 
-  const errors = validateRecruitmentFields({ first_name, last_name, email });
+  // 3. Identite, AVANT la validation : quand un compte est connecte c'est son
+  //    adresse qui sera enregistree, donc c'est elle qu'il faut valider — pas
+  //    celle du champ, qui n'est plus qu'une suggestion. getUser() (et jamais
+  //    getSession()) : le cookie de session est sous le controle du client,
+  //    seul l'appel au serveur Auth est non forgeable.
+  const { data: { user } } = await createSupabaseClient({ request, cookies }).auth.getUser();
+
+  // Email impose par le compte. Sans cela, un utilisateur connecte pouvait
+  // reserver une place de session sous l'adresse d'un tiers. `user_id` scelle
+  // le lien cote base (cf. migration 20260726160000).
+  const accountEmail = user?.email?.trim().toLowerCase() ?? '';
+  const effectiveEmail = accountEmail || email;
+  const userId = user?.id ?? null;
+
+  if (user && !accountEmail) {
+    // Compte sans email (connexion par telephone / provider exotique) : on ne
+    // peut rien imposer, on refuse plutot que d'enregistrer une adresse libre
+    // en la faisant passer pour verifiee.
+    return new Response(
+      JSON.stringify({ message: "Votre compte n'a pas d'adresse email associée. Contactez-nous directement." }),
+      { status: 409, headers: { 'Content-Type': 'application/json' } },
+    );
+  }
+
+  const errors = validateRecruitmentFields({ first_name, last_name, email: effectiveEmail });
 
   if (session_id && !isValidUUID(session_id)) {
     errors.session_id = ['Session sélectionnée invalide.'];
@@ -107,22 +131,53 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
     });
   }
 
-  // 3. Dedup email pour eviter qu'un candidat soumette 10 fois la meme candidature.
+  // 4. La candidature spontanee reste ouverte a tous ; le choix d'une SESSION
+  //    est reserve aux comptes. C'est ici que la regle est appliquee : le
+  //    formulaire ne fait que la refleter et peut etre contourne.
+  if (session_id && !user) {
+    return new Response(
+      JSON.stringify({
+        message: 'Connectez-vous pour candidater à une session de recrutement. Vous pouvez sinon envoyer une candidature spontanée.',
+        errors: { session_id: ['Compte requis pour choisir une session.'] },
+      }),
+      { status: 401, headers: { 'Content-Type': 'application/json' } },
+    );
+  }
+
+  // 5. Dedup pour eviter qu'un candidat soumette 10 fois la meme candidature.
+  //    L'index unique partiel `uniq_recruitment_submission_per_user` tranche la
+  //    course si deux requetes passent ce test en meme temps (cf. 23505 plus bas).
+  //    Deux requetes plutot qu'un `.or()` : ce dernier demande d'interpoler les
+  //    valeurs dans une chaine de filtre PostgREST, autant ne pas ouvrir cette
+  //    surface pour une adresse email.
   const supabase = createSupabaseAdminClient();
-  const { data: existing } = await supabase
+  const { data: existingByEmail } = await supabase
     .from('recruitment_submissions')
     .select('id')
-    .eq('email', email)
+    .eq('email', effectiveEmail)
+    .limit(1)
     .maybeSingle();
 
-  if (existing) {
+  // Couvre le cas d'un compte dont l'email a change depuis la candidature.
+  let existingByUser = null;
+  if (!existingByEmail && userId) {
+    const { data } = await supabase
+      .from('recruitment_submissions')
+      .select('id')
+      .eq('user_id', userId)
+      .limit(1)
+      .maybeSingle();
+    existingByUser = data;
+  }
+
+  if (existingByEmail || existingByUser) {
     return new Response(
       JSON.stringify({ message: 'Candidature déjà enregistrée pour cet email.' }),
       { status: 200, headers: { 'Content-Type': 'application/json' } },
     );
   }
 
-  // 4. Vérifier la session sélectionnée (ouverte et non pleine)
+  // 6. Vérifier la session sélectionnée (ouverte et non pleine)
   if (session_id) {
     const { data: session, error: sessionError } = await supabase
       .from('recruitment_sessions')
@@ -152,19 +207,39 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
     }
   }
 
-  const { error } = await supabase
-    .from('recruitment_submissions')
-    .insert({ first_name, last_name, email, skills, availability, motivation, session_id });
+  const { error } = await supabase.from('recruitment_submissions').insert({
+    first_name,
+    last_name,
+    email: effectiveEmail,
+    skills,
+    availability,
+    motivation,
+    session_id,
+    user_id: userId,
+  });
 
   if (error) {
+    // 23505 = uniq_recruitment_submission_per_user : deux soumissions
+    // concurrentes du meme compte ont passe le dedoublonnage en meme temps.
+    // Meme reponse que le dedoublonnage : ce n'est pas une panne.
+    if (error.code === '23505') {
+      return new Response(
+        JSON.stringify({ message: 'Candidature déjà enregistrée pour cet email.' }),
+        { status: 200, headers: { 'Content-Type': 'application/json' } },
+      );
+    }
+    console.error('[api/recruitment] insert error:', error.code, error.message);
     return new Response(JSON.stringify({ message: "Erreur lors de l'enregistrement." }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' },
     });
   }
 
-  return new Response(JSON.stringify({ message: 'Candidature envoyée avec succès.' }), {
-    status: 200,
-    headers: { 'Content-Type': 'application/json' },
-  });
+  // `email` est renvoye : c'est celui du compte quand l'utilisateur est
+  // connecte, donc pas forcement celui qu'il a tape. L'ecran de confirmation
+  // doit afficher l'adresse reellement enregistree.
+  return new Response(
+    JSON.stringify({ message: 'Candidature envoyée avec succès.', email: effectiveEmail }),
+    { status: 200, headers: { 'Content-Type': 'application/json' } },
+  );
 };

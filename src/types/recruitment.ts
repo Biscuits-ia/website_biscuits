@@ -32,6 +32,11 @@ export interface RecruitmentSubmission {
   status: RecruitmentSubmissionStatus;
   admin_notes: string | null;
   session_id: string | null;
+  /**
+   * Compte ayant depose la candidature. NULL = candidature spontanee anonyme.
+   * Quand non NULL, `email` est celui du compte : l'identite est verifiee.
+   */
+  user_id: string | null;
   created_at: string;
 }
 

@@ -3,9 +3,35 @@ import RecruitmentFormClient from './react/RecruitmentFormClient';
 
 interface Props {
   preselectedSessionId?: string;
+  /**
+   * Prefixe des `id` des champs. Obligatoire des qu'une page monte plusieurs
+   * fois le formulaire (page + modale sur /rejoignez-nous) : sans lui, les deux
+   * ilots emettent les memes `id` et chaque `<label for>` pointe vers le champ
+   * du premier formulaire. Sert aussi de cible aux evenements de preselection.
+   */
+  idPrefix?: string;
+  /**
+   * Le choix d'une session est reserve aux comptes connectes. La regle est
+   * appliquee par /api/recruitment (401) ; cette prop ne fait que la refleter
+   * dans l'UI. Doit venir d'un `supabase.auth.getUser()` cote serveur.
+   */
+  isAuthenticated?: boolean;
+  /** Email du compte connecte : impose par /api/recruitment a l'enregistrement. */
+  accountEmail?: string;
 }
 
-const { preselectedSessionId } = Astro.props;
+const {
+  preselectedSessionId,
+  idPrefix = 'recruitment',
+  isAuthenticated = false,
+  accountEmail,
+} = Astro.props;
 ---
 
-<RecruitmentFormClient client:load preselectedSessionId={preselectedSessionId} />
+<RecruitmentFormClient
+  client:load
+  preselectedSessionId={preselectedSessionId}
+  idPrefix={idPrefix}
+  isAuthenticated={isAuthenticated}
+  accountEmail={accountEmail}
+/>

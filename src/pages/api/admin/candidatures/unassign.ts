@@ -34,9 +34,17 @@ export const POST: APIRoute = async (context) => {
     .update({ session_id: null })
     .eq('id', submissionId)
     .select()
-    .single();
+    .maybeSingle();
+
+  if (!error && !updated) {
+    return new Response(JSON.stringify({ error: 'Candidature introuvable.' }), {
+      status: 404,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
 
   if (error || !updated) {
+    console.error('[candidatures unassign] update error:', error?.code, error?.message);
     return new Response(JSON.stringify({ error: 'Erreur lors de la désaffectation.' }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' },

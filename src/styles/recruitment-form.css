@@ -288,3 +288,43 @@
   color: var(--color-danger);
   border-color: var(--color-danger);
 }
+/* Honeypot anti-bot : retire du flux et de l'arbre d'accessibilite sans
+   `display:none` ni `visibility:hidden`, que certains bots detectent. */
+.hp-field {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+/* Choix de session verrouille (visiteur non connecte). La liste reste lisible
+   — elle a une valeur informative — mais n'est plus selectionnable. La regle
+   est appliquee par /api/recruitment, ceci n'en est que le reflet visuel. */
+.field__hint--locked {
+  padding: 0.6rem 0.75rem;
+  margin-bottom: 0.6rem;
+  border: var(--brutal-border-thin);
+  background: var(--color-bg-alt);
+  color: var(--color-text);
+}
+
+.field__hint--locked a {
+  color: var(--color-primary);
+  font-weight: var(--font-weight-bold);
+}
+
+.session-options--locked {
+  opacity: 0.6;
+}
+
+.session-options--locked .session-option {
+  cursor: not-allowed;
+}
+
+/* Email impose par le compte connecte. `readOnly` (et non `disabled`) : le
+   champ reste focusable, annonce et copiable par les lecteurs d'ecran. */
+.field__input--locked {
+  background: var(--color-bg-alt);
+  cursor: default;
+}

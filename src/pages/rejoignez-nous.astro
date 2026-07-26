@@ -5,15 +5,17 @@
 import Layout from '@/layouts/Layout.astro';
 import Breadcrumb from '@/components/Breadcrumb.astro';
 import RecruitmentForm from '@/components/Recruitmentform.astro';
-import { createSupabaseClient } from '@/lib/supabase';
+import { createSupabaseClient, createSupabaseAdminClient } from '@/lib/supabase';
+import { PUBLIC_SESSION_COLUMNS, countActiveCandidatesBySession } from '@/lib/recruitmentSessions';
+import { formatDateTimeLong } from '@/lib/dateHelpers';
 
 const supabase = Astro.locals.supabase ?? createSupabaseClient(Astro);
 const { data: { user } } = await supabase.auth.getUser();
 
 const now = new Date().toISOString();
-const { data: sessionsRaw, error: sessionsError } = await supabase
+const { data: sessionsRaw, error: sessionsError } = await createSupabaseAdminClient()
   .from('recruitment_sessions')
-  .select('*')
+  .select(PUBLIC_SESSION_COLUMNS)
   .eq('status', 'open')
   .gt('scheduled_at', now)
   .order('scheduled_at', { ascending: true });
@@ -27,19 +29,10 @@ if (import.meta.env.DEV) {
 
 const sessions = sessionsRaw ?? [];
 
-const sessionCounts: Record<string, number> = {};
-if (sessions.length > 0) {
-  const { data: counts } = await supabase
-    .from('recruitment_submissions')
-    .select('session_id')
-    .in('session_id', sessions.map((s) => s.id))
-    .neq('status', 'declined');
-  for (const row of (counts ?? []) as { session_id: string | null }[]) {
-    if (row.session_id) {
-      sessionCounts[row.session_id] = (sessionCounts[row.session_id] ?? 0) + 1;
-    }
-  }
-}
+// Comptage via le client admin : RLS interdit la lecture des candidatures au
+// visiteur, la requete renvoyait 0 ligne et toutes les sessions paraissaient
+// disponibles (badge "Complet" jamais affiche, bouton jamais desactive).
+const sessionCounts = await countActiveCandidatesBySession(sessions.map((s) => s.id));
 
 const sessionsWithPlaces = sessions.map((s) => {
   const count = sessionCounts[s.id] ?? 0;
@@ -113,14 +106,14 @@ const schema = {
           </p>
           <ul class="recruit-sessions__list">
             {sessionsWithPlaces.map((s) => {
-              const scheduled = new Date(s.scheduled_at);
               const full = s.remaining === 0;
               return (
                 <li class={`recruit-sessions__card ${full ? 'recruit-sessions__card--full' : ''}`} data-session-id={s.id}>
                   <div class="recruit-sessions__main">
                     <div class="recruit-sessions__title">{s.title}</div>
                     <div class="recruit-sessions__meta">
-                      {scheduled.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })}
+                      {/* Heure de Paris : cette page est rendue serveur (Vercel = UTC). */}
+                      {formatDateTimeLong(s.scheduled_at)}
                       {' · '}{s.duration_minutes ?? 90} min
                       {s.location && ` · ${s.location}`}
                     </div>
@@ -169,7 +162,7 @@ const schema = {
       )}
       <h2>Ma candidature</h2>
       <div id="recruitment-form-root">
-        <RecruitmentForm preselectedSessionId="" />
+        <RecruitmentForm idPrefix="page" isAuthenticated={Boolean(user)} accountEmail={user?.email ?? undefined} />
       </div>
     </div>
   </section>
@@ -200,7 +193,7 @@ const schema = {
       <h2 class="apply-modal__title" id="apply-modal-title">Candidater à une session</h2>
       <p class="apply-modal__session" id="apply-modal-session"></p>
       <div id="apply-modal-form">
-        <RecruitmentForm preselectedSessionId="" />
+        <RecruitmentForm idPrefix="modal" isAuthenticated={Boolean(user)} accountEmail={user?.email ?? undefined} />
       </div>
     </div>
   </dialog>
@@ -230,14 +223,13 @@ const schema = {
       if (modalTitle) modalTitle.textContent = 'Candidater à cette session';
       modalSession.textContent = sessionTitle;
 
-      // Met à jour les radios de session dans la modale
-      const formRoot = document.getElementById('apply-modal-form');
-      if (formRoot) {
-        const radios = formRoot.querySelectorAll('input[type="radio"][name="session_id"]');
-        radios.forEach((radio) => {
-          radio.checked = radio.value === sessionId;
-        });
-      }
+      // Le formulaire de la modale est un ilot React : ecrire `radio.checked`
+      // directement ne mettait pas a jour son etat interne, donc la candidature
+      // partait SANS session, et React ecrasait la coche au premier rendu.
+      // On notifie l'ilot ('modal' = son idPrefix), lui seul reagit.
+      window.dispatchEvent(new CustomEvent('recruitment:preselect-session', {
+        detail: { target: 'modal', sessionId: sessionId },
+      }));
 
       if (modal instanceof HTMLDialogElement) {
         modal.showModal();

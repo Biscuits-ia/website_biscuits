@@ -23,10 +23,38 @@ interface RecruitmentFormData {
   availability: string;
   motivation: string;
   session_id: string;
+  /** Honeypot anti-bot. Doit rester vide : /api/recruitment rejette sinon. */
+  honey: string;
 }
+
+/**
+ * Evenement de preselection de session, emis par la page hote quand
+ * l'utilisateur clique "Candidater" sur une carte de session.
+ * `detail.target` doit valoir l'`idPrefix` du formulaire vise.
+ */
+export const PRESELECT_SESSION_EVENT = 'recruitment:preselect-session';
+
+interface PreselectDetail {
+  target: string;
+  sessionId: string;
+}
+
+// Heure de Paris : l'association est francaise et les horaires affiches ici
+// doivent coincider avec ceux de la page serveur et des emails de convocation.
+const sessionDateFmt = new Intl.DateTimeFormat('fr-FR', {
+  timeZone: 'Europe/Paris',
+  weekday: 'long',
+  day: 'numeric',
+  month: 'long',
+  hour: '2-digit',
+  minute: '2-digit',
+  hour12: false,
+});
 
 interface RecruitmentApiResponse {
   message?: string;
+  /** Adresse reellement enregistree (celle du compte si l'utilisateur est connecte). */
+  email?: string;
   errors?: Partial<Record<'first_name' | 'last_name' | 'email' | 'session_id', string[]>>;
 }
 
@@ -34,22 +62,50 @@ type RecruitmentFieldId = 'first_name' | 'last_name' | 'email';
 
 interface RecruitmentFormProps {
   preselectedSessionId?: string;
+  idPrefix?: string;
+  /**
+   * Le choix d'une session est reserve aux comptes connectes (regle appliquee
+   * par /api/recruitment, qui repond 401 sinon). Ici on ne fait que refleter
+   * la regle dans l'UI. Defaut `false` : on echoue en mode ferme si l'hote
+   * oublie de passer la prop.
+   */
+  isAuthenticated?: boolean;
+  /**
+   * Email du compte connecte. Le serveur l'impose a l'enregistrement : on le
+   * pre-remplit et on verrouille le champ pour que l'ecran corresponde a ce qui
+   * sera reellement stocke.
+   */
+  accountEmail?: string;
 }
 
-function buildInitialData(preselectedSessionId?: string): RecruitmentFormData {
+/** Destination du lien de connexion affiche quand la session est verrouillee. */
+const LOGIN_URL = '/connexion?redirect=/rejoignez-nous&message=candidater';
+
+function buildInitialData(preselectedSessionId?: string, accountEmail?: string): RecruitmentFormData {
   return {
     first_name: '',
     last_name: '',
-    email: '',
+    email: accountEmail ?? '',
     skills: '',
     availability: '',
     motivation: '',
     session_id: preselectedSessionId ?? '',
+    honey: '',
   };
 }
 
-export default function RecruitmentFormClient({ preselectedSessionId }: RecruitmentFormProps = {}) {
-  const [formData, setFormData] = useState<RecruitmentFormData>(() => buildInitialData(preselectedSessionId));
+export default function RecruitmentFormClient({
+  preselectedSessionId,
+  idPrefix = 'recruitment',
+  isAuthenticated = false,
+  accountEmail,
+}: RecruitmentFormProps = {}) {
+  const fieldId = useCallback((name: string) => `${idPrefix}-${name}`, [idPrefix]);
+  // L'email n'est verrouille que s'il y a une adresse de compte a imposer.
+  const emailLocked = Boolean(isAuthenticated && accountEmail);
+  const [formData, setFormData] = useState<RecruitmentFormData>(
+    () => buildInitialData(isAuthenticated ? preselectedSessionId : '', emailLocked ? accountEmail : ''),
+  );
   const [fieldErrors, setFieldErrors] = useState<Partial<Record<RecruitmentFieldId, string>>>({});
   const [serverError, setServerError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -78,6 +134,22 @@ export default function RecruitmentFormClient({ preselectedSessionId }: Recruitm
     return () => { cancelled = true; };
   }, []);
 
+  // La page hote ne peut pas ecrire directement dans un `<input>` controle par
+  // React : elle le faisait via `radio.checked = ...`, ce qui laissait
+  // `formData.session_id` vide et envoyait donc une candidature spontanee alors
+  // que le candidat avait cliqué "Candidater" sur une session precise.
+  // On passe par un evenement, seul canal qui met bien a jour l'etat React.
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    function onPreselect(event: Event) {
+      const detail = (event as CustomEvent<PreselectDetail>).detail;
+      if (!detail || detail.target !== idPrefix) return;
+      setFormData((current) => ({ ...current, session_id: detail.sessionId }));
+    }
+    window.addEventListener(PRESELECT_SESSION_EVENT, onPreselect);
+    return () => window.removeEventListener(PRESELECT_SESSION_EVENT, onPreselect);
+  }, [idPrefix, isAuthenticated]);
+
   const clearFieldError = useCallback((field: RecruitmentFieldId) => {
     setFieldErrors((current) => {
       if (!current[field]) {
@@ -95,6 +167,12 @@ export default function RecruitmentFormClient({ preselectedSessionId }: Recruitm
     (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
       const { name, value } = event.currentTarget;
 
+      // Verrous cote client : les champs concernes sont deja `disabled` /
+      // `readOnly`, ceci couvre le retrait de l'attribut depuis les devtools.
+      // Le serveur reste l'autorite dans les deux cas.
+      if (name === 'session_id' && !isAuthenticated) return;
+      if (name === 'email' && emailLocked) return;
+
       setFormData((current) => ({
         ...current,
         [name]: value,
@@ -104,15 +182,11 @@ export default function RecruitmentFormClient({ preselectedSessionId }: Recruitm
         clearFieldError(name);
       }
 
-      if (name === 'session_id') {
-        // ne rien faire de spécial ; la valeur est mise à jour ci-dessus
-      }
-
       if (serverError) {
         setServerError('');
       }
     },
-    [clearFieldError, serverError],
+    [clearFieldError, serverError, isAuthenticated, emailLocked],
   );
 
   const validate = useCallback((data: RecruitmentFormData): boolean => {
@@ -165,7 +239,12 @@ export default function RecruitmentFormClient({ preselectedSessionId }: Recruitm
             motivation: formData.motivation.trim() || null,
             skills: formData.skills.trim() || null,
             availability: formData.availability || null,
-            session_id: formData.session_id || null,
+            // Sans compte, on n'envoie jamais de session : le serveur
+            // repondrait 401 et rejetterait toute la candidature.
+            session_id: (isAuthenticated && formData.session_id) || null,
+            // Honeypot : le serveur l'attendait depuis toujours, le client ne
+            // l'envoyait jamais — la protection anti-bot etait inoperante.
+            honey: formData.honey,
           }),
         });
 
@@ -176,9 +255,15 @@ export default function RecruitmentFormClient({ preselectedSessionId }: Recruitm
         if (response.ok) {
           setConfirmation({
             fullName: `${formData.first_name.trim()} ${formData.last_name.trim()}`,
-            email: formData.email.trim().toLowerCase(),
+            // Le serveur renvoie l'adresse reellement enregistree : quand
+            // l'utilisateur est connecte c'est celle du compte, pas forcement
+            // celle du champ.
+            email: payload.email ?? formData.email.trim().toLowerCase(),
           });
-          setFormData(INITIAL_FORM_DATA);
+          setFormData(buildInitialData(
+            isAuthenticated ? preselectedSessionId : '',
+            emailLocked ? accountEmail : '',
+          ));
           setFieldErrors({});
           return;
         }
@@ -189,6 +274,11 @@ export default function RecruitmentFormClient({ preselectedSessionId }: Recruitm
             last_name: payload.errors.last_name?.[0],
             email: payload.errors.email?.[0],
           });
+          // Une erreur sur la session n'a pas de champ dedie : sans cela, un 422
+          // portant uniquement sur `session_id` n'affichait strictement rien.
+          if (payload.errors.session_id?.[0]) {
+            setServerError(payload.errors.session_id[0]);
+          }
           return;
         }
 
@@ -205,7 +295,7 @@ export default function RecruitmentFormClient({ preselectedSessionId }: Recruitm
         setIsSubmitting(false);
       }
     },
-    [formData, validate],
+    [formData, validate, preselectedSessionId, isAuthenticated, emailLocked, accountEmail],
   );
 
   if (confirmation) {
@@ -250,28 +340,65 @@ export default function RecruitmentFormClient({ preselectedSessionId }: Recruitm
           {serverError}
         </div>
 
+        {/* Honeypot : invisible pour l'humain, rempli par les bots.
+            aria-hidden + tabIndex -1 pour ne pas polluer la navigation clavier. */}
+        <div className="hp-field" aria-hidden="true">
+          <label htmlFor={fieldId('honey')}>Ne pas remplir</label>
+          <input
+            id={fieldId('honey')}
+            name="honey"
+            type="text"
+            tabIndex={-1}
+            autoComplete="off"
+            value={formData.honey}
+            onChange={handleInputChange}
+          />
+        </div>
+
         <div className="form__row">
           <div className={`field ${fieldErrors.first_name ? 'field--error' : ''}`}>
-            <label className="field__label" htmlFor="prenom">Prénom <span className="field__required" aria-hidden="true">*</span></label>
-            <input id="prenom" name="first_name" className="field__input" type="text" placeholder="Marie" autoComplete="given-name" aria-required="true" aria-invalid={fieldErrors.first_name ? 'true' : 'false'} value={formData.first_name} onChange={handleInputChange} />
+            <label className="field__label" htmlFor={fieldId('prenom')}>Prénom <span className="field__required" aria-hidden="true">*</span></label>
+            <input id={fieldId('prenom')} name="first_name" className="field__input" type="text" placeholder="Marie" autoComplete="given-name" aria-required="true" aria-invalid={fieldErrors.first_name ? 'true' : 'false'} value={formData.first_name} onChange={handleInputChange} />
             <span className="field__error" role="alert" style={{ display: fieldErrors.first_name ? 'block' : 'none' }}>{fieldErrors.first_name}</span>
           </div>
 
           <div className={`field ${fieldErrors.last_name ? 'field--error' : ''}`}>
-            <label className="field__label" htmlFor="nom">Nom <span className="field__required" aria-hidden="true">*</span></label>
-            <input id="nom" name="last_name" className="field__input" type="text" placeholder="Dupont" autoComplete="family-name" aria-required="true" aria-invalid={fieldErrors.last_name ? 'true' : 'false'} value={formData.last_name} onChange={handleInputChange} />
+            <label className="field__label" htmlFor={fieldId('nom')}>Nom <span className="field__required" aria-hidden="true">*</span></label>
+            <input id={fieldId('nom')} name="last_name" className="field__input" type="text" placeholder="Dupont" autoComplete="family-name" aria-required="true" aria-invalid={fieldErrors.last_name ? 'true' : 'false'} value={formData.last_name} onChange={handleInputChange} />
             <span className="field__error" role="alert" style={{ display: fieldErrors.last_name ? 'block' : 'none' }}>{fieldErrors.last_name}</span>
           </div>
         </div>
 
         <div className={`field ${fieldErrors.email ? 'field--error' : ''}`}>
-          <label className="field__label" htmlFor="email">Email <span className="field__required" aria-hidden="true">*</span></label>
-          <input id="email" name="email" className="field__input" type="email" placeholder="marie.dupont@exemple.fr" autoComplete="email" aria-required="true" aria-invalid={fieldErrors.email ? 'true' : 'false'} value={formData.email} onChange={handleInputChange} />
+          <label className="field__label" htmlFor={fieldId('email')}>Email <span className="field__required" aria-hidden="true">*</span></label>
+          {/* readOnly plutot que disabled : le champ reste focusable, lisible
+              par les lecteurs d'ecran et copiable. */}
+          <input
+            id={fieldId('email')}
+            name="email"
+            className={`field__input ${emailLocked ? 'field__input--locked' : ''}`}
+            type="email"
+            placeholder="marie.dupont@exemple.fr"
+            autoComplete="email"
+            aria-required="true"
+            aria-invalid={fieldErrors.email ? 'true' : 'false'}
+            aria-describedby={emailLocked ? fieldId('email-hint') : undefined}
+            readOnly={emailLocked}
+            value={formData.email}
+            onChange={handleInputChange}
+          />
+          {emailLocked && (
+            <span className="field__hint" id={fieldId('email-hint')}>
+              Adresse de votre compte. Votre candidature y sera rattachée.
+            </span>
+          )}
           <span className="field__error" role="alert" style={{ display: fieldErrors.email ? 'block' : 'none' }}>{fieldErrors.email}</span>
         </div>
 
         <div className="field">
-          <label className="field__label" htmlFor="session">Session de recrutement</label>
+          {/* <fieldset>/<legend> plutot qu'un <label for> : l'ancien pointait
+              vers un id "session" qui n'existe nulle part. */}
+          <span className="field__label" id={fieldId('session-label')}>Session de recrutement</span>
           {sessionsLoading ? (
             <p className="field__hint">Chargement des sessions…</p>
           ) : sessionsError ? (
@@ -279,21 +406,32 @@ export default function RecruitmentFormClient({ preselectedSessionId }: Recruitm
           ) : sessions.length === 0 ? (
             <p className="field__hint">Aucune session disponible pour le moment. Vous pouvez tout de même envoyer une candidature spontanée.</p>
           ) : (
-            <div className="session-options" role="radiogroup" aria-label="Choisir une session de recrutement">
+            <>
+              {!isAuthenticated && (
+                <p className="field__hint field__hint--locked">
+                  🔒 Le choix d'une session est réservé aux comptes.{' '}
+                  <a href={LOGIN_URL}>Connectez-vous</a> pour en sélectionner une,
+                  ou envoyez une candidature spontanée dès maintenant.
+                </p>
+              )}
+              <div
+                className={`session-options ${!isAuthenticated ? 'session-options--locked' : ''}`}
+                role="radiogroup"
+                aria-labelledby={fieldId('session-label')}
+              >
               <label className={`session-option ${formData.session_id === '' ? 'session-option--selected' : ''}`}>
-                <input type="radio" name="session_id" value="" checked={formData.session_id === ''} onChange={handleInputChange} />
+                <input type="radio" name="session_id" value="" checked={formData.session_id === ''} onChange={handleInputChange} disabled={!isAuthenticated} />
                 <span className="session-option__title">Aucune préférence</span>
                 <span className="session-option__meta">Candidature spontanée</span>
               </label>
               {sessions.map((s) => {
-                const scheduled = new Date(s.scheduled_at);
                 const full = s.places_remaining === 0;
                 return (
                   <label key={s.id} className={`session-option ${formData.session_id === s.id ? 'session-option--selected' : ''} ${full ? 'session-option--full' : ''}`}>
-                    <input type="radio" name="session_id" value={s.id} checked={formData.session_id === s.id} onChange={handleInputChange} disabled={full} />
+                    <input type="radio" name="session_id" value={s.id} checked={formData.session_id === s.id} onChange={handleInputChange} disabled={full || !isAuthenticated} />
                     <span className="session-option__title">{s.title}</span>
                     <span className="session-option__meta">
-                      {scheduled.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })}
+                      {sessionDateFmt.format(new Date(s.scheduled_at))}
                       {' · '}{s.duration_minutes} min
                       {s.location && ` · ${s.location}`}
                     </span>
@@ -303,18 +441,19 @@ export default function RecruitmentFormClient({ preselectedSessionId }: Recruitm
                   </label>
                 );
               })}
-            </div>
+              </div>
+            </>
           )}
         </div>
 
         <div className="field">
-          <label className="field__label" htmlFor="competences">Compétences</label>
-          <textarea id="competences" name="skills" className="field__input field__textarea" placeholder="Vos compétences clés (ex : développement web, graphisme, rédaction…)" rows={3} value={formData.skills} onChange={handleInputChange}></textarea>
+          <label className="field__label" htmlFor={fieldId('competences')}>Compétences</label>
+          <textarea id={fieldId('competences')} name="skills" className="field__input field__textarea" placeholder="Vos compétences clés (ex : développement web, graphisme, rédaction…)" rows={3} value={formData.skills} onChange={handleInputChange}></textarea>
         </div>
 
         <div className="field">
-          <label className="field__label" htmlFor="disponibilite">Disponibilité</label>
-          <select id="disponibilite" name="availability" className="field__input field__select" value={formData.availability} onChange={handleInputChange}>
+          <label className="field__label" htmlFor={fieldId('disponibilite')}>Disponibilité</label>
+          <select id={fieldId('disponibilite')} name="availability" className="field__input field__select" value={formData.availability} onChange={handleInputChange}>
             <option value="">Sélectionnez votre disponibilité</option>
             <option value="immediat">Immédiate</option>
             <option value="1mois">Dans 1 mois</option>
@@ -325,8 +464,8 @@ export default function RecruitmentFormClient({ preselectedSessionId }: Recruitm
         </div>
 
         <div className="field">
-          <label className="field__label" htmlFor="motivation">Motivation</label>
-          <textarea id="motivation" name="motivation" className="field__input field__textarea" placeholder="Pourquoi souhaitez-vous vous engager bénévolement auprès de Biscuits IA ?" rows={5} value={formData.motivation} onChange={handleInputChange}></textarea>
+          <label className="field__label" htmlFor={fieldId('motivation')}>Motivation</label>
+          <textarea id={fieldId('motivation')} name="motivation" className="field__input field__textarea" placeholder="Pourquoi souhaitez-vous vous engager bénévolement auprès de Biscuits IA ?" rows={5} value={formData.motivation} onChange={handleInputChange}></textarea>
         </div>
 
         <div className="form__footer">

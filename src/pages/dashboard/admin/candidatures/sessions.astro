@@ -3,6 +3,8 @@
 import DashboardLayout from '@/layouts/DashboardLayout.astro';
 import { requireAdmin } from '@/lib/auth';
 import { createSupabaseAdminClient } from '@/lib/supabase';
+import { countActiveCandidatesBySession } from '@/lib/recruitmentSessions';
+import { formatDateTimeLong } from '@/lib/dateHelpers';
 import type { RecruitmentSession } from '@/types/recruitment';
 
 const result = await requireAdmin(Astro);
@@ -30,21 +32,7 @@ if (sessionsError) {
 const sessions = (sessionsRaw ?? []) as unknown as RecruitmentSession[];
 
 // Comptage des candidats par session
-const sessionIds = sessions.map((s) => s.id);
-let candidateCounts: Record<string, number> = {};
-if (sessionIds.length > 0) {
-  const { data: countsRaw } = await adminSupabase
-    .from('recruitment_submissions')
-    .select('session_id')
-    .in('session_id', sessionIds)
-    .neq('status', 'declined');
-
-  for (const row of (countsRaw ?? []) as { session_id: string | null }[]) {
-    if (row.session_id) {
-      candidateCounts[row.session_id] = (candidateCounts[row.session_id] ?? 0) + 1;
-    }
-  }
-}
+const candidateCounts = await countActiveCandidatesBySession(sessions.map((s) => s.id));
 
 const statusLabel: Record<string, string> = {
   open: 'Ouverte',
@@ -60,16 +48,9 @@ const statusClass: Record<string, string> = {
   done: 'neutral',
 };
 
-function formatSessionDate(iso: string): string {
-  return new Date(iso).toLocaleDateString('fr-FR', {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-}
+// Heure de Paris : cette page est rendue serveur (Vercel = UTC), l'admin
+// voyait donc une heure decalee de celle qu'il avait saisie.
+const formatSessionDate = formatDateTimeLong;
 ---
 
 <DashboardLayout title="Sessions de recrutement" activePage="recruitment-sessions" userName={userName} authResult={result}>
@@ -234,6 +215,50 @@ function formatSessionDate(iso: string): string {
 </style>
 
 <script nonce={Astro.locals.nonce}>
+  const SITE_TZ = 'Europe/Paris';
+
+  function toast(msg, type) {
+    if (typeof window.showToast === 'function') window.showToast(msg, type);
+    else alert(msg);
+  }
+
+  function confirmAction(options) {
+    if (typeof window.showConfirm === 'function') return window.showConfirm(options);
+    return Promise.resolve(window.confirm(options.message));
+  }
+
+  /** Decalage Europe/Paris <-> UTC a l'instant donne (gere l'heure d'ete). */
+  function tzOffsetMs(date) {
+    const parts = new Intl.DateTimeFormat('en-US', {
+      timeZone: SITE_TZ, hour12: false,
+      year: 'numeric', month: '2-digit', day: '2-digit',
+      hour: '2-digit', minute: '2-digit', second: '2-digit',
+    }).formatToParts(date);
+    const get = (type) => {
+      const found = parts.find((p) => p.type === type);
+      return Number(found ? found.value : 0);
+    };
+    return Date.UTC(get('year'), get('month') - 1, get('day'), get('hour') % 24, get('minute'), get('second')) - date.getTime();
+  }
+
+  /**
+   * Convertit la valeur d'un <input type="datetime-local"> ("2026-09-12T14:30")
+   * en instant UTC, en l'interpretant comme une heure de Paris.
+   * `new Date(valeur)` utilisait le fuseau du navigateur : un admin en
+   * deplacement creait des sessions decalees pour tous les candidats.
+   */
+  function parisIsoFromLocalInput(value) {
+    if (!value) return '';
+    // Certains navigateurs ajoutent les secondes : on ne garde que YYYY-MM-DDTHH:mm.
+    const naive = new Date(value.slice(0, 16) + ':00.000Z');
+    if (Number.isNaN(naive.getTime())) return '';
+    const naiveOffset = tzOffsetMs(naive);
+    let instant = new Date(naive.getTime() - naiveOffset);
+    const settled = tzOffsetMs(instant);
+    if (settled !== naiveOffset) instant = new Date(naive.getTime() - settled);
+    return instant.toISOString();
+  }
+
   const createModal = document.getElementById('create-session-modal');
   const btnOpenCreate = document.getElementById('btn-open-create');
   const btnCloseCreate = document.getElementById('btn-close-create');
@@ -252,31 +277,37 @@ function formatSessionDate(iso: string): string {
     if (!(createForm instanceof HTMLFormElement)) return;
 
     const fd = new FormData(createForm);
-    const scheduledAt = String(fd.get('scheduled_at') ?? '');
+    const submitBtn = createForm.querySelector('button[type="submit"]');
 
     const payload = {
       title: String(fd.get('title') ?? '').trim(),
       description: String(fd.get('description') ?? '').trim() || null,
-      scheduled_at: scheduledAt ? new Date(scheduledAt).toISOString() : '',
+      scheduled_at: parisIsoFromLocalInput(String(fd.get('scheduled_at') ?? '')),
       duration_minutes: Number(fd.get('duration_minutes') ?? 90),
       max_candidates: Number(fd.get('max_candidates') ?? 10),
       location: String(fd.get('location') ?? '').trim() || null,
       status: 'open',
     };
 
-    const res = await fetch('/api/admin/recruitment-sessions', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
+    // Verrou anti double-soumission : un double-clic creait deux sessions.
+    if (submitBtn) submitBtn.disabled = true;
+    try {
+      const res = await fetch('/api/admin/recruitment-sessions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
 
-    if (!res.ok) {
-      const out = await res.json().catch(() => ({ error: 'Erreur inconnue' }));
-      alert(out.error ?? 'Erreur lors de la création');
-      return;
+      if (!res.ok) {
+        const out = await res.json().catch(() => ({ error: 'Erreur inconnue' }));
+        toast(out.error ?? 'Erreur lors de la création', 'error');
+        return;
+      }
+
+      window.location.reload();
+    } finally {
+      if (submitBtn) submitBtn.disabled = false;
     }
-
-    window.location.reload();
   });
 
   document.querySelectorAll('.js-status').forEach((el) => {
@@ -293,9 +324,12 @@ function formatSessionDate(iso: string): string {
       });
 
       if (!res.ok) {
-        alert('Erreur lors de la mise à jour.');
+        const out = await res.json().catch(() => ({ error: 'Erreur lors de la mise à jour.' }));
+        toast(out.error ?? 'Erreur lors de la mise à jour.', 'error');
         window.location.reload();
+        return;
       }
+      toast('Statut mis à jour', 'success');
     });
   });
 
@@ -303,7 +337,17 @@ function formatSessionDate(iso: string): string {
     el.addEventListener('click', async () => {
       const id = el.getAttribute('data-id');
       if (!id) return;
-      if (!confirm('Supprimer cette session ? Les candidatures associées seront désaffectées.')) return;
+
+      // Message aligne sur le comportement reel de l'API : la suppression est
+      // REFUSEE (409) tant qu'une candidature est rattachee. L'ancien texte
+      // promettait une desaffectation automatique qui n'existe pas.
+      const ok = await confirmAction({
+        title: 'Supprimer cette session',
+        message: 'Action définitive. Une session à laquelle des candidatures sont rattachées ne peut pas être supprimée : retirez-les d\'abord depuis la fiche de la session.',
+        confirmLabel: 'Supprimer',
+        danger: true,
+      });
+      if (!ok) return;
 
       const res = await fetch(`/api/admin/recruitment-sessions/${id}`, {
         method: 'DELETE',
@@ -311,7 +355,7 @@ function formatSessionDate(iso: string): string {
 
       if (!res.ok) {
         const out = await res.json().catch(() => ({ error: 'Erreur' }));
-        alert(out.error ?? 'Erreur lors de la suppression.');
+        toast(out.error ?? 'Erreur lors de la suppression.', 'error');
         return;
       }
 

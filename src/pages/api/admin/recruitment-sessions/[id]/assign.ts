@@ -81,13 +81,28 @@ export const POST: APIRoute = async (context) => {
     .single();
 
   if (updateError) {
-    const msg = updateError.message.includes('capacité')
-      ? 'Cette session est pleine.'
-      : 'Erreur lors de l\'affectation.';
-    return new Response(JSON.stringify({ error: msg }), {
-      status: 409,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    // Le trigger check_recruitment_session_capacity leve un check_violation
+    // (23514) pour « session pleine » ou « session fermée ». Tout le reste est
+    // une vraie panne : la renvoyer en 409 la faisait passer pour un conflit
+    // metier et masquait l'incident (c'est ce qui arrivait quand le trigger
+    // lui-meme etait casse).
+    const isBusinessConflict = updateError.code === '23514';
+    if (!isBusinessConflict) {
+      console.error('[recruitment assign] update error:', updateError.code, updateError.message);
+    }
+    // Les messages du trigger sont ecrits en francais et destines a l'admin :
+    // on les transmet tels quels.
+    return new Response(
+      JSON.stringify({
+        error: isBusinessConflict
+          ? (updateError.message || 'Cette session est pleine.')
+          : "Erreur lors de l'affectation.",
+      }),
+      {
+        status: isBusinessConflict ? 409 : 500,
+        headers: { 'Content-Type': 'application/json' },
+      },
+    );
   }
 
   // Notification best-effort (ne bloque pas la réponse)
@@ -144,9 +159,19 @@ export const DELETE: APIRoute = async (context) => {
     .eq('id', submissionId)
     .eq('session_id', id)
     .select()
-    .single();
+    .maybeSingle();
+
+  // Aucune ligne = la candidature n'etait pas (ou plus) rattachee a cette
+  // session. `.single()` transformait ce cas en erreur, renvoyee en 500.
+  if (!error && !updated) {
+    return new Response(
+      JSON.stringify({ error: 'Cette candidature n\'est pas rattachée à cette session.' }),
+      { status: 404, headers: { 'Content-Type': 'application/json' } },
+    );
+  }
 
   if (error || !updated) {
+    console.error('[recruitment unassign] update error:', error?.code, error?.message);
     return new Response(JSON.stringify({ error: 'Erreur lors du retrait de la session.' }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' },

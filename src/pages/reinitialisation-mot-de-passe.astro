@@ -101,7 +101,10 @@ const nonce = Astro.locals.nonce;
     if (!type) type = 'error';
     msgEl.textContent   = text;
     msgEl.className     = 'auth-msg ' + type;
-    msgEl.style.display = 'block';
+    // `hidden` et non `style.display` : la regle agent-utilisateur du HTML est
+    // `[hidden] { display: none !important }`, et un !important d'agent bat un
+    // style inline. Le message restait donc invisible malgre son texte.
+    msgEl.hidden = false;
   }
 
   function setLoading(loading) {
@@ -153,7 +156,7 @@ const nonce = Astro.locals.nonce;
     const password = passInput.value;
     const confirm  = confirmInput.value;
 
-    msgEl.style.display = 'none';
+    msgEl.hidden = true;
 
     if (!password || !confirm) {
       showMsg('Veuillez remplir tous les champs.');

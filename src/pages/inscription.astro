@@ -109,9 +109,12 @@ const nonce = Astro.locals.nonce;
     if (type === undefined) type = 'error';
     msgEl.textContent   = text;
     msgEl.className     = 'auth-msg ' + type;
-    msgEl.style.display = 'block';
+    // `hidden` et non `style.display` : la regle agent-utilisateur du HTML est
+    // `[hidden] { display: none !important }`, et un !important d'agent bat un
+    // style inline. Le message restait donc invisible malgre son texte.
+    msgEl.hidden = false;
   }
-  function hideMsg() { msgEl.style.display = 'none'; }
+  function hideMsg() { msgEl.hidden = true; }
 
   function setLoading(loading) {
     btn.disabled            = loading;

@@ -10,8 +10,9 @@ if (user) return Astro.redirect('/dashboard/user/');
 const nonce = Astro.locals.nonce;
 const redirectTo = Astro.url.searchParams.get('redirect') ?? '/dashboard/';
 const message = Astro.url.searchParams.get('message') ?? '';
-const messageText = message === 'candidater'
-  ? 'Connectez-vous pour candidater à une session de recrutement Biscuits IA.'
+// `candidater` reste accepte : d'anciens liens portent encore cette valeur.
+const messageText = message === 'reserver' || message === 'candidater'
+  ? 'Connectez-vous pour réserver votre place sur une session de recrutement Biscuits IA.'
   : '';
 ---
 
@@ -78,9 +79,13 @@ const messageText = message === 'candidater'
     if (type === undefined) type = 'error';
     msgEl.textContent   = text;
     msgEl.className     = 'auth-msg ' + type;
-    msgEl.style.display = 'block';
+    // `hidden` et non `style.display` : la regle agent-utilisateur du HTML est
+    // `[hidden] { display: none !important }`, et un !important d'agent bat un
+    // style inline. Le message recevait bien son texte et sa classe, mais
+    // restait invisible — une erreur de connexion ne s'affichait jamais.
+    msgEl.hidden = false;
   }
-  function hideMsg() { msgEl.style.display = 'none'; }
+  function hideMsg() { msgEl.hidden = true; }
 
   function setLoading(loading) {
     btn.disabled            = loading;

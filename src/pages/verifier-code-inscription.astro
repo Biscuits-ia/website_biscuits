@@ -69,7 +69,10 @@ const prefilledEmail = (Astro.url.searchParams.get('email') ?? '').trim();
     if (type === undefined) type = 'error';
     msgEl.textContent = text;
     msgEl.className = 'auth-msg ' + type;
-    msgEl.style.display = 'block';
+    // `hidden` et non `style.display` : la regle agent-utilisateur du HTML est
+    // `[hidden] { display: none !important }`, et un !important d'agent bat un
+    // style inline. Le message restait donc invisible malgre son texte.
+    msgEl.hidden = false;
   }
 
   function setLoading(loading) {
@@ -82,7 +85,7 @@ const prefilledEmail = (Astro.url.searchParams.get('email') ?? '').trim();
     const email = emailInput.value.trim().toLowerCase();
     const token = tokenInput.value.trim();
 
-    msgEl.style.display = 'none';
+    msgEl.hidden = true;
 
     if (!email) return showMsg('Veuillez entrer votre adresse email.');
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return showMsg('Adresse email invalide.');

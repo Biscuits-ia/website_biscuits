@@ -296,7 +296,13 @@ export const prerender = true;
     padding-left: 24px;
   }
   li { margin-bottom: 4px; }
-  a { color: var(--color-primary); }
+  /* Souligne : un lien noye dans un paragraphe ne doit pas se distinguer par
+     la seule couleur (WCAG 1.4.1). Le contraste lien/texte etait de 2.26:1,
+     sous le minimum de 3:1 exige quand la couleur est le seul indice. */
+  a {
+    color: var(--color-primary);
+    text-decoration: underline;
+  }
   .legal-table {
     width: 100%;
     border-collapse: collapse;

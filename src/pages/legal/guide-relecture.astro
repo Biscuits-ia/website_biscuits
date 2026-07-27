@@ -411,7 +411,13 @@ WHERE id = 1;</code></pre>
   }
   .sql-block code { color: inherit; background: transparent; }
   code { background: var(--color-bg-alt); padding: 2px 6px; font-family: ui-monospace, monospace; font-size: 0.9em; }
-  a { color: var(--color-primary); }
+  /* Souligne : un lien noye dans un paragraphe ne doit pas se distinguer par
+     la seule couleur (WCAG 1.4.1). Le contraste lien/texte etait de 2.26:1,
+     sous le minimum de 3:1 exige quand la couleur est le seul indice. */
+  a {
+    color: var(--color-primary);
+    text-decoration: underline;
+  }
   .update-footer {
     text-align: center;
     color: var(--color-text-muted);

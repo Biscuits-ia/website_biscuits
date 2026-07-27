@@ -57,6 +57,25 @@ test.describe('Audit de contraste (axe-core)', () => {
       // pas les valeurs statiques. networkidle = tous les CSS charges.
       await page.waitForLoadState('networkidle');
 
+      // Puis attendre la fin des animations d'entree. Le hero fait apparaitre
+      // ses elements en fondu (`opacity-0` + `animate-fadeInUp/Right`, cf.
+      // Hero.astro) : axe mesure la couleur COMPOSITE, donc un texte saisi a
+      // mi-fondu est rapporte comme trop clair alors qu'il est conforme une
+      // fois pose. C'est ainsi que .hero-badge, .hero-subtitle et
+      // .visual-caption remontaient par intermittence.
+      // Les animations infinies (spinners) sont exclues : elles ne finissent
+      // jamais et bloqueraient l'attente.
+      await page.waitForFunction(
+        () =>
+          document.getAnimations().every((a) => {
+            if (a.playState !== 'running') return true;
+            const iterations = a.effect?.getTiming().iterations ?? 1;
+            return iterations === Infinity;
+          }),
+        undefined,
+        { timeout: 10_000 },
+      );
+
       const accessibilityScanResults = await new AxeBuilder({ page })
         // Cible les violations de contraste (color-contrast) qui sont
         // l'objet de l'audit §6. On laisse le reste de l'arbre a11y

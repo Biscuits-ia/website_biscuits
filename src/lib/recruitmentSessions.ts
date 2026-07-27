@@ -45,3 +45,37 @@ export async function countActiveCandidatesBySession(
   }
   return counts;
 }
+
+/** Candidature du compte, s'il en a une. Un compte n'en a jamais plus d'une :
+ *  l'index unique `uniq_recruitment_submission_per_user` le garantit. */
+export interface OwnSubmission {
+  id: string;
+  first_name: string;
+  last_name: string;
+  session_id: string | null;
+}
+
+/**
+ * Lit la candidature du compte — donc sa reservation de session, portee par
+ * `session_id`.
+ *
+ * Client admin ici aussi : la policy `recruitment_own_select` autoriserait bien
+ * cette lecture avec la cle visiteur, mais seulement si l'appelant porte le JWT
+ * du membre. Les appels viennent du rendu serveur et d'une route API, ou l'on
+ * dispose de l'`userId` verifie sans forcement d'un client authentifie sous son
+ * identite. On passe donc par le client admin en filtrant explicitement sur
+ * `user_id` : une seule ligne sort, celle du compte demande.
+ */
+export async function getOwnSubmission(userId: string): Promise<OwnSubmission | null> {
+  const { data, error } = await createSupabaseAdminClient()
+    .from('recruitment_submissions')
+    .select('id, first_name, last_name, session_id')
+    .eq('user_id', userId)
+    .maybeSingle();
+
+  if (error) {
+    console.error('[recruitmentSessions] lecture candidature impossible:', error.message);
+    return null;
+  }
+  return (data as OwnSubmission | null) ?? null;
+}

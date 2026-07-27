@@ -137,8 +137,8 @@ export const POST: APIRoute = async ({ request, cookies, clientAddress }) => {
   if (session_id && !user) {
     return new Response(
       JSON.stringify({
-        message: 'Connectez-vous pour candidater à une session de recrutement. Vous pouvez sinon envoyer une candidature spontanée.',
-        errors: { session_id: ['Compte requis pour choisir une session.'] },
+        message: 'Connectez-vous pour réserver une place sur une session de recrutement. Vous pouvez sinon envoyer une candidature spontanée.',
+        errors: { session_id: ['Compte requis pour réserver une place.'] },
       }),
       { status: 401, headers: { 'Content-Type': 'application/json' } },
     );

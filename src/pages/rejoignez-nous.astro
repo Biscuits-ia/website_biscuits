@@ -21,11 +21,18 @@ const { data: sessionsRaw, error: sessionsError } = await createSupabaseAdminCli
   .order('scheduled_at', { ascending: true });
 
 if (sessionsError) {
-  console.error('[rejoignez-nous] erreur lors du chargement des sessions:', sessionsError.message, sessionsError.details);
+  console.error('[rejoignez-nous] erreur sessions filtrées:', sessionsError.message, sessionsError.details);
 }
-if (import.meta.env.DEV) {
-  console.log('[rejoignez-nous] now:', now, 'user:', user?.id ?? 'anon', 'sessions:', sessionsRaw?.length ?? 0);
+if (allOpenError) {
+  console.error('[rejoignez-nous] erreur sessions open:', allOpenError.message, allOpenError.details);
 }
+console.log(
+  '[rejoignez-nous] diag now=' + now +
+  ' user=' + (user?.id ?? 'anon') +
+  ' openFuture=' + (sessionsRaw?.length ?? 0) +
+  ' openAll=' + (allOpenRaw?.length ?? 0) +
+  ' openAllDates=' + JSON.stringify((allOpenRaw ?? []).map((s) => ({ id: s.id, title: s.title, at: s.scheduled_at }))),
+);
 
 const sessions = sessionsRaw ?? [];
 

@@ -137,8 +137,8 @@ export const POST: APIRoute = async ({ request, cookies, clientAddress }) => {
   if (session_id && !user) {
     return new Response(
       JSON.stringify({
-        message: 'Connectez-vous pour candidater à une session de recrutement. Vous pouvez sinon envoyer une candidature spontanée.',
-        errors: { session_id: ['Compte requis pour choisir une session.'] },
+        message: 'Connectez-vous pour réserver une place sur une session de recrutement. Vous pouvez sinon envoyer une candidature spontanée.',
+        errors: { session_id: ['Compte requis pour réserver une place.'] },
       }),
       { status: 401, headers: { 'Content-Type': 'application/json' } },
     );
@@ -179,9 +179,13 @@ export const POST: APIRoute = async ({ request, cookies, clientAddress }) => {
 
   // 6. Vérifier la session sélectionnée (ouverte et non pleine)
   if (session_id) {
+    // Colonnes listees une par une : cette lecture passe par le client
+    // VISITEUR, dont les droits sont desormais restreints colonne par colonne
+    // (migration 20260727151000). Un `select('*')` demanderait created_by et
+    // partirait en 42501, cassant toute candidature rattachee a une session.
     const { data: session, error: sessionError } = await supabase
       .from('recruitment_sessions')
-      .select('*')
+      .select('id, status, max_candidates')
       .eq('id', session_id)
       .eq('status', 'open')
       .single();

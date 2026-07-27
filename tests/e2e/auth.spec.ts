@@ -58,4 +58,26 @@ test.describe('Authentification', () => {
     const errorMessage = page.locator('#msg, [role="alert"]').first();
     await expect(errorMessage).toBeVisible({ timeout: 5_000 });
   });
+
+  // Tout le tunnel d'auth partageait le meme `<div id="msg" hidden>` pilote par
+  // `style.display`. La regle agent-utilisateur du HTML etant
+  // `[hidden] { display: none !important }`, et un !important d'agent battant un
+  // style inline, AUCUN message d'erreur ne s'affichait nulle part : le texte
+  // etait bien ecrit dans un element reste `display: none`. Ces cas exercent la
+  // validation cote client (champs vides), sans backend ni compte de test.
+  const pagesAvecMessage = [
+    { url: '/inscription', bouton: '#signup-btn' },
+    { url: '/mot-de-passe-oublie', bouton: '#reset-btn' },
+  ];
+
+  for (const { url, bouton } of pagesAvecMessage) {
+    test(`${url} affiche son message de validation`, async ({ page }) => {
+      await page.goto(url);
+      await page.locator(bouton).click();
+
+      const message = page.locator('#msg');
+      await expect(message).toBeVisible({ timeout: 5_000 });
+      await expect(message).not.toBeEmpty();
+    });
+  }
 });

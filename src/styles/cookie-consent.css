@@ -179,7 +179,11 @@ dialog::backdrop {
 .cookie-btn-secondary {
   background: var(--color-secondary);
   font-size: 13px;
-  color: var(--color-text);
+  /* Creme et non `--color-text` : deux bruns l'un sur l'autre (#2c1a14 sur
+     #885627) donnaient 2.69:1, tres en dessous du 4.5:1 exige par WCAG AA.
+     `--color-secondary` a ete assombri pour servir de TEXTE sur fond clair
+     (cf. theme.css), pas de fond pour un texte fonce. En creme : 5.15:1. */
+  color: var(--color-bg);
   border-color: var(--color-border);
   transition: all var(--transition-fast);
 }

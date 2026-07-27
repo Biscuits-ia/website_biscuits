@@ -8,11 +8,17 @@ import Layout from '@/layouts/Layout.astro';
 import Breadcrumb from '@/components/Breadcrumb.astro';
 import RecruitmentForm from '@/components/Recruitmentform.astro';
 import { createSupabaseClient, createSupabaseAdminClient } from '@/lib/supabase';
-import { PUBLIC_SESSION_COLUMNS, countActiveCandidatesBySession, getOwnSubmission } from '@/lib/recruitmentSessions';
+import {
+  PUBLIC_SESSION_COLUMNS,
+  countActiveCandidatesBySession,
+  getOwnSubmission,
+} from '@/lib/recruitmentSessions';
 import { formatDateTimeLong } from '@/lib/dateHelpers';
 
 const supabase = Astro.locals.supabase ?? createSupabaseClient(Astro);
-const { data: { user } } = await supabase.auth.getUser();
+const {
+  data: { user },
+} = await supabase.auth.getUser();
 
 const now = new Date().toISOString();
 const { data: sessionsRaw, error: sessionsError } = await createSupabaseAdminClient()
@@ -23,13 +29,23 @@ const { data: sessionsRaw, error: sessionsError } = await createSupabaseAdminCli
   .order('scheduled_at', { ascending: true });
 
 if (sessionsError) {
-  console.error('[rejoignez-nous] erreur sessions filtrées:', sessionsError.message, sessionsError.details);
+  console.error(
+    '[rejoignez-nous] erreur sessions filtrées:',
+    sessionsError.message,
+    sessionsError.details
+  );
 }
 console.log(
-  '[rejoignez-nous] diag now=' + now +
-  ' user=' + (user?.id ?? 'anon') +
-  ' openFuture=' + (sessionsRaw?.length ?? 0) +
-  ' openDates=' + JSON.stringify((sessionsRaw ?? []).map((s) => ({ id: s.id, title: s.title, at: s.scheduled_at }))),
+  '[rejoignez-nous] diag now=' +
+    now +
+    ' user=' +
+    (user?.id ?? 'anon') +
+    ' openFuture=' +
+    (sessionsRaw?.length ?? 0) +
+    ' openDates=' +
+    JSON.stringify(
+      (sessionsRaw ?? []).map((s) => ({ id: s.id, title: s.title, at: s.scheduled_at }))
+    )
 );
 
 const sessions = sessionsRaw ?? [];
@@ -62,7 +78,8 @@ const schema = {
   type: 'WebPage' as const,
   data: {
     name: 'Rejoindre Biscuits IA - Devenir bénévole',
-    description: 'Rejoignez Biscuits IA en bénévole : réservez votre place sur une session de recrutement collective, ou envoyez une candidature spontanée.',
+    description:
+      'Rejoignez Biscuits IA en bénévole : réservez votre place sur une session de recrutement collective, ou envoyez une candidature spontanée.',
   },
 };
 ---
@@ -85,7 +102,12 @@ const schema = {
       </p>
       <div class="hero-cta">
         <a href="#sessions" class="btn-primary">Voir les sessions</a>
-        <a href="https://www.jeveuxaider.gouv.fr/organisations/34315-biscuits-ia" target="_blank" rel="noopener noreferrer" class="btn-ghost">
+        <a
+          href="https://www.jeveuxaider.gouv.fr/organisations/34315-biscuits-ia"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="btn-ghost"
+        >
           Voir sur jeveuxaider.gouv
         </a>
       </div>
@@ -98,15 +120,22 @@ const schema = {
       <div class="why-grid">
         <article class="why-card">
           <h3>Une mission concrète</h3>
-          <p>Votre temps sert directement des projets à impact social : sensibilisation, outils libres, recherche utile.</p>
+          <p>
+            Votre temps sert directement des projets à impact social : sensibilisation, outils
+            libres, recherche utile.
+          </p>
         </article>
         <article class="why-card">
           <h3>Du temps, pas des contraintes</h3>
-          <p>Quelques heures par mois ou un engagement plus régulier : chaque contribution compte.</p>
+          <p>
+            Quelques heures par mois ou un engagement plus régulier : chaque contribution compte.
+          </p>
         </article>
         <article class="why-card">
           <h3>Apprendre en faisant</h3>
-          <p>IA, cybersécurité, design, recherche... Rejoignez une équipe curieuse et bienveillante.</p>
+          <p>
+            IA, cybersécurité, design, recherche... Rejoignez une équipe curieuse et bienveillante.
+          </p>
         </article>
       </div>
     </div>
@@ -121,82 +150,101 @@ const schema = {
   >
     <div class="container">
       <h2>Sessions de recrutement</h2>
-      {hasSessions ? (
-        <>
-          <p class="recruit-sessions__intro">
-            Réservez votre place sur une session collective. Nous vous présenterons l'association, nos besoins et répondrons à vos questions.
-          </p>
-          <p class="recruit-sessions__error" id="reserve-error" role="alert" hidden></p>
-          <ul class="recruit-sessions__list">
-            {sessionsWithPlaces.map((s) => {
-              const reservedHere = reservedSessionId === s.id;
-              const full = s.remaining === 0 && !reservedHere;
-              return (
-                <li class={`recruit-sessions__card ${full ? 'recruit-sessions__card--full' : ''} ${reservedHere ? 'recruit-sessions__card--mine' : ''}`} data-session-id={s.id}>
-                  <div class="recruit-sessions__main">
-                    <div class="recruit-sessions__title">{s.title}</div>
-                    <div class="recruit-sessions__meta">
-                      {/* Heure de Paris : cette page est rendue serveur (Vercel = UTC). */}
-                      {formatDateTimeLong(s.scheduled_at)}
-                      {' · '}{s.duration_minutes ?? 90} min
-                      {s.location && ` · ${s.location}`}
+      {
+        hasSessions ? (
+          <>
+            <p class="recruit-sessions__intro">
+              Réservez votre place sur une session collective. Nous vous présenterons l'association,
+              nos besoins et répondrons à vos questions.
+            </p>
+            <p class="recruit-sessions__error" id="reserve-error" role="alert" hidden />
+            <ul class="recruit-sessions__list">
+              {sessionsWithPlaces.map((s) => {
+                const reservedHere = reservedSessionId === s.id;
+                const full = s.remaining === 0 && !reservedHere;
+                return (
+                  <li
+                    class={`recruit-sessions__card ${full ? 'recruit-sessions__card--full' : ''} ${reservedHere ? 'recruit-sessions__card--mine' : ''}`}
+                    data-session-id={s.id}
+                  >
+                    <div class="recruit-sessions__main">
+                      <div class="recruit-sessions__title">{s.title}</div>
+                      <div class="recruit-sessions__meta">
+                        {/* Heure de Paris : cette page est rendue serveur (Vercel = UTC). */}
+                        {formatDateTimeLong(s.scheduled_at)}
+                        {' · '}
+                        {s.duration_minutes ?? 90} min
+                        {s.location && ` · ${s.location}`}
+                      </div>
+                      {s.description && <p class="recruit-sessions__desc">{s.description}</p>}
                     </div>
-                    {s.description && <p class="recruit-sessions__desc">{s.description}</p>}
-                  </div>
-                  <div class="recruit-sessions__actions">
-                    <span class={`recruit-sessions__badge ${full ? 'recruit-sessions__badge--full' : ''} ${reservedHere ? 'recruit-sessions__badge--mine' : ''}`}>
-                      {reservedHere
-                        ? '✅ Place réservée'
-                        : full
-                          ? 'Complet'
-                          : `${s.remaining} place${s.remaining > 1 ? 's' : ''}`}
-                    </span>
-                    {reservedHere ? (
-                      <button type="button" class="btn-ghost btn-sm js-cancel">
-                        Annuler ma réservation
-                      </button>
-                    ) : (
-                      <button
-                        type="button"
-                        class="btn-primary btn-sm js-reserve"
-                        data-session-id={s.id}
-                        data-session-title={s.title}
-                        disabled={full}
+                    <div class="recruit-sessions__actions">
+                      <span
+                        class={`recruit-sessions__badge ${full ? 'recruit-sessions__badge--full' : ''} ${reservedHere ? 'recruit-sessions__badge--mine' : ''}`}
                       >
-                        {full ? 'Complet' : 'Réserver ma place'}
-                      </button>
-                    )}
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
-        </>
-      ) : (
-        <p class="recruit-sessions__empty">
-          Aucune session de recrutement n'est ouverte pour le moment. Vous pouvez tout de même nous envoyer une candidature spontanée ci-dessous.
-        </p>
-      )}
+                        {reservedHere
+                          ? '✅ Place réservée'
+                          : full
+                            ? 'Complet'
+                            : `${s.remaining} place${s.remaining > 1 ? 's' : ''}`}
+                      </span>
+                      {reservedHere ? (
+                        <button type="button" class="btn-ghost btn-sm js-cancel">
+                          Annuler ma réservation
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          class="btn-primary btn-sm js-reserve"
+                          data-session-id={s.id}
+                          data-session-title={s.title}
+                          disabled={full}
+                        >
+                          {full ? 'Complet' : 'Réserver ma place'}
+                        </button>
+                      )}
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          </>
+        ) : (
+          <p class="recruit-sessions__empty">
+            Aucune session de recrutement n'est ouverte pour le moment. Vous pouvez tout de même
+            nous envoyer une candidature spontanée ci-dessous.
+          </p>
+        )
+      }
     </div>
   </section>
 
   <section class="recruit-form" id="formulaire">
     <div class="container">
-      {!user && (
-        <div class="recruit-form__notice" role="note">
-          💡 <strong>Vous n'êtes pas connecté.</strong>
-          <a href="/connexion?redirect=/rejoignez-nous&message=reserver">Connectez-vous</a> pour réserver une place sur une session.
-          Sans compte, vous pouvez envoyer une candidature spontanée ci-dessous.
-        </div>
-      )}
-      {user && (
-        <div class="recruit-form__notice recruit-form__notice--ok" role="note">
-          ✅ Réservez votre place sur une session ci-dessus, ou envoyez une candidature spontanée.
-        </div>
-      )}
+      {
+        !user && (
+          <div class="recruit-form__notice" role="note">
+            💡 <strong>Vous n'êtes pas connecté.</strong>
+            <a href="/connexion?redirect=/rejoignez-nous&message=reserver">Connectez-vous</a> pour
+            réserver une place sur une session. Sans compte, vous pouvez envoyer une candidature
+            spontanée ci-dessous.
+          </div>
+        )
+      }
+      {
+        user && (
+          <div class="recruit-form__notice recruit-form__notice--ok" role="note">
+            ✅ Réservez votre place sur une session ci-dessus, ou envoyez une candidature spontanée.
+          </div>
+        )
+      }
       <h2>Candidature spontanée</h2>
       <div id="recruitment-form-root">
-        <RecruitmentForm idPrefix="page" isAuthenticated={Boolean(user)} accountEmail={user?.email ?? undefined} />
+        <RecruitmentForm
+          idPrefix="page"
+          isAuthenticated={Boolean(user)}
+          accountEmail={user?.email ?? undefined}
+        />
       </div>
     </div>
   </section>
@@ -207,7 +255,10 @@ const schema = {
       <dl class="faq-list">
         <div class="faq-item">
           <dt>Qui peut candidater ?</dt>
-          <dd>Tout le monde : étudiants, professionnels, retraités, curieux. L'envie d'aider compte plus que le CV.</dd>
+          <dd>
+            Tout le monde : étudiants, professionnels, retraités, curieux. L'envie d'aider compte
+            plus que le CV.
+          </dd>
         </div>
         <div class="faq-item">
           <dt>Combien de temps ça prend ?</dt>
@@ -215,29 +266,51 @@ const schema = {
         </div>
         <div class="faq-item">
           <dt>Dois-je avoir des compétences techniques ?</dt>
-          <dd>Non. Nous avons besoin de profils variés : communication, animation, recherche, dev, design, etc.</dd>
+          <dd>
+            Non. Nous avons besoin de profils variés : communication, animation, recherche, dev,
+            design, etc.
+          </dd>
         </div>
       </dl>
     </div>
   </section>
 
-  {/* Ouverte uniquement quand le serveur repond `needs_name` : ni le profil ni
-      une candidature anterieure ne donnent de nom a inscrire sur la liste. */}
+  {
+    /* Ouverte uniquement quand le serveur repond `needs_name` : ni le profil ni
+      une candidature anterieure ne donnent de nom a inscrire sur la liste. */
+  }
   <dialog id="name-modal" class="apply-modal">
     <div class="apply-modal__card apply-modal__card--compact">
       <button type="button" class="apply-modal__close js-modal-close" aria-label="Fermer">×</button>
       <h2 class="apply-modal__title">Comment vous appelez-vous ?</h2>
       <p class="apply-modal__session">
-        Votre nom figurera sur la liste des présents. Nous l'enregistrons dans votre profil : vous ne le saisirez qu'une fois.
+        Votre nom figurera sur la liste des présents. Nous l'enregistrons dans votre profil : vous
+        ne le saisirez qu'une fois.
       </p>
       <form id="name-form" class="name-form" novalidate>
         <div class="name-form__row">
           <label class="name-form__label" for="reserve-first-name">Prénom</label>
-          <input id="reserve-first-name" name="first_name" class="name-form__input" type="text" maxlength="100" autocomplete="given-name" required />
+          <input
+            id="reserve-first-name"
+            name="first_name"
+            class="name-form__input"
+            type="text"
+            maxlength="100"
+            autocomplete="given-name"
+            required
+          />
         </div>
         <div class="name-form__row">
           <label class="name-form__label" for="reserve-last-name">Nom</label>
-          <input id="reserve-last-name" name="last_name" class="name-form__input" type="text" maxlength="100" autocomplete="family-name" required />
+          <input
+            id="reserve-last-name"
+            name="last_name"
+            class="name-form__input"
+            type="text"
+            maxlength="100"
+            autocomplete="family-name"
+            required
+          />
         </div>
         <p class="name-form__error" id="name-form-error" role="alert" hidden></p>
         <button type="submit" class="btn-primary">Réserver ma place</button>
@@ -253,7 +326,8 @@ const schema = {
   const sessionsSection = document.getElementById('sessions');
   const isAuthenticated = sessionsSection && sessionsSection.dataset.authenticated === 'true';
   const reservedSessionId = (sessionsSection && sessionsSection.dataset.reservedSessionId) || '';
-  const reservedSessionTitle = (sessionsSection && sessionsSection.dataset.reservedSessionTitle) || '';
+  const reservedSessionTitle =
+    (sessionsSection && sessionsSection.dataset.reservedSessionTitle) || '';
 
   const errorBox = document.getElementById('reserve-error');
   const nameModal = document.getElementById('name-modal');
@@ -297,7 +371,10 @@ const schema = {
       const payload = await res.json().catch(() => ({}));
       return { ok: res.ok, payload: payload };
     } catch {
-      return { ok: false, payload: { message: 'Un problème est survenu. Vérifiez votre connexion internet.' } };
+      return {
+        ok: false,
+        payload: { message: 'Un problème est survenu. Vérifiez votre connexion internet.' },
+      };
     }
   }
 
@@ -329,10 +406,16 @@ const schema = {
       // Une place par compte : reserver ailleurs deplace la reservation. On le
       // dit avant, la place precedente etant rendue sans retour possible.
       if (reservedSessionId && reservedSessionId !== sessionId) {
-        const from = reservedSessionTitle ? '« ' + reservedSessionTitle + ' »' : 'une autre session';
+        const from = reservedSessionTitle
+          ? '« ' + reservedSessionTitle + ' »'
+          : 'une autre session';
         const confirmed = window.confirm(
-          'Vous avez déjà réservé ' + from + '. Passer à « ' + sessionTitle + ' » ? '
-          + 'Votre place précédente sera libérée.',
+          'Vous avez déjà réservé ' +
+            from +
+            '. Passer à « ' +
+            sessionTitle +
+            ' » ? ' +
+            'Votre place précédente sera libérée.'
         );
         if (!confirmed) return;
       }
@@ -356,7 +439,10 @@ const schema = {
           return;
         }
 
-        showError(errorBox, (result.payload && result.payload.message) || 'La réservation a échoué. Réessayez.');
+        showError(
+          errorBox,
+          (result.payload && result.payload.message) || 'La réservation a échoué. Réessayez.'
+        );
       });
     });
   });
@@ -365,7 +451,9 @@ const schema = {
     btn.addEventListener('click', () => {
       clearError(errorBox);
 
-      if (!window.confirm('Annuler votre réservation ? Votre place sera rendue aux autres candidats.')) {
+      if (
+        !window.confirm('Annuler votre réservation ? Votre place sera rendue aux autres candidats.')
+      ) {
         return;
       }
 
@@ -403,7 +491,10 @@ const schema = {
     const submitBtn = nameForm.querySelector('button[type="submit"]');
     if (submitBtn) submitBtn.disabled = true;
 
-    const result = await callReserve(pendingSessionId, { first_name: firstName, last_name: lastName });
+    const result = await callReserve(pendingSessionId, {
+      first_name: firstName,
+      last_name: lastName,
+    });
 
     if (result.ok) {
       window.location.reload();
@@ -411,7 +502,10 @@ const schema = {
     }
 
     if (submitBtn) submitBtn.disabled = false;
-    showError(nameError, (result.payload && result.payload.message) || 'La réservation a échoué. Réessayez.');
+    showError(
+      nameError,
+      (result.payload && result.payload.message) || 'La réservation a échoué. Réessayez.'
+    );
   });
 
   document.querySelector('.js-modal-close')?.addEventListener('click', () => {
@@ -702,10 +796,6 @@ const schema = {
     font-size: 0.9rem;
   }
 
-  .apply-modal__card--compact {
-    width: min(440px, 94vw);
-  }
-
   .recruit-form {
     padding: 4rem 1.5rem;
     background: var(--color-bg-alt);
@@ -785,6 +875,10 @@ const schema = {
     background: var(--color-bg);
     padding: 2rem;
     position: relative;
+  }
+
+  .apply-modal__card--compact {
+    width: min(440px, 94vw);
   }
 
   .apply-modal__close {

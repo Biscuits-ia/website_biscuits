@@ -1,92 +1,25 @@
 ---
 // src/pages/rejoignez-nous.astro
-// Page dédiée au recrutement bénévole. Deux gestes distincts : réserver sa place
-// sur une session ouverte (1 clic, compte requis, cf. /api/recruitment/reserve),
-// ou envoyer une candidature spontanée via le formulaire du bas.
+// Page éditoriale de présentation du bénévolat. La prise de contact passe par
+// /contact : les sessions de recrutement et les candidatures en ligne ont été
+// retirées avec les modules correspondants.
 
 import Layout from '@/layouts/Layout.astro';
 import Breadcrumb from '@/components/Breadcrumb.astro';
-import RecruitmentForm from '@/components/Recruitmentform.astro';
-import { createSupabaseClient, createSupabaseAdminClient } from '@/lib/supabase';
-import {
-  PUBLIC_SESSION_COLUMNS,
-  countActiveCandidatesBySession,
-  getOwnSubmission,
-} from '@/lib/recruitmentSessions';
-import { formatDateTimeLong } from '@/lib/dateHelpers';
-
-const supabase = Astro.locals.supabase ?? createSupabaseClient(Astro);
-const {
-  data: { user },
-} = await supabase.auth.getUser();
-
-const now = new Date().toISOString();
-const { data: sessionsRaw, error: sessionsError } = await createSupabaseAdminClient()
-  .from('recruitment_sessions')
-  .select(PUBLIC_SESSION_COLUMNS)
-  .eq('status', 'open')
-  .gt('scheduled_at', now)
-  .order('scheduled_at', { ascending: true });
-
-if (sessionsError) {
-  console.error(
-    '[rejoignez-nous] erreur sessions filtrées:',
-    sessionsError.message,
-    sessionsError.details
-  );
-}
-console.log(
-  '[rejoignez-nous] diag now=' +
-    now +
-    ' user=' +
-    (user?.id ?? 'anon') +
-    ' openFuture=' +
-    (sessionsRaw?.length ?? 0) +
-    ' openDates=' +
-    JSON.stringify(
-      (sessionsRaw ?? []).map((s) => ({ id: s.id, title: s.title, at: s.scheduled_at }))
-    )
-);
-
-const sessions = sessionsRaw ?? [];
-
-// Comptage via le client admin : RLS interdit la lecture des candidatures au
-// visiteur, la requete renvoyait 0 ligne et toutes les sessions paraissaient
-// disponibles (badge "Complet" jamais affiche, bouton jamais desactive).
-const sessionCounts = await countActiveCandidatesBySession(sessions.map((s) => s.id));
-
-const sessionsWithPlaces = sessions.map((s) => {
-  const count = sessionCounts[s.id] ?? 0;
-  const remaining = Math.max(0, (s.max_candidates ?? 0) - count);
-  return { ...s, remaining };
-});
-
-const hasSessions = sessionsWithPlaces.length > 0;
-
-// Reservation du membre. Un compte n'a jamais qu'une candidature, donc au plus
-// une place : c'est `session_id` qui la porte. L'etat des boutons se deduit
-// entierement d'ici, cote serveur — le client n'a aucune verite a maintenir.
-const reservation = user ? await getOwnSubmission(user.id) : null;
-const reservedSessionId = reservation?.session_id ?? null;
-// Titre de la session deja reservee, pour la confirmation avant deplacement.
-// Absent si cette session n'est plus listee (passee ou fermee) : le script
-// retombe alors sur une formulation generique.
-const reservedSessionTitle =
-  sessionsWithPlaces.find((s) => s.id === reservedSessionId)?.title ?? '';
 
 const schema = {
   type: 'WebPage' as const,
   data: {
     name: 'Rejoindre Biscuits IA - Devenir bénévole',
     description:
-      'Rejoignez Biscuits IA en bénévole : réservez votre place sur une session de recrutement collective, ou envoyez une candidature spontanée.',
+      'Rejoignez Biscuits IA en bénévole : découvrez nos missions et contactez-nous pour vous engager.',
   },
 };
 ---
 
 <Layout
   title="Rejoindre Biscuits IA | Devenir bénévole"
-  description="Rejoignez Biscuits IA en bénévole : réservez votre place sur une session de recrutement collective en un clic, mission d'interet general."
+  description="Rejoignez Biscuits IA en bénévole : mission d'interet general autour de l'IA, de la cybersecurite et des logiciels libres."
   schema={schema}
 >
   <Breadcrumb />
@@ -101,7 +34,7 @@ const schema = {
         logiciels libres, Anti Pepins et recherche participative.
       </p>
       <div class="hero-cta">
-        <a href="#sessions" class="btn-primary">Voir les sessions</a>
+        <a href="/contact" class="btn-primary">Nous contacter</a>
         <a
           href="https://www.jeveuxaider.gouv.fr/organisations/34315-biscuits-ia"
           target="_blank"
@@ -141,128 +74,23 @@ const schema = {
     </div>
   </section>
 
-  <section
-    class="recruit-sessions"
-    id="sessions"
-    data-authenticated={user ? 'true' : 'false'}
-    data-reserved-session-id={reservedSessionId ?? ''}
-    data-reserved-session-title={reservedSessionTitle}
-  >
-    <div class="container">
-      <h2>Sessions de recrutement</h2>
-      {
-        hasSessions ? (
-          <>
-            <p class="recruit-sessions__intro">
-              Réservez votre place sur une session collective. Nous vous présenterons l'association,
-              nos besoins et répondrons à vos questions.
-            </p>
-            <p class="recruit-sessions__error" id="reserve-error" role="alert" hidden />
-            <ul class="recruit-sessions__list">
-              {sessionsWithPlaces.map((s) => {
-                const reservedHere = reservedSessionId === s.id;
-                const full = s.remaining === 0 && !reservedHere;
-                return (
-                  <li
-                    class={`recruit-sessions__card ${full ? 'recruit-sessions__card--full' : ''} ${reservedHere ? 'recruit-sessions__card--mine' : ''}`}
-                    data-session-id={s.id}
-                  >
-                    <div class="recruit-sessions__main">
-                      <div class="recruit-sessions__title">{s.title}</div>
-                      <div class="recruit-sessions__meta">
-                        {/* Heure de Paris : cette page est rendue serveur (Vercel = UTC). */}
-                        {formatDateTimeLong(s.scheduled_at)}
-                        {' · '}
-                        {s.duration_minutes ?? 90} min
-                        {s.location && ` · ${s.location}`}
-                      </div>
-                      {s.description && <p class="recruit-sessions__desc">{s.description}</p>}
-                    </div>
-                    <div class="recruit-sessions__actions">
-                      <span
-                        class={`recruit-sessions__badge ${full ? 'recruit-sessions__badge--full' : ''} ${reservedHere ? 'recruit-sessions__badge--mine' : ''}`}
-                      >
-                        {reservedHere
-                          ? '✅ Place réservée'
-                          : full
-                            ? 'Complet'
-                            : `${s.remaining} place${s.remaining > 1 ? 's' : ''}`}
-                      </span>
-                      {reservedHere ? (
-                        <button type="button" class="btn-ghost btn-sm js-cancel">
-                          Annuler ma réservation
-                        </button>
-                      ) : (
-                        <button
-                          type="button"
-                          class="btn-primary btn-sm js-reserve"
-                          data-session-id={s.id}
-                          data-session-title={s.title}
-                          disabled={full}
-                        >
-                          {full ? 'Complet' : 'Réserver ma place'}
-                        </button>
-                      )}
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
-          </>
-        ) : (
-          <p class="recruit-sessions__empty">
-            Aucune session de recrutement n'est ouverte pour le moment. Vous pouvez tout de même
-            nous envoyer une candidature spontanée ci-dessous.
-          </p>
-        )
-      }
-    </div>
-  </section>
-
-  <section class="recruit-form" id="formulaire">
-    <div class="container">
-      {
-        !user && (
-          <div class="recruit-form__notice" role="note">
-            💡 <strong>Vous n'êtes pas connecté.</strong>
-            <a href="/connexion?redirect=/rejoignez-nous&message=reserver">Connectez-vous</a> pour
-            réserver une place sur une session. Sans compte, vous pouvez envoyer une candidature
-            spontanée ci-dessous.
-          </div>
-        )
-      }
-      {
-        user && (
-          <div class="recruit-form__notice recruit-form__notice--ok" role="note">
-            ✅ Réservez votre place sur une session ci-dessus, ou envoyez une candidature spontanée.
-          </div>
-        )
-      }
-      <h2>Candidature spontanée</h2>
-      <div id="recruitment-form-root">
-        <RecruitmentForm
-          idPrefix="page"
-          isAuthenticated={Boolean(user)}
-          accountEmail={user?.email ?? undefined}
-        />
-      </div>
-    </div>
-  </section>
-
   <section class="recruit-faq">
     <div class="container">
       <h2>Questions fréquentes</h2>
       <dl class="faq-list">
         <div class="faq-item">
-          <dt>Qui peut candidater ?</dt>
+          <dt>Qui peut nous rejoindre ?</dt>
           <dd>
             Tout le monde : étudiants, professionnels, retraités, curieux. L'envie d'aider compte
             plus que le CV.
           </dd>
         </div>
         <div class="faq-item">
-          <dt>Combien de temps ça prend ?</dt>
-          <dd>Une session dure environ 90 minutes. Ensuite, l'engagement est à votre rythme.</dd>
+          <dt>Comment se passe le premier contact ?</dt>
+          <dd>
+            Écrivez-nous via le formulaire de contact. Nous revenons vers vous pour échanger sur vos
+            envies et nos besoins du moment.
+          </dd>
         </div>
         <div class="faq-item">
           <dt>Dois-je avoir des compétences techniques ?</dt>
@@ -274,250 +102,7 @@ const schema = {
       </dl>
     </div>
   </section>
-
-  {
-    /* Ouverte uniquement quand le serveur repond `needs_name` : ni le profil ni
-      une candidature anterieure ne donnent de nom a inscrire sur la liste. */
-  }
-  <dialog id="name-modal" class="apply-modal">
-    <div class="apply-modal__card apply-modal__card--compact">
-      <button type="button" class="apply-modal__close js-modal-close" aria-label="Fermer">×</button>
-      <h2 class="apply-modal__title">Comment vous appelez-vous ?</h2>
-      <p class="apply-modal__session">
-        Votre nom figurera sur la liste des présents. Nous l'enregistrons dans votre profil : vous
-        ne le saisirez qu'une fois.
-      </p>
-      <form id="name-form" class="name-form" novalidate>
-        <div class="name-form__row">
-          <label class="name-form__label" for="reserve-first-name">Prénom</label>
-          <input
-            id="reserve-first-name"
-            name="first_name"
-            class="name-form__input"
-            type="text"
-            maxlength="100"
-            autocomplete="given-name"
-            required
-          />
-        </div>
-        <div class="name-form__row">
-          <label class="name-form__label" for="reserve-last-name">Nom</label>
-          <input
-            id="reserve-last-name"
-            name="last_name"
-            class="name-form__input"
-            type="text"
-            maxlength="100"
-            autocomplete="family-name"
-            required
-          />
-        </div>
-        <p class="name-form__error" id="name-form-error" role="alert" hidden></p>
-        <button type="submit" class="btn-primary">Réserver ma place</button>
-      </form>
-    </div>
-  </dialog>
 </Layout>
-
-<script nonce={Astro.locals.nonce}>
-  // Reservation d'une place. Toute reussite se termine par un rechargement :
-  // l'etat des cartes est calcule cote serveur (places restantes, place du
-  // membre), le dupliquer ici creerait une seconde verite qui divergerait.
-  const sessionsSection = document.getElementById('sessions');
-  const isAuthenticated = sessionsSection && sessionsSection.dataset.authenticated === 'true';
-  const reservedSessionId = (sessionsSection && sessionsSection.dataset.reservedSessionId) || '';
-  const reservedSessionTitle =
-    (sessionsSection && sessionsSection.dataset.reservedSessionTitle) || '';
-
-  const errorBox = document.getElementById('reserve-error');
-  const nameModal = document.getElementById('name-modal');
-  const nameForm = document.getElementById('name-form');
-  const nameError = document.getElementById('name-form-error');
-  const firstNameInput = document.getElementById('reserve-first-name');
-  const lastNameInput = document.getElementById('reserve-last-name');
-
-  const AUTH_REDIRECT = '/connexion?redirect=/rejoignez-nous&message=reserver';
-
-  // Session visee quand la modale de nom s'ouvre, rejouee a la soumission.
-  let pendingSessionId = '';
-
-  function showError(el, message) {
-    if (!el) return;
-    el.textContent = message;
-    el.hidden = false;
-  }
-
-  function clearError(el) {
-    if (!el) return;
-    el.textContent = '';
-    el.hidden = true;
-  }
-
-  /** POST /api/recruitment/reserve. `name` n'est envoye que si le serveur l'a
-   *  reclame : dans le cas normal il le connait deja. */
-  async function callReserve(sessionId, name) {
-    const body = { session_id: sessionId };
-    if (name) {
-      body.first_name = name.first_name;
-      body.last_name = name.last_name;
-    }
-
-    try {
-      const res = await fetch('/api/recruitment/reserve', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-        body: JSON.stringify(body),
-      });
-      const payload = await res.json().catch(() => ({}));
-      return { ok: res.ok, payload: payload };
-    } catch {
-      return {
-        ok: false,
-        payload: { message: 'Un problème est survenu. Vérifiez votre connexion internet.' },
-      };
-    }
-  }
-
-  function withBusyButton(btn, busyLabel, task) {
-    const previous = btn.textContent;
-    btn.disabled = true;
-    btn.textContent = busyLabel;
-    return task().finally(() => {
-      btn.disabled = false;
-      btn.textContent = previous;
-    });
-  }
-
-  document.querySelectorAll('.js-reserve').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      clearError(errorBox);
-
-      // Le serveur repondrait 401 de toute facon ; on evite au visiteur un
-      // aller-retour pour apprendre qu'il lui faut un compte.
-      if (!isAuthenticated) {
-        window.location.href = AUTH_REDIRECT;
-        return;
-      }
-
-      const sessionId = btn.getAttribute('data-session-id');
-      const sessionTitle = btn.getAttribute('data-session-title') || 'cette session';
-      if (!sessionId) return;
-
-      // Une place par compte : reserver ailleurs deplace la reservation. On le
-      // dit avant, la place precedente etant rendue sans retour possible.
-      if (reservedSessionId && reservedSessionId !== sessionId) {
-        const from = reservedSessionTitle
-          ? '« ' + reservedSessionTitle + ' »'
-          : 'une autre session';
-        const confirmed = window.confirm(
-          'Vous avez déjà réservé ' +
-            from +
-            '. Passer à « ' +
-            sessionTitle +
-            ' » ? ' +
-            'Votre place précédente sera libérée.'
-        );
-        if (!confirmed) return;
-      }
-
-      withBusyButton(btn, 'Réservation…', async () => {
-        const result = await callReserve(sessionId, null);
-
-        if (result.ok) {
-          window.location.reload();
-          return;
-        }
-
-        // Ni profil ni candidature anterieure ne donnent de nom : on le demande
-        // une fois, puis on rejoue la meme reservation.
-        if (result.payload && result.payload.needs_name) {
-          pendingSessionId = sessionId;
-          clearError(nameError);
-          if (nameForm) nameForm.reset();
-          if (nameModal instanceof HTMLDialogElement) nameModal.showModal();
-          if (firstNameInput) firstNameInput.focus();
-          return;
-        }
-
-        showError(
-          errorBox,
-          (result.payload && result.payload.message) || 'La réservation a échoué. Réessayez.'
-        );
-      });
-    });
-  });
-
-  document.querySelectorAll('.js-cancel').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      clearError(errorBox);
-
-      if (
-        !window.confirm('Annuler votre réservation ? Votre place sera rendue aux autres candidats.')
-      ) {
-        return;
-      }
-
-      withBusyButton(btn, 'Annulation…', async () => {
-        try {
-          const res = await fetch('/api/recruitment/reserve', {
-            method: 'DELETE',
-            headers: { Accept: 'application/json' },
-          });
-          if (res.ok) {
-            window.location.reload();
-            return;
-          }
-          const payload = await res.json().catch(() => ({}));
-          showError(errorBox, payload.message || "L'annulation a échoué. Réessayez.");
-        } catch {
-          showError(errorBox, 'Un problème est survenu. Vérifiez votre connexion internet.');
-        }
-      });
-    });
-  });
-
-  nameForm?.addEventListener('submit', async (event) => {
-    event.preventDefault();
-    clearError(nameError);
-
-    const firstName = firstNameInput ? firstNameInput.value.trim() : '';
-    const lastName = lastNameInput ? lastNameInput.value.trim() : '';
-
-    if (!firstName || !lastName) {
-      showError(nameError, 'Prénom et nom sont obligatoires.');
-      return;
-    }
-
-    const submitBtn = nameForm.querySelector('button[type="submit"]');
-    if (submitBtn) submitBtn.disabled = true;
-
-    const result = await callReserve(pendingSessionId, {
-      first_name: firstName,
-      last_name: lastName,
-    });
-
-    if (result.ok) {
-      window.location.reload();
-      return;
-    }
-
-    if (submitBtn) submitBtn.disabled = false;
-    showError(
-      nameError,
-      (result.payload && result.payload.message) || 'La réservation a échoué. Réessayez.'
-    );
-  });
-
-  document.querySelector('.js-modal-close')?.addEventListener('click', () => {
-    if (nameModal instanceof HTMLDialogElement) nameModal.close();
-  });
-
-  nameModal?.addEventListener('click', (e) => {
-    if (e.target === nameModal && nameModal instanceof HTMLDialogElement) {
-      nameModal.close();
-    }
-  });
-</script>
 
 <style>
   .recruit-hero {
@@ -579,16 +164,6 @@ const schema = {
     box-shadow: 4px 4px 0 var(--color-border);
   }
 
-  .btn-primary:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
-
-  .btn-sm {
-    padding: 0.55rem 1rem;
-    font-size: 0.85rem;
-  }
-
   .btn-ghost {
     display: inline-flex;
     align-items: center;
@@ -611,16 +186,12 @@ const schema = {
   }
 
   .recruit-why .container,
-  .recruit-sessions .container,
-  .recruit-form .container,
   .recruit-faq .container {
     max-width: 900px;
     margin: 0 auto;
   }
 
   .recruit-why h2,
-  .recruit-sessions h2,
-  .recruit-form h2,
   .recruit-faq h2 {
     font-size: clamp(1.5rem, 3vw, 2rem);
     text-align: center;
@@ -653,179 +224,6 @@ const schema = {
     margin: 0;
   }
 
-  .recruit-sessions {
-    padding: 4rem 1.5rem;
-    background: var(--color-bg);
-  }
-
-  .recruit-sessions__intro {
-    text-align: center;
-    color: var(--color-text-light);
-    line-height: 1.6;
-    margin: 0 0 2rem;
-  }
-
-  .recruit-sessions__empty {
-    text-align: center;
-    color: var(--color-text-light);
-    line-height: 1.6;
-    margin: 0;
-  }
-
-  .recruit-sessions__list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-  }
-
-  .recruit-sessions__card {
-    display: flex;
-    align-items: flex-start;
-    gap: 1rem;
-    justify-content: space-between;
-    padding: 1.25rem;
-    background: var(--color-bg-alt);
-    border: 2px solid var(--color-border);
-  }
-
-  .recruit-sessions__card--full {
-    opacity: 0.7;
-  }
-
-  .recruit-sessions__main {
-    display: flex;
-    flex-direction: column;
-    gap: 0.35rem;
-  }
-
-  .recruit-sessions__title {
-    font-weight: 800;
-    font-size: 1.1rem;
-    color: var(--color-text);
-  }
-
-  .recruit-sessions__meta {
-    font-size: 0.85rem;
-    color: var(--color-text-light);
-  }
-
-  .recruit-sessions__desc {
-    font-size: 0.9rem;
-    color: var(--color-text-light);
-    line-height: 1.5;
-    margin: 0.25rem 0 0;
-  }
-
-  .recruit-sessions__actions {
-    flex-shrink: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 0.5rem;
-  }
-
-  .recruit-sessions__badge {
-    font-size: 0.7rem;
-    font-weight: 800;
-    text-transform: uppercase;
-    padding: 0.35rem 0.65rem;
-    border: 2px solid var(--color-border);
-    background: var(--color-bg);
-    color: var(--color-text);
-  }
-
-  .recruit-sessions__badge--full {
-    background: color-mix(in srgb, var(--color-danger) 12%, transparent);
-    color: var(--color-danger);
-    border-color: var(--color-danger);
-  }
-
-  .recruit-sessions__badge--mine {
-    background: color-mix(in srgb, var(--color-success) 12%, transparent);
-    color: var(--color-success);
-    border-color: var(--color-success);
-  }
-
-  .recruit-sessions__card--mine {
-    border-color: var(--color-success);
-  }
-
-  .recruit-sessions__error {
-    padding: 0.85rem 1.15rem;
-    margin: 0 0 1.5rem;
-    background: color-mix(in srgb, var(--color-danger) 10%, transparent);
-    border: 2px solid var(--color-danger);
-    color: var(--color-danger);
-    font-weight: 700;
-    line-height: 1.5;
-  }
-
-  .name-form {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-  }
-
-  .name-form__row {
-    display: flex;
-    flex-direction: column;
-    gap: 0.35rem;
-  }
-
-  .name-form__label {
-    font-weight: 800;
-    font-size: 0.85rem;
-    color: var(--color-text);
-  }
-
-  .name-form__input {
-    padding: 0.7rem 0.9rem;
-    border: 2px solid var(--color-border);
-    background: var(--color-bg-alt);
-    color: var(--color-text);
-    font: inherit;
-  }
-
-  .name-form__error {
-    margin: 0;
-    color: var(--color-danger);
-    font-weight: 700;
-    font-size: 0.9rem;
-  }
-
-  .recruit-form {
-    padding: 4rem 1.5rem;
-    background: var(--color-bg-alt);
-  }
-
-  .recruit-form h2 {
-    margin-bottom: 1.5rem;
-  }
-
-  .recruit-form__notice {
-    padding: 1rem 1.25rem;
-    background: var(--color-bg-elevated);
-    border: 2px solid var(--color-border);
-    color: var(--color-text);
-    line-height: 1.5;
-    margin-bottom: 1.5rem;
-  }
-
-  .recruit-form__notice a {
-    color: var(--color-primary-dark);
-    font-weight: 700;
-    text-decoration: underline;
-  }
-
-  .recruit-form__notice--ok {
-    background: color-mix(in srgb, var(--color-success) 10%, transparent);
-    border-color: var(--color-success);
-    color: var(--color-success);
-  }
-
   .recruit-faq {
     padding: 4rem 1.5rem;
     background: var(--color-bg);
@@ -855,67 +253,7 @@ const schema = {
     margin: 0;
   }
 
-  .apply-modal {
-    border: none;
-    padding: 0;
-    background: transparent;
-    max-width: none;
-    max-height: none;
-  }
-
-  .apply-modal::backdrop {
-    background: rgba(15, 23, 42, 0.35);
-  }
-
-  .apply-modal__card {
-    width: min(680px, 94vw);
-    max-height: 90vh;
-    overflow-y: auto;
-    border: var(--brutal-border, 2px solid var(--color-border));
-    background: var(--color-bg);
-    padding: 2rem;
-    position: relative;
-  }
-
-  .apply-modal__card--compact {
-    width: min(440px, 94vw);
-  }
-
-  .apply-modal__close {
-    position: absolute;
-    top: 0.75rem;
-    right: 0.75rem;
-    width: 36px;
-    height: 36px;
-    border: 2px solid var(--color-border);
-    background: var(--color-bg-alt);
-    font-size: 1.5rem;
-    line-height: 1;
-    cursor: pointer;
-  }
-
-  .apply-modal__title {
-    font-size: 1.5rem;
-    font-weight: 800;
-    margin: 0 0 0.25rem;
-    color: var(--color-text);
-  }
-
-  .apply-modal__session {
-    color: var(--color-text-light);
-    margin: 0 0 1.25rem;
-  }
-
   @media (max-width: 640px) {
-    .recruit-sessions__card {
-      flex-direction: column;
-      gap: 0.75rem;
-    }
-
-    .recruit-sessions__actions {
-      align-items: flex-start;
-    }
-
     .hero-cta {
       flex-direction: column;
       align-items: stretch;
@@ -924,12 +262,6 @@ const schema = {
     .btn-primary,
     .btn-ghost {
       text-align: center;
-    }
-
-    .apply-modal__card {
-      width: 100vw;
-      max-height: 100vh;
-      padding: 1.25rem;
     }
   }
 </style>

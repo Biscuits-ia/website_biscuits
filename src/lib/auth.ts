@@ -18,7 +18,6 @@
 import { createSupabaseClient, createSupabaseAdminClient } from './supabase';
 import type { AstroGlobal, APIContext } from 'astro';
 import type { SupabaseClient, User, Session } from '@supabase/supabase-js';
-import type { VolunteerAppointment } from '@/types/appointments';
 
 type AuthContext = AstroGlobal | APIContext;
 
@@ -205,33 +204,6 @@ export function requireBenevole(Astro: AuthContext): Promise<AuthResult | AuthRe
 
 export function requireAssociation(Astro: AuthContext): Promise<AuthResult | AuthRedirect> {
   return requireRole(Astro, ['association', 'moderator', 'admin']);
-}
-
-export async function requireAppointmentOwner(
-  supabase: SupabaseClient,
-  apptId: string,
-  userId: string,
-  isAdminOrModerator: boolean,
-): Promise<
-  | { ok: true; appointment: VolunteerAppointment }
-  | { ok: false; status: 404 | 403 }
-> {
-  const { data, error } = await supabase
-    .from('volunteer_appointments')
-    .select('*')
-    .eq('id', apptId)
-    .maybeSingle();
-  if (error) {
-    console.error('[requireAppointmentOwner] select error:', error.message);
-    return { ok: false, status: 404 };
-  }
-  if (!data) {
-    return { ok: false, status: 404 };
-  }
-  if (!isAdminOrModerator && data.user_id !== userId) {
-    return { ok: false, status: 403 };
-  }
-  return { ok: true, appointment: data as VolunteerAppointment };
 }
 
 // --------------------------------------------------------------------------

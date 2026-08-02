@@ -2,7 +2,7 @@
 import type { APIRoute } from 'astro';
 import { createSupabaseAdminClient } from '@/lib/supabase';
 import { requireAdmin } from '@/lib/auth';
-import { getFormString } from '@/types/ateliers';
+import { getFormString } from '@/lib/formData';
 import { isValidUUID } from '@/lib/validation';
 
 export const POST: APIRoute = async (context) => {

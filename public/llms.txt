@@ -18,8 +18,7 @@ Date de creation : 2024.
 - Benevoles et particuliers motives
 
 ## Ce qu'on propose
-- [Ateliers IA gratuits ou a prix libre](/ateliers) : en ligne (jusqu'a 15 participants) et en presentiel a Poitiers + villes partenaires.
-- [Formations certifiantes](/formations) : sliding scale 0 a 350 EUR, paiement de solidarite, places offertes sur demande.
+- [Nos services](/services) : accompagnement, diagnostics et ateliers a la demande pour associations, TPE et collectivites.
 - [Ressources et guides PDF gratuits](/ressources) : checklists, guides pratiques, anti-pepins.
 - [Annuaire d'associations d'aide aux victimes](/aide-victimes) : France Victimes, e-Enfance, assos specialisees cyber, mineurs et parents.
 - [Mediation IA](/mediation-ia) : relecture des CGV / CGU / contrats lies a l'IA.
@@ -36,8 +35,7 @@ Date de creation : 2024.
 ## Pages cles
 - [Accueil](https://biscuits-ia.com/) : presentation de l'association
 - [FAQ](https://biscuits-ia.com/faq) : questions frequentes sur l'association et nos services
-- [Ateliers](https://biscuits-ia.com/ateliers) : catalogue d'ateliers IA gratuits
-- [Formations](https://biscuits-ia.com/formations) : catalogue de formations payantes
+- [Services](https://biscuits-ia.com/services) : accompagnement, diagnostics et ateliers a la demande
 - [Ressources](https://biscuits-ia.com/ressources) : guides et outils gratuits
 - [Blog](https://biscuits-ia.com/blog) : articles sur l'IA, l'ethique, les bons outils
 - [Annuaire d'aide aux victimes](https://biscuits-ia.com/aide-victimes) : associations specialisees (France Victimes, e-Enfance, etc.)

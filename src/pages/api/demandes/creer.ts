@@ -1,7 +1,7 @@
 // src/pages/api/demandes/creer.ts
 import type { APIRoute } from 'astro';
 import { createSupabaseClient } from '@/lib/supabase';
-import { getFormString }        from '@/types/ateliers';
+import { getFormString }        from '@/lib/formData';
 
 export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   const supabase = createSupabaseClient({ request, cookies });

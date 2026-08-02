@@ -1,7 +1,7 @@
 // src/pages/api/me/delete-data.ts
 // RGPD  Droit  l'\''effacement : supprime les donnes personnelles du compte
 // courant (soft-delete du profil, anonymisation des messages et commentaires,
-// hard-delete des RDV/workshop_registrations/requests).
+// hard-delete des requests/notifications).
 //
 // Note : la suppression du compte auth.users lui-mme reste gre par
 // /auth/delete-account (cf. lib/auth.ts ? deleteUserFromSupabase) qui appelle
@@ -14,12 +14,8 @@ export const prerender = false;
 
 // Tables o user_id est la FK directe.
 const USER_LINKED_TABLES = [
-  "volunteer_appointments",
-  "workshop_registrations",
   "requests",
   "notifications",
-  "task_watchers",
-  "project_members",
 ] as const;
 
 export const DELETE: APIRoute = async ({ request, cookies }) => {
@@ -48,16 +44,7 @@ export const DELETE: APIRoute = async ({ request, cookies }) => {
     }
   }
 
-  // 2. Hard delete des commentaires crits par l'\''utilisateur (FK author_id).
-  const { error: commentsError } = await adminSupabase
-    .from("task_comments")
-    .delete({ count: "exact" })
-    .eq("author_id", user.id);
-  deletions.task_comments = commentsError
-    ? `error: ${commentsError.message}`
-    : "ok";
-
-  // 3. Soft-delete du profil : on anonymise les PII mais on garde l'\''ID
+  // 2. Soft-delete du profil : on anonymise les PII mais on garde l'\''ID
   // pour respecter les FK sortantes (notifications.actor_id, audit_logs.user_id).
   const { error: profileError } = await adminSupabase
     .from("profiles")

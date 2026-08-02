@@ -20,8 +20,6 @@ export const GET: APIRoute = async ({ request, cookies }) => {
   // Tables personnelles exportes. Les RLS policies filtrent par user_id.
   const personalTables = [
     "profiles",
-    "volunteer_appointments",
-    "workshop_registrations",
     "requests",
     "activity_logs",
   ] as const;

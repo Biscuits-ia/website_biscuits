@@ -13,13 +13,9 @@ const userName  = user.user_metadata?.full_name ?? userEmail.split('@')[0];
 // ── Statistiques personnelles ─────────────────────────────────────
 const [
   { count: totalDemandes },
-  { count: totalAteliers },
-  { count: totalAppointments },
   { data: recentDemandesRaw },
 ] = await Promise.all([
   supabase.from('requests').select('*', { count: 'exact', head: true }).eq('user_id', userId),
-  supabase.from('workshop_registrations').select('*', { count: 'exact', head: true }).eq('user_id', userId),
-  supabase.from('volunteer_appointments').select('*', { count: 'exact', head: true }).eq('user_id', userId),
   supabase.from('requests').select('subject, status, created_at').eq('user_id', userId).order('created_at', { ascending: false }).limit(5),
 ]);
 
@@ -63,14 +59,6 @@ const recentDemandes: DemandeRow[] = (recentDemandesRaw ?? []).map((d: any): Dem
     <div class="stat-card">
       <div class="stat-label">Mes demandes</div>
       <div class="stat-value">{totalDemandes ?? 0}</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Ateliers inscrits</div>
-      <div class="stat-value">{totalAteliers ?? 0}</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Rendez-vous</div>
-      <div class="stat-value">{totalAppointments ?? 0}</div>
     </div>
   </div>
 

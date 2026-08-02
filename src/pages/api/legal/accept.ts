@@ -103,7 +103,7 @@ export const POST: APIRoute = async ({ request, cookies, clientAddress }) => {
   // Si on est dans un contexte de formulaire (Content-Type: form), on redirige
   if (!contentType.includes('application/json')) {
     // Determine le referer pour la redirection
-    const referer = request.headers.get('referer') ?? '/formations';
+    const referer = request.headers.get('referer') ?? '/';
     return new Response(null, { status: 303, headers: { Location: referer } });
   }
 

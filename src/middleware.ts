@@ -98,8 +98,6 @@ async function checkRouteRateLimit(
   let limit = 20;
   let windowMs = 60_000;
 
-  if (pathname === '/api/appointment-slots' || pathname === '/api/user-appointments') limit = 30;
-
   if (pathname.startsWith('/auth/')) {
     if (pathname === '/auth/connexion' || pathname === '/auth/inscription') {
       limit = 5;

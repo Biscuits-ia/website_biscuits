@@ -5,7 +5,6 @@ import { defineConfig } from 'astro/config';
 import robotsTxt from 'astro-robots-txt';
 import sitemap, { ChangeFreqEnum } from '@astrojs/sitemap';
 import tailwindcss from '@tailwindcss/vite';
-import icon from 'astro-icon';
 
 import vercel from '@astrojs/vercel';
 import mdx from '@astrojs/mdx';
@@ -175,7 +174,6 @@ export default defineConfig({
       transform: (content) =>
         `${content}\n# Documentation pour assistants IA (https://llmstxt.org/)\n# https://biscuits-ia.com/llms.txt\n# https://biscuits-ia.com/llms-full.txt\n`,
     }),
-    icon(),
     mdx(),
     react(),
     asyncCss(),

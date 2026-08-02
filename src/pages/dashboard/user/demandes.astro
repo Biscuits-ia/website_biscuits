@@ -14,11 +14,15 @@ const userName  = user.user_metadata?.full_name ?? userEmail.split('@')[0];
 const saved = Astro.url.searchParams.get('saved') === '1';
 const error = Astro.url.searchParams.get('error') ?? '';
 
+// Borne de securite : liste des demandes d'un membre, non paginee. 200 est
+// tres au-dessus d'un usage normal ; la limite existe pour que la page ne
+// puisse pas se degrader sans plafond.
 const { data: requests } = await supabase
   .from('requests')
   .select('*')
   .eq('user_id', userId)
-  .order('created_at', { ascending: false });
+  .order('created_at', { ascending: false })
+  .limit(200);
 
 const statusLabel: Record<string, string> = {
   pending:     'En attente',

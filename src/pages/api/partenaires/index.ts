@@ -9,9 +9,13 @@ export const GET: APIRoute = async () => {
   try {
     const supabase = createSupabaseAdminClient();
 
+    // Colonnes enumerees plutot que '*' : cet endpoint est public. Avec '*',
+    // toute colonne ajoutee plus tard a `partners` (note interne, contact,
+    // montant de convention...) serait publiee sans qu'aucune revue ne le
+    // signale. `is_published` est omis : le filtre ci-dessous le fixe a true.
     const { data, error } = await supabase
       .from('partners')
-      .select('*')
+      .select('id, name, description, collaboration, logo_url, website_url, expertise, display_order')
       .eq('is_published', true)
       .order('display_order', { ascending: true });
 

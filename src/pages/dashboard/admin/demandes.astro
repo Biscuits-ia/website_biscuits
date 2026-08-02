@@ -14,16 +14,23 @@ const saved  = Astro.url.searchParams.get('saved')  === '1';
 const error  = Astro.url.searchParams.get('error')  ?? '';
 const filter = Astro.url.searchParams.get('status') ?? '';
 
+// Borne de securite : `requests` grossit sans plafond. Cf. contacts.astro pour
+// le raisonnement complet. LIST_CAP + 1 lignes permettent de detecter la
+// troncature et de la signaler au lieu de masquer des demandes.
+const LIST_CAP = 200;
+
 let query = supabase
   .from('requests')
   .select('id, user_id, subject, description, status, admin_reply, created_at, updated_at')
-  .order('created_at', { ascending: false });
+  .order('created_at', { ascending: false })
+  .limit(LIST_CAP + 1);
 
 if (filter) query = query.eq('status', filter);
 
 // PostgREST ne peut pas joindre `auth.users` — on enrichit via `profiles` côté serveur
 const { data: requestsRaw } = await query;
-const requests = requestsRaw ?? [];
+const isTruncated = (requestsRaw?.length ?? 0) > LIST_CAP;
+const requests = (requestsRaw ?? []).slice(0, LIST_CAP);
 
 // Lookup profiles des users concernés
 const adminSupabase = createSupabaseAdminClient();
@@ -63,6 +70,11 @@ const statusBadge: Record<string, string> = {
 
   {saved && <div class="flash flash-ok" role="alert">✓ Modifications sauvegardées.</div>}
   {error  && <div class="flash flash-err" role="alert">✗ {decodeURIComponent(error)}</div>}
+  {isTruncated && (
+    <div class="flash flash-warn" role="status">
+      Liste tronquée aux {LIST_CAP} demandes les plus récentes. Filtrez par statut pour voir les autres.
+    </div>
+  )}
 
   <!-- Stats rapides -->
   <div class="stats-grid mb-6">
@@ -208,4 +220,5 @@ const statusBadge: Record<string, string> = {
   .flash { padding: 12px 18px; margin-bottom: 20px; font-size: var(--text-sm); font-weight: 600; border: var(--brutal-border-thin); box-shadow: var(--shadow-sm); }
   .flash-ok  { background: var(--ok-bg);  color: var(--ok-fg);  border-color: var(--ok); }
   .flash-err { background: var(--err-bg); color: var(--err-fg); border-color: var(--err); }
+  .flash-warn { background: var(--warn-bg); color: var(--warn-fg); border-color: var(--warn); }
 </style>

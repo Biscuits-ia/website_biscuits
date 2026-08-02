@@ -19,7 +19,7 @@ const role    = Astro.url.searchParams.get('role') ?? '';
 
 let query = supabase
   .from('profiles')
-  .select('id, email, full_name, role, created_at, last_sign_in_at, reports_count', { count: 'exact' })
+  .select('id, email, full_name, role, created_at, last_sign_in_at', { count: 'exact' })
   .order('created_at', { ascending: false })
   .range(from, from + perPage - 1);
 
@@ -41,7 +41,6 @@ interface ProfileRow {
   role:             string;            // brut depuis la BDD (peut contenir benevole/association)
   created_at:       string;
   last_sign_in_at:  string | null;
-  reports_count:    number | null;
 }
 
 function isUserRole(value: unknown): value is UserRole {
@@ -57,7 +56,6 @@ interface UserRow {
   roleLabel:   string;
   createdStr:  string;
   lastSignStr: string;
-  reportsStr:  string;
 }
 
 const roleBadgeByRole: Record<string, string> = {
@@ -86,7 +84,6 @@ const userRows: UserRow[] = users.map((u: ProfileRow): UserRow => {
     lastSignStr: u.last_sign_in_at
       ? new Date(u.last_sign_in_at).toLocaleDateString('fr-FR')
       : '—',
-    reportsStr:  u.reports_count != null ? String(u.reports_count) : '—',
   };
 });
 
@@ -141,14 +138,13 @@ const countLabel    = `${count ?? 0} compte${(count ?? 0) !== 1 ? 's' : ''} enre
           <tr>
             <th>Utilisateur</th>
             <th>Rôle</th>
-            <th>Signalements</th>
             <th>Inscription</th>
             <th>Dernière connexion</th>
             <th></th>
           </tr>
         </thead>
         <tbody>
-          {hasUsers ? userRows.map(({ u, roleBadge, roleLabel, createdStr, lastSignStr, reportsStr }) => (
+          {hasUsers ? userRows.map(({ u, roleBadge, roleLabel, createdStr, lastSignStr }) => (
             <tr>
               <td>
                 <div class="user-cell">
@@ -159,7 +155,6 @@ const countLabel    = `${count ?? 0} compte${(count ?? 0) !== 1 ? 's' : ''} enre
               <td>
                 <span class={`badge ${roleBadge}`}>{roleLabel}</span>
               </td>
-              <td class="mono sm">{reportsStr}</td>
               <td class="mono xs muted">{createdStr}</td>
               <td class="mono xs muted">{lastSignStr}</td>
               <td>

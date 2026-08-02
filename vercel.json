@@ -156,15 +156,6 @@
       ]
     },
     {
-      "source": "/nos-missions",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=300, s-maxage=86400, stale-while-revalidate=604800"
-        }
-      ]
-    },
-    {
       "source": "/charte-ethique",
       "headers": [
         {
@@ -286,15 +277,6 @@
       ]
     },
     {
-      "source": "/trombinoscope/:path*",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800"
-        }
-      ]
-    },
-    {
       "source": "/auteur/:path*",
       "headers": [
         {
@@ -348,6 +330,36 @@
     {
       "source": "/projet",
       "destination": "/projects-collaboratif",
+      "statusCode": 301
+    },
+    {
+      "source": "/nos-missions",
+      "destination": "/piliers",
+      "statusCode": 301
+    },
+    {
+      "source": "/piliers/cyber",
+      "destination": "/piliers",
+      "statusCode": 301
+    },
+    {
+      "source": "/trombinoscope",
+      "destination": "/pourquoi",
+      "statusCode": 301
+    },
+    {
+      "source": "/trombinoscope/:path*",
+      "destination": "/pourquoi",
+      "statusCode": 301
+    },
+    {
+      "source": "/aide-victimes",
+      "destination": "/anti-pepins",
+      "statusCode": 301
+    },
+    {
+      "source": "/combats/derives-numeriques",
+      "destination": "/combats",
       "statusCode": 301
     },
     {

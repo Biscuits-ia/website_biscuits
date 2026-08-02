@@ -83,7 +83,9 @@ Recherche systématique sur tout le dépôt : composants, libs, types, styles, a
 | Code mort | branche `message=reserver\|candidater` de `connexion.astro` |
 | Assets | `public/favicon-32.png`, `public/illustrations/robot-ia.svg` |
 
-**`Hero.astro` : un renommage jamais terminé.** Le markup utilise `btn-hero-primary` et `btn-hero-secondary`, mais les styles définissaient encore `.btn-primary` et `.btn-secondary` — plus un bloc `@media (hover: none)` entier ne ciblant que des classes inexistantes. Ce CSS était expédié sur **toutes les pages publiques** sans jamais s'appliquer.
+**`Hero.astro` : un renommage jamais terminé.** Le markup utilise `btn-hero-primary` et `btn-hero-secondary`, mais les styles définissaient encore `.btn-primary` et `.btn-secondary` — plus un bloc `@media (hover: none)` entier ne ciblant que des classes inexistantes. Astro scope et bundle les styles par composant : ce CSS partait donc uniquement sur la page d'accueil, seule à rendre `<Hero />`, sans jamais s'y appliquer.
+
+Les règles `.feature-badge` et `.trust-indicators` du bloc `prefers-reduced-motion` local restent couvertes par le bloc global équivalent (`src/styles/global.css:919, 943-944`) : leur retrait ici ne change rien pour les utilisateurs concernés.
 
 **Faux positifs vérifiés, conservés :** `Callout.astro` (`callout-${type}`), `PublicsPicker.astro` (`pub-${p.accent}`), `admin/contacts.astro` (`dot-${status}`), `benevole/equipe.astro` (`badge-${roleClass[...]}`) — classes composées dynamiquement, invisibles à une recherche textuelle.
 

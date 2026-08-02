@@ -42,7 +42,6 @@ const NON_CACHEABLE_PREFIXES = [
   '/connexion',
   '/inscription',
   '/utilisateurs',
-  '/trombinoscope',
   '/verifier-code-',
   '/reinitialisation',
   '/mot-de-passe-',

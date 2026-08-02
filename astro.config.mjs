@@ -41,8 +41,13 @@ const DISALLOW_ALL = [
   '/verifier-code-reinitialisation',
 ];
 
-/** Pages publiques mais volontairement hors index (donnees personnelles, tunnel). */
-const DISALLOW_SEARCH_ONLY = ['/trombinoscope'];
+/**
+ * Pages publiques mais volontairement hors index (donnees personnelles, tunnel).
+ * Vide depuis la suppression de /trombinoscope : la liste reste en place car
+ * elle est fusionnee avec DISALLOW_ALL dans les deux policies robots.txt.
+ * @type {string[]}
+ */
+const DISALLOW_SEARCH_ONLY = [];
 
 /**
  * Crawlers LLM explicitement autorises : on veut etre cite dans les reponses
@@ -110,7 +115,6 @@ export default defineConfig({
           '/mot-de-passe-oublie',
           '/reinitialisation-mot-de-passe',
           '/dashboard',
-          '/trombinoscope',
           '/utilisateurs',
           '/verifier-code-inscription',
           '/verifier-code-reinitialisation',

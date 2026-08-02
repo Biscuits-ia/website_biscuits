@@ -43,12 +43,11 @@ const STATIC_SECTIONS: Section[] = [
 
 Mission : democratiser l'acces a l'intelligence artificielle, former les benevoles, mediere en cas de litige numerique, publier des ressources open source et developper des outils libres.
 
-Cinq piliers d'action :
-1. Accompagnement a l'IA : ateliers, formations, mediation IA.
-2. Lutte contre la cybercriminalite : sensibilisation aux arnaques, mediation numerique.
-3. Logiciels libres : developpement d'outils open source pour associations.
-4. Anti Pepins : service public de signalement de problemes numeriques.
-5. Recherche participative et modeles ouverts : recherches co-construites et modeles open source au service de l'agriculture et de la sante.
+Quatre piliers d'action :
+1. Accompagnement a l'IA : mediation IA et accompagnement des structures.
+2. Logiciels libres : developpement d'outils open source pour associations.
+3. Anti Pepins : service public de signalement de problemes numeriques.
+4. Recherche participative et modeles ouverts : recherches co-construites et modeles open source au service de l'agriculture et de la sante.
 
 President : Alexis Gallard.
 Siege social : Poitiers, France.
@@ -78,20 +77,6 @@ Stack technique : Astro 7, Supabase (PostgreSQL + Auth), TypeScript, Tailwind CS
 - Anti-Pepins : 50 problemes numeriques frequents et leur solution.
 - Modeles de courrier pour mediation numerique.
 - Scripts Python d'audit RGPD (GitHub).`,
-  },
-  {
-    title: 'Associations d\'aide aux victimes',
-    slug: '/aide-victimes',
-    summary: 'Annuaire d\'associations specialisees dans l\'aide aux victimes de cybercriminalite, harcelement en ligne et arnaques.',
-    body: `Biscuits IA n'accompagne plus directement les victimes. Nous referencons les associations specialisees :
-  - France Victimes (116 006) : aide generale aux victimes, 130 bureaux en France.
-  - e-Enfance / 3018 : cyberharcelement et protection des mineurs (9h-23h, gratuit, anonyme).
-  - AVEC : Aide aux Victimes d'Escroqueries et de Cybermalveillance.
-  - INAVEM : federation des associations d'aide aux victimes.
-  - 119 : Allo Enfance en danger (24h/24, gratuit).
-  - Action Innocence : protection de l'enfance sur internet.
-  - Internet Sans Crainte (CNIL) : education numerique des jeunes.
-  Pour une analyse immediate d'un message suspect, utilisez Anti Pepins (gratuit, anonyme, sans inscription).`,
   },
   {
     title: 'Nous rejoindre',
@@ -178,7 +163,6 @@ export const GET: APIRoute = async () => {
     }
   }
 
-  // Formations
 
   // Section finale : meta-donnees
   lines.push('## Meta-donnees techniques');

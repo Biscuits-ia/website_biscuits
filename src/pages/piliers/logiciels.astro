@@ -1,6 +1,6 @@
 ---
 // src/pages/piliers/logiciels.astro
-// Pilier 2 : conception et vente de logiciels pour associations partenaires.
+// Pilier 2 : conception de logiciels libres et gratuits pour associations et structures publiques.
 
 export const prerender = true;
 
@@ -10,16 +10,16 @@ import Breadcrumb from '@/components/Breadcrumb.astro';
 const schema = {
   type: 'Service' as const,
   data: {
-    serviceType: 'Edition de logiciels libres pour associations',
+    serviceType: 'Edition de logiciels libres et gratuits',
     name: 'Logiciels pour associations partenaires',
-    description: 'Biscuits IA concoit et vend des logiciels libres a destination d\'autres associations engagees : Anti Pepins, suite collaborative, outils de signalement.',
+    description: 'Biscuits IA concoit des logiciels libres et gratuits pour les associations et les structures publiques : Anti Pepins, suite collaborative, outils de signalement.',
   },
 };
 ---
 
 <Layout
   title="Logiciels pour associations | Pilier 2 | Biscuits IA"
-  description="Decouvrez notre catalogue de logiciels libres pour associations : Anti Pepins, outils internes, suite collaborative. Licences associatives preferentielles."
+  description="Decouvrez notre catalogue de logiciels libres pour associations : Anti Pepins, outils internes, suite collaborative. Gratuits, sans licence a payer."
   schema={schema}
 >
   <Breadcrumb />
@@ -27,13 +27,13 @@ const schema = {
   <section class="pilier-hero">
     <div class="container">
       <p class="eyebrow eyebrow-logiciels">Pilier 2</p>
-      <h1>Concevoir des logiciels libres pour les associations engagees</h1>
+      <h1>Concevoir des logiciels libres a but non lucratif</h1>
       <p class="lead">
-        Notre troisieme pilier finance la mission : nous concevons et vendons des logiciels libres a d'autres associations qui partagent nos combats (lutte contre les arnaques, mediation numerique, education au numerique). Les benefices sont reinvestis dans les piliers 1 et 2.
+        Notre deuxieme pilier : nous concevons des logiciels libres pour les associations et les structures publiques, et des sites et applications mobiles pour le grand public sur des enjeux concrets, comme Anti Pepins. Tout est gratuit, et jamais destine a des entreprises.
       </p>
       <div class="hero-cta">
         <a href="/anti-pepins" class="btn-primary">Decouvrir Anti Pepins</a>
-        <a href="/contact?sujet=devis-logiciel" class="btn-ghost">Demander un devis</a>
+        <a href="/contact?sujet=logiciel" class="btn-ghost">Nous contacter</a>
       </div>
     </div>
   </section>
@@ -70,7 +70,7 @@ const schema = {
       <ul>
         <li><strong>Souverainete.</strong> Vos donnees restent votre propriete. Pas de lock-in, pas de hausse de prix surprise.</li>
         <li><strong>Transparence.</strong> Le code est public, auditable par vos equipes ou par la communaute.</li>
-        <li><strong>Tarifs associatifs.</strong> Tarification prefentielle pour les associations et collectivites, prix libre pour les petites structures.</li>
+        <li><strong>Gratuite.</strong> Aucun cout de licence, aucun abonnement, quelle que soit la taille de votre structure.</li>
         <li><strong>Maintenance.</strong> Nous assurons les evolutions et la securite, sans vous laisser seul face a la dette technique.</li>
       </ul>
     </div>
@@ -79,9 +79,9 @@ const schema = {
   <section class="cta-final">
     <div class="container">
       <h2>Un besoin logiciel pour votre association ?</h2>
-      <p>Decrivez-nous votre besoin en quelques lignes. On vous repond sous 48h avec une estimation de charge et de cout.</p>
+      <p>Decrivez-nous votre besoin en quelques lignes. On vous repond sous 48h avec une estimation de faisabilite et de delai.</p>
       <div class="cta-actions">
-        <a href="/contact?sujet=devis-logiciel" class="btn-primary">Demander un devis</a>
+        <a href="/contact?sujet=logiciel" class="btn-primary">Nous decrire votre besoin</a>
         <a href="/projects-collaboratif" class="btn-ghost">Voir nos projets open source</a>
       </div>
     </div>

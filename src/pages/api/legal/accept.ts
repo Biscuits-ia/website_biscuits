@@ -12,7 +12,7 @@ import { getClientIp } from '@/lib/http';
 import { createHash } from 'node:crypto';
 
 const schema = z.object({
-  document_type:    z.enum(['cgv', 'cgu', 'parrainage', 'exoneration', 'rgpd']),
+  document_type:    z.enum(['cgu', 'rgpd']),
   document_version: z.string().min(1).max(20),
   context:          z.enum(['payment', 'registration', 'manual']).default('manual'),
   registration_id:  z.string().uuid().optional(),

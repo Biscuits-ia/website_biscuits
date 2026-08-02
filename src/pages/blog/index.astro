@@ -75,7 +75,7 @@ const allArticlesForSearch = sorted.map((a: CollectionEntry<'blog'>) => ({
 
 // SEO : titre et description uniques.
 const pageTitle = 'Blog IA pour associations et collectivites | Biscuits IA';
-const pageDescription = `${total} articles sur l'IA generative, la cybersecurite, les arnaques en ligne et l'automatisation pour les associations, collectivites et TPE. Guides pratiques, tutoriels et outils libres.`;
+const pageDescription = `${total} articles sur l'IA generative, la cybersecurite, les arnaques en ligne et l'automatisation, pour le grand public, les associations et les collectivites. Guides pratiques, tutoriels et outils libres.`;
 ---
 
 <Layout
@@ -264,7 +264,7 @@ const pageDescription = `${total} articles sur l'IA generative, la cybersecurite
   </div>
 </Layout>
 
-<script is:inline define:vars={{ allArticlesForSearch, totalPages, total, PAGE_SIZE }}>
+<script is:inline define:vars={{ allArticlesForSearch, totalPages, PAGE_SIZE }}>
   // Moteur de recherche + filtre tag + pagination cote client.
   (function () {
     const searchInput = document.getElementById('blog-search');

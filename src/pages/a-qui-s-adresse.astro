@@ -37,21 +37,6 @@ const publics = [
     href: '/public/collectivites'
   },
   {
-    id: 'tpe',
-    title: 'TPE et Entrepreneurs sociaux',
-    subtitle: 'Moins de 10 salariés',
-    image: '🏢',
-    description: 'Les TPE ont souvent des besoins numériques spécifiques, sans avoir les ressources d\'un grand groupe. Nous les aidons à mettre en place des outils simples et efficaces.',
-    features: [
-      'Pas de DSI interne',
-      'Besoin de solution économique',
-      'Envie d\'automatiser certaines tâches',
-      'Recherche d\'autonomie'
-    ],
-    cta: 'Voir nos services pour TPE',
-    href: '/public/tpe-pme'
-  },
-  {
     id: 'seniors',
     title: 'Seniors et publics fragiles',
     subtitle: 'Accompagnement individuel',
@@ -65,12 +50,27 @@ const publics = [
     ],
     cta: 'Découvrir Anti Pepins',
     href: '/anti-pepins'
+  },
+  {
+    id: 'recherche',
+    title: 'Recherche et terrain',
+    subtitle: 'Universités, instituts, acteurs locaux',
+    image: '🔬',
+    description: 'Nous menons des recherches participatives et concevons des modèles ouverts en agronomie, nutrition et santé, co-construits avec celles et ceux qui les utiliseront.',
+    features: [
+      'Recherche-action en agroécologie et santé communautaire',
+      'Modèles ouverts documentés, en libre accès',
+      'Partenariats avec universités et instituts',
+      'Diffusion en français et en langues locales'
+    ],
+    cta: 'Découvrir le pilier Recherche',
+    href: '/piliers/recherche'
   }
 ];
 
 // Ce qu'on ne fait PAS
 const notWhatWeDo = [
-  "Pas de prestations coûteuses pour grandes entreprises",
+  "Pas de prestations pour les entreprises, quelle que soit leur taille",
   "Pas de contrats d'engagement longs et verrouillants",
   "Pas de solution boîte noire sans explication",
   "Pas de dépendance à un éditeur",
@@ -80,12 +80,12 @@ const notWhatWeDo = [
 
 <BaseLayout
   title="À qui s'adresse Biscuits IA ? | Publics cibles"
-  description="Biscuits IA s'adresse aux associations, collectivités, TPE et publics fragiles. Pas de grandes entreprises, pas de solutions commerciales — seulement du service d'intérêt général."
+  description="Biscuits IA s'adresse aux associations, aux collectivités et au grand public. Pas d'entreprises, pas de solutions commerciales — seulement du service d'intérêt général."
   schema={{
     type: 'WebPage',
     data: {
       name: 'À qui s\'adresse Biscuits IA',
-      description: 'Publics cibles : associations, collectivités, TPE et publics fragiles. Notre mission d\'intérêt général.',
+      description: 'Publics cibles : associations, collectivités, grand public et partenaires de recherche. Notre mission d\'intérêt général.',
     },
   }}
 >
@@ -105,7 +105,7 @@ const notWhatWeDo = [
             Biscuits IA n'est pas fait pour tout le monde — et c'est voulu.
           </p>
           <p>
-            Nous nous concentrons sur les structures qui en ont le plus besoin et qui ont le moins de moyens : associations, collectivités, TPE, et publics fragiles.
+            Nous nous concentrons sur celles et ceux qui en ont le plus besoin et qui ont le moins de moyens : associations, collectivités et grand public.
           </p>
           <p class="lead">
             C'est notre mission d'intérêt général. Pas une stratégie commerciale.
@@ -150,7 +150,7 @@ const notWhatWeDo = [
           ))}
         </ul>
         <p class="note">
-          Ce n'est pas une valeur négative — c'est simplement une question de mission d'intérêt général. Si vous êtes une grande entreprise avec un budget pour la transformation numérique, il y a probablement d'autres acteurs mieux adaptés à vos besoins.
+          Ce n'est pas une valeur négative — c'est simplement une question de mission d'intérêt général. Si vous êtes une entreprise, il y a des acteurs dont c'est le métier et qui seront mieux adaptés à vos besoins.
         </p>
       </div>
     </div>
@@ -182,11 +182,6 @@ const notWhatWeDo = [
           <h3>Collectivités</h3>
           <p>Des agents publics au service des citoyens, des contraintes budgétaires fortes, et une obligation de service public. On accompagne sans imposer, avec des outils auditable par tous.</p>
           <a href="/public/collectivites" class="detail-link">En savoir plus</a>
-        </div>
-        <div class="public-detail">
-          <h3>TPE</h3>
-          <p>Pas de DSI, pas de budget IT important, mais une envie d'utiliser le numérique pour se développer. On aide à poser le premier pas — sans promesse miracles.</p>
-          <a href="/public/tpe-pme" class="detail-link">En savoir plus</a>
         </div>
       </div>
     </div>

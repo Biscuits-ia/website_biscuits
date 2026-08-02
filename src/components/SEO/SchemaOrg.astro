@@ -2,13 +2,13 @@
 import { jsonLd } from '@/lib/jsonLd';
 // -------- Types discriminés par type de schéma Schema.org --------------------------------------------------------------------------------------------------------
 //
-// Avant : `data?: Record<string, any>` — — perdait la sécurité de type et
+// Avant : `data?: Record<string, any>` — perdait la sécurité de type et
 // laissait passer des payloads mal formés en compilation. Maintenant chaque
 // type de schéma a sa propre interface typée, et l'union discriminée par
 // `type` garantit que `data` correspond bien au `type` choisi.
 
 // Types discriminés par type de schéma Schema.org.
-// Avant : `data?: Record<string, any>` — — perdait la sécurité de type et
+// Avant : `data?: Record<string, any>` — perdait la sécurité de type et
 // laissait passer des payloads mal formés en compilation. Maintenant chaque
 // type de schéma a sa propre interface typée, et l'union discriminée par
 // `type` garantit que `data` correspond bien au `type` choisi.
@@ -40,28 +40,9 @@ type ArticleData = {
   category?: string;
   keywords?: string[];
   wordCount?: number;
+  readingTimeMin?: number;
   rating?: number;
   reviewAuthor?: string;
-};
-
-type CourseSessionData = {
-  startDate: string;
-  endDate: string;
-  location?: string | null;
-  online: boolean;
-};
-
-type CourseData = {
-  name: string;
-  description: string;
-  image?: string;
-  courseMode?: 'online' | 'onsite' | 'blended';
-  instructor?: string;
-  price?: number | string;
-  skills?: string[];
-  level?: string;
-  /** Sessions a venir (dates reelles) -> une CourseInstance par session dans hasCourseInstance. */
-  sessions?: CourseSessionData[];
 };
 
 type ContactPageData = {
@@ -76,40 +57,16 @@ type WebPageData = {
   speakableSelectors?: string[];
 };
 
-type HowToStepData = {
-  name: string;
-  text: string;
-  image?: string;
-  url?: string;
-};
-
-type HowToData = {
-  name: string;
-  description: string;
-  /** Duree totale au format ISO 8601, ex. "PT30M" pour 30 min */
-  totalTime?: string;
-  estimatedCost?: { currency: string; value: number | string };
-  steps: HowToStepData[];
-};
-
-type ProductData = {
-  // Conservé pour extension future — — non utilisé aujourd'hui
-  name?: string;
-};
-
 type SchemaData =
   | ServiceData
   | FAQData
   | ArticleData
-  | CourseData
   | WebPageData
-  | ProductData
-  | HowToData
   | ContactPageData;
 
-// Props du composant — — le `type` discrimine l'union `data`.
+// Props du composant — le `type` discrimine l'union `data`.
 type Props = {
-  type: 'Organization' | 'NGO' | 'Service' | 'FAQPage' | 'Article' | 'WebPage' | 'Course' | 'Product' | 'HowTo' | 'ContactPage';
+  type: 'Organization' | 'NGO' | 'Service' | 'FAQPage' | 'Article' | 'WebPage' | 'ContactPage';
   data?: SchemaData;
 };
 
@@ -142,7 +99,7 @@ const organizationSchema = {
     "width": "1200",
     "height": "630"
   },
-  "description": "Association Loi 1901 d'intérêt général. Nous rendons l'IA accessible à tous — — associations, collectivités et petites structures — — sans jargon et sans but lucratif.",
+  "description": "Association Loi 1901 d'intérêt général. Nous rendons l'IA accessible au grand public, aux associations et aux collectivités, et menons des recherches participatives en accès libre. Outils et ateliers gratuits, jamais de prestation pour les entreprises.",
   "email": "contact@biscuits-ia.com",
   "telephone": "+33952587543",
   "address": {
@@ -185,11 +142,15 @@ const organizationSchema = {
   },
   "knowsAbout": [
     "Intelligence Artificielle",
-    "Éthique de l'IA",
-    "Fracture numérique",
-    "Formation numérique",
-    "Autonomie numérique",
     "IA Générative",
+    "Éthique de l'IA",
+    "IA open source",
+    "Fracture numérique",
+    "Autonomie numérique",
+    "Logiciels libres",
+    "Détection d'arnaques en ligne",
+    "Recherche participative",
+    "Modèles ouverts",
     "Open source"
   ],
   "slogan": "L'IA accessible à tous, sans jargon et sans but lucratif",
@@ -214,7 +175,7 @@ const websiteSchema = {
   "@id": `${siteUrl}/#website`,
   "url": siteUrl,
   "name": "Biscuits IA",
-  "description": "Association Loi 1901 — — IA accessible à tous, sans jargon et sans but lucratif.",
+  "description": "Association Loi 1901 — IA accessible à tous, sans jargon et sans but lucratif.",
   "publisher": {
     "@id": `${siteUrl}/#organization`
   },
@@ -235,45 +196,23 @@ if (type === 'Service') {
       "@id": `${siteUrl}/#organization`
     },
     "name": serviceData.name || "Services IA",
-    "description": serviceData.description || "Services d'intelligence artificielle pour entreprises",
+    "description": serviceData.description || "Accompagnement a l'intelligence artificielle pour le grand public, les associations et les collectivites",
     "areaServed": {
       "@type": "Country",
       "name": "France"
     },
-    "hasOfferCatalog": {
-      "@type": "OfferCatalog",
-      "name": "Services IA",
-      "itemListElement": [
-        {
-          "@type": "OfferCatalog",
-          "name": "Formation IA",
-          "itemListElement": [
-            {
-              "@type": "Offer",
-              "itemOffered": {
-                "@type": "Service",
-                "name": "Formation Intelligence Artificielle"
-              }
-            }
-          ]
-        },
-        {
-          "@type": "OfferCatalog",
-          "name": "Consulting IA",
-          "itemListElement": [
-            {
-              "@type": "Offer",
-              "itemOffered": {
-                "@type": "Service",
-                "name": "Consulting IA pour entreprises"
-              }
-            }
-          ]
-        }
-      ]
-    },
+    // Tous les services sont gratuits : une Offer a prix 0 le declare
+    // explicitement aux moteurs, plutot qu'un AggregateOffer sans prix qui
+    // laissait supposer une prestation payante.
+    "isRelatedTo": [
+      { "@type": "Service", "name": "Ateliers IA" },
+      { "@type": "Service", "name": "Diagnostic et feuille de route" },
+      { "@type": "Service", "name": "Logiciels libres pour l'interet general" },
+      { "@type": "Service", "name": "Anti Pepins : detection d'arnaques" }
+    ],
     "offers": {
-      "@type": "AggregateOffer",
+      "@type": "Offer",
+      "price": "0",
       "priceCurrency": "EUR",
       "availability": "https://schema.org/InStock",
       "seller": {
@@ -326,54 +265,8 @@ if (type === 'Service') {
     "articleSection": articleData.category || "Intelligence Artificielle",
     "keywords": articleData.keywords?.join(', '),
     "wordCount": articleData.wordCount,
-    "inLanguage": "fr-FR"
-  };
-} else if (type === 'Course') {
-  const courseData = data as CourseData;
-  // Une CourseInstance par session reelle si on en a (dates a jour) ; sinon
-  // repli sur une instance generique (comportement d'origine).
-  const courseInstances = courseData.sessions?.length
-    ? courseData.sessions.map((s) => ({
-        "@type": "CourseInstance",
-        "courseMode": s.online ? "online" : "onsite",
-        "startDate": s.startDate,
-        "endDate": s.endDate,
-        "location": !s.online && s.location ? {
-          "@type": "Place",
-          "name": s.location
-        } : undefined,
-        "instructor": {
-          "@type": "Person",
-          "name": courseData.instructor || "Expert Biscuits IA"
-        }
-      }))
-    : {
-        "@type": "CourseInstance",
-        "courseMode": courseData.courseMode || "online",
-        "instructor": {
-          "@type": "Person",
-          "name": courseData.instructor || "Expert Biscuits IA"
-        }
-      };
-  specificSchema = {
-    "@context": "https://schema.org",
-    "@type": "Course",
-    "@id": `${Astro.url.href}#course`,
-    "name": courseData.name,
-    "description": courseData.description,
-    "provider": {
-      "@id": `${siteUrl}/#organization`
-    },
-    "image": courseData.image,
-    "hasCourseInstance": courseInstances,
-    "offers": courseData.price ? {
-      "@type": "Offer",
-      "price": courseData.price,
-      "priceCurrency": "EUR",
-      "availability": "https://schema.org/InStock"
-    } : undefined,
-    "teaches": courseData.skills || [],
-    "educationalLevel": courseData.level || "Débutant à Avancé",
+    // ISO 8601 duration : signal de profondeur pour E-E-A-T et AI Overviews.
+    "timeRequired": articleData.readingTimeMin ? `PT${articleData.readingTimeMin}M` : undefined,
     "inLanguage": "fr-FR"
   };
 } else if (type === 'ContactPage') {
@@ -395,7 +288,7 @@ if (type === 'Service') {
   };
 } else if (type === 'WebPage') {
   // Branche manquante avant l'audit : `WebPage` était déclaré dans Props.type
-  // mais jamais géré ici — — `data` passé par `blog/[page].astro` était silencieusement
+  // mais jamais géré ici — `data` passé par `blog/[page].astro` était silencieusement
   // abandonné. Cf. AUDIT.md §3.
   const webPageData = data as WebPageData;
   specificSchema = {
@@ -404,7 +297,7 @@ if (type === 'Service') {
     "@id": Astro.url.href,
     "url": Astro.url.href,
     "name": webPageData.name || "Biscuits IA",
-    "description": webPageData.description || "Association Loi 1901 — — IA accessible à tous.",
+    "description": webPageData.description || "Association Loi 1901 — IA accessible à tous.",
     "isPartOf": {
       "@id": `${siteUrl}/#website`
     },
@@ -413,56 +306,6 @@ if (type === 'Service') {
     },
     "inLanguage": "fr-FR",
     "dateModified": new Date().toISOString().split('T')[0],
-  };
-} else if (type === 'HowTo') {
-  // GEO : schema HowTo pour les tutoriels et guides pas-a-pas.
-  // Eligible aux Google AI Overviews et aux featured snippets en etapes.
-  const howtoData = data as HowToData;
-  specificSchema = {
-    "@context": "https://schema.org",
-    "@type": "HowTo",
-    "@id": Astro.url.href + "#howto",
-    "name": howtoData.name,
-    "description": howtoData.description,
-    "image": {
-      "@type": "ImageObject",
-      "url": siteUrl + "/og-default.webp",
-      "width": 1200,
-      "height": 630
-    },
-    "totalTime": howtoData.totalTime,
-    "estimatedCost": howtoData.estimatedCost ? {
-      "@type": "MonetaryAmount",
-      "currency": howtoData.estimatedCost.currency,
-      "value": howtoData.estimatedCost.value
-    } : undefined,
-    "author": {
-      "@type": "Organization",
-      "@id": siteUrl + "/#organization"
-    },
-    "publisher": {
-      "@id": siteUrl + "/#organization"
-    },
-    "inLanguage": "fr-FR",
-    "step": howtoData.steps.map((step, index) => ({
-      "@type": "HowToStep",
-      "position": index + 1,
-      "name": step.name,
-      "text": step.text,
-      "image": step.image,
-      "url": step.url ? step.url + "#step" + (index + 1) : undefined
-    }))
-  };
-} else if (type === 'Product') {
-  // Réservé pour usage futur (e.g. page de don ou de formation payante).
-  const productData = data as ProductData;
-  specificSchema = {
-    "@context": "https://schema.org",
-    "@type": "Product",
-    "name": productData.name || "Biscuits IA",
-    "provider": {
-      "@id": `${siteUrl}/#organization`
-    },
   };
 }
 

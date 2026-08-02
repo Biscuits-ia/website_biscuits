@@ -22,7 +22,7 @@ export interface Props {
   ogType?: 'website' | 'article';
   noindex?: boolean;
   schema?: {
-    type: 'Organization' | 'NGO' | 'Service' | 'FAQPage' | 'Article' | 'WebPage' | 'HowTo' | 'Course' | 'Product' | 'ContactPage';
+    type: 'Organization' | 'NGO' | 'Service' | 'FAQPage' | 'Article' | 'WebPage' | 'ContactPage';
     data?: Record<string, unknown>;
   };
   /** Champs GEO (optionnels). Voir composants/Seo/GEO.astro */
@@ -50,7 +50,16 @@ const fullCanonical = canonical
   ? `${siteUrl}${canonical}`
   : `${siteUrl}${Astro.url.pathname}`;
 
-const fullTitle = title.includes('|') ? title : `${title} | Biscuits IA`;
+// Suffixe de marque ajoute seulement s'il ne fait pas deborder le titre.
+// Google tronque l'affichage autour de 60-65 caracteres : sur un titre
+// editorial deja long (articles de blog), " | Biscuits IA" est coupe et ne
+// sert donc a rien, tout en poussant les mots utiles hors de l'apercu.
+const BRAND_SUFFIX = ' | Biscuits IA';
+const TITLE_BUDGET = 65;
+const fullTitle =
+  title.includes('|') || title.length + BRAND_SUFFIX.length > TITLE_BUDGET
+    ? title
+    : `${title}${BRAND_SUFFIX}`;
 
 const isProd = import.meta.env.PROD;
 // PUBLIC_ANALYTICS_DISABLED : kill-switch global (preprod, local, incident).

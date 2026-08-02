@@ -114,13 +114,13 @@ const assocMsg = Astro.url.searchParams.get('msg')   ?? '';
       </form>
     </div>
 
-    <!-- Association/TPE -->
+    <!-- Association -->
     <div class="card flex-1">
       <div class="card-header">
-        <span class="card-title">Association/TPE</span>
+        <span class="card-title">Association</span>
       </div>
       <p class="text-muted text-sm mb-4">
-        Configurez votre profil association ou TPE pour accéder aux fonctionnalités dédiées.
+        Configurez votre profil association pour accéder aux fonctionnalités dédiées.
       </p>
 
       <form method="POST" action="/auth/create-association" class="flex flex-col gap-4">
@@ -130,7 +130,7 @@ const assocMsg = Astro.url.searchParams.get('msg')   ?? '';
             type="text"
             id="assoc_structure_name"
             name="structure_name"
-            placeholder="Nom de votre association ou TPE"
+            placeholder="Nom de votre association"
             class="border border-border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
         </div>

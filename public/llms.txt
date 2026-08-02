@@ -1,7 +1,7 @@
 # Biscuits IA
 > Association Loi 1901 - Intelligence Artificielle accessible, ethique et open source.
 > Site principal : https://biscuits-ia.com
-> Documentation pour assistants IA et LLM crawlers. Derniere mise a jour : 2026-07-06.
+> Documentation pour assistants IA et LLM crawlers. Derniere mise a jour : 2026-08-02.
 > Format : spec https://llmstxt.org/
 
 ## A propos
@@ -12,22 +12,29 @@ Siege : Poitiers (France).
 Date de creation : 2024.
 
 ## Pour qui
+- Grand public : particuliers, proches, seniors
 - Associations Loi 1901 et collectifs
-- Collectivites locales
-- Benevoles et particuliers motives
+- Collectivites locales et services publics
+- Universites, instituts et acteurs de terrain (recherche participative)
+
+Nous ne travaillons pas pour les entreprises.
 
 ## Ce qu'on propose
 - [Nos services](/services) : accompagnement, diagnostics et ateliers a la demande pour le grand public, les associations et les collectivites.
 - [Ressources et guides PDF gratuits](/ressources) : checklists, guides pratiques, anti-pepins.
-- [Mediation IA](/mediation-ia) : relecture des CGV / CGU / contrats lies a l'IA.
+- [Anti Pepins](https://anti-pepins.biscuits-ia.com/) : analyse gratuite de SMS, mails et liens suspects, sans inscription.
+- [Logiciels libres](/logiciels) : outils gratuits pour les associations et les structures publiques, sites et applications mobiles pour le grand public.
+- [Recherche participative](/piliers/recherche) : modeles ouverts en agronomie, nutrition et sante, documentes et en libre acces.
+
+Tout est gratuit.
 
 ## Domaines d'expertise
 - Intelligence artificielle generative (LLM, GPT, Claude, Mistral, Gemini)
 - Ethique de l'IA, RGPD, AI Act europeen
 - Open source et souverainete numerique
-- Mediation numerique et accompagnement
-- Formation de benevoles
-- Redaction de CGV / CGU / chartes ethiques
+- Detection d'arnaques en ligne et sensibilisation
+- Conception de logiciels libres a but non lucratif
+- Recherche participative et modeles ouverts (agronomie, nutrition, sante)
 
 ## Pages cles
 - [Accueil](https://biscuits-ia.com/) : presentation de l'association
@@ -35,6 +42,9 @@ Date de creation : 2024.
 - [Services](https://biscuits-ia.com/services) : accompagnement, diagnostics et ateliers a la demande
 - [Ressources](https://biscuits-ia.com/ressources) : guides et outils gratuits
 - [Blog](https://biscuits-ia.com/blog) : articles sur l'IA, l'ethique, les bons outils
+- [Nos piliers](https://biscuits-ia.com/piliers) : les quatre axes de l'association
+- [Anti Pepins](https://biscuits-ia.com/anti-pepins) : le detecteur d'arnaques, gratuit et sans inscription
+- [Logiciels](https://biscuits-ia.com/logiciels) : catalogue des outils libres et gratuits
 - [Charte ethique IA](https://biscuits-ia.com/charte-ethique) : nos engagements ethiques
 - [Nous rejoindre](https://biscuits-ia.com/rejoignez-nous) : adhesion et benevolat
 - [Contact](https://biscuits-ia.com/contact) : formulaire de contact

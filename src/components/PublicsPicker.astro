@@ -1,6 +1,6 @@
 ---
 // src/components/PublicsPicker.astro
-// Bloc de selection du public : 4 cartes (associations, collectivites, TPE/PME, citoyens).
+// Bloc de selection du public : 3 cartes (associations, collectivites, citoyens).
 
 const publics = [
   {
@@ -135,15 +135,6 @@ const publics = [
     box-shadow: 5px 5px 0 #2e5e8a;
   }
 
-  .pub-tpe {
-    border-color: #2e8a4f;
-  }
-
-  .pub-tpe:hover {
-    border-color: #2e8a4f;
-    box-shadow: 5px 5px 0 #2e8a4f;
-  }
-
   .pub-citoyens {
     border-color: #c0392b;
   }
@@ -166,10 +157,6 @@ const publics = [
 
   .pub-collectivites .pub-label {
     color: #2e5e8a;
-  }
-
-  .pub-tpe .pub-label {
-    color: #23683b;
   }
 
   .pub-citoyens .pub-label {
@@ -199,10 +186,6 @@ const publics = [
 
   .pub-collectivites .pub-arrow {
     color: #2e5e8a;
-  }
-
-  .pub-tpe .pub-arrow {
-    color: #23683b;
   }
 
   .pub-citoyens .pub-arrow {

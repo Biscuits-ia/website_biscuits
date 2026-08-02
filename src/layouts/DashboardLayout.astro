@@ -124,7 +124,7 @@ const initials = displayName.split(' ').map((n: string) => n[0]).join('').toUppe
 <head>
   <BaseHead
     fullTitle={`${title} — Biscuits`}
-    description={`Espace ${isAdmin ? 'administrateur' : isBenevole ? 'bénévole' : isAssociation ? 'association/TPE' : 'membre'} Biscuits IA`}
+    description={`Espace ${isAdmin ? 'administrateur' : isBenevole ? 'bénévole' : isAssociation ? 'association' : 'membre'} Biscuits IA`}
     fullCanonical={`${siteUrl}/dashboard/${dashRole}`}
     siteUrl={siteUrl}
     isProd={isProd}

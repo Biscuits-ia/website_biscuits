@@ -44,7 +44,7 @@ const STATIC_SECTIONS: Section[] = [
 Mission : democratiser l'acces a l'intelligence artificielle, former les benevoles, mediere en cas de litige numerique, publier des ressources open source et developper des outils libres.
 
 Quatre piliers d'action :
-1. Accompagnement a l'IA : mediation IA et accompagnement des structures.
+1. Accompagnement a l'IA : ateliers, diagnostics et feuilles de route, pour le grand public, les associations et les collectivites.
 2. Logiciels libres : developpement d'outils open source pour associations.
 3. Anti Pepins : service public de signalement de problemes numeriques.
 4. Recherche participative et modeles ouverts : recherches co-construites et modeles open source au service de l'agriculture et de la sante.
@@ -70,12 +70,11 @@ Stack technique : Astro 7, Supabase (PostgreSQL + Auth), TypeScript, Tailwind CS
   {
     title: 'Ressources',
     slug: '/ressources',
-    summary: 'Guides PDF, checklists, anti-pepins, mediations - tout gratuit.',
+    summary: 'Guides PDF, checklists, anti-pepins - tout gratuit.',
     body: `Bibliotheque open source sous licence CC BY-SA 4.0 :
 - Guide "Demarrer avec l'IA generative" (PDF, 30 pages).
 - Checklist "Audit ethique d'un outil IA" (PDF, 8 pages).
 - Anti-Pepins : 50 problemes numeriques frequents et leur solution.
-- Modeles de courrier pour mediation numerique.
 - Scripts Python d'audit RGPD (GitHub).`,
   },
   {
@@ -84,8 +83,8 @@ Stack technique : Astro 7, Supabase (PostgreSQL + Auth), TypeScript, Tailwind CS
     summary: 'Adhesion annuelle a partir de 10 EUR, benevolat, dons.',
     body: `Trois facons de nous soutenir :
 - Adherent (a partir de 10 EUR / an) : vote a l'AG, newsletter, ressources membres en avant-premiere.
-- Benevole : participation aux ateliers, mediation, developpement des outils.
-- Don : financement des places offertes, des outils libres, des mediations. 66% deductible de l'impot.`,
+- Benevole : participation aux ateliers, au developpement des outils et aux travaux de recherche.
+- Don : financement des ateliers gratuits, des logiciels libres et des programmes de recherche. 66% deductible de l'impot.`,
   },
   {
     title: 'FAQ',
@@ -96,8 +95,10 @@ Stack technique : Astro 7, Supabase (PostgreSQL + Auth), TypeScript, Tailwind CS
 - Vos ressources sont-elles gratuites ? Oui, integralement : guides, checklists, ateliers, logiciels.
 - Comment demander un accompagnement ? Via la page Contact, reponse sous 48h.
 - Vous aidez uniquement les associations ? Non : grand public, collectivites, collectifs. Pas les entreprises.
-- Comment fonctionne la mediation numerique ? Documentation du cas, contact du prestataire, resolution amiable. Gratuit.
-- Vos outils sont-ils open source ? Oui. Tous les outils developpes ou recommandes.`,
+- Vos ateliers sont-ils payants ? Non, y compris les interventions sur mesure en association ou en collectivite.
+- Vos outils sont-ils open source ? Oui. Tous les outils developpes ou recommandes.
+- Anti Pepins est-il vraiment gratuit ? Oui, entierement, sans compte a creer.
+- Comment signaler une arnaque ? Anti Pepins pour une premiere analyse, puis PHAROS ou le 3018 pour un signalement officiel.`,
   },
 ];
 

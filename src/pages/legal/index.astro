@@ -8,12 +8,10 @@ export const prerender = false;
 const supabase = createSupabaseClient({ request: Astro.request, cookies: Astro.cookies });
 const { data: compliance } = await supabase
   .from("legal_compliance")
-  .select("cgv_activees, cgv_version, cgv_date_activation, cgu_activees, cgu_version, rgpd_version, prochain_audit")
+  .select("cgu_activees, cgu_version, rgpd_version, prochain_audit")
   .eq("id", 1)
   .maybeSingle();
 
-const cgvActive = compliance?.cgv_activees ?? false;
-const cgvVersion = compliance?.cgv_version ?? null;
 const cguActive = compliance?.cgu_activees ?? false;
 const cguVersion = compliance?.cgu_version ?? null;
 const rgpdVersion = compliance?.rgpd_version ?? "1.0";
@@ -26,12 +24,9 @@ function formatDate(iso: string | null | undefined): string {
 
 const documents = [
   { href: "/legal/mentions-legales", title: "Mentions legales", description: "Identite de l editeur, hebergeur, directeur de la publication.", version: "1.0", updatedAt: "24 juin 2026", isActive: true },
-  { href: "/legal/cgv", title: "Conditions Generales de Vente (CGV)", description: "Conditions de vente des formations payantes, droit de retractation, remboursements, mediation.", version: cgvVersion ?? "1.0", updatedAt: formatDate(compliance?.cgv_date_activation), isActive: cgvActive },
   { href: "/legal/cgu", title: "Conditions Generales d Utilisation (CGU)", description: "Regles d utilisation du site, propriete intellectuelle, responsabilite.", version: cguVersion ?? "1.0", updatedAt: "-", isActive: cguActive },
   { href: "/legal/politique-de-confidentialite", title: "Politique de confidentialite (RGPD)", description: "Donnees collectees, finalites, sous-traitants, vos droits RGPD.", version: rgpdVersion, updatedAt: "4 avril 2026", isActive: true },
   { href: "/legal/cookies", title: "Politique des cookies", description: "Cookies utilises, duree de conservation, comment les refuser.", version: "1.0", updatedAt: "-", isActive: true },
-  { href: "/legal/parrainage", title: "Conditions de parrainage", description: "Regles du systeme de codes de redemption pour parrainer une place.", version: "1.0", updatedAt: "24 juin 2026", isActive: true },
-  { href: "/legal/exoneration", title: "Conditions d acces aux places offertes", description: "Criteres et procedure de demande d exoneration de paiement.", version: "1.0", updatedAt: "24 juin 2026", isActive: true },
 ];
 ---
 
@@ -48,11 +43,6 @@ const documents = [
         du site <strong>biscuits-ia.com</strong> et les relations entre l association
         <strong>Biscuits IA</strong> et ses membres / utilisateurs.
       </p>
-      {!cgvActive && (
-        <div class="alert alert-warn" role="alert">
-          <strong>Attention :</strong> les Conditions Generales de Vente ne sont pas encore activees.
-        </div>
-      )}
       <div class="legal-grid">
         {documents.map((doc) => (
           <a href={doc.href} class={`legal-card${doc.isActive ? "" : " is-draft"}`}>
@@ -73,11 +63,6 @@ const documents = [
         <p>
           Pour toute question relative a ces documents ou a vos droits, contactez-nous :
           <a href="mailto:contact@biscuits-ia.com">contact@biscuits-ia.com</a>
-        </p>
-        <p class="internal-tools">
-          <strong>Reserve au bureau :</strong>
-          <a href="/legal/guide-relecture">Guide de relecture juridique</a> -
-          checklist de validation avant activation des CGV.
         </p>
         <p class="muted">
           Association Biscuits IA - RNA W863012707 - SIRET 10151660700013<br />

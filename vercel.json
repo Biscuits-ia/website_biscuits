@@ -386,6 +386,26 @@
       "source": "/legal/confidentialite/:path*",
       "destination": "/legal/politique-de-confidentialite",
       "statusCode": 301
+    },
+    {
+      "source": "/legal/cgv",
+      "destination": "/legal/index",
+      "statusCode": 301
+    },
+    {
+      "source": "/legal/parrainage",
+      "destination": "/legal/index",
+      "statusCode": 301
+    },
+    {
+      "source": "/legal/exoneration",
+      "destination": "/legal/index",
+      "statusCode": 301
+    },
+    {
+      "source": "/legal/guide-relecture",
+      "destination": "/legal/index",
+      "statusCode": 301
     }
   ]
 }

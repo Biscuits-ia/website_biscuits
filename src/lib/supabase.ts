@@ -58,9 +58,9 @@ function resolvePublishableKey(): string {
  * que resolvePublishableKey() : Astro n'inline dans le bundle que les variables
  * prefixees PUBLIC_. Les autres n'existent qu'au runtime serveur.
  *
- * Sans le prefixe, les pages `prerender = true` (/ateliers, /formations,
- * /trombinoscope) cassaient au BUILD avec "[supabase] SUPABASE_URL manquant" :
- * elles s'executent pendant `astro build`, ou seul le bundle est disponible.
+ * Sans le prefixe, toute page `prerender = true` qui lit Supabase cassait au
+ * BUILD avec "[supabase] SUPABASE_URL manquant" : elle s'execute pendant
+ * `astro build`, ou seul le bundle est disponible.
  *
  * L'URL du projet n'est pas un secret (elle part dans chaque requete du
  * navigateur), donc l'exposer via PUBLIC_ ne change rien a la surface d'attaque.

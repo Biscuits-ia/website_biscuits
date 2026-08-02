@@ -14,19 +14,18 @@ Les problèmes réels sont ailleurs : l'historique de migrations n'est **pas rej
 
 ### Métriques
 
-| Indicateur | Valeur |
-|---|---|
 | Indicateur | Avant | Après |
 |---|---|---|
-| Lignes dans `src/` | 38 024 | **35 330** |
-| Fichiers `src/` | 229 | **204** |
+| Lignes dans `src/` | 38 024 | **34 941** |
+| Fichiers `src/` | 229 | **201** |
 | Pages Astro | 71 | 71 |
 | Routes API | 36 | **26** |
 | Migrations SQL | 31 | **18** |
-| Warnings lint | 45 | **38** |
+| Warnings lint | 45 | **36** |
+| Hints `astro check` | 26 | **23** |
 | Erreurs build / check / lint | 0 / 0 / 0 | **0 / 0 / 0** |
 
-Autres repères : 5 fichiers de tests e2e, `dist/` à 12 Mo, 24 hints `astro check`, 3 TODO/FIXME.
+Autres repères : 5 fichiers de tests e2e, `dist/` à 12 Mo, 3 TODO/FIXME.
 
 ---
 
@@ -70,6 +69,25 @@ Migration `20260802160000_drop_adherents_rbac_and_partners.sql` — **non appliq
 `src/pages/dashboard/admin/users.astro` sélectionnait et affichait `reports_count` — **la colonne que la migration `20260802140000` supprime**. Appliquer cette migration aurait cassé la page d'administration des utilisateurs.
 
 La colonne, la propriété de type, la cellule et l'en-tête « Signalements » ont été retirés. C'est le genre de couplage qu'un audit table-par-table ne voit pas : `reports` n'avait aucune référence, mais son compteur dénormalisé sur `profiles`, si.
+
+### Passe 4 — balayage des orphelins résiduels
+
+Recherche systématique sur tout le dépôt : composants, libs, types, styles, assets.
+
+| Catégorie | Supprimé |
+|---|---|
+| Composants | **aucun** — les passes précédentes les avaient tous traités |
+| Libs | `lib/dateHelpers.ts`, `utils/formValidation.ts` (le dossier `src/utils/` disparaît) |
+| Types | `types/cookies.ts` — `CookieConsent.astro` est vanilla et n'importe aucun type |
+| CSS mort | ~100 lignes `.recruitment-preview*` dans `piliers.astro`, ~35 lignes de filtres dans `cas-d-usage.astro`, et dans `Hero.astro` les règles `.btn-primary` / `.btn-secondary` / `.btn-shine` / `.feature-badge` / `.trust-indicators` |
+| Code mort | branche `message=reserver\|candidater` de `connexion.astro` |
+| Assets | `public/favicon-32.png`, `public/illustrations/robot-ia.svg` |
+
+**`Hero.astro` : un renommage jamais terminé.** Le markup utilise `btn-hero-primary` et `btn-hero-secondary`, mais les styles définissaient encore `.btn-primary` et `.btn-secondary` — plus un bloc `@media (hover: none)` entier ne ciblant que des classes inexistantes. Ce CSS était expédié sur **toutes les pages publiques** sans jamais s'appliquer.
+
+**Faux positifs vérifiés, conservés :** `Callout.astro` (`callout-${type}`), `PublicsPicker.astro` (`pub-${p.accent}`), `admin/contacts.astro` (`dot-${status}`), `benevole/equipe.astro` (`badge-${roleClass[...]}`) — classes composées dynamiquement, invisibles à une recherche textuelle.
+
+**Assets conservés malgré l'absence de référence dans le code :** `icon-192.png` et `icon-512.png` sont déclarés dans `public/site.webmanifest` (PWA).
 
 ---
 

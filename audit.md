@@ -16,17 +16,17 @@ Les problèmes réels sont ailleurs : l'historique de migrations n'est **pas rej
 
 | Indicateur | Valeur |
 |---|---|
-| Lignes dans `src/` | 36 700 |
-| Fichiers `src/` | 221 |
-| Pages Astro | 71 |
-| Routes API | 36 |
-| Migrations SQL | 31 → **18** (voir §3) |
-| Tests e2e | 5 fichiers |
-| `dist/` | 12 Mo |
-| Erreurs build / check / lint | **0 / 0 / 0** |
-| Warnings lint | 42, tous préexistants |
-| Hints `astro check` | 24 |
-| TODO / FIXME | 3 |
+| Indicateur | Avant | Après |
+|---|---|---|
+| Lignes dans `src/` | 38 024 | **35 330** |
+| Fichiers `src/` | 229 | **204** |
+| Pages Astro | 71 | 71 |
+| Routes API | 36 | **26** |
+| Migrations SQL | 31 | **18** |
+| Warnings lint | 45 | **38** |
+| Erreurs build / check / lint | 0 / 0 / 0 | **0 / 0 / 0** |
+
+Autres repères : 5 fichiers de tests e2e, `dist/` à 12 Mo, 24 hints `astro check`, 3 TODO/FIXME.
 
 ---
 
@@ -52,9 +52,18 @@ Les problèmes réels sont ailleurs : l'historique de migrations n'est **pas rej
 | §5.4 `select('*')` | **Fait sur les endpoints publics** ; raisonnement révisé pour les autres, voir §5.4 |
 | §5.5 Requêtes sans borne | **Fait sur les listes à croissance non bornée**, avec signalement de troncature |
 | §5.6 Kit `src/components/ui/` | **Fait** — `Avatar`, `Button`, `Input`, `Modal`, `Select` supprimés ; `ConfirmDialog` et `Toast` conservés |
-| §5.7 42 warnings ESLint | **Non fait** — tentative annulée, voir §5.7 |
+| §5.7 Warnings ESLint | **Non fait** — tentative annulée, voir §5.7 |
 | §5.1 Infra cron hors dépôt | **Bloqué** — nécessite un accès à la base, voir §5.1 |
 | §3.4 Squash de la baseline | **Non fait** — opération dédiée, voir §3.4 |
+
+### Passe 3 — suppression des modules orphelins
+
+| Module | Contenu supprimé |
+|---|---|
+| `adherents` / RBAC | 6 routes API, `lib/adherentsApi.ts`, migration `20260101080000` (432 lignes), 8 tables, 1 fonction, 1 type enum |
+| `partners` | 2 routes API, `types/partners.ts`, 1 table |
+
+Migration `20260802160000_drop_adherents_rbac_and_partners.sql` — **non appliquée**. Détail et mises en garde en §5.8.
 
 ### Régression interceptée
 
@@ -277,20 +286,42 @@ supabase gen types typescript --project-id <ref> > src/types/database.ts
 
 Aucun de ces 42 warnings ne provient des suppressions de modules : tous préexistaient. Aucun n'a d'effet à l'exécution.
 
-### 5.8 Moyenne — `partners` : module entièrement orphelin
+### 5.8 Modules entièrement orphelins *(supprimés)*
 
-Découvert en appliquant §5.4. Le module partenaires existe en trois morceaux — table `partners`, endpoints `/api/partenaires` (`index.ts` et `[id].ts`), type `src/types/partners.ts` — et **aucune page, aucun composant, aucun script du dépôt ne les consomme**. Il n'y a pas non plus d'écran d'administration pour alimenter la table.
+Deux modules complets — code **et** schéma — n'avaient aucun consommateur.
 
-Je ne l'ai **pas supprimé**, contrairement à `reports` (§4.2). La différence est décisive : `reports` n'était joignable par rien, alors que `/api/partenaires` est un **endpoint HTTP public**. Un consommateur externe — autre front, site partenaire, intégration — est parfaitement plausible et invisible depuis ce dépôt.
+#### `adherents` / RBAC
 
-**Action, à trancher de votre côté :**
-1. Vérifier dans les logs Vercel si `/api/partenaires` reçoit du trafic ;
-2. Sans trafic : supprimer les deux routes, `src/types/partners.ts` et la table `partners` ;
-3. Avec trafic : documenter le consommateur dans `ARCHITECTURE.md` — un endpoint public sans consommateur identifiable est une surface d'attaque que personne ne surveille.
+Le plus gros des deux. Il comprenait 6 routes API (`/api/adherents/*`, `/api/groupes/*`), `src/lib/adherentsApi.ts`, la migration `20260101080000_add_adherents_rbac_groups.sql` (432 lignes) et **8 tables** : `adherents`, `adherent_groupes`, `adherent_historiques`, `adherent_tags`, `groupes`, `tags`, `roles`, `utilisateur_roles`.
 
-En attendant, les colonnes y sont énumérées (§5.4) : l'endpoint ne peut plus publier accidentellement une colonne ajoutée plus tard.
+**Aucune page, aucun composant n'appelait ces routes**, et il n'existait pas d'écran d'administration pour alimenter le fichier. C'était une API sans client, avec import CSV, export, recherche plein texte et historique d'audit — l'ensemble jamais atteignable depuis le site.
 
-### 5.9 Basse — pages volumineuses
+> **Ne pas confondre avec le système de rôles applicatif**, qui reste intact. L'autorisation passe par `profiles.role` et `public.get_my_role()` (lue depuis le JWT). Les tables `roles` / `utilisateur_roles` supprimées ici appartenaient au RBAC du module adhérents, jamais branché sur l'authentification.
+
+#### `partners`
+
+Table `partners`, endpoints `/api/partenaires` (`index.ts` et `[id].ts`), type `src/types/partners.ts`. Aucun consommateur dans le dépôt, aucun écran d'administration.
+
+J'avais d'abord recommandé de le conserver le temps de vérifier les logs Vercel — `/api/partenaires` étant un endpoint **public**, un consommateur externe restait plausible et invisible depuis le dépôt. Décision prise de le supprimer.
+
+> ⚠️ **Si un client externe appelait `/api/partenaires`, il recevra un 404 après déploiement.** C'est le seul risque de cette suppression, et il n'est pas vérifiable depuis le code. À contrôler dans les logs Vercel après la mise en production.
+
+### 5.9 Endpoints sans consommateur — délibérément conservés
+
+Quatre routes n'ont, elles non plus, aucun appelant dans le dépôt. Elles ne sont pas mortes pour autant, et les supprimer serait une erreur :
+
+| Route | Pourquoi elle reste |
+|---|---|
+| `/api/cron/aggregate-downloads` | Appelée par **pg_cron** via `net.http_post()`. Son appelant est dans la base, pas dans le code. |
+| `/api/indexnow` | Ping SEO des moteurs de recherche, déclenché au déploiement. La supprimer arrêterait silencieusement l'indexation accélérée. |
+| `/api/me/export-data` | **RGPD Art. 15** — droit d'accès. |
+| `/api/me/delete-data` | **RGPD Art. 17** — droit à l'effacement. |
+
+Les deux endpoints RGPD révèlent en creux un **manque, pas un surplus** : aucun écran ne permet à un membre de les déclencher. `dashboard/user/settings.astro` ne contient ni bouton d'export ni bouton de suppression. La fonctionnalité existe côté serveur mais reste hors de portée de l'utilisateur — à combler.
+
+Même remarque pour `/api/legal/accept` et la table `legal_acceptance` : ses seuls appelants étaient les formulaires d'inscription aux formations, supprimés. L'endpoint reste en place — c'est de la preuve juridique, pas du code mort à balayer — mais il est aujourd'hui sans usage.
+
+### 5.10 Basse — pages volumineuses
 
 | Fichier | Lignes |
 |---|---|
@@ -328,18 +359,23 @@ Tout ce qui pouvait être fait depuis le dépôt l'a été (§2). Ce qui suit de
 
 ### Nécessite un accès à la base — vous seul pouvez le faire
 
-1. **Appliquer `20260802140000_cleanup_orphan_objects.sql`.** Exporter `reports` d'abord si son historique compte. ⚠️ La régression `reports_count` sur `admin/users.astro` est déjà corrigée dans cette branche : appliquer la migration **sans** ce correctif casserait la page.
+1. **Appliquer les deux migrations, dans l'ordre**, après avoir exporté ce qui a de la valeur (`reports`, `adherents` et son historique, `partners`) :
+   - `20260802140000_cleanup_orphan_objects.sql`
+   - `20260802160000_drop_adherents_rbac_and_partners.sql`
+
+   ⚠️ La régression `reports_count` sur `admin/users.astro` est corrigée dans cette branche : appliquer la première migration **sans** ce correctif casserait la page d'administration des utilisateurs.
 2. **Capturer l'infrastructure cron hors dépôt** (§5.1) : `app_runtime_config`, `pg_cron_audit`, `aggregate_downloads()` et son job.
 3. **Générer les types Supabase** (§5.7) — supprime les 15 `any` et débloque `admin/resources.astro` :
    ```bash
    supabase gen types typescript --project-id <ref> > src/types/database.ts
    ```
+4. **Vérifier les logs Vercel** après déploiement : si un client externe appelait `/api/partenaires`, il reçoit désormais un 404 (§5.8).
 
 ### Décision métier
 
-4. **Module `partners`** (§5.8) : vérifier le trafic de `/api/partenaires`, puis supprimer ou documenter le consommateur.
-5. **Textes légaux** : `/legal/cgv` décrit toujours la vente de formations, `/legal/guide-relecture` cite `/formations/[slug]/inscription`. Aucun texte juridique n'a été réécrit.
-6. **Variables SMTP de Vercel** : retirer `SMTP_*` et `ADMIN_NOTIFICATION_EMAILS`, plus lues par le code depuis la PR #14. **Garder `CRON_SECRET`**, utilisé par `/api/cron/aggregate-downloads`.
+5. **Exposer les endpoints RGPD** (§5.9) : `/api/me/export-data` et `/api/me/delete-data` fonctionnent mais aucun écran ne permet de les déclencher. C'est un manque, pas un surplus.
+6. **Textes légaux** : `/legal/cgv` décrit toujours la vente de formations, `/legal/guide-relecture` cite `/formations/[slug]/inscription`. Aucun texte juridique n'a été réécrit.
+7. **Variables SMTP de Vercel** : retirer `SMTP_*` et `ADMIN_NOTIFICATION_EMAILS`, plus lues par le code depuis la PR #14. **Garder `CRON_SECRET`**, utilisé par `/api/cron/aggregate-downloads`.
 
 ### Quand une fenêtre le permet
 

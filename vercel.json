@@ -295,42 +295,6 @@
       ]
     },
     {
-      "source": "/ateliers",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800"
-        }
-      ]
-    },
-    {
-      "source": "/formations/:path*",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800"
-        }
-      ]
-    },
-    {
-      "source": "/formations/parrainer",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "no-store, no-cache, must-revalidate"
-        }
-      ]
-    },
-    {
-      "source": "/formations/:slug/inscription",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "no-store, no-cache, must-revalidate"
-        }
-      ]
-    },
-    {
       "source": "/auteur/:path*",
       "headers": [
         {
@@ -353,17 +317,37 @@
     },
     {
       "source": "/atelier",
-      "destination": "/ateliers",
+      "destination": "/services",
       "statusCode": 301
     },
     {
       "source": "/atelier/:path*",
-      "destination": "/ateliers",
+      "destination": "/services",
+      "statusCode": 301
+    },
+    {
+      "source": "/ateliers",
+      "destination": "/services",
+      "statusCode": 301
+    },
+    {
+      "source": "/ateliers/:path*",
+      "destination": "/services",
+      "statusCode": 301
+    },
+    {
+      "source": "/formations",
+      "destination": "/services",
+      "statusCode": 301
+    },
+    {
+      "source": "/formations/:path*",
+      "destination": "/services",
       "statusCode": 301
     },
     {
       "source": "/projet",
-      "destination": "/dashboard/benevole/projects",
+      "destination": "/projects-collaboratif",
       "statusCode": 301
     },
     {

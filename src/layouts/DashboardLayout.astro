@@ -64,9 +64,6 @@ const displayName = userName !== 'Utilisateur'
 
 const userNav: NavItem[] = [
   { id: 'overview',      label: "Vue d'ensemble", icon: 'grid'      },
-  { id: 'appointments',  label: 'Rendez-vous',    icon: 'calendar'  },
-  { id: 'ateliers',      label: 'Ateliers',       icon: 'calendar'  },
-  { id: 'formations',    label: 'Formations',     icon: 'graduation' },
   { id: 'resources',     label: 'Ressources',     icon: 'flag'      },
   { id: 'demandes',      label: 'Mes demandes',   icon: 'inbox'     },
   { id: 'activity',      label: 'Activité',       icon: 'clock'     },
@@ -75,14 +72,8 @@ const userNav: NavItem[] = [
 
 const adminNav: NavItem[] = [
   { id: 'users',           label: 'Utilisateurs',   icon: 'users',        badge: null  },
-  { id: 'projects',        label: 'Projets',        icon: 'folder',       badge: null  },
   { id: 'demandes',        label: 'Demandes',        icon: 'inbox',        badge: null  },
   { id: 'contacts',        label: 'Contacts',        icon: 'mail',         badge: null  },
-  { id: 'candidatures',    label: 'Candidatures',    icon: 'user-plus',    badge: null  },
-  { id: 'recruitment-sessions', label: 'Sessions recrutement', icon: 'calendar-users', badge: null, href: '/dashboard/admin/candidatures/sessions' },
-  { id: 'appointments',    label: 'Rendez-vous',     icon: 'calendar',     badge: null  },
-  { id: 'ateliers',        label: 'Ateliers',        icon: 'calendar',     badge: null  },
-  { id: 'formations',        label: 'Formations',        icon: 'graduation',     badge: null  },
   { id: 'resources',       label: 'Ressources',      icon: 'flag',         badge: null  },
   { id: 'logiciels',       label: 'Logiciels',       icon: 'package',      badge: null  },
   { id: 'trombinoscope',   label: 'Équipe',          icon: 'users',        badge: null  },
@@ -91,9 +82,6 @@ const adminNav: NavItem[] = [
 
 const benevoleNav: NavItem[] = [
   { id: 'overview',   label: "Vue d'ensemble",  icon: 'grid'     },
-  { id: 'projects',   label: 'Projets',          icon: 'folder'   },
-  { id: 'tasks',      label: 'Mes tâches',       icon: 'check'    },
-  { id: 'calendar',   label: 'Calendrier',       icon: 'calendar' },
   { id: 'equipe',     label: 'Équipe',           icon: 'users'    },
   { id: 'settings',   label: 'Paramètres',       icon: 'settings' },
 ];
@@ -101,7 +89,6 @@ const benevoleNav: NavItem[] = [
 const associationNav: NavItem[] = [
   { id: 'overview',   label: "Vue d'ensemble",  icon: 'grid'     },
   { id: 'projets',    label: 'Projets',          icon: 'folder'   },
-  { id: 'rendez-vous',label: 'Rendez-vous',     icon: 'calendar' },
   { id: 'ressources', label: 'Ressources',       icon: 'flag'     },
   { id: 'settings',   label: 'Paramètres',       icon: 'settings' },
 ];
@@ -390,9 +377,7 @@ const initials = displayName.split(' ').map((n: string) => n[0]).join('').toUppe
     // Click on notification: navigate + mark read
     listEl.querySelectorAll('.notif-item').forEach(item => {
       item.addEventListener('click', async () => {
-        const id        = item.getAttribute('data-id');
-        const taskId    = item.getAttribute('data-task-id');
-        const projectId = item.getAttribute('data-project-id');
+        const id = item.getAttribute('data-id');
         if (id) {
           await fetch('/api/notifications', {
             method: 'PATCH',
@@ -400,8 +385,6 @@ const initials = displayName.split(' ').map((n: string) => n[0]).join('').toUppe
             body: JSON.stringify({ ids: [id] }),
           });
         }
-        if (projectId) window.location.href = `/dashboard/benevole/project/${projectId}`;
-        else if (taskId) window.location.href = `/dashboard/benevole/tasks`;
         closeDropdown();
       });
     });

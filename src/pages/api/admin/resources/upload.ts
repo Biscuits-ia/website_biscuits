@@ -2,7 +2,7 @@
 import type { APIRoute } from 'astro';
 import { createSupabaseAdminClient } from '@/lib/supabase';
 import { requireAdmin } from '@/lib/auth';
-import { getFormString } from '@/types/ateliers';
+import { getFormString } from '@/lib/formData';
 
 // `image/svg+xml` a ete RETIRE le 2026-07-08.
 //

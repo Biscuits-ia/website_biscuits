@@ -43,7 +43,7 @@ const DISALLOW_ALL = [
 ];
 
 /** Pages publiques mais volontairement hors index (donnees personnelles, tunnel). */
-const DISALLOW_SEARCH_ONLY = ['/trombinoscope', '/formations/parrainer'];
+const DISALLOW_SEARCH_ONLY = ['/trombinoscope'];
 
 /**
  * Crawlers LLM explicitement autorises : on veut etre cite dans les reponses
@@ -115,9 +115,6 @@ export default defineConfig({
           '/utilisateurs',
           '/verifier-code-inscription',
           '/verifier-code-reinitialisation',
-          // Aligne avec DISALLOW_SEARCH_ONLY (robots.txt) : page publique mais
-          // volontairement hors index (tunnel de paiement/parrainage).
-          '/formations/parrainer',
         ];
         return !excludePaths.some((path) => page.includes(path));
       },
@@ -127,7 +124,7 @@ export default defineConfig({
       serialize(item) {
         // @astrojs/sitemap ajoute toujours le trailing slash (sauf racine) :
         // on le retire pour comparer les chemins sans dupliquer chaque regle
-        // en 2 variantes ("/ateliers" vs "/ateliers/").
+        // en 2 variantes ("/services" vs "/services/").
         const rawPath = new URL(item.url).pathname;
         const path = rawPath !== '/' && rawPath.endsWith('/')
           ? rawPath.slice(0, -1)
@@ -148,13 +145,7 @@ export default defineConfig({
         if (path === '/piliers' || path.startsWith('/piliers/')) {
           return { ...item, changefreq: ChangeFreqEnum.WEEKLY, priority: 0.9 };
         }
-        if (
-          path === '/formations' ||
-          (path.startsWith('/formations/') && !path.includes('/inscription'))
-        ) {
-          return { ...item, changefreq: ChangeFreqEnum.WEEKLY, priority: 0.8 };
-        }
-        if (path === '/ateliers' || path.startsWith('/combats')) {
+        if (path.startsWith('/combats')) {
           return { ...item, changefreq: ChangeFreqEnum.WEEKLY, priority: 0.8 };
         }
         if (path.startsWith('/legal/')) {

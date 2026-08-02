@@ -15,7 +15,6 @@
 // une surface d'attaque inutile, multiplies par N crawlers x N passages/jour.
 //
 // Consequences du passage a `prerender = true` :
-//   - le catalogue `trainings` est fige au build (rafraichi au prochain deploy) ;
 //   - les headers de la `Response` ci-dessous sont IGNORES : Astro ecrit le body
 //     dans `dist/client/llms-full.txt` et Vercel le sert depuis le CDN.
 //     Cache-Control et X-Robots-Tag sont donc poses dans `vercel.json`.
@@ -23,7 +22,6 @@
 
 import type { APIRoute } from 'astro';
 import { getCollection } from 'astro:content';
-import { createSupabaseAdminClient } from '@/lib/supabase';
 
 const SITE = 'https://biscuits-ia.com';
 
@@ -71,30 +69,6 @@ Stack technique : Astro 7, Supabase (PostgreSQL + Auth), TypeScript, Tailwind CS
 - Refuser tout projet de surveillance, de manipulation ou d'atteinte aux droits fondamentaux.`,
   },
   {
-    title: 'Ateliers',
-    slug: '/ateliers',
-    summary: 'Ateliers IA gratuits ou a prix libre, en ligne et en presentiel.',
-    body: `Trois formats :
-- Ateliers en ligne (jusqu'a 15 participants, gratuits).
-- Ateliers en presentiel a Poitiers et villes partenaires.
-- Ateliers a la demande pour les associations et collectivites.
-
-Categories : initiation IA generative, prompting avance, automatisation, ethique, RGPD, creation d'outils.`,
-  },
-  {
-    title: 'Formations',
-    slug: '/formations',
-    summary: 'Formations certifiantes a prix libre (sliding scale 0 a 350 EUR).',
-    body: `Parcours :
-- Decouverte (6h, prix libre 0-50 EUR).
-- Praticien (24h, 100-200 EUR sliding scale).
-- Expert (60h, 200-350 EUR sliding scale).
-
-Paiement de solidarite : si le tarif est un obstacle, demander une exoneration via la page /formations (formulaire dedie).
-
-Les places offertes sont financees par les paiements a tarif plein et par les dons.`,
-  },
-  {
     title: 'Ressources',
     slug: '/ressources',
     summary: 'Guides PDF, checklists, anti-pepins, mediations - tout gratuit.',
@@ -135,8 +109,7 @@ Les places offertes sont financees par les paiements a tarif plein et par les do
     body: `Les questions les plus posees :
 - Qui peut rejoindre Biscuits IA ? Associations, collectifs, benevoles, TPE, collectivites.
 - Vos ressources sont-elles gratuites ? Oui, guides, checklists, ateliers gratuits ou a prix libre.
-- Comment demander un accompagnement ? Via la page Contact ou un rendez-vous en ligne, reponse sous 48h.
-- Vos ateliers sont-ils en ligne ou en presentiel ? Les deux. En ligne jusqu'a 15 participants, en presentiel a Poitiers.
+- Comment demander un accompagnement ? Via la page Contact, reponse sous 48h.
 - Vous aidez uniquement les associations ? Non : TPE, collectivites, collectifs.
 - Comment fonctionne la mediation numerique ? Documentation du cas, contact du prestataire, resolution amiable. Gratuit.
 - Vos outils sont-ils open source ? Oui. Tous les outils developpes ou recommandes.`,
@@ -152,33 +125,6 @@ export const GET: APIRoute = async () => {
   ))
     .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
     .slice(0, 20);
-
-  // Charger les formations a venir (au build : voir l'en-tete du fichier).
-  // Si la service_role key est absente de l'env de build (ex. CI), le catch
-  // degrade proprement : le document est publie sans le catalogue.
-  let formationsMd = '';
-  try {
-    const admin = createSupabaseAdminClient();
-    const { data: trainings } = await admin
-      .from('trainings')
-      .select('id, slug, title, short_description, category, level, is_paying, is_published')
-      .eq('is_published', true)
-      .order('display_order', { ascending: true })
-      .limit(30);
-    if (trainings && trainings.length > 0) {
-      formationsMd = '\n## Catalogue des formations publiees\n\n';
-      for (const t of trainings) {
-        formationsMd += `### ${t.title}\n`;
-        formationsMd += `- URL : ${site}/formations/${t.slug}\n`;
-        if (t.short_description) formationsMd += `- Description : ${t.short_description}\n`;
-        if (t.category) formationsMd += `- Categorie : ${t.category}\n`;
-        if (t.level) formationsMd += `- Niveau : ${t.level}\n`;
-        formationsMd += `- Type : ${t.is_paying ? 'Payante (sliding scale 0-350 EUR)' : 'Gratuite'}\n\n`;
-      }
-    }
-  } catch (err) {
-    console.warn('[llms-full.txt] formations fetch failed:', err);
-  }
 
   // Construire le document
   const lines: string[] = [];
@@ -233,7 +179,6 @@ export const GET: APIRoute = async () => {
   }
 
   // Formations
-  lines.push(formationsMd);
 
   // Section finale : meta-donnees
   lines.push('## Meta-donnees techniques');

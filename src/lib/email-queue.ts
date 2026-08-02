@@ -261,7 +261,7 @@ async function notifyAdminOfDeadEmail(row: { id: string; to_email: string; subje
       `Queue ID    : ${row.id}`,
       `Derniere erreur : ${lastResponse}`,
       ``,
-      `Consultez l'outbox : https://biscuits-ia.com/dashboard/admin/formations#outbox`,
+      `Consultez l'outbox : https://biscuits-ia.com/dashboard/admin/logs#outbox`,
     ].join('\n');
     const html = `<!DOCTYPE html><html><body style="font-family:monospace;background:#fef3d8;padding:20px;border:4px solid #a02020">
       <h2 style="color:#a02020">Email en echec definitif</h2>

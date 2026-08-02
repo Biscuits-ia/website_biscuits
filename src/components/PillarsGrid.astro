@@ -1,6 +1,6 @@
 ---
 // src/components/PillarsGrid.astro
-// Grille des 5 piliers de l'association, reutilisable sur la home et la page /piliers.
+// Grille des 4 piliers de l'association, reutilisable sur la home et la page /piliers.
 // Props: title, intro (optionnels) ; layout='home' (compact) | 'hub' (detaille).
 
 interface Props {
@@ -12,7 +12,7 @@ interface Props {
 
 const {
   title = 'Quatre piliers, une mission',
-  intro = 'Association Loi 1901, Biscuits IA agit sur cinq fronts complementaires pour rendre le numerique utile, sur et accessible a toutes les structures d\u0027interet general, et faire emerger des solutions par la recherche participative.',
+  intro = 'Association Loi 1901, Biscuits IA agit sur quatre fronts complementaires pour rendre le numerique utile, sur et accessible au grand public et aux structures d\u0027interet general, et faire emerger des solutions par la recherche participative.',
   layout = 'home',
   showCta = true,
 } = Astro.props;
@@ -34,7 +34,7 @@ const pillars: Pillar[] = [
     href: '/piliers/ia',
     label: 'Pilier 1',
     title: 'Accompagnement a l\u0027IA',
-    description: 'On aide les associations, collectivites et petites structures a comprendre et utiliser l\u0027intelligence artificielle de facon utile, ethique et autonome.',
+    description: 'On aide le grand public, les associations et les collectivites a comprendre et utiliser l\u0027intelligence artificielle de facon utile, ethique et autonome.',
     bullets: [
       'Ateliers pratiques en ligne et en presentiel',
       'Diagnostic et feuille de route sur mesure',
@@ -48,10 +48,10 @@ const pillars: Pillar[] = [
     href: '/piliers/logiciels',
     label: 'Pilier 2',
     title: 'Logiciels pour associations partenaires',
-    description: 'On concoit et vend des logiciels a destination d\u0027autres associations engagees (lutte contre les arnaques, Emmaus, mediation numerique, etc.).',
+    description: 'On concoit des logiciels libres a but non lucratif pour les associations et les structures publiques, et des sites et applications mobiles pour le grand public sur des enjeux concrets.',
     bullets: [
       'Outils libres, auditables, souverains',
-      'Licences associatives preferentielles',
+      'Jamais de prestation pour les entreprises',
       'Maintenance et evolutions sur mesure',
     ],
     cta: 'Voir le catalogue',
@@ -195,7 +195,6 @@ const pillars: Pillar[] = [
   }
 
   .pillar-card[data-accent="ia"] .pillar-badge { background: var(--color-secondary); color: #fff; }
-  .pillar-card[data-accent="cyber"] .pillar-badge { background: #c0392b; color: #fff; }
   .pillar-card[data-accent="logiciels"] .pillar-badge { background: var(--color-first); }
   .pillar-card[data-accent="anti-pepins"] .pillar-badge { background: var(--color-accent-caramel); color: var(--color-text); }
   .pillar-card[data-accent="recherche"] .pillar-badge { background: #2e7d32; color: #fff; }

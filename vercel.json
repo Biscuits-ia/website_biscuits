@@ -363,6 +363,11 @@
       "statusCode": 301
     },
     {
+      "source": "/public/tpe-pme",
+      "destination": "/a-qui-s-adresse",
+      "statusCode": 301
+    },
+    {
       "source": "/login",
       "destination": "/connexion",
       "statusCode": 301

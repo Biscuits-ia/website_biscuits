@@ -92,10 +92,10 @@ Stack technique : Astro 7, Supabase (PostgreSQL + Auth), TypeScript, Tailwind CS
     slug: '/faq',
     summary: 'Questions frequentes sur l\'association.',
     body: `Les questions les plus posees :
-- Qui peut rejoindre Biscuits IA ? Associations, collectifs, benevoles, TPE, collectivites.
+- Qui peut rejoindre Biscuits IA ? Grand public, associations, collectifs, benevoles, collectivites.
 - Vos ressources sont-elles gratuites ? Oui, guides, checklists, ateliers gratuits ou a prix libre.
 - Comment demander un accompagnement ? Via la page Contact, reponse sous 48h.
-- Vous aidez uniquement les associations ? Non : TPE, collectivites, collectifs.
+- Vous aidez uniquement les associations ? Non : grand public, collectivites, collectifs. Pas les entreprises.
 - Comment fonctionne la mediation numerique ? Documentation du cas, contact du prestataire, resolution amiable. Gratuit.
 - Vos outils sont-ils open source ? Oui. Tous les outils developpes ou recommandes.`,
   },

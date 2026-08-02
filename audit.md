@@ -161,18 +161,25 @@ Conséquence directe : impossible de reconstruire un environnement de préproduc
 
 **Action :** exporter ces définitions depuis Supabase et les committer dans une migration `*_capture_cron_infra.sql`.
 
-### 5.2 Haute — la CI ne lance pas ESLint
+### 5.2 Haute — étape ESLint de la CI conditionnelle *(corrigé dans cette passe)*
 
-`.github/workflows/ci.yml` exécute `astro check`, `npm run build`, les invariants de build, les tests a11y et gitleaks. **Pas `npm run lint`.**
-
-La règle maison `no-unguarded-auth-result` (`eslint-rules/require-auth-narrow.cjs`) est un garde-fou de sécurité : elle rattrape un `await requireAdmin()` sans `instanceof Response`, cas que TypeScript laisse passer dans un frontmatter `.astro`. Elle ne tourne aujourd'hui que sur les postes de dev.
-
-**Action :** ajouter une étape entre `astro check` et `build` :
+L'étape lint existait bien dans `.github/workflows/ci.yml`, mais derrière une garde :
 
 ```yaml
-      - name: Lint
-        run: npm run lint
+if [ -f eslint.config.js ] || [ -f eslint.config.mjs ]; then
+  npm run lint
+else
+  echo "::warning::Pas de eslint.config.js : lint skippe (TODO P2 #17)"
+fi
 ```
+
+`eslint.config.js` existe, donc le lint tournait effectivement. Le défaut était la garde elle-même : héritée de l'époque où la flat config n'existait pas encore (TODO P2 #17, résolu depuis), elle transformait toute disparition ou renommage du fichier de configuration en **CI verte avec un simple `::warning::`**.
+
+C'est un angle mort qui compte, parce que la règle maison `no-unguarded-auth-result` (`eslint-rules/require-auth-narrow.cjs`) est un garde-fou d'authentification : elle rattrape un `await requireAdmin()` sans `instanceof Response`, cas que TypeScript laisse passer dans un frontmatter `.astro`. ESLint est le seul filet sur ce contrat — il doit échouer bruyamment, pas s'auto-désactiver.
+
+**Corrigé :** l'étape est désormais inconditionnelle (`run: npm run lint`).
+
+**Reste à faire :** `eslint .` sort en code 0 tant qu'il n'y a que des warnings. Les 42 warnings actuels (§5.7) peuvent donc croître sans que la CI bronche. Une fois cette dette résorbée, passer à `eslint . --max-warnings 0` pour verrouiller le acquis.
 
 ### 5.3 Moyenne — outillage de build en dépendances de production
 

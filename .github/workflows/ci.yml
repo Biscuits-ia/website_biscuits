@@ -10,7 +10,7 @@
 #   2. type-check        -- astro check (TypeScript strict)
 #   3. build             -- astro build
 #   4. assert-invariants -- scripts/assert-build-invariants.mjs
-#   5. lint              -- eslint (skippé si pas de config flat)
+#   5. lint              -- eslint (inconditionnel)
 #
 # Si une etape echoue, le PR ne peut pas etre merge.
 
@@ -69,15 +69,16 @@ jobs:
         # Cf. scripts/assert-build-invariants.mjs (en-tete).
         run: node scripts/assert-build-invariants.mjs
 
-      - name: Lint (skip si pas de config flat)
-        # TODO P2 #17 : creer eslint.config.js (flat config) et retirer ce skip.
-        # L'ancien format .eslintrc est obsolete avec ESLint 10.
-        run: |
-          if [ -f eslint.config.js ] || [ -f eslint.config.mjs ]; then
-            npm run lint
-          else
-            echo "::warning::Pas de eslint.config.js : lint skippe (TODO P2 #17)"
-          fi
+      - name: Lint (eslint)
+        # Inconditionnel depuis 2026-08-02. La garde `if [ -f eslint.config.js ]`
+        # datait de l'epoque ou la flat config n'existait pas encore (TODO P2 #17,
+        # resolu). Elle etait devenue un angle mort : config renommee ou
+        # supprimee = CI verte avec un simple ::warning::, alors que la regle
+        # maison no-unguarded-auth-result (eslint-rules/require-auth-narrow.cjs)
+        # est un garde-fou d'authentification. Un `requireAdmin()` sans
+        # `instanceof Response` ne fait pas echouer `astro check` : ESLint est
+        # le seul filet sur ce contrat, il doit donc echouer bruyamment.
+        run: npm run lint
 
   # ── Audit de contraste axe-core (cf. audit.md P2 #38) ──────────────────────
   # `astro preview` ne fonctionne pas avec l'adaptateur Vercel (message :

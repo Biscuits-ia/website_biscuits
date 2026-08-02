@@ -61,6 +61,11 @@ const currentYear = new Date().getFullYear();
           <li><a href="/legal/mentions-legales">Mentions legales</a></li>
           <li><a href="/legal/cgu">CGU</a></li>
           <li><a href="/legal/politique-de-confidentialite">Confidentialite</a></li>
+          {/* Acces direct a l'information cookies depuis chaque page :
+              attendu par la CNIL, l'utilisateur doit pouvoir revenir sur son
+              consentement sans avoir a naviguer dans un index. */}
+          <li><a href="/legal/cookies">Cookies</a></li>
+          <li><a href="/legal">Tous les documents legaux</a></li>
         </ul>
       </div>
     </div>

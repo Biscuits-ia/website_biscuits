@@ -389,22 +389,22 @@
     },
     {
       "source": "/legal/cgv",
-      "destination": "/legal/index",
+      "destination": "/legal",
       "statusCode": 301
     },
     {
       "source": "/legal/parrainage",
-      "destination": "/legal/index",
+      "destination": "/legal",
       "statusCode": 301
     },
     {
       "source": "/legal/exoneration",
-      "destination": "/legal/index",
+      "destination": "/legal",
       "statusCode": 301
     },
     {
       "source": "/legal/guide-relecture",
-      "destination": "/legal/index",
+      "destination": "/legal",
       "statusCode": 301
     }
   ]

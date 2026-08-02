@@ -353,6 +353,16 @@
       "statusCode": 301
     },
     {
+      "source": "/aide-victimes",
+      "destination": "/anti-pepins",
+      "statusCode": 301
+    },
+    {
+      "source": "/combats/derives-numeriques",
+      "destination": "/combats",
+      "statusCode": 301
+    },
+    {
       "source": "/login",
       "destination": "/connexion",
       "statusCode": 301

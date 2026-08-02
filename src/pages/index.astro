@@ -6,7 +6,6 @@ import BaseLayout from '@/layouts/Layout.astro';
 import Hero from '@/components/Hero.astro';
 import PillarsGrid from '@/components/PillarsGrid.astro';
 import PublicsPicker from '@/components/PublicsPicker.astro';
-import VictimShortNotice from '@/components/VictimShortNotice.astro';
 import AntiPepinsShowcase from '@/components/AntiPepinsShowcase.astro';
 import SoftwareShowcase from '@/components/SoftwareShowcase.astro';
 import LatestArticles from '@/components/LatestArticles.astro';
@@ -37,10 +36,9 @@ const latestArticles = (await getCollection('blog', ({ data }) =>
   <PillarsGrid
     layout="home"
     title="Quatre piliers, une mission d'interet general"
-    intro="Une association Loi 1901 qui agit sur cinq fronts complementaires pour rendre le numerique utile, sur et accessible a tous. Chaque pilier finance et renforce les autres."
+    intro="Une association Loi 1901 qui agit sur quatre fronts complementaires pour rendre le numerique utile, sur et accessible a tous. Chaque pilier finance et renforce les autres."
   />
   <PublicsPicker />
-  <VictimShortNotice />
   <AntiPepinsShowcase />
   <SoftwareShowcase />
   <LatestArticles articles={latestArticles} />

@@ -46,7 +46,7 @@ rotation est effective à la fin du déploiement.
 ### 4. Vérifier
 
 ```bash
-curl -fsS https://biscuits-ia.com/api/cron/email-outbox \
+curl -fsS https://biscuits-ia.com/api/cron/aggregate-downloads \
   -H "Authorization: Bearer $CRON_SECRET"
 # doit repondre 200, pas 401.
 ```

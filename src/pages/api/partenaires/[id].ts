@@ -41,9 +41,10 @@ export const GET: APIRoute = async ({ params, request, cookies }) => {
       );
     }
 
+    // Colonnes enumerees : endpoint public, cf. le commentaire de index.ts.
     const { data, error } = await supabase
       .from('partners')
-      .select('*')
+      .select('id, name, description, collaboration, logo_url, website_url, expertise, display_order, is_published')
       .eq('id', id)
       .single();
 

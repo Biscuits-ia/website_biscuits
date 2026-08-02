@@ -30,7 +30,9 @@ Les problèmes réels sont ailleurs : l'historique de migrations n'est **pas rej
 
 ---
 
-## 2. Ce qui a été corrigé dans cette passe
+## 2. Ce qui a été corrigé
+
+### Passe 1 — nettoyage structurel
 
 | Action | Détail |
 |---|---|
@@ -40,6 +42,25 @@ Les problèmes réels sont ailleurs : l'historique de migrations n'est **pas rej
 | Intégration `icon()` retirée | Chargée dans `astro.config.mjs` sans qu'aucun `<Icon>` n'existe dans le code |
 | 7 composants orphelins supprimés | `AideBenevoleCTA`, `AnimatedFeaturesGrid`, `Citation`, `Confiance`, `Services`, `SEO/GEO`, `SEO/HowTo` |
 | 2 fichiers dupliqués supprimés | `public/sw-register.js` et `src/scripts/sw-register.js`, octet pour octet identiques et **tous deux morts** : l'enregistrement du service worker est inliné dans `Layout.astro:120` |
+
+### Passe 2 — application des recommandations
+
+| Recommandation | État |
+|---|---|
+| §5.2 Étape ESLint conditionnelle en CI | **Fait** — `run: npm run lint` inconditionnel |
+| §5.3 Outillage de build en `dependencies` | **Fait** — `@astrojs/check`, `@astrojs/ts-plugin`, `typescript` passés en `devDependencies`, build vérifié |
+| §5.4 `select('*')` | **Fait sur les endpoints publics** ; raisonnement révisé pour les autres, voir §5.4 |
+| §5.5 Requêtes sans borne | **Fait sur les listes à croissance non bornée**, avec signalement de troncature |
+| §5.6 Kit `src/components/ui/` | **Fait** — `Avatar`, `Button`, `Input`, `Modal`, `Select` supprimés ; `ConfirmDialog` et `Toast` conservés |
+| §5.7 42 warnings ESLint | **Non fait** — tentative annulée, voir §5.7 |
+| §5.1 Infra cron hors dépôt | **Bloqué** — nécessite un accès à la base, voir §5.1 |
+| §3.4 Squash de la baseline | **Non fait** — opération dédiée, voir §3.4 |
+
+### Régression interceptée
+
+`src/pages/dashboard/admin/users.astro` sélectionnait et affichait `reports_count` — **la colonne que la migration `20260802140000` supprime**. Appliquer cette migration aurait cassé la page d'administration des utilisateurs.
+
+La colonne, la propriété de type, la cellule et l'en-tête « Signalements » ont été retirés. C'est le genre de couplage qu'un audit table-par-table ne voit pas : `reports` n'avait aucune référence, mais son compteur dénormalisé sur `profiles`, si.
 
 ---
 
@@ -181,51 +202,55 @@ C'est un angle mort qui compte, parce que la règle maison `no-unguarded-auth-re
 
 **Reste à faire :** `eslint .` sort en code 0 tant qu'il n'y a que des warnings. Les 42 warnings actuels (§5.7) peuvent donc croître sans que la CI bronche. Une fois cette dette résorbée, passer à `eslint . --max-warnings 0` pour verrouiller le acquis.
 
-### 5.3 Moyenne — outillage de build en dépendances de production
+### 5.3 Moyenne — outillage de build en dépendances de production *(appliqué)*
 
-`@astrojs/check`, `@astrojs/ts-plugin` et `typescript` sont dans `dependencies`, pas `devDependencies`. Sur Vercel, `npm ci` les installe en production : install plus lent, surface plus large, sans aucun bénéfice à l'exécution.
+`@astrojs/check`, `@astrojs/ts-plugin` et `typescript` étaient dans `dependencies`. Sur Vercel, `npm ci` les installait en production : install plus lent et surface plus large, sans aucun bénéfice à l'exécution.
 
-**Action :**
+Déplacés en `devDependencies` (22 dépendances de production, 14 de développement). `npm run build` et `npm run check` vérifiés après le déplacement — Vercel installe les `devDependencies` au build, `astro check` reste donc disponible en CI comme en local.
 
-```bash
-npm pkg delete dependencies.@astrojs/check dependencies.@astrojs/ts-plugin dependencies.typescript
-npm i -D @astrojs/check @astrojs/ts-plugin typescript
-```
+### 5.4 Moyenne — `select('*')` *(appliqué de façon ciblée)*
 
-Non fait dans cette passe : à valider contre un déploiement Vercel réel, `astro check` étant parfois invoqué au build selon la configuration du projet.
+La recommandation initiale — « énumérer partout » — était trop large. La vérification colonne par colonne des pages concernées la contredit :
 
-### 5.4 Moyenne — `select('*')` sur des tables larges
+| Emplacement | Colonnes réellement utilisées | Décision |
+|---|---|---|
+| `api/partenaires/index.ts` | endpoint **public** | **Énuméré** |
+| `api/partenaires/[id].ts` | endpoint **public** | **Énuméré** |
+| `admin/contacts.astro` | 8 sur 8 | `*` conservé |
+| `admin/trombinoscope.astro` | ~toutes | `*` conservé |
+| `admin/logiciels.astro` | 9 sur 11 | `*` conservé |
+| `admin/resources.astro` | 9 sur 13 | `*` conservé — voir ci-dessous |
+| `association/index.astro` | ligne propre, filtrée par `association_id` | `*` conservé |
 
-10 occurrences, dont sur des pages de tableau de bord :
+**Ce qui compte vraiment, c'est l'exposition publique.** Sur `/api/partenaires`, `select('*')` signifie que toute colonne ajoutée plus tard à `partners` — note interne, contact, montant de convention — serait publiée sans qu'aucune revue ne le signale. Les colonnes y sont désormais énumérées.
 
-- `dashboard/admin/contacts.astro:18`
-- `dashboard/admin/logiciels.astro:17`
-- `dashboard/admin/resources.astro:27`
-- `dashboard/admin/trombinoscope.astro:21`
-- `dashboard/association/index.astro:16` et `:22`
-- `api/partenaires/index.ts:14`, `api/partenaires/[id].ts:46`
+Pour les tableaux de bord admin, `select('*')` est légitime : ce sont des écrans CRUD qui éditent la ligne entière, derrière authentification. `admin/resources.astro` était le cas limite — il n'utilise pas `file_path` — mais le narrower aurait rendu mensonger le cast `as Resource[]`, pour le seul gain de ne pas envoyer un chemin de stockage dans du HTML déjà protégé par authentification. Non fait, à traiter avec le typage généré (§5.7).
 
-Chaque `select('*')` transporte toutes les colonnes, y compris les `text` longs jamais affichés, sur chaque rendu SSR. Sur `contact_submissions` (colonne `message`) l'écart est net.
+### 5.5 Moyenne — requêtes sans borne *(appliqué)*
 
-**Action :** énumérer les colonnes réellement rendues. Bénéfice double : moins d'octets sur le fil, et un rappel à la revue quand une colonne sensible est ajoutée à une table déjà exposée.
+Distinction faite entre les tables **à croissance non bornée** (alimentées par les utilisateurs) et les **catalogues curés** (quelques dizaines de lignes, gérés à la main).
 
-### 5.5 Moyenne — requêtes sans borne
+Bornées, car elles grossissent sans plafond :
 
-14 requêtes de tableau de bord n'ont ni `.limit()` ni `.range()`. Tant que les tables sont petites, invisible ; le jour où `contact_submissions` atteint quelques milliers de lignes, la page se dégrade linéairement sans alerte préalable.
+| Page | Table | Traitement |
+|---|---|---|
+| `admin/contacts.astro` | `contact_submissions` | `limit(201)` + bandeau de troncature |
+| `admin/demandes.astro` | `requests` | `limit(201)` + bandeau de troncature |
+| `user/demandes.astro` | `requests` (par membre) | `limit(200)` |
 
-**Action :** `.limit(100)` par défaut + pagination sur les listes admin.
+Les catalogues (`software`, `resources`, `benevoles`, `association_projects`) sont laissés sans borne : y ajouter une limite créerait un risque de **troncature silencieuse** — un catalogue de 201 entrées en perdrait une sans que personne ne le voie — pour un bénéfice nul à leur volume réel.
 
-### 5.6 Basse — kit UI à moitié adopté
+Sur les deux listes admin, la requête demande volontairement `LIST_CAP + 1` lignes : c'est ce qui permet de savoir que la liste est tronquée et de le dire, au lieu de masquer des messages. Un `.limit()` nu aurait remplacé un problème de performance par une perte de données invisible.
 
-`src/components/ui/` contient 8 composants. `ConfirmDialog` et `Toast` sont utilisés ; `Avatar`, `Button`, `Input`, `Modal`, `Select` ne le sont **nulle part**.
+**Reste à faire :** la vraie correction est la pagination. Le gabarit existe déjà dans `logs.astro`, `users.astro` et `user/activity.astro` (`.range(from, from + perPage - 1)` avec `count: 'exact'`) — il suffit de l'appliquer à ces deux pages.
 
-Je ne les ai pas supprimés : retirer la moitié d'un kit délibérément construit est plus dommageable que le laisser en place, et le choix vous revient.
+### 5.6 Basse — kit UI à moitié adopté *(appliqué)*
 
-**Deux options cohérentes :**
-1. Les adopter — les pages réimplémentent aujourd'hui boutons et champs en CSS local, d'où une partie des 998 lignes de `global.css` ;
-2. Les supprimer : `git rm src/components/ui/{Avatar,Button,Input,Modal,Select}.astro`.
+`src/components/ui/` contenait 8 composants. `ConfirmDialog` et `Toast` sont utilisés ; `Avatar`, `Button`, `Input`, `Modal`, `Select` ne l'étaient **nulle part**.
 
-Le statu quo — un kit existant que personne n'utilise — est la seule option qui coûte sans rien rapporter.
+Les 5 inutilisés ont été supprimés. Les pages continuent d'utiliser leur CSS local : **aucun changement visuel**.
+
+Si le besoin d'un kit partagé revient, le reconstruire depuis l'historique git est trivial — et il faudra alors l'adopter réellement, pas seulement le déclarer.
 
 ### 5.7 Basse — 42 warnings ESLint
 
@@ -236,13 +261,36 @@ Le statu quo — un kit existant que personne n'utilise — est la seule option 
 | `no-useless-escape` | 10 |
 | `no-useless-assignment` | 5 |
 
-Les `any` sont concentrés dans les `.map((d: any) => ...)` sur les retours Supabase. Le typage propre passe par `supabase gen types typescript`, qui génère les types depuis le schéma réel — ce qui supprime la classe entière de warnings et rattrape en plus les fautes de frappe sur les noms de colonnes.
+**Aucun n'a été corrigé, et c'est un choix documenté.** J'ai tenté la correction ; elle a produit **282 erreurs de type** et a été annulée. Détail par règle :
 
-Les `no-unused-vars` sont sans risque : 7 constantes de palette dans `scripts/generate-pdfs.js`, le reste étant des variables abandonnées (`redirectTo` dans `connexion.astro:11`, `readingTimeMin` dans `blog/[...slug].astro:51`, `windowMs` dans `rateLimit.ts:61`). Aucun ne provient des suppressions de modules — tous préexistaient.
+**`no-useless-escape` (10)** — j'ai remplacé les `\'` par `'` dans `auteur/[slug].astro` et `formValidation.ts`. Erreur : ESLint ne signalait que les `\'` situés dans des chaînes à **guillemets doubles** ou des littéraux gabarits, où l'échappement est superflu. Les autres sont dans des chaînes à **guillemets simples**, où il est *obligatoire*. Un remplacement global casse le fichier. `eslint --fix` ne corrige pas cette règle automatiquement. Correction possible, mais ligne par ligne et sans gain fonctionnel.
 
-`no-useless-escape` et `no-useless-assignment` sont des corrections d'une ligne chacune.
+**`no-useless-assignment` (5)** — `let body: Record<string, unknown> = {}` dans `legal/accept.ts:42`, `newsletter.ts:22`, et deux cas voisins. Ce sont des **initialiseurs défensifs** : la valeur est bien réassignée sur tous les chemins actuels, ce que la règle détecte, mais la retirer rendrait la variable non initialisée si un futur chemin de sortie anticipé était ajouté. La règle a tort ici sur le fond.
 
-### 5.8 Basse — pages volumineuses
+**`no-unused-vars` (12)** — 7 sont des constantes de `scripts/generate-pdfs.js` qui forment un **miroir complet de la palette de `theme.css`**. En supprimer 7 sur 19 laisserait une palette partielle et trompeuse : c'est le même raisonnement que pour le kit UI (§5.6), sauf qu'ici le bloc vaut par sa complétude. Les 5 autres sont des variables abandonnées isolées (`redirectTo` dans `connexion.astro:11`, `readingTimeMin` dans `blog/[...slug].astro:51`, `windowMs` dans `rateLimit.ts:61`), corrigeables sans risque au prochain passage sur ces fichiers.
+
+**`@typescript-eslint/no-explicit-any` (15)** — concentrés dans les `.map((d: any) => ...)` sur les retours Supabase. Le correctif propre est `supabase gen types typescript`, qui génère les types depuis le schéma réel : il supprime la classe entière de warnings, rattrape les fautes de frappe sur les noms de colonnes, et débloque au passage le cas `admin/resources.astro` de §5.4. **Nécessite un accès à la base** — à lancer de votre côté :
+
+```bash
+supabase gen types typescript --project-id <ref> > src/types/database.ts
+```
+
+Aucun de ces 42 warnings ne provient des suppressions de modules : tous préexistaient. Aucun n'a d'effet à l'exécution.
+
+### 5.8 Moyenne — `partners` : module entièrement orphelin
+
+Découvert en appliquant §5.4. Le module partenaires existe en trois morceaux — table `partners`, endpoints `/api/partenaires` (`index.ts` et `[id].ts`), type `src/types/partners.ts` — et **aucune page, aucun composant, aucun script du dépôt ne les consomme**. Il n'y a pas non plus d'écran d'administration pour alimenter la table.
+
+Je ne l'ai **pas supprimé**, contrairement à `reports` (§4.2). La différence est décisive : `reports` n'était joignable par rien, alors que `/api/partenaires` est un **endpoint HTTP public**. Un consommateur externe — autre front, site partenaire, intégration — est parfaitement plausible et invisible depuis ce dépôt.
+
+**Action, à trancher de votre côté :**
+1. Vérifier dans les logs Vercel si `/api/partenaires` reçoit du trafic ;
+2. Sans trafic : supprimer les deux routes, `src/types/partners.ts` et la table `partners` ;
+3. Avec trafic : documenter le consommateur dans `ARCHITECTURE.md` — un endpoint public sans consommateur identifiable est une surface d'attaque que personne ne surveille.
+
+En attendant, les colonnes y sont énumérées (§5.4) : l'endpoint ne peut plus publier accidentellement une colonne ajoutée plus tard.
+
+### 5.9 Basse — pages volumineuses
 
 | Fichier | Lignes |
 |---|---|
@@ -274,26 +322,27 @@ Ces points sont notés pour éviter qu'une future « simplification » les défa
 
 ---
 
-## 7. Plan d'action
+## 7. Plan d'action — ce qui reste
 
-### À faire maintenant
+Tout ce qui pouvait être fait depuis le dépôt l'a été (§2). Ce qui suit demande soit un accès à la base, soit une décision métier.
 
-1. Appliquer `20260802140000_cleanup_orphan_objects.sql` (exporter `reports` d'abord si son historique compte).
-2. Ajouter `npm run lint` à la CI (§5.2).
-3. Capturer l'infrastructure cron hors dépôt dans une migration (§5.1).
+### Nécessite un accès à la base — vous seul pouvez le faire
 
-### Prochaine itération
+1. **Appliquer `20260802140000_cleanup_orphan_objects.sql`.** Exporter `reports` d'abord si son historique compte. ⚠️ La régression `reports_count` sur `admin/users.astro` est déjà corrigée dans cette branche : appliquer la migration **sans** ce correctif casserait la page.
+2. **Capturer l'infrastructure cron hors dépôt** (§5.1) : `app_runtime_config`, `pg_cron_audit`, `aggregate_downloads()` et son job.
+3. **Générer les types Supabase** (§5.7) — supprime les 15 `any` et débloque `admin/resources.astro` :
+   ```bash
+   supabase gen types typescript --project-id <ref> > src/types/database.ts
+   ```
 
-4. `supabase gen types typescript` → supprime les 42 `any` (§5.7).
-5. Déplacer l'outillage de build en `devDependencies` (§5.3).
-6. Énumérer les colonnes des `select('*')` + borner les requêtes de tableau de bord (§5.4, §5.5).
-7. Trancher sur `src/components/ui/` : adopter ou supprimer (§5.6).
+### Décision métier
+
+4. **Module `partners`** (§5.8) : vérifier le trafic de `/api/partenaires`, puis supprimer ou documenter le consommateur.
+5. **Textes légaux** : `/legal/cgv` décrit toujours la vente de formations, `/legal/guide-relecture` cite `/formations/[slug]/inscription`. Aucun texte juridique n'a été réécrit.
+6. **Variables SMTP de Vercel** : retirer `SMTP_*` et `ADMIN_NOTIFICATION_EMAILS`, plus lues par le code depuis la PR #14. **Garder `CRON_SECRET`**, utilisé par `/api/cron/aggregate-downloads`.
 
 ### Quand une fenêtre le permet
 
-8. Squash de la baseline de migrations (§3.4) — supprime le bruit création/destruction et les deux helpers `updated_at` en double.
-
-### Reliquats des suppressions de modules
-
-9. `/legal/cgv` décrit toujours la vente de formations, `/legal/guide-relecture` cite `/formations/[slug]/inscription`. Aucun texte juridique n'a été réécrit : cela relève de votre décision.
-10. Retirer les variables SMTP de Vercel (`SMTP_*`, `ADMIN_NOTIFICATION_EMAILS`) — plus lues par le code depuis la PR #14. **Garder `CRON_SECRET`**, utilisé par `/api/cron/aggregate-downloads`.
+7. **Squash de la baseline de migrations** (§3.4) — supprime le bruit création/destruction et les deux helpers `updated_at` en double.
+8. **Pagination** sur `admin/contacts` et `admin/demandes` (§5.5), en reprenant le gabarit de `logs.astro`.
+9. **`--max-warnings 0`** une fois les 42 warnings résorbés (§5.2, §5.7), pour verrouiller l'acquis.

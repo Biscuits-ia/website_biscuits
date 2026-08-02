@@ -33,17 +33,14 @@ const isActive = (href: string) =>
                 <button class="mega-cat active" data-cat="ia" aria-selected="true">
                   Pilier 1 : IA
                 </button>
-                <button class="mega-cat" data-cat="cyber" aria-selected="false">
-                  Pilier 2 : Cyber
-                </button>
                 <button class="mega-cat" data-cat="logiciels" aria-selected="false">
-                  Pilier 3 : Logiciels
+                  Pilier 2 : Logiciels
                 </button>
                 <button class="mega-cat" data-cat="anti" aria-selected="false">
-                  Pilier 4 : Anti Pepins
+                  Pilier 3 : Anti Pepins
                 </button>
                 <button class="mega-cat" data-cat="recherche" aria-selected="false">
-                  Pilier 5 : Recherche
+                  Pilier 4 : Recherche
                 </button>
               </aside>
 
@@ -73,31 +70,6 @@ const isActive = (href: string) =>
                   </div>
                 </section>
 
-                <section class="mega-section" data-panel="cyber">
-                  <header class="mega-head">
-                    <p class="visually-hidden">Lutte cyber</p>
-                    <a href="/piliers/cyber">Voir le pilier</a>
-                  </header>
-                  <div class="mega-items">
-                    <a href="/piliers/cyber" class="mega-item">
-                      <strong>Pilier 2 : Cyber</strong>
-                      <span>Arnaques, usurpation, harponnage : sensibilisation et orientation.</span>
-                    </a>
-                    <a href="/aide-victimes" class="mega-item">
-                      <strong>Associations d'aide aux victimes</strong>
-                      <span>France Victimes, e-Enfance, assos specialisees cyber et mineurs.</span>
-                    </a>
-                    <a href="/contact?sujet=signalement" class="mega-item">
-                      <strong>Signaler un contenu</strong>
-                      <span>PHAROS, 3018 : on vous aide a constituer le dossier.</span>
-                    </a>
-                    <a href="/combats/derives-numeriques" class="mega-item">
-                      <strong>Position editorial</strong>
-                      <span>Notre lecture des derives numeriques.</span>
-                    </a>
-                  </div>
-                </section>
-
                 <section class="mega-section" data-panel="logiciels">
                   <header class="mega-head">
                     <p class="visually-hidden">Logiciels pour associations</p>
@@ -105,7 +77,7 @@ const isActive = (href: string) =>
                   </header>
                   <div class="mega-items">
                     <a href="/piliers/logiciels" class="mega-item">
-                      <strong>Pilier 3 : Logiciels</strong>
+                      <strong>Pilier 2 : Logiciels</strong>
                       <span>Outils libres vendus aux associations engagees.</span>
                     </a>
                     <a href="/contact?sujet=devis-logiciel" class="mega-item">
@@ -126,7 +98,7 @@ const isActive = (href: string) =>
                   </header>
                   <div class="mega-items">
                     <a href="/piliers/anti-pepins" class="mega-item">
-                      <strong>Pilier 4 : Anti Pepins</strong>
+                      <strong>Pilier 3 : Anti Pepins</strong>
                       <span>Service public gratuit d'analyse de messages suspects.</span>
                     </a>
                     <a href="https://anti-pepins.biscuits-ia.com/" class="mega-item">
@@ -146,7 +118,7 @@ const isActive = (href: string) =>
                   </header>
                   <div class="mega-items">
                     <a href="/piliers/recherche" class="mega-item">
-                      <strong>Pilier 5 : Recherche</strong>
+                      <strong>Pilier 4 : Recherche</strong>
                       <span>Recherches participatives et modeles ouverts pour l'agriculture et la sante.</span>
                     </a>
                     <a href="/contact" class="mega-item">
@@ -168,10 +140,9 @@ const isActive = (href: string) =>
 
             <ul class="mega-mobile-menu" role="menu" aria-label="Nos piliers en mobile">
               <li role="none"><a role="menuitem" href="/piliers/ia" class="mega-mobile-link">Pilier 1 : IA</a></li>
-              <li role="none"><a role="menuitem" href="/piliers/cyber" class="mega-mobile-link">Pilier 2 : Cyber</a></li>
-              <li role="none"><a role="menuitem" href="/piliers/logiciels" class="mega-mobile-link">Pilier 3 : Logiciels</a></li>
-              <li role="none"><a role="menuitem" href="/piliers/anti-pepins" class="mega-mobile-link">Pilier 4 : Anti Pepins</a></li>
-              <li role="none"><a role="menuitem" href="/piliers/recherche" class="mega-mobile-link">Pilier 5 : Recherche</a></li>
+              <li role="none"><a role="menuitem" href="/piliers/logiciels" class="mega-mobile-link">Pilier 2 : Logiciels</a></li>
+              <li role="none"><a role="menuitem" href="/piliers/anti-pepins" class="mega-mobile-link">Pilier 3 : Anti Pepins</a></li>
+              <li role="none"><a role="menuitem" href="/piliers/recherche" class="mega-mobile-link">Pilier 4 : Recherche</a></li>
               <li role="none"><a role="menuitem" href="/aide-victimes" class="mega-mobile-link">Associations d'aide</a></li>
               <li role="none"><a role="menuitem" href="/services" class="mega-mobile-link">Nos services</a></li>
             </ul>
@@ -194,7 +165,6 @@ const isActive = (href: string) =>
           </button>
           <ul id="dropdown-ressources" class="dropdown-menu" role="menu">
             <li role="none"><a role="menuitem" href="/ressources" class="dropdown-item">Ressources</a></li>
-            <li role="none"><a role="menuitem" href="/cas-d-usage" class="dropdown-item">Cas d'usage</a></li>
             <li role="none"><a role="menuitem" href="/pourquoi" class="dropdown-item">Pourquoi Biscuits IA ?</a></li>
             <li role="none"><a role="menuitem" href="/a-qui-s-adresse" class="dropdown-item">À qui s'adresse ?</a></li>
             <li role="none"><a role="menuitem" href="/faq" class="dropdown-item">FAQ</a></li>
@@ -202,15 +172,6 @@ const isActive = (href: string) =>
           </ul>
         </li>
 
-        <li class="nav-item" role="none">
-          <a href="/cas-d-usage" class={`nav-link ${isActive('/cas-d-usage') ? 'nav-link--active' : ''}`} role="menuitem">Cas d'usage</a>
-        </li>
-        <li class="nav-item" role="none">
-          <a href="/piliers" class={`nav-link ${isActive('/nos-missions') ? 'nav-link--active' : ''}`} role="menuitem">L'association</a>
-        </li>
-        <li class="nav-item" role="none">
-          <a href="/trombinoscope" class={`nav-link ${isActive('/trombinoscope') ? 'nav-link--active' : ''}`} role="menuitem">L'equipe</a>
-        </li>
         <li class="nav-item" role="none">
           <a href="/blog" class={`nav-link ${isActive('/blog') ? 'nav-link--active' : ''}`} role="menuitem">Blog</a>
         </li>

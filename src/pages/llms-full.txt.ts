@@ -81,9 +81,9 @@ Stack technique : Astro 7, Supabase (PostgreSQL + Auth), TypeScript, Tailwind CS
   {
     title: 'Nous rejoindre',
     slug: '/rejoignez-nous',
-    summary: 'Adhesion annuelle 20 EUR, benevolat, dons.',
+    summary: 'Adhesion annuelle a partir de 10 EUR, benevolat, dons.',
     body: `Trois facons de nous soutenir :
-- Adherent (20 EUR / an) : acces aux formations gratuites, vote a l'AG, newsletter.
+- Adherent (a partir de 10 EUR / an) : vote a l'AG, newsletter, ressources membres en avant-premiere.
 - Benevole : participation aux ateliers, mediation, developpement des outils.
 - Don : financement des places offertes, des outils libres, des mediations. 66% deductible de l'impot.`,
   },
@@ -93,7 +93,7 @@ Stack technique : Astro 7, Supabase (PostgreSQL + Auth), TypeScript, Tailwind CS
     summary: 'Questions frequentes sur l\'association.',
     body: `Les questions les plus posees :
 - Qui peut rejoindre Biscuits IA ? Grand public, associations, collectifs, benevoles, collectivites.
-- Vos ressources sont-elles gratuites ? Oui, guides, checklists, ateliers gratuits ou a prix libre.
+- Vos ressources sont-elles gratuites ? Oui, integralement : guides, checklists, ateliers, logiciels.
 - Comment demander un accompagnement ? Via la page Contact, reponse sous 48h.
 - Vous aidez uniquement les associations ? Non : grand public, collectivites, collectifs. Pas les entreprises.
 - Comment fonctionne la mediation numerique ? Documentation du cas, contact du prestataire, resolution amiable. Gratuit.

@@ -11,14 +11,14 @@ const schema = {
   type: 'WebPage' as const,
   data: {
     name: 'Catalogue logiciels - Biscuits IA',
-    description: 'Decouvrez nos logiciels libres concus pour les associations : Anti Pepins, suite associative, outils de signalement. Tarification preferentielle pour structures d\'interet general.',
+    description: 'Decouvrez nos logiciels libres concus pour les associations : Anti Pepins, suite associative, outils de signalement. Gratuits pour les structures d\'interet general.',
   },
 };
 ---
 
 <Layout
   title="Logiciels pour associations | Biscuits IA"
-  description="Catalogue de logiciels libres concus par Biscuits IA pour les associations : Anti Pepins, suite associative, outils de signalement. Tarifs preferentiels pour structures d'interet general."
+  description="Catalogue de logiciels libres concus par Biscuits IA pour les associations : Anti Pepins, suite associative, outils de signalement. Gratuits pour les structures d'interet general."
   schema={schema}
 >
   <Breadcrumb />
@@ -28,7 +28,7 @@ const schema = {
       <p class="eyebrow">Pilier 2 - Logiciels pour associations</p>
       <h1>Des logiciels libres pour les associations engagees</h1>
       <p class="lead">
-        Nous concevons des logiciels libres a but non lucratif pour les associations et les structures publiques, ainsi que des sites et applications mobiles destines au grand public sur des enjeux concrets, comme Anti Pepins. Nous ne travaillons pas pour les entreprises. Les contributions couvrent les couts et financent les autres piliers.
+        Nous concevons des logiciels libres a but non lucratif pour les associations et les structures publiques, ainsi que des sites et applications mobiles destines au grand public sur des enjeux concrets, comme Anti Pepins. Tout est gratuit. Nous ne travaillons pas pour les entreprises.
       </p>
     </div>
   </section>
@@ -46,8 +46,8 @@ const schema = {
           <p>Le code source est public. Chaque association peut verifier ce que fait reellement l'outil avant de l'adopter.</p>
         </article>
         <article class="why-card">
-          <h3>Tarifs associatifs</h3>
-          <p>Tarification prefentielle pour les associations et collectivites. Pas de licence par utilisateur qui explose avec votre croissance.</p>
+          <h3>Gratuite</h3>
+          <p>Aucun cout de licence, aucun abonnement. Pas de facturation par utilisateur qui explose avec votre croissance.</p>
         </article>
         <article class="why-card">
           <h3>Maintenance incluse</h3>
@@ -60,7 +60,7 @@ const schema = {
   <section class="catalogue">
     <div class="container">
       <h2>Notre catalogue</h2>
-      <p class="catalogue-intro">Tous les logiciels ci-dessous sont libres (code public), hebergeables sur votre infrastructure, et maintenu par notre equipe. Demandez-nous un devis adapte a votre structure.</p>
+      <p class="catalogue-intro">Tous les logiciels ci-dessous sont libres (code public), hebergeables sur votre infrastructure, maintenus par notre equipe, et mis a disposition gratuitement.</p>
 
       <div class="product-grid">
         <article class="product-card available">
@@ -79,11 +79,11 @@ const schema = {
             <li>API REST pour integration dans vos outils</li>
           </ul>
           <div class="product-price">
-            <strong>Marque blanche :</strong> 1 500 € / an (associations : 500 € / an)
+            <strong>Marque blanche :</strong> gratuite
           </div>
           <div class="product-actions">
             <a href="/anti-pepins" class="btn-primary">Voir le service</a>
-            <a href="/contact?sujet=devis-logiciel" class="btn-ghost">Devis marque blanche</a>
+            <a href="/contact?sujet=logiciel" class="btn-ghost">Demander la marque blanche</a>
           </div>
         </article>
 
@@ -103,11 +103,11 @@ const schema = {
             <li>Interface accessible (WCAG 2.1 AA)</li>
           </ul>
           <div class="product-price">
-            <strong>Hebergement gere :</strong> sur devis (a partir de 50 €/mois pour une petite asso)
+            <strong>Hebergement gere :</strong> gratuit
           </div>
           <div class="product-actions">
             <a href="/contact?sujet=suite-associative" class="btn-primary">Rejoindre la beta</a>
-            <a href="/contact?sujet=devis-logiciel" class="btn-ghost">Devis hebergement</a>
+            <a href="/contact?sujet=logiciel" class="btn-ghost">Demander l'hebergement</a>
           </div>
         </article>
 
@@ -127,10 +127,10 @@ const schema = {
             <li>Tableau de bord public pour les rapports</li>
           </ul>
           <div class="product-price">
-            <strong>Licence annuelle :</strong> 800 € (associations specialisees : 200 €)
+            <strong>Licence :</strong> gratuite
           </div>
           <div class="product-actions">
-            <a href="/contact?sujet=signalement-pro" class="btn-primary">Devis licence</a>
+            <a href="/contact?sujet=signalement-pro" class="btn-primary">Demander l'outil</a>
             <a href="/contact?sujet=signalement-pro" class="btn-ghost">Programme beta</a>
           </div>
         </article>
@@ -138,17 +138,17 @@ const schema = {
     </div>
   </section>
 
-  <section class="devis">
+  <section class="besoin">
     <div class="container">
-      <div class="devis-card">
+      <div class="besoin-card">
         <h2>Un besoin specifique ?</h2>
         <p>
-          Vous avez un besoin logiciel que nos produits ne couvrent pas encore ? Decrivez-le nous. On evalue la faisabilite en 1 a 2 semaines, on vous propose un chiffrage transparent, et on lance le developpement en mode agile (livraisons toutes les 2 semaines).
+          Vous avez un besoin logiciel que nos produits ne couvrent pas encore ? Decrivez-le nous. On evalue la faisabilite en 1 a 2 semaines, puis on lance le developpement en mode agile (livraisons toutes les 2 semaines).
         </p>
         <p>
-          Tarification basee sur le temps reel de developpement, pas de packages gonfles. Les associations d'interet general beneficient d'un tarif prefentiel (-30 a -50 %).
+          Le developpement est pris en charge par l'association : rien ne vous est facture. Nous priorisons selon l'impact et nos capacites du moment.
         </p>
-        <a href="/contact?sujet=devis-logiciel" class="btn-primary">Demander un devis logiciel</a>
+        <a href="/contact?sujet=logiciel" class="btn-primary">Nous parler de votre besoin</a>
       </div>
     </div>
   </section>
@@ -407,45 +407,45 @@ const schema = {
     background: var(--color-bg);
   }
 
-  .devis {
+  .besoin {
     padding: 4rem 1.5rem;
     background: var(--color-bg);
   }
 
-  .devis .container {
+  .besoin .container {
     max-width: 820px;
     margin: 0 auto;
   }
 
-  .devis-card {
+  .besoin-card {
     background: var(--color-bg-elevated);
     border: 2px solid var(--color-primary);
     padding: 2rem;
     text-align: center;
   }
 
-  .devis-card h2 {
+  .besoin-card h2 {
     font-size: 1.5rem;
     font-weight: 800;
     color: var(--color-text);
     margin: 0 0 1rem;
   }
 
-  .devis-card p {
+  .besoin-card p {
     color: var(--color-text-light);
     line-height: 1.6;
     margin: 0 0 1rem;
   }
 
-  .devis {
+  .besoin {
     padding-bottom: 3rem;
   }
 
-  .devis .devis-card p:last-of-type {
+  .besoin .besoin-card p:last-of-type {
     margin-bottom: 1.5rem;
   }
 
-  .devis .btn-primary {
+  .besoin .btn-primary {
     margin-top: 0.5rem;
   }
 

@@ -15,8 +15,6 @@
         "lint:fix": "eslint . --fix",
         "format": "prettier --write \"src/**/*.{ts,tsx,astro,css,json}\"",
         "format:check": "prettier --check \"src/**/*.{ts,tsx,astro,css,json}\"",
-        "cron:status": "node scripts/cron-status.mjs",
-        "cron:json": "node scripts/cron-status.mjs --json",
         "test:e2e": "playwright test",
         "test:e2e:headed": "PLAYWRIGHT_HEADLESS=0 playwright test",
         "test:e2e:install": "playwright install --with-deps chromium"

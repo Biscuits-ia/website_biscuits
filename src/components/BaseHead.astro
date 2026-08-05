@@ -44,9 +44,10 @@ export interface Props {
   siteUrl: string;
   ogImage?: string;
   ogType?: 'website' | 'article';
+  noindex?: boolean;
   schema?: {
     type: 'Organization' | 'NGO' | 'Service' | 'FAQPage' | 'Article' | 'WebPage' | 'ContactPage';
-    data?: Record<string, any>;
+    data?: Record<string, unknown>;
   };
   isProd: boolean;
   nonce?: string;
@@ -59,6 +60,7 @@ const {
   siteUrl,
   ogImage = '/og-default.webp',
   ogType = 'website',
+  noindex = false,
   schema,
   isProd,
   nonce,
@@ -79,6 +81,7 @@ const gtmEnabled = isProd && gtmId.length > 0;
   canonical={fullCanonical}
   ogImage={ogImage}
   ogType={ogType}
+  noindex={noindex}
 />
 
 {schema && <SchemaOrg type={schema.type} data={schema.data} />}
@@ -106,7 +109,7 @@ const gtmEnabled = isProd && gtmId.length > 0;
 <link rel="alternate icon" href="/favicon.ico" sizes="32x32" />
 <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
 <link rel="manifest" href="/site.webmanifest" />
-<link rel="sitemap" type="application/xml" href="/sitemap-index.xml" />
+<link rel="sitemap" type="application/xml" href="/sitemap.xml" />
 <link rel="alternate" type="text/markdown" href="/llms.txt" title="llms.txt" />
 
 <meta name="referrer" content="strict-origin-when-cross-origin" />
@@ -117,9 +120,7 @@ const gtmEnabled = isProd && gtmId.length > 0;
       bloque par la CSP SSR. On passe donc gtmId par un data-block JSON, non
       executable, relu par le script nonce ci-dessous. Cf. lib/jsonLd.ts. */}
   <script type="application/json" id="gtm-config" is:inline set:html={jsonIsland({ gtmId })} />
-  <script is:inline nonce={nonce}>
-    // IIFE : `define:vars` enveloppait deja le corps, on preserve la portee.
-    (() => {
+  <script is:inline is:raw nonce={nonce}>
     const gtmId = JSON.parse(document.getElementById('gtm-config').textContent).gtmId;
 
     // Definition du dataLayer pour GTM (charge dynamiquement par CookieConsent)
@@ -177,7 +178,6 @@ const gtmEnabled = isProd && gtmId.length > 0;
         window.loadGTMIfConsented();
       }
     }
-    })();
   </script>
   </>
 )}

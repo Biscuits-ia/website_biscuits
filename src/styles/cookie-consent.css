@@ -93,7 +93,10 @@ dialog::backdrop {
   justify-content: center;
   color: var(--color-text);
   box-shadow: var(--shadow-sm);
-  transition: transform var(--transition-fast), box-shadow var(--transition-fast), background-color var(--transition-fast);
+  transition:
+    transform var(--transition-fast),
+    box-shadow var(--transition-fast),
+    background-color var(--transition-fast);
   flex-shrink: 0;
 }
 
@@ -126,7 +129,10 @@ dialog::backdrop {
   cursor: pointer;
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-extrabold);
-  transition: transform var(--transition-fast), box-shadow var(--transition-fast), background-color var(--transition-fast);
+  transition:
+    transform var(--transition-fast),
+    box-shadow var(--transition-fast),
+    background-color var(--transition-fast);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -138,7 +144,10 @@ dialog::backdrop {
   box-shadow: var(--shadow-lg);
 }
 
-.cookie-btn svg { width: 18px; height: 18px; }
+.cookie-btn svg {
+  width: 18px;
+  height: 18px;
+}
 
 .cookie-btn:hover {
   transform: translate(var(--brutal-hover-lift), var(--brutal-hover-lift));
@@ -158,7 +167,9 @@ dialog::backdrop {
   overflow: hidden;
 }
 
-.cookie-btn-primary:hover { background: var(--color-primary-dark); }
+.cookie-btn-primary:hover {
+  background: var(--color-primary-dark);
+}
 
 .cookie-btn-primary::before {
   content: '';
@@ -167,7 +178,7 @@ dialog::backdrop {
   left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(45deg, rgba(255,255,255,0.1), rgba(255,255,255,0));
+  background: linear-gradient(45deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0));
   transform: translateX(-100%);
   transition: transform 0.3s ease;
 }
@@ -227,7 +238,9 @@ dialog::backdrop {
   background: var(--color-bg);
   border: var(--brutal-border-thin);
   box-shadow: var(--shadow-md);
-  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+  transition:
+    transform var(--transition-fast),
+    box-shadow var(--transition-fast);
 }
 
 .cookie-pref-item:hover {
@@ -235,7 +248,9 @@ dialog::backdrop {
   box-shadow: var(--shadow-lg);
 }
 
-.cookie-pref-text { flex: 1; }
+.cookie-pref-text {
+  flex: 1;
+}
 
 .cookie-pref-title {
   margin: 0 0 4px 0;
@@ -258,7 +273,9 @@ dialog::backdrop {
   height: 28px;
   background: var(--color-gray-400);
   position: relative;
-  transition: background-color var(--transition-base), box-shadow var(--transition-base);
+  transition:
+    background-color var(--transition-base),
+    box-shadow var(--transition-base);
   border: var(--brutal-border-thin);
   cursor: pointer;
   flex-shrink: 0;
@@ -288,7 +305,9 @@ dialog::backdrop {
   position: absolute;
   top: 3px;
   left: 3px;
-  transition: transform var(--transition-base), background-color var(--transition-base);
+  transition:
+    transform var(--transition-base),
+    background-color var(--transition-base);
   box-shadow: var(--shadow-sm);
 }
 
@@ -305,8 +324,14 @@ dialog button:focus-visible {
 }
 
 @keyframes cookieFadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .cookie-banner-content > div {
@@ -324,10 +349,21 @@ dialog button:focus-visible {
     padding: 24px;
   }
 
-  .cookie-text h3 { font-size: var(--font-size-lg); }
-  .cookie-text p  { font-size: var(--font-size-sm); }
+  .cookie-text h3 {
+    font-size: var(--font-size-lg);
+  }
+  .cookie-text p {
+    font-size: var(--font-size-sm);
+  }
 
-  .cookie-actions { flex-direction: column; }
-  .cookie-btn     { width: 100%; min-width: unset; }
-  .cookie-pref-item { padding: 12px; }
+  .cookie-actions {
+    flex-direction: column;
+  }
+  .cookie-btn {
+    width: 100%;
+    min-width: unset;
+  }
+  .cookie-pref-item {
+    padding: 12px;
+  }
 }

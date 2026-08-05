@@ -15,13 +15,19 @@ import { getFormString } from '@/lib/formData';
 // serveur, ou le rasteriser.
 const ALLOWED_MIME_TYPES = new Set([
   'application/pdf',
-  'image/png', 'image/jpeg', 'image/gif', 'image/webp',
+  'image/png',
+  'image/jpeg',
+  'image/gif',
+  'image/webp',
   'application/zip',
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
   'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
   'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-  'text/plain', 'text/markdown', 'text/csv',
-  'video/mp4', 'video/webm',
+  'text/plain',
+  'text/markdown',
+  'text/csv',
+  'video/mp4',
+  'video/webm',
 ]);
 
 /**
@@ -36,12 +42,15 @@ const ALLOWED_MIME_TYPES = new Set([
  * seul controle de `file.type` : ils sont inertes ET servis en piece jointe.
  */
 const MAGIC_BYTES: Record<string, readonly number[][]> = {
-  'application/pdf': [[0x25, 0x50, 0x44, 0x46]],                     // %PDF
-  'image/png':       [[0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]],
-  'image/jpeg':      [[0xff, 0xd8, 0xff]],
-  'image/gif':       [[0x47, 0x49, 0x46, 0x38]],                     // GIF8
+  'application/pdf': [[0x25, 0x50, 0x44, 0x46]], // %PDF
+  'image/png': [[0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]],
+  'image/jpeg': [[0xff, 0xd8, 0xff]],
+  'image/gif': [[0x47, 0x49, 0x46, 0x38]], // GIF8
   // ZIP local file header. Couvre aussi docx/xlsx/pptx, qui sont des ZIP.
-  'application/zip': [[0x50, 0x4b, 0x03, 0x04], [0x50, 0x4b, 0x05, 0x06]],
+  'application/zip': [
+    [0x50, 0x4b, 0x03, 0x04],
+    [0x50, 0x4b, 0x05, 0x06],
+  ],
 };
 const ZIP_BASED = new Set([
   'application/zip',
@@ -78,15 +87,17 @@ export const POST: APIRoute = async (context) => {
   const adminDb = createSupabaseAdminClient();
 
   // ── Lecture du formulaire ────────────────────────────────────────────────
-  const form        = await request.formData();
-  const title       = getFormString(form, 'title');
+  const form = await request.formData();
+  const title = getFormString(form, 'title');
   const description = getFormString(form, 'description');
-  const category    = getFormString(form, 'category');
+  const category = getFormString(form, 'category');
   const isPublished = form.get('is_published') === 'true';
-  const file        = form.get('file');
+  const file = form.get('file');
 
   if (!title || !category) {
-    return redirect('/dashboard/admin/resources?error=' + encodeURIComponent('Titre et catégorie requis.'));
+    return redirect(
+      '/dashboard/admin/resources?error=' + encodeURIComponent('Titre et catégorie requis.')
+    );
   }
 
   if (!(file instanceof File) || file.size === 0) {
@@ -95,25 +106,37 @@ export const POST: APIRoute = async (context) => {
 
   // ── Validation fichier ───────────────────────────────────────────────────
   if (!ALLOWED_MIME_TYPES.has(file.type)) {
-    return redirect('/dashboard/admin/resources?error=' + encodeURIComponent('Type de fichier non autorisé.'));
+    return redirect(
+      '/dashboard/admin/resources?error=' + encodeURIComponent('Type de fichier non autorisé.')
+    );
   }
 
   if (file.size > MAX_FILE_SIZE) {
-    return redirect('/dashboard/admin/resources?error=' + encodeURIComponent('Fichier trop volumineux (max 50 Mo).'));
+    return redirect(
+      '/dashboard/admin/resources?error=' +
+        encodeURIComponent('Fichier trop volumineux (max 50 Mo).')
+    );
   }
 
   const fileBuffer = await file.arrayBuffer();
 
   // Le type declare doit correspondre a l'entete reelle du fichier.
   if (!magicBytesMatch(file.type, new Uint8Array(fileBuffer.slice(0, 16)))) {
-    console.warn('[upload] magic bytes mismatch:', { declared: file.type, name: file.name, user: user.id });
-    return redirect('/dashboard/admin/resources?error=' + encodeURIComponent('Le contenu du fichier ne correspond pas à son type.'));
+    console.warn('[upload] magic bytes mismatch:', {
+      declared: file.type,
+      name: file.name,
+      user: user.id,
+    });
+    return redirect(
+      '/dashboard/admin/resources?error=' +
+        encodeURIComponent('Le contenu du fichier ne correspond pas à son type.')
+    );
   }
 
   // ── Upload vers Supabase Storage ─────────────────────────────────────────
   // Chemin : {userId}/{timestamp}-{nom-nettoyé}
-  const safeName  = file.name.replaceAll(/[^a-zA-Z0-9.\-_]/g, '_');
-  const filePath  = `${user.id}/${Date.now()}-${safeName}`;
+  const safeName = file.name.replaceAll(/[^a-zA-Z0-9.\-_]/g, '_');
+  const filePath = `${user.id}/${Date.now()}-${safeName}`;
 
   const { error: uploadError } = await adminDb.storage
     .from('resources')
@@ -124,29 +147,33 @@ export const POST: APIRoute = async (context) => {
 
   if (uploadError) {
     console.error('[upload] Supabase storage error:', uploadError.message);
-    return redirect('/dashboard/admin/resources?error=' + encodeURIComponent('Erreur lors de l\'upload du fichier.'));
+    return redirect(
+      '/dashboard/admin/resources?error=' +
+        encodeURIComponent("Erreur lors de l'upload du fichier.")
+    );
   }
 
   // ── Insertion en BDD ─────────────────────────────────────────────────────
-  const { error: insertError } = await adminDb
-    .from('resources')
-    .insert({
-      title:        title.trim(),
-      description:  description?.trim() ?? null,
-      category:     category.trim(),
-      file_path:    filePath,
-      file_name:    file.name,
-      file_size:    file.size,
-      file_type:    file.type,
-      is_published: isPublished,
-      created_by:   user.id,
-    });
+  const { error: insertError } = await adminDb.from('resources').insert({
+    title: title.trim(),
+    description: description?.trim() ?? null,
+    category: category.trim(),
+    file_path: filePath,
+    file_name: file.name,
+    file_size: file.size,
+    file_type: file.type,
+    is_published: isPublished,
+    created_by: user.id,
+  });
 
   if (insertError) {
     // Rollback : supprimer le fichier uploadé si l'insertion échoue
     await adminDb.storage.from('resources').remove([filePath]);
     console.error('[upload] Supabase insert error:', insertError.message);
-    return redirect('/dashboard/admin/resources?error=' + encodeURIComponent('Erreur lors de l\'enregistrement de la ressource.'));
+    return redirect(
+      '/dashboard/admin/resources?error=' +
+        encodeURIComponent("Erreur lors de l'enregistrement de la ressource.")
+    );
   }
 
   return redirect('/dashboard/admin/resources?saved=1');

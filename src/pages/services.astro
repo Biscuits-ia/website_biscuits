@@ -9,7 +9,7 @@ const services = [
     label: 'Formation',
     title: 'Ateliers pratiques',
     description:
-      'Des sessions courtes et concrètes pour apprivoiser l\'IA — sans jargon, avec des cas d\'usage réels tirés du monde associatif et du service public.',
+      "Des sessions courtes et concrètes pour apprivoiser l'IA — sans jargon, avec des cas d'usage réels tirés du monde associatif et du service public.",
     points: ['Découverte IA (2h)', 'Atelier pratique IA (4h)', 'Créer un site web'],
     href: '/contact?sujet=atelier',
     cta: 'Demander un atelier',
@@ -20,7 +20,7 @@ const services = [
     label: 'Accompagnement',
     title: 'Suivi personnalisé',
     description:
-      'Un échange individuel pour analyser vos besoins, identifier les outils adaptés et construire un plan d\'action concret, à votre rythme.',
+      "Un échange individuel pour analyser vos besoins, identifier les outils adaptés et construire un plan d'action concret, à votre rythme.",
     points: ['Diagnostic numérique', 'Feuille de route sur mesure', 'Suivi post-atelier'],
     href: '/contact?sujet=accompagnement',
     cta: 'Nous contacter',
@@ -32,7 +32,7 @@ const services = [
     title: 'Outils & guides libres',
     description:
       'Des guides pratiques, modèles et outils open-source conçus pour être réutilisés, adaptés et partagés — sans friction, sans frais cachés.',
-    points: ['Guides téléchargeables', 'Modèles prêts à l\'emploi', 'Veille & actualités'],
+    points: ['Guides téléchargeables', "Modèles prêts à l'emploi", 'Veille & actualités'],
     href: '/ressources',
     cta: 'Accéder aux ressources',
     featured: false,
@@ -40,18 +40,42 @@ const services = [
 ];
 
 const engagements = [
-  { emoji: '📂', title: 'Open source', text: 'Nos outils sont publics et librement réutilisables.' },
-  { emoji: '🧭', title: 'Indépendant', text: 'Aucune dépendance à un éditeur ou à des services propriétaires.' },
-  { emoji: '🌱', title: 'Éthique & responsable', text: 'Nous défendons une IA sobre, inclusive et explicable.' },
-  { emoji: '💬', title: 'Humain avant tout', text: 'Bénévoles disponibles, échanges directs, zéro bullshit.' },
+  {
+    emoji: '📂',
+    title: 'Open source',
+    text: 'Nos outils sont publics et librement réutilisables.',
+  },
+  {
+    emoji: '🧭',
+    title: 'Indépendant',
+    text: 'Aucune dépendance à un éditeur ou à des services propriétaires.',
+  },
+  {
+    emoji: '🌱',
+    title: 'Éthique & responsable',
+    text: 'Nous défendons une IA sobre, inclusive et explicable.',
+  },
+  {
+    emoji: '💬',
+    title: 'Humain avant tout',
+    text: 'Bénévoles disponibles, échanges directs, zéro bullshit.',
+  },
 ];
 ---
 
 <BaseLayout
   title="Nos services | Biscuits IA"
   description="Ateliers, accompagnement personnalisé et ressources libres pour mettre l'IA au service du grand public et des associations — sans jargon, sans friction."
-  schema={{ type: 'Service', data: { serviceType: 'Accompagnement IA', name: 'Services Biscuits IA', description: 'Ateliers, accompagnement personnalisé et ressources libres pour le grand public, les associations et les collectivités.' } }}>
-
+  schema={{
+    type: 'Service',
+    data: {
+      serviceType: 'Accompagnement IA',
+      name: 'Services Biscuits IA',
+      description:
+        'Ateliers, accompagnement personnalisé et ressources libres pour le grand public, les associations et les collectivités.',
+    },
+  }}
+>
   <Breadcrumb />
   <!-- —— Hero —— -->
   <section class="hero">
@@ -59,7 +83,9 @@ const engagements = [
       <span class="hero-eyebrow">Ce que nous faisons</span>
       <h1>Des services concrets,<br /><em>pas des promesses</em></h1>
       <p class="hero-sub">
-        Biscuits IA accompagne le grand public, les associations et les collectivités pour intégrer l'IA de façon utile, éthique et autonome — avec des ateliers, un suivi personnalisé et des ressources libres.
+        Biscuits IA accompagne le grand public, les associations et les collectivités pour intégrer
+        l'IA de façon utile, éthique et autonome — avec des ateliers, un suivi personnalisé et des
+        ressources libres.
       </p>
       <div class="hero-actions">
         <a href="/contact" class="btn-ghost">Nous contacter</a>
@@ -71,33 +97,49 @@ const engagements = [
   <section class="services-section">
     <div class="container">
       <div class="services-grid">
-        {services.map((s) => (
-          <article class={`service-card${s.featured ? ' featured' : ''}`}>
-            {s.featured && <div class="featured-pill">⭐ Le plus demandé</div>}
-            <div class="service-top">
-              <span class="service-emoji" aria-hidden="true">{s.emoji}</span>
-              <span class="service-label">{s.label}</span>
-            </div>
-            <h2>{s.title}</h2>
-            <p class="service-desc">{s.description}</p>
-            <ul class="service-points">
-              {s.points.map((p) => (
-                <li>
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                    <path d="M3 8l3.5 3.5L13 5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-                  </svg>
-                  {p}
-                </li>
-              ))}
-            </ul>
-            <a href={s.href} class={`service-cta${s.featured ? ' service-cta--featured' : ''}`}>
-              {s.cta}
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </a>
-          </article>
-        ))}
+        {
+          services.map((s) => (
+            <article class={`service-card${s.featured ? ' featured' : ''}`}>
+              {s.featured && <div class="featured-pill">⭐ Le plus demandé</div>}
+              <div class="service-top">
+                <span class="service-emoji" aria-hidden="true">
+                  {s.emoji}
+                </span>
+                <span class="service-label">{s.label}</span>
+              </div>
+              <h2>{s.title}</h2>
+              <p class="service-desc">{s.description}</p>
+              <ul class="service-points">
+                {s.points.map((p) => (
+                  <li>
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                      <path
+                        d="M3 8l3.5 3.5L13 5"
+                        stroke="currentColor"
+                        stroke-width="2.2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      />
+                    </svg>
+                    {p}
+                  </li>
+                ))}
+              </ul>
+              <a href={s.href} class={`service-cta${s.featured ? ' service-cta--featured' : ''}`}>
+                {s.cta}
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                  <path
+                    d="M3 8h10M9 4l4 4-4 4"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+              </a>
+            </article>
+          ))
+        }
       </div>
     </div>
   </section>
@@ -110,13 +152,17 @@ const engagements = [
         <p>Ce qui nous différencie des prestataires classiques.</p>
       </div>
       <div class="engagements-grid">
-        {engagements.map((e) => (
-          <div class="engagement-item">
-            <span class="engagement-emoji" aria-hidden="true">{e.emoji}</span>
-            <h3>{e.title}</h3>
-            <p>{e.text}</p>
-          </div>
-        ))}
+        {
+          engagements.map((e) => (
+            <div class="engagement-item">
+              <span class="engagement-emoji" aria-hidden="true">
+                {e.emoji}
+              </span>
+              <h3>{e.title}</h3>
+              <p>{e.text}</p>
+            </div>
+          ))
+        }
       </div>
     </div>
   </section>
@@ -126,14 +172,16 @@ const engagements = [
     <div class="container">
       <div class="cta-box">
         <h2>Pas sûr·e par où commencer ?</h2>
-        <p>Un échange de 30 minutes suffit souvent à clarifier les priorités. C'est gratuit et sans engagement.</p>
+        <p>
+          Un échange de 30 minutes suffit souvent à clarifier les priorités. C'est gratuit et sans
+          engagement.
+        </p>
         <div class="cta-actions">
           <a href="/contact" class="btn-primary">Poser une question</a>
         </div>
       </div>
     </div>
   </section>
-
 </BaseLayout>
 
 <style>
@@ -207,7 +255,9 @@ const engagements = [
     text-decoration: none;
     border: 2px solid var(--color-border);
     box-shadow: var(--shadow-md);
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    transition:
+      transform 0.15s ease,
+      box-shadow 0.15s ease;
   }
 
   .btn-primary:hover {
@@ -232,7 +282,10 @@ const engagements = [
     text-decoration: none;
     border: 2px solid var(--color-border);
     box-shadow: var(--shadow-sm);
-    transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+    transition:
+      transform 0.15s ease,
+      box-shadow 0.15s ease,
+      background 0.15s ease;
   }
 
   .btn-ghost:hover {
@@ -263,7 +316,9 @@ const engagements = [
     flex-direction: column;
     gap: 1rem;
     position: relative;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition:
+      transform 0.2s ease,
+      box-shadow 0.2s ease;
   }
 
   .service-card:hover {
@@ -358,7 +413,9 @@ const engagements = [
     text-decoration: none;
     border: 2px solid var(--color-border);
     box-shadow: var(--shadow-sm);
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    transition:
+      transform 0.15s ease,
+      box-shadow 0.15s ease;
     align-self: flex-start;
   }
 
@@ -406,7 +463,9 @@ const engagements = [
     box-shadow: var(--shadow-sm);
     padding: 1.5rem;
     text-align: center;
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    transition:
+      transform 0.15s ease,
+      box-shadow 0.15s ease;
   }
 
   .engagement-item:hover {

@@ -1,7 +1,6 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
 
-
 import robotsTxt from 'astro-robots-txt';
 import sitemap, { ChangeFreqEnum } from '@astrojs/sitemap';
 import tailwindcss from '@tailwindcss/vite';
@@ -27,19 +26,7 @@ import rehypeTaskListA11y from './scripts/rehype-task-list-a11y.mjs';
 // D'ou une policy par user-agent.
 
 /** Chemins jamais indexables : auth, admin, API, espaces prives. */
-const DISALLOW_ALL = [
-  '/admin',
-  '/api',
-  '/auth',
-  '/dashboard',
-  '/connexion',
-  '/inscription',
-  '/mot-de-passe-oublie',
-  '/reinitialisation-mot-de-passe',
-  '/utilisateurs',
-  '/verifier-code-inscription',
-  '/verifier-code-reinitialisation',
-];
+const DISALLOW_ALL = ['/admin', '/api', '/auth', '/dashboard', '/utilisateurs'];
 
 /**
  * Pages publiques mais volontairement hors index (donnees personnelles, tunnel).
@@ -100,12 +87,16 @@ const ROBOTS_POLICY = [
 // https://astro.build/config
 export default defineConfig({
   site: 'https://biscuits-ia.com',
+  trailingSlash: 'never',
 
   integrations: [
     sitemap({
       changefreq: 'weekly',
       priority: 0.7,
       filter: (page) => {
+        // Les tags restent decouvrables par le maillage interne. Leur retrait
+        // du sitemap evite d'y pousser les pages de taxonomie trop faibles.
+        if (new URL(page).pathname.startsWith('/blog/tag/')) return false;
         const excludePaths = [
           '/admin',
           '/api',
@@ -129,9 +120,7 @@ export default defineConfig({
         // on le retire pour comparer les chemins sans dupliquer chaque regle
         // en 2 variantes ("/services" vs "/services/").
         const rawPath = new URL(item.url).pathname;
-        const path = rawPath !== '/' && rawPath.endsWith('/')
-          ? rawPath.slice(0, -1)
-          : rawPath;
+        const path = rawPath !== '/' && rawPath.endsWith('/') ? rawPath.slice(0, -1) : rawPath;
 
         if (path === '' || path === '/' || path === '/fr') {
           return { ...item, changefreq: ChangeFreqEnum.DAILY, priority: 1.0 };
@@ -169,9 +158,10 @@ export default defineConfig({
       entryLimit: 50000,
     }),
     robotsTxt({
-      // @astrojs/sitemap genere sitemap-index.xml (qui reference sitemap-0.xml).
-      // Pointer sur /sitemap.xml ne renverrait rien : ce fichier n'existe plus.
-      sitemap: ['https://biscuits-ia.com/sitemap-index.xml'],
+      // /sitemap.xml est le point d'entree conventionnel. Une route prerendue
+      // le fait pointer vers sitemap-0.xml, tandis que @astrojs/sitemap garde
+      // aussi sitemap-index.xml pour sa segmentation automatique.
+      sitemap: ['https://biscuits-ia.com/sitemap.xml'],
       policy: ROBOTS_POLICY,
       // Documentation LLM (spec llmstxt.org) : sans ce pointeur, les crawlers IA
       // ne decouvrent pas /llms.txt -- ils ne le devinent pas.
@@ -213,25 +203,12 @@ export default defineConfig({
   //     __ANALYTICS_DISABLED__, config GTM) a convertir ou a declarer dans
   //     `scriptDirective.hashes`.
   //
-  //  4. AJOUTE 2026-07-09 -- BLOQUEUR INFRASTRUCTURE, hors du code :
-  //     Cloudflare (Bot Fight Mode / JS Detections) INJECTE a l'edge, par
-  //     intermittence, un <script> inline sans nonce ni hash stable :
-  //       window.__CF$cv$params={r:'<jeton-par-requete>', ...}
-  //     Le jeton change a chaque requete -> AUCUN hash ni nonce ne peut
-  //     l'autoriser. Tout `script-src` strict (hash OU nonce) le bloque. Ce
-  //     script est deja bloque en silence sur les routes SSR (CSP nonce du
-  //     middleware) -- y compris la page de connexion, ou la protection anti-bot
-  //     compte le plus. Fermer S4 sur les pages prerendered exige donc D'ABORD
-  //     une decision cote Cloudflare : desactiver Bot Fight Mode / JS Detections,
-  //     ou accepter la degradation de la detection anti-bot.
-  //
   // Chemin de migration (cf. AUDIT-back.md, plan point 9) :
-  //   a. TRANCHER le point 4 cote Cloudflare (decision produit/securite) ;
-  //   b. supprimer les 514 attributs style="" au profit de classes ;
-  //   c. passer Shiki en theme a variables CSS (`markdown.shikiConfig`) ;
-  //   d. convertir les 3 scripts `is:inline` OU declarer leurs hashes via
+  //   a. supprimer les 514 attributs style="" au profit de classes ;
+  //   b. passer Shiki en theme a variables CSS (`markdown.shikiConfig`) ;
+  //   c. convertir les 3 scripts `is:inline` OU declarer leurs hashes via
   //      `scriptDirective.hashes` ;
-  //   e. activer `security.csp` et supprimer le script-src 'unsafe-inline' du
+  //   d. activer `security.csp` et supprimer le script-src 'unsafe-inline' du
   //      middleware + celui de vercel.json (le <meta> et le header s'intersectent
   //      cote navigateur : les deux doivent bouger ensemble).
   //
@@ -256,19 +233,12 @@ export default defineConfig({
       dedupe: ['react', 'react-dom'],
     },
     build: {
-      minify: 'esbuild',
-      cssMinify: 'esbuild',
+      minify: 'oxc',
       cssCodeSplit: true,
       reportCompressedSize: false,
       target: 'es2022',
-    },
-    esbuild: {
-      treeShaking: true,
-      drop: ['debugger'],
-      legalComments: 'none',
     },
   },
 
   adapter: vercel(),
 });
-

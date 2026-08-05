@@ -38,10 +38,7 @@ export const POST: APIRoute = async (Astro) => {
   const isVisible = parseBool(form.get('is_visible'));
 
   const adminDb = createSupabaseAdminClient();
-  const { error } = await adminDb
-    .from('software')
-    .update({ is_visible: isVisible })
-    .eq('id', id);
+  const { error } = await adminDb.from('software').update({ is_visible: isVisible }).eq('id', id);
 
   if (error) {
     console.error('[api/admin/logiciels/toggle-visibilite] update error:', error.message);

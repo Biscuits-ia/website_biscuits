@@ -1,4 +1,4 @@
-:root {  
+:root {
   /* Couleurs sémantiques */
   --color-success: oklch(69.588% 0.14907 162.508);
   --color-warning: oklch(76.858% 0.1646 70.075);
@@ -67,21 +67,21 @@
   --transition-slow: 0.5s ease;
 
   /* ☕ PALETTE CAFE / CHOCOLAT */
-  --color-primary: oklch(46% 0.08 45);      /* Moka (assombri pour AA 4.5:1 sur --color-bg-alt) */
-  --color-primary-light: oklch(62% 0.10 50); /* Caramel */
-  --color-primary-dark: oklch(38% 0.06 38);  /* Espresso */
-  --color-secondary: oklch(50% 0.09 62);    /* Noisette (assombri pour AA 4.5:1 en texte) */
-  --color-first: oklch(66% 0.11 58);        /* Cappuccino */
-  --color-second: oklch(74% 0.09 72);       /* Latte */
-  --color-third: oklch(82% 0.08 85);        /* Mousse creme */
-  
+  --color-primary: oklch(46% 0.08 45); /* Moka (assombri pour AA 4.5:1 sur --color-bg-alt) */
+  --color-primary-light: oklch(62% 0.1 50); /* Caramel */
+  --color-primary-dark: oklch(38% 0.06 38); /* Espresso */
+  --color-secondary: oklch(50% 0.09 62); /* Noisette (assombri pour AA 4.5:1 en texte) */
+  --color-first: oklch(66% 0.11 58); /* Cappuccino */
+  --color-second: oklch(74% 0.09 72); /* Latte */
+  --color-third: oklch(82% 0.08 85); /* Mousse creme */
+
   /* Accents cafe */
-  --color-accent-cream: oklch(94% 0.03 90);          /* Creme */
-  --color-accent-caramel: oklch(72% 0.12 67);        /* Caramel grille */
-  --color-accent-honey: oklch(80% 0.11 80 / 0.9);    /* Miel */
+  --color-accent-cream: oklch(94% 0.03 90); /* Creme */
+  --color-accent-caramel: oklch(72% 0.12 67); /* Caramel grille */
+  --color-accent-honey: oklch(80% 0.11 80 / 0.9); /* Miel */
   --color-accent-vanilla: oklch(97% 0.02 95 / 0.95); /* Vanille */
-  --color-accent-cinnamon: oklch(48% 0.11 42);       /* Cannelle */
-  
+  --color-accent-cinnamon: oklch(48% 0.11 42); /* Cannelle */
+
   /* Neutres cacao */
   --color-gray-50: oklch(14% 0.02 40);
   --color-gray-100: oklch(22% 0.02 42);
@@ -95,17 +95,17 @@
   --color-gray-900: oklch(95% 0.02 88);
 
   /* Fonds cafe creme */
-  --color-bg: oklch(95% 0.03 88);             /* Creme cafe */
-  --color-bg-alt: oklch(92% 0.03 84);         /* Latte chaud */
-  --color-bg-elevated: oklch(97% 0.02 92);    /* Creme fouettee */
-  
+  --color-bg: oklch(95% 0.03 88); /* Creme cafe */
+  --color-bg-alt: oklch(92% 0.03 84); /* Latte chaud */
+  --color-bg-elevated: oklch(97% 0.02 92); /* Creme fouettee */
+
   /* Bordures chocolat */
-  --color-border: oklch(26% 0.04 40);   
+  --color-border: oklch(26% 0.04 40);
   --color-border-second: oklch(52% 0.06 56);
-  
+
   /* Texte chocolat */
-  --color-text: oklch(24% 0.03 40);            /* Espresso profond */
-  --color-text-light: oklch(40% 0.03 45);      /* Cacao moyen */
+  --color-text: oklch(24% 0.03 40); /* Espresso profond */
+  --color-text-light: oklch(40% 0.03 45); /* Cacao moyen */
 
   /* ⚡ OMBRES NÉO-BRUTALISME BISCUITS ⚡ */
   --shadow-sm: 3px 3px 0px var(--color-border);
@@ -113,7 +113,7 @@
   --shadow-lg: 7px 7px 0px var(--color-border);
   --shadow-xl: 10px 10px 0px var(--color-border);
   --shadow-2xl: 14px 14px 0px var(--color-border);
-  
+
   --shadow-glow: 5px 5px 0px var(--color-border);
   --shadow-glow-hover: 8px 8px 0px var(--color-border);
   --shadow-press: 2px 2px 0px var(--color-border);
@@ -158,20 +158,23 @@
   color: var(--color-gray-900);
   padding: 10px;
   box-shadow: var(--shadow-lg);
-  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+  transition:
+    transform var(--transition-fast),
+    box-shadow var(--transition-fast);
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
 .cta-btn-dark {
-
   border: var(--brutal-border);
   border-radius: var(--radius-button);
   color: var(--color-gray-100);
   padding: 10px;
   box-shadow: var(--shadow-lg);
-  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+  transition:
+    transform var(--transition-fast),
+    box-shadow var(--transition-fast);
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -198,7 +201,9 @@
 :root .stat-item {
   border: var(--brutal-border);
   box-shadow: var(--shadow-lg);
-  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+  transition:
+    transform var(--transition-fast),
+    box-shadow var(--transition-fast);
   background: var(--color-bg-elevated);
 }
 
@@ -209,10 +214,18 @@
 }
 
 /* Feature badges avec couleurs alternées */
-.feature-badge:nth-child(1) { background: var(--color-accent-honey); }
-.feature-badge:nth-child(2) { background: var(--color-accent-caramel); }
-.feature-badge:nth-child(3) { background: var(--color-accent-vanilla); }
-.feature-badge:nth-child(4) { background: var(--color-accent-cinnamon); }
+.feature-badge:nth-child(1) {
+  background: var(--color-accent-honey);
+}
+.feature-badge:nth-child(2) {
+  background: var(--color-accent-caramel);
+}
+.feature-badge:nth-child(3) {
+  background: var(--color-accent-vanilla);
+}
+.feature-badge:nth-child(4) {
+  background: var(--color-accent-cinnamon);
+}
 
 /* Inputs avec style brutal */
 :root input,
@@ -245,7 +258,6 @@
   box-shadow: 0 6px 0px rgba(0, 0, 0, 1);
   background: var(--color-bg-elevated);
 }
-
 
 /* Titres avec effet cartoon */
 :root h1,

@@ -7,13 +7,15 @@ const publics = [
     href: '/public/associations',
     label: 'Associations, ONG, collectifs',
     accent: 'associations',
-    description: 'Ateliers IA, ressources libres, Suite associative, sensibilisation anti-arnaques de vos benevoles.',
+    description:
+      'Ateliers IA, ressources libres, Suite associative, sensibilisation anti-arnaques de vos benevoles.',
   },
   {
     href: '/public/collectivites',
     label: 'Collectivites, mairies, CCAS',
     accent: 'collectivites',
-    description: 'Diagnostics, formation des elu-e-s et des agents, deploiement d\'outils souverains, sensibilisation anti-arnaques.',
+    description:
+      "Diagnostics, formation des elu-e-s et des agents, deploiement d'outils souverains, sensibilisation anti-arnaques.",
   },
   {
     href: '/public/citoyens',
@@ -30,23 +32,32 @@ const publics = [
       <p class="pub-eyebrow">Trouvez votre entree</p>
       <h2 id="pub-title">Vous etes...</h2>
       <p class="pub-intro">
-        Biscuits IA adapte ses accompagnements a chaque type de structure. Cliquez sur la carte qui vous correspond : on vous montre ce qu'on peut faire pour vous, concretement.
+        Biscuits IA adapte ses accompagnements a chaque type de structure. Cliquez sur la carte qui
+        vous correspond : on vous montre ce qu'on peut faire pour vous, concretement.
       </p>
     </header>
 
     <div class="pub-grid">
-      {publics.map((p) => (
-        <a class={`pub-card pub-${p.accent}`} href={p.href}>
-          <span class="pub-label">{p.label}</span>
-          <p class="pub-desc">{p.description}</p>
-          <span class="pub-arrow">
-            Decouvrir
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-              <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </span>
-        </a>
-      ))}
+      {
+        publics.map((p) => (
+          <a class={`pub-card pub-${p.accent}`} href={p.href}>
+            <span class="pub-label">{p.label}</span>
+            <p class="pub-desc">{p.description}</p>
+            <span class="pub-arrow">
+              Decouvrir
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <path
+                  d="M3 8h10M9 4l4 4-4 4"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </span>
+          </a>
+        ))
+      }
     </div>
   </div>
 </section>
@@ -107,7 +118,10 @@ const publics = [
     border: 2px solid var(--color-border);
     text-decoration: none;
     color: inherit;
-    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    transition:
+      transform 0.2s ease,
+      box-shadow 0.2s ease,
+      border-color 0.2s ease;
     position: relative;
   }
 

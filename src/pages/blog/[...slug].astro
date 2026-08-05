@@ -41,7 +41,8 @@ const sortedArticles = publishedArticles.sort(
     b.data.pubDate.getTime() - a.data.pubDate.getTime()
 );
 
-const isFeatured = sortedArticles.length > 0 && sortedArticles[0] && entry.id === sortedArticles[0].id;
+const isFeatured =
+  sortedArticles.length > 0 && sortedArticles[0] && entry.id === sortedArticles[0].id;
 
 const { Content, headings } = await render(entry);
 const body = entry.body ?? '';
@@ -52,7 +53,9 @@ const readingTimeMin = Math.max(1, Math.ceil(wordCount / 220));
 // Date de derniere relecture. Le comite editorial relit avant publication.
 const lastReviewedDate = entry.data.pubDate.toISOString();
 // GEO : slug auteur (Alexis -> alexis-gallard, sinon collectif).
-const authorSlug = ((entry.data.author || 'Biscuits IA').toLowerCase().includes('alexis')) ? 'alexis-gallard' : 'biscuits-ia';
+const authorSlug = (entry.data.author || 'Biscuits IA').toLowerCase().includes('alexis')
+  ? 'alexis-gallard'
+  : 'biscuits-ia';
 
 // Normalisation des tags en slug.
 const slugifyTag = (tag: string): string =>
@@ -75,13 +78,16 @@ const relatedArticles = publishedArticles
     return { entry: a, shared };
   })
   .filter((x) => x.shared > 0)
-  .sort((a, b) => b.shared - a.shared || b.entry.data.pubDate.getTime() - a.entry.data.pubDate.getTime())
+  .sort(
+    (a, b) => b.shared - a.shared || b.entry.data.pubDate.getTime() - a.entry.data.pubDate.getTime()
+  )
   .slice(0, 3)
   .map((x) => x.entry);
 
 // Article precedent / suivant dans la liste chronologique.
 const currentIndex = sortedArticles.findIndex((a) => a.id === entry.id);
-const prevArticle = currentIndex < sortedArticles.length - 1 ? sortedArticles[currentIndex + 1] : null;
+const prevArticle =
+  currentIndex < sortedArticles.length - 1 ? sortedArticles[currentIndex + 1] : null;
 const nextArticle = currentIndex > 0 ? sortedArticles[currentIndex - 1] : null;
 
 // "Autres articles sur le meme theme" : fallback si pas de related ou en complement.
@@ -91,7 +97,10 @@ const sameTagArticles = publishedArticles
     const tags = ((a.data.tags as string[]) || []) as string[];
     return tags.some((t) => entryTags.includes(t));
   })
-  .sort((a: CollectionEntry<'blog'>, b: CollectionEntry<'blog'>) => b.data.pubDate.getTime() - a.data.pubDate.getTime())
+  .sort(
+    (a: CollectionEntry<'blog'>, b: CollectionEntry<'blog'>) =>
+      b.data.pubDate.getTime() - a.data.pubDate.getTime()
+  )
   .slice(0, 6);
 
 // SEO : Open Graph specifique a l'article. `ogImage` (prioritaire) ou
@@ -99,7 +108,9 @@ const sameTagArticles = publishedArticles
 const siteUrl = import.meta.env.SITE || 'https://biscuits-ia.com';
 const articleImage = entry.data.ogImage || entry.data.thumbnail;
 const ogImage = articleImage
-  ? (articleImage.startsWith('http') ? articleImage : `${siteUrl}${articleImage}`)
+  ? articleImage.startsWith('http')
+    ? articleImage
+    : `${siteUrl}${articleImage}`
   : `${siteUrl}/og-default.webp`;
 const seoTitle = entry.data.title;
 const seoDescription = entry.data.description || entry.data.title;
@@ -144,46 +155,71 @@ const articleSchema = {
     <article class="article-content">
       <header class="article-header">
         <a href="/blog" class="back-link">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
             <line x1="19" y1="12" x2="5" y2="12"></line>
             <polyline points="12 19 5 12 12 5"></polyline>
           </svg>
           Retour au blog
         </a>
 
-        {isFeatured && (
-          <div class="featured-badge">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-            </svg>
-            Article en vedette
-          </div>
-        )}
+        {
+          isFeatured && (
+            <div class="featured-badge">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                aria-hidden="true"
+              >
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+              </svg>
+              Article en vedette
+            </div>
+          )
+        }
 
         <h1 class="article-title">{entry.data.title}</h1>
 
-        {entry.data.description && (
-          <p class="article-description">{entry.data.description}</p>
-        )}
+        {entry.data.description && <p class="article-description">{entry.data.description}</p>}
 
         <div class="article-meta">
           <div class="meta-item">
             <time datetime={entry.data.pubDate.toISOString()}>
-              {entry.data.pubDate.toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' })}
+              {
+                entry.data.pubDate.toLocaleDateString('fr-FR', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                })
+              }
             </time>
           </div>
 
-          {entry.data.author && (
-            <div class="meta-item">
-              <span>{entry.data.author}</span>
-            </div>
-          )}
+          {
+            entry.data.author && (
+              <div class="meta-item">
+                <span>{entry.data.author}</span>
+              </div>
+            )
+          }
 
           <div class="meta-item">
             <ReadingTime content={body} />
           </div>
         </div>
-
       </header>
 
       <TableOfContents headings={headings} />
@@ -192,80 +228,110 @@ const articleSchema = {
         <Content />
       </div>
 
-      {relatedArticles.length > 0 && (
-        <section class="related-posts" aria-labelledby="related-title">
-          <h2 id="related-title" class="related-title">Articles sur le meme theme</h2>
-          <div class="related-grid">
-            {relatedArticles.map((rel: CollectionEntry<'blog'>) => (
-              <a href={`/blog/${rel.id}`} class="related-card">
-                <span class="related-card-meta">
-                  <time datetime={rel.data.pubDate.toISOString()}>
-                    {rel.data.pubDate.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}
-                  </time>
-                </span>
-                <h3 class="related-card-title">{rel.data.title}</h3>
-                {rel.data.description && (
-                  <p class="related-card-desc">{rel.data.description}</p>
-                )}
-                <span class="related-card-cta">Lire →</span>
-              </a>
-            ))}
-          </div>
-        </section>
-      )}
+      {
+        relatedArticles.length > 0 && (
+          <section class="related-posts" aria-labelledby="related-title">
+            <h2 id="related-title" class="related-title">
+              Articles sur le meme theme
+            </h2>
+            <div class="related-grid">
+              {relatedArticles.map((rel: CollectionEntry<'blog'>) => (
+                <a href={`/blog/${rel.id}`} class="related-card">
+                  <span class="related-card-meta">
+                    <time datetime={rel.data.pubDate.toISOString()}>
+                      {rel.data.pubDate.toLocaleDateString('fr-FR', {
+                        day: 'numeric',
+                        month: 'short',
+                      })}
+                    </time>
+                  </span>
+                  <h3 class="related-card-title">{rel.data.title}</h3>
+                  {rel.data.description && <p class="related-card-desc">{rel.data.description}</p>}
+                  <span class="related-card-cta">Lire →</span>
+                </a>
+              ))}
+            </div>
+          </section>
+        )
+      }
 
-      {(prevArticle || nextArticle) && (
-        <nav class="article-nav" aria-label="Navigation entre articles">
-          {prevArticle && (
-            <a href={`/blog/${prevArticle.id}`} class="article-nav-link article-nav-prev">
-              <span class="article-nav-eyebrow">Article plus ancien</span>
-              <span class="article-nav-title">{prevArticle.data.title}</span>
-            </a>
-          )}
-          {nextArticle && (
-            <a href={`/blog/${nextArticle.id}`} class={`article-nav-link article-nav-next${!prevArticle ? ' article-nav-only' : ''}`}>
-              <span class="article-nav-eyebrow">Article plus recent</span>
-              <span class="article-nav-title">{nextArticle.data.title}</span>
-            </a>
-          )}
-        </nav>
-      )}
-
-      {sameTagArticles.length > 0 && (
-        <section class="same-tag-section" aria-labelledby="same-tag-title">
-          <h2 id="same-tag-title" class="related-title">Continuer la decouverte</h2>
-          <div class="same-tag-grid">
-            {sameTagArticles.slice(0, 4).map((rel: CollectionEntry<'blog'>) => (
-              <a href={`/blog/${rel.id}`} class="same-tag-card">
-                <span class="related-card-meta">
-                  <time datetime={rel.data.pubDate.toISOString()}>
-                    {rel.data.pubDate.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })}
-                  </time>
-                </span>
-                <h3 class="related-card-title">{rel.data.title}</h3>
-                <span class="related-card-cta">Lire →</span>
+      {
+        (prevArticle || nextArticle) && (
+          <nav class="article-nav" aria-label="Navigation entre articles">
+            {prevArticle && (
+              <a href={`/blog/${prevArticle.id}`} class="article-nav-link article-nav-prev">
+                <span class="article-nav-eyebrow">Article plus ancien</span>
+                <span class="article-nav-title">{prevArticle.data.title}</span>
               </a>
-            ))}
-          </div>
-          <div class="same-tag-cta">
-            <a href="/blog" class="same-tag-back">Voir tous les articles</a>
-          </div>
-        </section>
-      )}
+            )}
+            {nextArticle && (
+              <a
+                href={`/blog/${nextArticle.id}`}
+                class={`article-nav-link article-nav-next${!prevArticle ? ' article-nav-only' : ''}`}
+              >
+                <span class="article-nav-eyebrow">Article plus recent</span>
+                <span class="article-nav-title">{nextArticle.data.title}</span>
+              </a>
+            )}
+          </nav>
+        )
+      }
+
+      {
+        sameTagArticles.length > 0 && (
+          <section class="same-tag-section" aria-labelledby="same-tag-title">
+            <h2 id="same-tag-title" class="related-title">
+              Continuer la decouverte
+            </h2>
+            <div class="same-tag-grid">
+              {sameTagArticles.slice(0, 4).map((rel: CollectionEntry<'blog'>) => (
+                <a href={`/blog/${rel.id}`} class="same-tag-card">
+                  <span class="related-card-meta">
+                    <time datetime={rel.data.pubDate.toISOString()}>
+                      {rel.data.pubDate.toLocaleDateString('fr-FR', {
+                        day: 'numeric',
+                        month: 'short',
+                        year: 'numeric',
+                      })}
+                    </time>
+                  </span>
+                  <h3 class="related-card-title">{rel.data.title}</h3>
+                  <span class="related-card-cta">Lire →</span>
+                </a>
+              ))}
+            </div>
+            <div class="same-tag-cta">
+              <a href="/blog" class="same-tag-back">
+                Voir tous les articles
+              </a>
+            </div>
+          </section>
+        )
+      }
 
       <footer class="article-footer">
-        {entry.data.tags && entry.data.tags.length > 0 && (
-          <nav class="article-tags" aria-label="Tags de l'article">
-            <span class="article-tags-label">Tags</span>
-            {entry.data.tags.map((tag: string) => (
-              <a href={`/blog/tag/${slugifyTag(tag)}`} class="tag tag-link">#{tag}</a>
-            ))}
-          </nav>
-        )}
+        {
+          entry.data.tags && entry.data.tags.length > 0 && (
+            <nav class="article-tags" aria-label="Tags de l'article">
+              <span class="article-tags-label">Tags</span>
+              {entry.data.tags.map((tag: string) => (
+                <a href={`/blog/tag/${slugifyTag(tag)}`} class="tag tag-link">
+                  #{tag}
+                </a>
+              ))}
+            </nav>
+          )
+        }
         <p>
           {entry.data.author || 'Biscuits IA'} &middot;
           <time datetime={entry.data.pubDate.toISOString()}>
-            {entry.data.pubDate.toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' })}
+            {
+              entry.data.pubDate.toLocaleDateString('fr-FR', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+              })
+            }
           </time>
         </p>
         <div class="article-footer-actions">
@@ -278,7 +344,9 @@ const articleSchema = {
 </Layout>
 
 <style>
-  .article-wrapper { background: var(--color-bg); }
+  .article-wrapper {
+    background: var(--color-bg);
+  }
 
   .article-content {
     max-width: 800px;
@@ -301,7 +369,10 @@ const articleSchema = {
     transition: all var(--transition-fast, 0.2s);
   }
 
-  .back-link:hover { color: var(--color-primary); transform: translateX(-4px); }
+  .back-link:hover {
+    color: var(--color-primary);
+    transform: translateX(-4px);
+  }
 
   .featured-badge {
     display: inline-flex;
@@ -320,7 +391,9 @@ const articleSchema = {
     letter-spacing: 0.05em;
   }
 
-  .article-header { margin-bottom: 2.5rem; }
+  .article-header {
+    margin-bottom: 2.5rem;
+  }
 
   .article-title {
     font-size: clamp(1.8rem, 4vw, 2.75rem);
@@ -359,7 +432,12 @@ const articleSchema = {
     font-weight: 600;
   }
 
-  .tags { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1.5rem; }
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 1.5rem;
+  }
 
   .tag {
     padding: 0.3rem 0.75rem;
@@ -403,12 +481,27 @@ const articleSchema = {
     color: var(--color-text);
   }
 
-  .prose :global(p) { margin: 1.25rem 0; line-height: 1.8; }
-  .prose :global(a) { color: var(--color-primary); text-decoration: underline; font-weight: 600; }
-  .prose :global(a:hover) { color: var(--color-secondary); }
+  .prose :global(p) {
+    margin: 1.25rem 0;
+    line-height: 1.8;
+  }
+  .prose :global(a) {
+    color: var(--color-primary);
+    text-decoration: underline;
+    font-weight: 600;
+  }
+  .prose :global(a:hover) {
+    color: var(--color-secondary);
+  }
 
-  .prose :global(ul), .prose :global(ol) { margin: 1.25rem 0; padding-left: 1.75rem; }
-  .prose :global(li) { margin: 0.4rem 0; }
+  .prose :global(ul),
+  .prose :global(ol) {
+    margin: 1.25rem 0;
+    padding-left: 1.75rem;
+  }
+  .prose :global(li) {
+    margin: 0.4rem 0;
+  }
 
   .prose :global(blockquote) {
     margin: 1.75rem 0;
@@ -441,7 +534,11 @@ const articleSchema = {
     padding: 0.15em 0.4em;
   }
 
-  .prose :global(pre code) { background: transparent; padding: 0; border: none; }
+  .prose :global(pre code) {
+    background: transparent;
+    padding: 0;
+    border: none;
+  }
 
   .prose :global(figure) {
     margin: 2rem auto;
@@ -504,7 +601,10 @@ const articleSchema = {
     border-radius: var(--radius-lg, 0);
     text-decoration: none;
     color: inherit;
-    transition: transform var(--transition-base, 0.3s), border-color var(--transition-base, 0.3s), box-shadow var(--transition-base, 0.3s);
+    transition:
+      transform var(--transition-base, 0.3s),
+      border-color var(--transition-base, 0.3s),
+      box-shadow var(--transition-base, 0.3s);
   }
 
   .related-card:hover {
@@ -564,10 +664,16 @@ const articleSchema = {
     transition: all var(--transition-fast, 0.2s);
   }
 
-  .article-nav-only { grid-column: 2; }
+  .article-nav-only {
+    grid-column: 2;
+  }
 
-  .article-nav-prev { text-align: left; }
-  .article-nav-next { text-align: right; }
+  .article-nav-prev {
+    text-align: left;
+  }
+  .article-nav-next {
+    text-align: right;
+  }
 
   .article-nav-link:hover {
     border-color: var(--color-primary);
@@ -622,7 +728,9 @@ const articleSchema = {
     transform: translateY(-2px);
   }
 
-  .same-tag-cta { text-align: center; }
+  .same-tag-cta {
+    text-align: center;
+  }
 
   .same-tag-back {
     display: inline-block;
@@ -657,9 +765,12 @@ const articleSchema = {
     color: var(--color-text-light);
     margin-right: 0.4rem;
   }
-  .article-tags .tag-link { font-size: 0.78rem; padding: 0.35rem 0.85rem; }
+  .article-tags .tag-link {
+    font-size: 0.78rem;
+    padding: 0.35rem 0.85rem;
+  }
 
-    /* === FOOTER === */
+  /* === FOOTER === */
   .article-footer {
     margin-top: 4rem;
     padding-top: 2rem;
@@ -669,7 +780,9 @@ const articleSchema = {
     font-size: 0.85rem;
   }
 
-  .article-footer p { margin: 0 0 1.25rem; }
+  .article-footer p {
+    margin: 0 0 1.25rem;
+  }
 
   .article-footer-actions {
     display: flex;
@@ -710,20 +823,48 @@ const articleSchema = {
 
   /* === RESPONSIVE === */
   @media (max-width: 768px) {
-    .article-content { padding: calc(var(--header-height-mobile) + 1rem) 1rem 2.5rem; }
-    .article-title { font-size: 1.8rem; }
-    .article-description { font-size: 1.05rem; }
-    .prose { font-size: 1rem; }
-    .prose :global(h2) { font-size: 1.5rem; padding-left: 0.75rem; }
-    .prose :global(h3) { font-size: 1.25rem; }
-    .article-meta { gap: 0.5rem 1rem; }
-    .article-nav { grid-template-columns: 1fr; }
-    .article-nav-only { grid-column: 1; }
-    .related-grid, .same-tag-grid { grid-template-columns: 1fr; }
+    .article-content {
+      padding: calc(var(--header-height-mobile) + 1rem) 1rem 2.5rem;
+    }
+    .article-title {
+      font-size: 1.8rem;
+    }
+    .article-description {
+      font-size: 1.05rem;
+    }
+    .prose {
+      font-size: 1rem;
+    }
+    .prose :global(h2) {
+      font-size: 1.5rem;
+      padding-left: 0.75rem;
+    }
+    .prose :global(h3) {
+      font-size: 1.25rem;
+    }
+    .article-meta {
+      gap: 0.5rem 1rem;
+    }
+    .article-nav {
+      grid-template-columns: 1fr;
+    }
+    .article-nav-only {
+      grid-column: 1;
+    }
+    .related-grid,
+    .same-tag-grid {
+      grid-template-columns: 1fr;
+    }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .article-wrapper *, .back-link, .tag, .related-card, .article-nav-link, .same-tag-card, .footer-link {
+    .article-wrapper *,
+    .back-link,
+    .tag,
+    .related-card,
+    .article-nav-link,
+    .same-tag-card,
+    .footer-link {
       transition: none !important;
       animation: none !important;
     }

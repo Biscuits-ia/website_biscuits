@@ -31,7 +31,7 @@ import { countHeadings } from './helpers/dom';
 const IS_CI = !!process.env.CI;
 
 test.describe('P4 #28 — redirection page légale', () => {
-  test('le sitemap ne reference pas l\'ancienne URL', async ({ request }) => {
+  test("le sitemap ne reference pas l'ancienne URL", async ({ request }) => {
     // @astrojs/sitemap genere sitemap-index.xml qui pointe sur
     // sitemap-0.xml. On suit le redirect logique : charger l'index,
     // puis le fichier reference.
@@ -58,12 +58,12 @@ test.describe('P4 #28 — redirection page légale', () => {
     // Aucune URL ne doit finir par /legal/confidentialite (avec ou sans
     // slash). Si l'ancienne page reapparait, elle sera listee ici.
     expect(sitemapXml, 'sitemap-0 ne doit pas contenir /legal/confidentialite').not.toMatch(
-      /\/legal\/confidentialite\b/,
+      /\/legal\/confidentialite\b/
     );
 
     // La canonique DOIT etre dans le sitemap.
     expect(sitemapXml, 'sitemap-0 doit contenir la canonique').toMatch(
-      /\/legal\/politique-de-confidentialite\b/,
+      /\/legal\/politique-de-confidentialite\b/
     );
   });
 
@@ -104,7 +104,7 @@ test.describe('P4 #28 — redirection page légale', () => {
 
     const location = response.headers()['location'];
     expect(location, 'Location doit pointer sur la canonique').toBe(
-      '/legal/politique-de-confidentialite',
+      '/legal/politique-de-confidentialite'
     );
   });
 

@@ -4,15 +4,12 @@
 
 import type { APIRoute } from 'astro';
 import { submitToIndexNow } from '@/lib/indexnow';
+import { verifyBearer } from '@/lib/secrets';
 
 export const prerender = false;
 
 const SITE_URL = import.meta.env.PUBLIC_SITE_URL ?? 'https://biscuits-ia.com';
-const ALLOWED_HOSTS = new Set([
-  'biscuits-ia.com',
-  'www.biscuits-ia.com',
-  'localhost:4321',
-]);
+const ALLOWED_HOSTS = new Set(['biscuits-ia.com', 'www.biscuits-ia.com', 'localhost:4321']);
 
 // Liste d’URLs à soumettre. En prod on léve le sitemap via fs (rapide),
 // en dev on accepte une liste vide.
@@ -41,33 +38,52 @@ async function getSitemapUrls(): Promise<string[]> {
   }
 }
 
-export const POST: APIRoute = async () => {
+export const POST: APIRoute = async ({ request }) => {
+  const secret = import.meta.env.INDEXNOW_SECRET;
+  if (!secret) {
+    return new Response(JSON.stringify({ error: 'service_unavailable' }), {
+      status: 503,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+  if (!verifyBearer(request.headers.get('authorization'), secret)) {
+    return new Response(JSON.stringify({ error: 'unauthorized' }), {
+      status: 401,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
   try {
     const urls = await getSitemapUrls();
     if (!urls.length) {
-      return new Response(
-        JSON.stringify({ error: 'sitemap_empty' }),
-        { status: 502, headers: { 'Content-Type': 'application/json' } }
-      );
+      return new Response(JSON.stringify({ error: 'sitemap_empty' }), {
+        status: 502,
+        headers: { 'Content-Type': 'application/json' },
+      });
     }
     const host = new URL(SITE_URL).host;
     if (!ALLOWED_HOSTS.has(host)) {
-      return new Response(
-        JSON.stringify({ error: 'invalid_host', host }),
-        { status: 400, headers: { 'Content-Type': 'application/json' } }
-      );
+      return new Response(JSON.stringify({ error: 'invalid_host', host }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      });
     }
     const result = await submitToIndexNow({ urls, host });
-    return new Response(
-      JSON.stringify({ submitted: urls.length, result }),
-      { status: 200, headers: { 'Content-Type': 'application/json' } }
-    );
+    return new Response(JSON.stringify({ submitted: urls.length, result }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    });
   } catch (err) {
-    return new Response(
-      JSON.stringify({ error: 'indexnow_error', message: (err as Error).message }),
-      { status: 500, headers: { 'Content-Type': 'application/json' } }
-    );
+    console.error('[api/indexnow] submission failed:', err);
+    return new Response(JSON.stringify({ error: 'indexnow_error' }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
 };
 
-export const GET = POST;
+export const GET: APIRoute = async () =>
+  new Response(JSON.stringify({ error: 'method_not_allowed' }), {
+    status: 405,
+    headers: { 'Content-Type': 'application/json', Allow: 'POST' },
+  });

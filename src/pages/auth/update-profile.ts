@@ -1,14 +1,14 @@
 import type { APIRoute } from 'astro';
-import { createSupabaseClient, createSupabaseAdminClient } from '@/lib/supabase';
-import { EMAIL_RE, MAX_EMAIL, MAX_NAME } from '@/lib/validation';
+import { createSupabaseClient, createSupabaseVerificationClient } from '@/lib/supabase';
+import { EMAIL_RE, MAX_EMAIL, MAX_NAME, MAX_ORGANIZATION, MAX_PHONE } from '@/lib/validation';
 
 export const POST: APIRoute = async ({ request, cookies, locals }) => {
   try {
     if (!import.meta.env.SUPABASE_URL || !import.meta.env.SUPABASE_ANON_KEY) {
-      return new Response(
-        JSON.stringify({ error: 'Configuration Supabase manquante.' }),
-        { status: 500, headers: { 'Content-Type': 'application/json' } },
-      );
+      return new Response(JSON.stringify({ error: 'Configuration Supabase manquante.' }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' },
+      });
     }
 
     const formData = await request.formData();
@@ -16,19 +16,23 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
     const email = formData.get('email') as string | null;
     const phone = formData.get('phone') as string | null;
     const organization = formData.get('organization') as string | null;
+    const currentPassword = formData.get('current_password_for_email') as string | null;
 
     // Reutiliser le client du middleware pour ne pas relire les cookies
     // en concurrence avec le browser SDK.
     const supabase = locals.supabase ?? createSupabaseClient({ request, cookies, locals });
 
     // Recuperer l'utilisateur connecte
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
 
     if (userError || !user) {
-      return new Response(
-        JSON.stringify({ error: 'Vous devez etre connecte.' }),
-        { status: 401, headers: { 'Content-Type': 'application/json' } },
-      );
+      return new Response(JSON.stringify({ error: 'Vous devez etre connecte.' }), {
+        status: 401,
+        headers: { 'Content-Type': 'application/json' },
+      });
     }
 
     // Valider l'email si fourni
@@ -36,21 +40,37 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
       if (email.length > MAX_EMAIL) {
         return new Response(
           JSON.stringify({ error: `L'email ne peut pas depasser ${MAX_EMAIL} caracteres.` }),
-          { status: 400, headers: { 'Content-Type': 'application/json' } },
+          { status: 400, headers: { 'Content-Type': 'application/json' } }
         );
       }
       if (!EMAIL_RE.test(email)) {
-        return new Response(
-          JSON.stringify({ error: 'Adresse email invalide.' }),
-          { status: 400, headers: { 'Content-Type': 'application/json' } },
-        );
+        return new Response(JSON.stringify({ error: 'Adresse email invalide.' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' },
+        });
       }
     }
 
     if (full_name && full_name.length > MAX_NAME) {
       return new Response(
         JSON.stringify({ error: `Le nom ne peut pas depasser ${MAX_NAME} caracteres.` }),
-        { status: 400, headers: { 'Content-Type': 'application/json' } },
+        { status: 400, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (phone && phone.trim().length > MAX_PHONE) {
+      return new Response(
+        JSON.stringify({ error: `Le telephone ne peut pas depasser ${MAX_PHONE} caracteres.` }),
+        { status: 400, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (organization && organization.trim().length > MAX_ORGANIZATION) {
+      return new Response(
+        JSON.stringify({
+          error: `L'organisation ne peut pas depasser ${MAX_ORGANIZATION} caracteres.`,
+        }),
+        { status: 400, headers: { 'Content-Type': 'application/json' } }
       );
     }
 
@@ -69,19 +89,44 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
       updateData.organization = organization.trim();
     }
 
-    // Mettre a jour l'email via l'API Admin si different. On evite
-    // l'appel cote client (qui declenche la rotation du refresh_token
-    // et casse les autres onglets).
+    // Une modification d'identifiant exige une reauthentification recente et
+    // le flux utilisateur Supabase, afin que la nouvelle adresse soit confirmee.
     let emailError: Error | null = null;
-    if (email && email !== user.email) {
+    let emailConfirmationPending = false;
+    const normalizedEmail = email?.trim().toLowerCase();
+    const emailChanged = !!normalizedEmail && normalizedEmail !== user.email?.toLowerCase();
+    if (emailChanged) {
+      if (!currentPassword || !user.email) {
+        return new Response(
+          JSON.stringify({ error: 'Le mot de passe actuel est requis pour modifier l email.' }),
+          { status: 400, headers: { 'Content-Type': 'application/json' } }
+        );
+      }
+
       try {
-        const adminClient = createSupabaseAdminClient();
-        const { error: emailUpdateError } = await adminClient.auth.admin.updateUserById(user.id, {
-          email,
+        const verifier = createSupabaseVerificationClient();
+        const { error: verifyError } = await verifier.auth.signInWithPassword({
+          email: user.email,
+          password: currentPassword,
         });
+        if (verifyError) {
+          return new Response(JSON.stringify({ error: 'Le mot de passe actuel est incorrect.' }), {
+            status: 401,
+            headers: { 'Content-Type': 'application/json' },
+          });
+        }
+
+        const confirmationUrl = new URL('/auth/confirm', request.url);
+        confirmationUrl.searchParams.set('next', '/dashboard/user/settings?email=confirmed');
+        const { error: emailUpdateError } = await supabase.auth.updateUser(
+          { email: normalizedEmail },
+          { emailRedirectTo: confirmationUrl.href }
+        );
         if (emailUpdateError) {
           emailError = emailUpdateError;
-          console.error('[Auth] update-email (admin) error:', emailUpdateError.message);
+          console.error('[Auth] update-email error:', emailUpdateError.message);
+        } else {
+          emailConfirmationPending = true;
         }
       } catch (e) {
         emailError = e as Error;
@@ -99,32 +144,37 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
 
     if (metadataError) {
       console.error('[Auth] update-profile metadata error:', metadataError);
-      return new Response(
-        JSON.stringify({ error: 'Erreur lors de la mise a jour du profil.' }),
-        { status: 500, headers: { 'Content-Type': 'application/json' } },
-      );
+      return new Response(JSON.stringify({ error: 'Erreur lors de la mise a jour du profil.' }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' },
+      });
     }
 
     // Si l'email a change, rediriger vers la page de confirmation
     const redirectUrl = emailError
-      ? `/dashboard/user/settings?error=${encodeURIComponent(emailError.message)}`
-      : `/dashboard/user/settings?saved=1`;
+      ? '/dashboard/user/settings?error=email_update_failed'
+      : emailConfirmationPending
+        ? '/dashboard/user/settings?saved=1&email=pending'
+        : '/dashboard/user/settings?saved=1';
 
     return new Response(
       JSON.stringify({
         success: true,
         redirect: redirectUrl,
+        emailConfirmationPending,
         message: emailError
-          ? 'Profil mis a jour mais echec de la mise a jour de l email.'
-          : 'Profil mis a jour avec succes.',
+          ? 'Profil mis a jour mais echec de la demande de changement d email.'
+          : emailConfirmationPending
+            ? 'Profil mis a jour. Confirmez le changement depuis vos deux adresses email.'
+            : 'Profil mis a jour avec succes.',
       }),
-      { status: 200, headers: { 'Content-Type': 'application/json' } },
+      { status: 200, headers: { 'Content-Type': 'application/json' } }
     );
   } catch (err) {
     console.error('[Auth] update-profile route error:', err);
-    return new Response(
-      JSON.stringify({ error: 'Erreur serveur. Veuillez reessayer.' }),
-      { status: 500, headers: { 'Content-Type': 'application/json' } },
-    );
+    return new Response(JSON.stringify({ error: 'Erreur serveur. Veuillez reessayer.' }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
 };

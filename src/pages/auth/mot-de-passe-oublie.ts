@@ -42,12 +42,16 @@ function getAuthRedirectOrigin(request: Request, url: URL, site: URL | undefined
     getForwardedOrigin(request),
     normalizeOrigin(import.meta.env.SITE),
     normalizeOrigin(site),
-    import.meta.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${import.meta.env.VERCEL_PROJECT_PRODUCTION_URL}` : null,
+    import.meta.env.VERCEL_PROJECT_PRODUCTION_URL
+      ? `https://${import.meta.env.VERCEL_PROJECT_PRODUCTION_URL}`
+      : null,
   ];
 
   const origin = candidates.find((candidate): candidate is string => Boolean(candidate));
   if (!origin) {
-    throw new Error('Impossible de determiner l\'URL publique. Assurez-vous que SITE est configure.');
+    throw new Error(
+      "Impossible de determiner l'URL publique. Assurez-vous que SITE est configure."
+    );
   }
 
   return origin;
@@ -55,10 +59,13 @@ function getAuthRedirectOrigin(request: Request, url: URL, site: URL | undefined
 
 function getErrorMessage(errorMessage: string): string {
   const msg = errorMessage.toLowerCase();
-  if (msg.includes('rate') || msg.includes('limit')) return 'Trop d\'emails envoyes. Attendez quelques minutes avant de reessayer.';
-  if (msg.includes('not allowed') || msg.includes('redirect')) return 'Configuration incorrecte. Contactez le support.';
-  if (msg.includes('user not found') || msg.includes('no user')) return 'Aucun compte trouve pour cet email.';
-  return 'Impossible d\'envoyer le code de reinitialisation. Veuillez reessayer.';
+  if (msg.includes('rate') || msg.includes('limit'))
+    return "Trop d'emails envoyes. Attendez quelques minutes avant de reessayer.";
+  if (msg.includes('not allowed') || msg.includes('redirect'))
+    return 'Configuration incorrecte. Contactez le support.';
+  if (msg.includes('user not found') || msg.includes('no user'))
+    return 'Aucun compte trouve pour cet email.';
+  return "Impossible d'envoyer le code de reinitialisation. Veuillez reessayer.";
 }
 
 export const POST: APIRoute = async ({ request, cookies, url, site, clientAddress }) => {
@@ -69,22 +76,23 @@ export const POST: APIRoute = async ({ request, cookies, url, site, clientAddres
 
   try {
     const formData = await request.formData();
-    const email = formData.get('email') instanceof File ? null : (formData.get('email') as string | null);
+    const email =
+      formData.get('email') instanceof File ? null : (formData.get('email') as string | null);
 
     if (!email) {
-      return new Response(
-        JSON.stringify({ error: 'Veuillez entrer votre adresse email.' }),
-        { status: 400, headers: JSON_HDR },
-      );
+      return new Response(JSON.stringify({ error: 'Veuillez entrer votre adresse email.' }), {
+        status: 400,
+        headers: JSON_HDR,
+      });
     }
 
     // Validation email cote serveur (defense in depth).
     const trimmedEmail = email.trim();
     if (!EMAIL_RE.test(trimmedEmail) || trimmedEmail.length > 255) {
-      return new Response(
-        JSON.stringify({ error: 'Adresse email invalide.' }),
-        { status: 400, headers: JSON_HDR },
-      );
+      return new Response(JSON.stringify({ error: 'Adresse email invalide.' }), {
+        status: 400,
+        headers: JSON_HDR,
+      });
     }
 
     const supabase = createSupabaseClient({ request, cookies });
@@ -99,10 +107,10 @@ export const POST: APIRoute = async ({ request, cookies, url, site, clientAddres
 
     if (error) {
       console.error('[Auth] resetPasswordForEmail error:', error.message, '| code:', error.code);
-      return new Response(
-        JSON.stringify({ error: getErrorMessage(error.message) }),
-        { status: 400, headers: JSON_HDR },
-      );
+      return new Response(JSON.stringify({ error: getErrorMessage(error.message) }), {
+        status: 400,
+        headers: JSON_HDR,
+      });
     }
 
     return new Response(
@@ -110,13 +118,13 @@ export const POST: APIRoute = async ({ request, cookies, url, site, clientAddres
         success: true,
         message: 'Email envoye. Verifiez votre boite de reception pour recuperer le code.',
       }),
-      { status: 200, headers: JSON_HDR },
+      { status: 200, headers: JSON_HDR }
     );
   } catch (err) {
     console.error('[Auth] Password reset error:', err);
-    return new Response(
-      JSON.stringify({ error: 'Erreur serveur. Veuillez reessayer.' }),
-      { status: 500, headers: JSON_HDR },
-    );
+    return new Response(JSON.stringify({ error: 'Erreur serveur. Veuillez reessayer.' }), {
+      status: 500,
+      headers: JSON_HDR,
+    });
   }
 };

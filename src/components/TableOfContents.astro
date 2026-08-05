@@ -6,23 +6,23 @@ interface Props {
 }
 
 const { headings } = Astro.props;
-const toc = headings.filter(h => h.depth <= 3);
+const toc = headings.filter((h) => h.depth <= 3);
 ---
 
-{toc.length > 0 && (
-  <nav class="toc">
-    <h2>Table des matières</h2>
-    <ul>
-      {toc.map((heading) => (
-        <li class={`toc-level-${heading.depth}`}>
-          <a href={`#${heading.slug}`}>
-            {heading.text}
-          </a>
-        </li>
-      ))}
-    </ul>
-  </nav>
-)}
+{
+  toc.length > 0 && (
+    <nav class="toc">
+      <h2>Table des matières</h2>
+      <ul>
+        {toc.map((heading) => (
+          <li class={`toc-level-${heading.depth}`}>
+            <a href={`#${heading.slug}`}>{heading.text}</a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  )
+}
 
 <style>
   .toc {
@@ -67,7 +67,9 @@ const toc = headings.filter(h => h.depth <= 3);
     padding: 0.5rem 0 0.5rem 1rem;
     color: var(--color-text-light);
     text-decoration: none;
-    transition: color var(--transition-fast), transform var(--transition-fast);
+    transition:
+      color var(--transition-fast),
+      transform var(--transition-fast);
     font-size: 0.95rem;
   }
 

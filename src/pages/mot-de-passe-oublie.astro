@@ -2,7 +2,9 @@
 import AuthLayout from '../layouts/AuthLayout.astro';
 import { createSupabaseClient } from '../lib/supabase';
 const supabase = createSupabaseClient(Astro);
-const { data: { user } } = await supabase.auth.getUser();
+const {
+  data: { user },
+} = await supabase.auth.getUser();
 if (user) return Astro.redirect('/dashboard/user');
 const nonce = Astro.locals.nonce;
 ---
@@ -10,11 +12,12 @@ const nonce = Astro.locals.nonce;
 <AuthLayout title="Mot de passe oublié" description="Réinitialisez votre mot de passe Biscuits IA.">
   <div class="auth-shell">
     <div class="auth-card-wrap">
-
       <div class="auth-brand">
         <div class="auth-brand-icon">
           <svg viewBox="0 0 14 14" fill="#F7F2E8" width="18" height="18" aria-hidden="true">
-            <path d="M7 0C3.13 0 0 3.13 0 7s3.13 7 7 7 7-3.13 7-7-3.13-7-7-7zm0 2c.83 0 1.5.67 1.5 1.5S7.83 5 7 5s-1.5-.67-1.5-1.5S6.17 2 7 2zm0 10c-1.75 0-3.29-.9-4.2-2.26C2.85 8.23 5.35 7.5 7 7.5s4.15.73 4.2 2.24C10.29 11.1 8.75 12 7 12z"/>
+            <path
+              d="M7 0C3.13 0 0 3.13 0 7s3.13 7 7 7 7-3.13 7-7-3.13-7-7-7zm0 2c.83 0 1.5.67 1.5 1.5S7.83 5 7 5s-1.5-.67-1.5-1.5S6.17 2 7 2zm0 10c-1.75 0-3.29-.9-4.2-2.26C2.85 8.23 5.35 7.5 7 7.5s4.15.73 4.2 2.24C10.29 11.1 8.75 12 7 12z"
+            ></path>
           </svg>
         </div>
         <div>
@@ -31,14 +34,31 @@ const nonce = Astro.locals.nonce;
 
         <div class="auth-field-lg">
           <label for="email" class="auth-label">Adresse email</label>
-          <input type="email" id="email" placeholder="vous@exemple.com" autocomplete="email" class="auth-input" />
+          <input
+            type="email"
+            id="email"
+            placeholder="vous@exemple.com"
+            autocomplete="email"
+            class="auth-input"
+          />
         </div>
 
         <button id="reset-btn" class="auth-btn-primary" type="button">
           <span id="btn-text">Envoyer le code</span>
-          <svg id="btn-loader" class="auth-spinner auth-hidden" width="14" height="14"
-               viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
-            <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+          <svg
+            id="btn-loader"
+            class="auth-spinner auth-hidden"
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            aria-hidden="true"
+          >
+            <path
+              d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"
+            ></path>
           </svg>
         </button>
 
@@ -54,37 +74,65 @@ const nonce = Astro.locals.nonce;
 
 <style>
   /* En-tete de marque (propre a cette page). */
-  .auth-brand { display: flex; align-items: center; gap: 12px; margin-bottom: 32px; }
+  .auth-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 32px;
+  }
   .auth-brand-icon {
-    width: 40px; height: 40px;
+    width: 40px;
+    height: 40px;
     background: oklch(53.958% 0.10717 58.243);
     border-radius: 12px;
-    display: flex; align-items: center; justify-content: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     flex-shrink: 0;
   }
-  .auth-brand-name { font-size: 15px; font-weight: 500; color: #2c2014; }
-  .auth-brand-sub { font-size: 11px; color: #9a7e5a; font-family: 'Geist Mono', monospace; }
+  .auth-brand-name {
+    font-size: 15px;
+    font-weight: 500;
+    color: #2c2014;
+  }
+  .auth-brand-sub {
+    font-size: 11px;
+    color: #9a7e5a;
+    font-family: 'Geist Mono', monospace;
+  }
 
   /* Deltas propres a ce tunnel (brun oklch 53.958). Le reste vient de auth.css. */
-  .auth-lead { color: #7a6040; }
-  .auth-input:focus { border-color: oklch(53.958% 0.10717 58.243); }
-  .auth-input::placeholder { color: #c4b89a; }
-  .auth-btn-primary { background: oklch(53.958% 0.10717 58.243); }
-  .auth-btn-primary:hover { background: #754819; }
-  .auth-btn-primary:active { background: #8b5822; }
+  .auth-lead {
+    color: #7a6040;
+  }
+  .auth-input:focus {
+    border-color: oklch(53.958% 0.10717 58.243);
+  }
+  .auth-input::placeholder {
+    color: #c4b89a;
+  }
+  .auth-btn-primary {
+    background: oklch(53.958% 0.10717 58.243);
+  }
+  .auth-btn-primary:hover {
+    background: #754819;
+  }
+  .auth-btn-primary:active {
+    background: #8b5822;
+  }
 </style>
 
 <script is:inline nonce={nonce}>
-  const emailEl   = document.getElementById('email');
-  const msgEl     = document.getElementById('msg');
-  const btn       = document.getElementById('reset-btn');
-  const btnText   = document.getElementById('btn-text');
+  const emailEl = document.getElementById('email');
+  const msgEl = document.getElementById('msg');
+  const btn = document.getElementById('reset-btn');
+  const btnText = document.getElementById('btn-text');
   const btnLoader = document.getElementById('btn-loader');
 
   function showMsg(text, type) {
     if (type === undefined) type = 'error';
-    msgEl.textContent   = text;
-    msgEl.className     = 'auth-msg ' + type;
+    msgEl.textContent = text;
+    msgEl.className = 'auth-msg ' + type;
     // `hidden` et non `style.display` : la regle agent-utilisateur du HTML est
     // `[hidden] { display: none !important }`, et un !important d'agent bat un
     // style inline. Le message restait donc invisible malgre son texte.
@@ -92,8 +140,8 @@ const nonce = Astro.locals.nonce;
   }
 
   function setLoading(loading) {
-    btn.disabled            = loading;
-    btnText.style.display   = loading ? 'none'  : 'block';
+    btn.disabled = loading;
+    btnText.style.display = loading ? 'none' : 'block';
     btnLoader.style.display = loading ? 'block' : 'none';
   }
 
@@ -121,20 +169,19 @@ const nonce = Astro.locals.nonce;
       }
 
       showMsg('Code envoyé. Vérifiez votre boîte de réception.', 'success');
-      setTimeout(function() {
+      setTimeout(function () {
         window.location.href = '/verifier-code-reinitialisation?email=' + encodeURIComponent(email);
       }, 900);
     } catch (e) {
       showMsg('Une erreur est survenue. Veuillez réessayer.');
     } finally {
       setLoading(false);
-
     }
   }
 
   btn.addEventListener('click', handleReset);
 
-  document.getElementById('email').addEventListener('keydown', function(e) {
+  document.getElementById('email').addEventListener('keydown', function (e) {
     if (e.key === 'Enter') handleReset();
   });
 </script>

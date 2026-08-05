@@ -29,15 +29,13 @@ const {
 } = Astro.props;
 
 const siteUrl = import.meta.env.SITE || 'https://biscuits-ia.com';
-const fullCanonical = canonical
-  ? `${siteUrl}${canonical}`
-  : `${siteUrl}${Astro.url.pathname}`;
+const fullCanonical = canonical ? `${siteUrl}${canonical}` : `${siteUrl}${Astro.url.pathname}`;
 const fullTitle = title.includes('|') ? title : `${title} | Biscuits IA`;
 const isProd = import.meta.env.PROD;
 const nonce = Astro.locals.nonce;
 ---
 
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fr">
   <head>
     <BaseHead
@@ -47,6 +45,7 @@ const nonce = Astro.locals.nonce;
       siteUrl={siteUrl}
       ogImage={ogImage}
       ogType={ogType}
+      noindex={true}
       schema={schema}
       isProd={isProd}
       nonce={nonce}

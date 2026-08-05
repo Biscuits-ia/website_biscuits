@@ -11,7 +11,7 @@ CDN Vercel (cache static + edge)
   ▼
 src/middleware.ts
   ├─ getClientIpOrNull (x-vercel-forwarded-for uniquement)
-  ├─ rateLimit (Upstash Redis + in-memory L1, bypass dev)
+  ├─ rateLimit (Map locale bornée, sans service externe)
   ├─ logout cache (Map bornée, 30s TTL, max 10k entrées)
   ├─ Sec-Fetch-Site guard (CSRF, vérifie same-origin pour POST)
   ├─ CSP nonce generation → Astro.locals.nonce
@@ -106,14 +106,15 @@ de l'association, hors de ce site.
 
 ## Rate-limit — `src/lib/rateLimit.ts`
 
-- **L1 (in-memory)** : Map bornée par instance, TTL 60s. Hit le premier.
-- **L2 (Upstash Redis)** : compteur global partagé entre instances. Si L1
-  miss ou instance fraîche, on consulte Redis.
+- **Compteur local** : Map bornée par instance avec fenêtre configurable et
+  éviction des entrées expirées.
+- **Limite serverless** : le compteur n'est pas partagé entre les instances ;
+  les protections globales doivent être portées par le Firewall Vercel.
 - **Bypass dev** : `if (import.meta.env.DEV) return;` pour ne pas péter
   le dev local.
 - **IP source** : `x-vercel-forwarded-for` **UNIQUEMENT**. Sur Vercel ce
   header est signé (Vercel injecte `x-vercel-ip` et `x-vercel-forwarded-for`).
-  Pas de `cf-connecting-ip` (Cloudflare), pas de `x-forwarded-for` brut.
+  Aucun en-tête proxy fourni directement par le client n'est utilisé.
 
 ## Observability — `src/lib/observability.ts`
 

@@ -8,7 +8,8 @@ if (auth instanceof Response) return auth;
 // association) : y rediriger donnait un 404 et l'admin retombait sur le
 // dashboard user. On pointe donc vers une sous-page qui existe.
 if (auth.role === 'admin') return Astro.redirect('/dashboard/admin/users');
-if (auth.role === 'benevole' || auth.role === 'moderator') return Astro.redirect('/dashboard/benevole');
+if (auth.role === 'benevole' || auth.role === 'moderator')
+  return Astro.redirect('/dashboard/benevole');
 if (auth.role === 'association') return Astro.redirect('/dashboard/association');
 return Astro.redirect('/dashboard/user');
 ---

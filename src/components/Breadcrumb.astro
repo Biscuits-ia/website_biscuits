@@ -36,8 +36,8 @@ const defaultLabels: Record<string, string> = {
   parrainage: 'Parrainage',
   'mentions-legales': 'Mentions légales',
   'politique-de-confidentialite': 'Politique de confidentialité',
-  'a-qui-s-adresse': 'À qui ça s\'adresse',
-  'cas-d-usage': 'Cas d\'usage',
+  'a-qui-s-adresse': "À qui ça s'adresse",
+  'cas-d-usage': "Cas d'usage",
   auteur: 'Auteurs',
   'nos-missions': 'Nos missions',
   'pourquoi-biscuits-ia': 'Pourquoi Biscuits IA',
@@ -53,7 +53,8 @@ const crumbs = compact ? [] : [{ label: 'Accueil', href: '/' }];
 let acc = '';
 for (const part of pathParts) {
   acc += `/${part}`;
-  const label = defaultLabels[part] ?? part.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+  const label =
+    defaultLabels[part] ?? part.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
   crumbs.push({ label, href: acc });
 }
 
@@ -71,25 +72,29 @@ const schema = {
 };
 ---
 
-{crumbs.length > 1 && (
-  <>
-    <nav class="breadcrumb" aria-label="Fil d'Ariane">
-      <ol>
-        {crumbs.map((c, i) => (
-          <li>
-            {i < crumbs.length - 1 ? (
-              <a href={c.href}>{c.label}</a>
-            ) : (
-              <span aria-current="page">{c.label}</span>
-            )}
-            <span class="sep" aria-hidden="true">›</span>
-          </li>
-        ))}
-      </ol>
-    </nav>
-    <script type="application/ld+json" set:html={jsonLd(schema)} is:inline />
-  </>
-)}
+{
+  crumbs.length > 1 && (
+    <>
+      <nav class="breadcrumb" aria-label="Fil d'Ariane">
+        <ol>
+          {crumbs.map((c, i) => (
+            <li>
+              {i < crumbs.length - 1 ? (
+                <a href={c.href}>{c.label}</a>
+              ) : (
+                <span aria-current="page">{c.label}</span>
+              )}
+              <span class="sep" aria-hidden="true">
+                ›
+              </span>
+            </li>
+          ))}
+        </ol>
+      </nav>
+      <script type="application/ld+json" set:html={jsonLd(schema)} is:inline />
+    </>
+  )
+}
 
 <style>
   .breadcrumb {

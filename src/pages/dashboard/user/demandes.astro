@@ -7,12 +7,22 @@ const result = await requireAuth(Astro);
 if (result instanceof Response) return result;
 
 const { user, supabase } = result;
-const userId    = user.id;
+const userId = user.id;
 const userEmail = user.email ?? '';
-const userName  = user.user_metadata?.full_name ?? userEmail.split('@')[0];
+const userName = user.user_metadata?.full_name ?? userEmail.split('@')[0];
 
 const saved = Astro.url.searchParams.get('saved') === '1';
 const error = Astro.url.searchParams.get('error') ?? '';
+
+interface RequestRow {
+  id: string;
+  subject: string;
+  description: string;
+  status: string;
+  admin_reply: string | null;
+  created_at: string;
+  replied_at: string | null;
+}
 
 // Borne de securite : liste des demandes d'un membre, non paginee. 200 est
 // tres au-dessus d'un usage normal ; la limite existe pour que la page ne
@@ -25,20 +35,25 @@ const { data: requests } = await supabase
   .limit(200);
 
 const statusLabel: Record<string, string> = {
-  pending:     'En attente',
+  pending: 'En attente',
   in_progress: 'En cours',
-  resolved:    'Résolu',
+  resolved: 'Résolu',
 };
 
 const statusBadge: Record<string, string> = {
-  pending:     'badge-warn',
+  pending: 'badge-warn',
   in_progress: 'badge-info',
-  resolved:    'badge-ok',
+  resolved: 'badge-ok',
 };
 ---
 
-<DashboardLayout title="Mes demandes" activePage="demandes" userName={userName} userEmail={userEmail} authResult={result}>
-
+<DashboardLayout
+  title="Mes demandes"
+  activePage="demandes"
+  userName={userName}
+  userEmail={userEmail}
+  authResult={result}
+>
   <div class="mb-7 flex items-start justify-between gap-4 flex-wrap">
     <div>
       <h1>Mes demandes</h1>
@@ -47,55 +62,74 @@ const statusBadge: Record<string, string> = {
     <a href="#nouvelle-demande" class="btn btn-primary">+ Nouvelle demande</a>
   </div>
 
-  {saved && <div class="flash flash-ok" role="alert">✓ Demande envoyée. Nous vous répondrons rapidement.</div>}
-  {error  && <div class="flash flash-err" role="alert">✗ {decodeURIComponent(error)}</div>}
+  {
+    saved && (
+      <div class="flash flash-ok" role="alert">
+        ✓ Demande envoyée. Nous vous répondrons rapidement.
+      </div>
+    )
+  }
+  {
+    error && (
+      <div class="flash flash-err" role="alert">
+        ✗ {decodeURIComponent(error)}
+      </div>
+    )
+  }
 
-   <!-- Liste des demandes -->
-   {requests && requests.length > 0 ? (
-     <div class="flex flex-col gap-3.5">
-      {requests.map((req: any) => {
-        const date       = new Date(req.created_at);
-        const repliedAt  = req.replied_at ? new Date(req.replied_at) : null;
-        const badgeClass = statusBadge[req.status] ?? 'badge-neutral';
-        const label      = statusLabel[req.status] ?? req.status;
+  <!-- Liste des demandes -->
+  {
+    requests && requests.length > 0 ? (
+      <div class="flex flex-col gap-3.5">
+        {(requests as RequestRow[]).map((req) => {
+          const date = new Date(req.created_at);
+          const repliedAt = req.replied_at ? new Date(req.replied_at) : null;
+          const badgeClass = statusBadge[req.status] ?? 'badge-neutral';
+          const label = statusLabel[req.status] ?? req.status;
 
-        return (
-          <div class="request-card card">
-            <div class="request-header">
-              <div class="flex-1 min-w-0">
-                <div class="request-subject">{req.subject}</div>
-                <div class="request-meta">
-                  Envoyée le {date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
+          return (
+            <div class="request-card card">
+              <div class="request-header">
+                <div class="flex-1 min-w-0">
+                  <div class="request-subject">{req.subject}</div>
+                  <div class="request-meta">
+                    Envoyée le{' '}
+                    {date.toLocaleDateString('fr-FR', {
+                      day: 'numeric',
+                      month: 'long',
+                      year: 'numeric',
+                    })}
+                  </div>
                 </div>
+                <span class={`badge ${badgeClass}`}>{label}</span>
               </div>
-              <span class={`badge ${badgeClass}`}>{label}</span>
+
+              <div class="request-body">{req.description}</div>
+
+              {req.admin_reply && (
+                <div class="admin-reply">
+                  <div class="admin-reply-header">
+                    <span>💬 Réponse de l'équipe</span>
+                    {repliedAt && (
+                      <span class="text-xs text-muted font-mono">
+                        {repliedAt.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}
+                      </span>
+                    )}
+                  </div>
+                  <div class="admin-reply-body">{req.admin_reply}</div>
+                </div>
+              )}
             </div>
-
-            <div class="request-body">{req.description}</div>
-
-            {req.admin_reply && (
-              <div class="admin-reply">
-                <div class="admin-reply-header">
-                  <span>💬 Réponse de l'équipe</span>
-                  {repliedAt && (
-                    <span class="text-xs text-muted font-mono">
-                      {repliedAt.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}
-                    </span>
-                  )}
-                </div>
-                <div class="admin-reply-body">{req.admin_reply}</div>
-              </div>
-            )}
-          </div>
-        );
-      })}
-    </div>
-  ) : (
-    <div class="card mb-6 text-center py-12 px-6">
-      <p class="text-xl mb-2">📬</p>
-      <p>Vous n'avez pas encore de demande. Utilisez le formulaire ci-dessous.</p>
-    </div>
-  )}
+          );
+        })}
+      </div>
+    ) : (
+      <div class="card mb-6 text-center py-12 px-6">
+        <p class="text-xl mb-2">📬</p>
+        <p>Vous n'avez pas encore de demande. Utilisez le formulaire ci-dessous.</p>
+      </div>
+    )
+  }
 
   <!-- Formulaire nouvelle demande -->
   <div class="card" id="nouvelle-demande">
@@ -104,7 +138,6 @@ const statusBadge: Record<string, string> = {
     </div>
 
     <form method="POST" action="/api/demandes/creer" class="flex flex-col gap-4.5">
-
       <div class="field">
         <label for="subject">Sujet <span class="required">*</span></label>
         <input
@@ -126,21 +159,22 @@ const statusBadge: Record<string, string> = {
           required
           rows="5"
           placeholder="Décrivez votre besoin en détail : contexte, objectif, difficultés rencontrées…"
-          class="resize-y min-h-30"
-        ></textarea>
+          class="resize-y min-h-30"></textarea>
       </div>
 
       <div>
         <button type="submit" class="btn btn-primary">Envoyer la demande →</button>
       </div>
-
     </form>
   </div>
-
 </DashboardLayout>
 
 <style>
-  .request-card { display: flex; flex-direction: column; gap: 14px; }
+  .request-card {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
 
   .request-header {
     display: flex;
@@ -167,7 +201,7 @@ const statusBadge: Record<string, string> = {
   .request-body {
     font-size: var(--text-base);
     color: var(--text-secondary);
-    line-height: 1.6; 
+    line-height: 1.6;
     white-space: pre-wrap;
   }
 
@@ -221,7 +255,9 @@ const statusBadge: Record<string, string> = {
     font-family: var(--font-sans);
   }
 
-  .required { color: var(--err); }
+  .required {
+    color: var(--err);
+  }
 
   .flash {
     padding: 12px 18px;
@@ -231,6 +267,14 @@ const statusBadge: Record<string, string> = {
     border: var(--brutal-border-thin);
     box-shadow: var(--shadow-sm);
   }
-  .flash-ok  { background: var(--ok-bg);  color: var(--ok-fg);  border-color: var(--ok); }
-  .flash-err { background: var(--err-bg); color: var(--err-fg); border-color: var(--err); }
+  .flash-ok {
+    background: var(--ok-bg);
+    color: var(--ok-fg);
+    border-color: var(--ok);
+  }
+  .flash-err {
+    background: var(--err-bg);
+    color: var(--err-fg);
+    border-color: var(--err);
+  }
 </style>

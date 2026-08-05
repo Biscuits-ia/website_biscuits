@@ -16,19 +16,26 @@ const NEWSLETTER_WINDOW_MS = 10 * 60_000;
 
 export const POST: APIRoute = async ({ request, clientAddress }) => {
   const ip = getClientIp(request, clientAddress as string | undefined);
-  const blocked = await rateLimitRoute(ip, '/api/newsletter', NEWSLETTER_LIMIT, NEWSLETTER_WINDOW_MS);
+  const blocked = await rateLimitRoute(
+    ip,
+    '/api/newsletter',
+    NEWSLETTER_LIMIT,
+    NEWSLETTER_WINDOW_MS
+  );
   if (blocked) return blocked;
 
-  let body: { email?: string; honey?: string } = {};
   let email: string;
   let honey: string;
   const contentType = request.headers.get('content-type') ?? '';
   try {
     if (contentType.includes('application/json')) {
-      body = (await request.json()) ?? {};
+      const body = ((await request.json()) ?? {}) as { email?: unknown; honey?: unknown };
       email = typeof body.email === 'string' ? body.email.trim().toLowerCase() : '';
       honey = typeof body.honey === 'string' ? body.honey : '';
-    } else if (contentType.includes('application/x-www-form-urlencoded') || contentType.includes('multipart/form-data')) {
+    } else if (
+      contentType.includes('application/x-www-form-urlencoded') ||
+      contentType.includes('multipart/form-data')
+    ) {
       const form = await request.formData();
       email = (form.get('email') as string | null)?.trim().toLowerCase() ?? '';
       const rawHoney = form.get('honey');
@@ -48,17 +55,17 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
 
   // Honeypot: si rempli, on simule un succes pour ne pas confirmer le bot.
   if (honey !== '' || !email) {
-    return new Response(
-      JSON.stringify({ success: true, message: 'Inscription enregistree.' }),
-      { status: 200, headers: { 'Content-Type': 'application/json' } },
-    );
+    return new Response(JSON.stringify({ success: true, message: 'Inscription enregistree.' }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
 
   if (!EMAIL_RE.test(email) || email.length > 255) {
-    return new Response(
-      JSON.stringify({ error: 'Adresse email invalide.' }),
-      { status: 422, headers: { 'Content-Type': 'application/json' } },
-    );
+    return new Response(JSON.stringify({ error: 'Adresse email invalide.' }), {
+      status: 422,
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
 
   const supabase = createSupabaseAdminClient();
@@ -69,19 +76,19 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
     .from('newsletter_subscribers')
     .upsert(
       { email, subscribed_at: new Date().toISOString(), source: 'site' },
-      { onConflict: 'email', ignoreDuplicates: false },
+      { onConflict: 'email', ignoreDuplicates: false }
     );
 
   if (error) {
     console.error('[newsletter] upsert error:', error.message);
-    return new Response(
-      JSON.stringify({ error: "Impossible d'enregistrer l'inscription." }),
-      { status: 500, headers: { 'Content-Type': 'application/json' } },
-    );
+    return new Response(JSON.stringify({ error: "Impossible d'enregistrer l'inscription." }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
 
   return new Response(
     JSON.stringify({ success: true, message: 'Inscription enregistree. Merci !' }),
-    { status: 200, headers: { 'Content-Type': 'application/json' } },
+    { status: 200, headers: { 'Content-Type': 'application/json' } }
   );
 };

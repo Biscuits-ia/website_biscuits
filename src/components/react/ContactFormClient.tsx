@@ -68,7 +68,7 @@ export default function ContactFormClient() {
         setShowSuccess(false);
       }
     },
-    [globalError, showSuccess],
+    [globalError, showSuccess]
   );
 
   const validate = useCallback((data: ContactFormData): boolean => {
@@ -158,17 +158,15 @@ export default function ContactFormClient() {
         setGlobalError(
           typeof payload.message === 'string'
             ? payload.message
-            : `Erreur serveur (${response.status}). Veuillez réessayer.`,
+            : `Erreur serveur (${response.status}). Veuillez réessayer.`
         );
       } catch {
-        setGlobalError(
-          'Un problème est survenu. Vérifiez votre connexion.',
-        );
+        setGlobalError('Un problème est survenu. Vérifiez votre connexion.');
       } finally {
         setIsSubmitting(false);
       }
     },
-    [clearAllErrors, formData, validate],
+    [clearAllErrors, formData, validate]
   );
 
   const characterCount = formData.message.length;
@@ -188,9 +186,17 @@ export default function ContactFormClient() {
         hidden={!showSuccess}
       >
         <svg viewBox="0 0 24 24" aria-hidden="true" width="24" height="24">
-          <path d="M20 6L9 17l-5-5" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" />
+          <path
+            d="M20 6L9 17l-5-5"
+            stroke="currentColor"
+            strokeWidth="2"
+            fill="none"
+            strokeLinecap="round"
+          />
         </svg>
-        <span>Votre demande a été envoyée avec succès ! Nous vous répondrons dans les plus brefs délais.</span>
+        <span>
+          Votre demande a été envoyée avec succès ! Nous vous répondrons dans les plus brefs délais.
+        </span>
       </div>
 
       <div
@@ -206,39 +212,130 @@ export default function ContactFormClient() {
         <span>{globalError}</span>
       </div>
 
-      <form className="cf-form" noValidate aria-label="Formulaire de contact" onSubmit={handleSubmit}>
+      <form
+        className="cf-form"
+        noValidate
+        aria-label="Formulaire de contact"
+        onSubmit={handleSubmit}
+      >
         <div className="cf-row">
           <div className={`cf-field ${fieldErrors.name ? 'cf-field--error' : ''}`}>
-            <label className="cf-label" htmlFor="cf-name">Nom <span className="cf-required">*</span></label>
-            <input id="cf-name" name="name" type="text" className="cf-input" placeholder="Nom" maxLength={MAX_NAME} autoComplete="name" aria-required="true" aria-invalid={fieldErrors.name ? 'true' : 'false'} value={formData.name} onChange={handleInputChange} />
-            <span className="cf-error" role="alert" hidden={!fieldErrors.name}>{fieldErrors.name}</span>
+            <label className="cf-label" htmlFor="cf-name">
+              Nom <span className="cf-required">*</span>
+            </label>
+            <input
+              id="cf-name"
+              name="name"
+              type="text"
+              className="cf-input"
+              placeholder="Nom"
+              maxLength={MAX_NAME}
+              autoComplete="name"
+              aria-required="true"
+              aria-invalid={fieldErrors.name ? 'true' : 'false'}
+              value={formData.name}
+              onChange={handleInputChange}
+            />
+            <span className="cf-error" role="alert" hidden={!fieldErrors.name}>
+              {fieldErrors.name}
+            </span>
           </div>
 
           <div className={`cf-field ${fieldErrors.email ? 'cf-field--error' : ''}`}>
-            <label className="cf-label" htmlFor="cf-email">Email <span className="cf-required">*</span></label>
-            <input id="cf-email" name="email" type="email" className="cf-input" placeholder="contact@exemple.fr" maxLength={255} autoComplete="email" aria-required="true" aria-invalid={fieldErrors.email ? 'true' : 'false'} value={formData.email} onChange={handleInputChange} />
-            <span className="cf-error" role="alert" hidden={!fieldErrors.email}>{fieldErrors.email}</span>
+            <label className="cf-label" htmlFor="cf-email">
+              Email <span className="cf-required">*</span>
+            </label>
+            <input
+              id="cf-email"
+              name="email"
+              type="email"
+              className="cf-input"
+              placeholder="contact@exemple.fr"
+              maxLength={255}
+              autoComplete="email"
+              aria-required="true"
+              aria-invalid={fieldErrors.email ? 'true' : 'false'}
+              value={formData.email}
+              onChange={handleInputChange}
+            />
+            <span className="cf-error" role="alert" hidden={!fieldErrors.email}>
+              {fieldErrors.email}
+            </span>
           </div>
         </div>
 
         <div className={`cf-field ${fieldErrors.subject ? 'cf-field--error' : ''}`}>
-          <label className="cf-label" htmlFor="cf-sujet">Sujet <span className="cf-required">*</span></label>
-          <input id="cf-sujet" name="subject" type="text" className="cf-input" placeholder="Sujet de votre message" maxLength={MAX_SUBJECT} aria-required="true" aria-invalid={fieldErrors.subject ? 'true' : 'false'} value={formData.subject} onChange={handleInputChange} />
-          <span className="cf-error" role="alert" hidden={!fieldErrors.subject}>{fieldErrors.subject}</span>
+          <label className="cf-label" htmlFor="cf-sujet">
+            Sujet <span className="cf-required">*</span>
+          </label>
+          <input
+            id="cf-sujet"
+            name="subject"
+            type="text"
+            className="cf-input"
+            placeholder="Sujet de votre message"
+            maxLength={MAX_SUBJECT}
+            aria-required="true"
+            aria-invalid={fieldErrors.subject ? 'true' : 'false'}
+            value={formData.subject}
+            onChange={handleInputChange}
+          />
+          <span className="cf-error" role="alert" hidden={!fieldErrors.subject}>
+            {fieldErrors.subject}
+          </span>
         </div>
 
         <div className={`cf-field ${fieldErrors.message ? 'cf-field--error' : ''}`}>
-          <label className="cf-label" htmlFor="cf-message">Votre message <span className="cf-required">*</span></label>
-          <textarea id="cf-message" name="message" className="cf-input cf-textarea" rows={5} placeholder="Décrivez votre demande…" minLength={MIN_MESSAGE} maxLength={MAX_MESSAGE} aria-required="true" aria-invalid={fieldErrors.message ? 'true' : 'false'} aria-describedby="cf-char-count" value={formData.message} onChange={handleInputChange} />
-          <span id="cf-char-count" className={`cf-char-count ${characterCountClass}`} aria-live="polite">{characterCount} / {MAX_MESSAGE}</span>
-          <span className="cf-error" role="alert" hidden={!fieldErrors.message}>{fieldErrors.message}</span>
+          <label className="cf-label" htmlFor="cf-message">
+            Votre message <span className="cf-required">*</span>
+          </label>
+          <textarea
+            id="cf-message"
+            name="message"
+            className="cf-input cf-textarea"
+            rows={5}
+            placeholder="Décrivez votre demande…"
+            minLength={MIN_MESSAGE}
+            maxLength={MAX_MESSAGE}
+            aria-required="true"
+            aria-invalid={fieldErrors.message ? 'true' : 'false'}
+            aria-describedby="cf-char-count"
+            value={formData.message}
+            onChange={handleInputChange}
+          />
+          <span
+            id="cf-char-count"
+            className={`cf-char-count ${characterCountClass}`}
+            aria-live="polite"
+          >
+            {characterCount} / {MAX_MESSAGE}
+          </span>
+          <span className="cf-error" role="alert" hidden={!fieldErrors.message}>
+            {fieldErrors.message}
+          </span>
         </div>
 
-        <input type="text" name="honey" tabIndex={-1} autoComplete="off" className="cf-honeypot" aria-hidden="true" value={formData.honey} onChange={handleInputChange} />
+        <input
+          type="text"
+          name="honey"
+          tabIndex={-1}
+          autoComplete="off"
+          className="cf-honeypot"
+          aria-hidden="true"
+          value={formData.honey}
+          onChange={handleInputChange}
+        />
 
         <div className="cf-footer">
-          <p className="cf-note"><span aria-hidden="true">*</span> Champs obligatoires</p>
-          <button type="submit" className="cf-btn" aria-busy={isSubmitting ? 'true' : 'false'} disabled={isSubmitting}>
+          <p className="cf-note">
+            <span aria-hidden="true">*</span> Champs obligatoires
+          </p>
+          <button
+            type="submit"
+            className="cf-btn"
+            aria-busy={isSubmitting ? 'true' : 'false'}
+            disabled={isSubmitting}
+          >
             <span>{isSubmitting ? 'Envoi en cours…' : 'Envoyer ma demande'}</span>
             <span className="cf-spinner" aria-hidden="true" hidden={!isSubmitting}></span>
           </button>

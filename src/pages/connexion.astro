@@ -5,7 +5,9 @@ import { createSupabaseClient } from '@/lib/supabase';
 // round-trip Auth et garantit que les cookies rafraîchis sont cohérents).
 // Le `??` couvre le cas prerendered, où le middleware sort avant de le poser.
 const supabase = Astro.locals.supabase ?? createSupabaseClient(Astro);
-const { data: { user } } = await supabase.auth.getUser();
+const {
+  data: { user },
+} = await supabase.auth.getUser();
 if (user) return Astro.redirect('/dashboard/user/');
 const nonce = Astro.locals.nonce;
 ---
@@ -13,16 +15,19 @@ const nonce = Astro.locals.nonce;
 <AuthLayout title="Connexion" description="Connectez-vous à votre compte Biscuits IA.">
   <div class="auth-shell">
     <div class="auth-card-wrap">
-
       <div class="auth-card">
         <h1 class="auth-title">Bonjour 👋</h1>
-        <p class="auth-lead">
-          Connectez-vous pour accéder à votre espace et à vos ressources.
-        </p>
+        <p class="auth-lead">Connectez-vous pour accéder à votre espace et à vos ressources.</p>
 
         <div class="auth-field">
           <label for="email" class="auth-label">Adresse email</label>
-          <input type="email" id="email" placeholder="vous@exemple.com" autocomplete="email" class="auth-input" />
+          <input
+            type="email"
+            id="email"
+            placeholder="vous@exemple.com"
+            autocomplete="email"
+            class="auth-input"
+          />
         </div>
 
         <div class="auth-field">
@@ -30,7 +35,13 @@ const nonce = Astro.locals.nonce;
             <label for="password" class="auth-label is-inline">Mot de passe</label>
             <a href="/mot-de-passe-oublie" class="auth-link-secondary">Oublié ?</a>
           </div>
-          <input type="password" id="password" placeholder="••••••••" autocomplete="current-password" class="auth-input" />
+          <input
+            type="password"
+            id="password"
+            placeholder="••••••••"
+            autocomplete="current-password"
+            class="auth-input"
+          />
         </div>
 
         <div class="auth-remember">
@@ -41,9 +52,20 @@ const nonce = Astro.locals.nonce;
         <!-- id="login-btn" — le script y attache l'événement directement -->
         <button id="login-btn" class="auth-btn-primary" type="button">
           <span id="btn-text">Se connecter</span>
-          <svg id="btn-loader" class="auth-spinner auth-hidden" width="14" height="14"
-               viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
-            <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+          <svg
+            id="btn-loader"
+            class="auth-spinner auth-hidden"
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            aria-hidden="true"
+          >
+            <path
+              d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"
+            ></path>
           </svg>
         </button>
 
@@ -61,53 +83,55 @@ const nonce = Astro.locals.nonce;
 </AuthLayout>
 
 <script is:inline nonce={nonce}>
-  const emailInput  = document.getElementById('email');
-  const passInput   = document.getElementById('password');
-  const rememberEl  = document.getElementById('remember-me');
-  const msgEl       = document.getElementById('msg');
-  const btn         = document.getElementById('login-btn');
-  const btnText     = document.getElementById('btn-text');
-  const btnLoader   = document.getElementById('btn-loader');
+  const emailInput = document.getElementById('email');
+  const passInput = document.getElementById('password');
+  const rememberEl = document.getElementById('remember-me');
+  const msgEl = document.getElementById('msg');
+  const btn = document.getElementById('login-btn');
+  const btnText = document.getElementById('btn-text');
+  const btnLoader = document.getElementById('btn-loader');
 
   function showMsg(text, type) {
     if (type === undefined) type = 'error';
-    msgEl.textContent   = text;
-    msgEl.className     = 'auth-msg ' + type;
+    msgEl.textContent = text;
+    msgEl.className = 'auth-msg ' + type;
     // `hidden` et non `style.display` : la regle agent-utilisateur du HTML est
     // `[hidden] { display: none !important }`, et un !important d'agent bat un
     // style inline. Le message recevait bien son texte et sa classe, mais
     // restait invisible — une erreur de connexion ne s'affichait jamais.
     msgEl.hidden = false;
   }
-  function hideMsg() { msgEl.hidden = true; }
+  function hideMsg() {
+    msgEl.hidden = true;
+  }
 
   function setLoading(loading) {
-    btn.disabled            = loading;
-    btnText.style.display   = loading ? 'none'  : 'block';
+    btn.disabled = loading;
+    btnText.style.display = loading ? 'none' : 'block';
     btnLoader.style.display = loading ? 'block' : 'none';
   }
 
-  emailInput.addEventListener('input', function() {
+  emailInput.addEventListener('input', function () {
     const v = emailInput.value.trim();
     if (v && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) showMsg('Adresse email invalide.', 'warn');
     else hideMsg();
   });
 
-  passInput.addEventListener('input', function() {
+  passInput.addEventListener('input', function () {
     if (passInput.value && passInput.value.length < 8)
       showMsg('Au moins 8 caractères requis.', 'warn');
     else hideMsg();
   });
 
   async function handleLogin() {
-    const email    = emailInput.value.trim();
+    const email = emailInput.value.trim();
     const password = passInput.value;
     const remember = rememberEl instanceof HTMLInputElement ? rememberEl.checked : false;
 
     hideMsg();
     if (!email && !password) return showMsg('Veuillez remplir tous les champs.');
-    if (!email)               return showMsg('Veuillez entrer votre adresse email.');
-    if (!password)            return showMsg('Veuillez entrer votre mot de passe.');
+    if (!email) return showMsg('Veuillez entrer votre adresse email.');
+    if (!password) return showMsg('Veuillez entrer votre mot de passe.');
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return showMsg('Adresse email invalide.');
 
     setLoading(true);
@@ -128,17 +152,15 @@ const nonce = Astro.locals.nonce;
       }
 
       if (remember) localStorage.setItem('rememberedEmail', email);
-      else          localStorage.removeItem('rememberedEmail');
+      else localStorage.removeItem('rememberedEmail');
 
       const url = new URL(window.location.href);
       const redirectTarget = url.searchParams.get('redirect') || '/dashboard/';
       window.location.href = redirectTarget;
-
     } catch (e) {
       showMsg('Une erreur est survenue. Veuillez réessayer.');
     } finally {
       setLoading(false);
-
     }
   }
 
@@ -150,7 +172,9 @@ const nonce = Astro.locals.nonce;
     if (rememberEl instanceof HTMLInputElement) rememberEl.checked = true;
   }
 
-  [emailInput, passInput].forEach(function(el) {
-    el.addEventListener('keydown', function(e) { if (e.key === 'Enter') handleLogin(); });
+  [emailInput, passInput].forEach(function (el) {
+    el.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') handleLogin();
+    });
   });
 </script>

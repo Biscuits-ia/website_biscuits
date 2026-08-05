@@ -10,11 +10,12 @@ export const POST: APIRoute = async (Astro) => {
   const { request, redirect } = Astro;
 
   const form = await request.formData();
-  const requestId  = form.get('request_id')  as string | null;
-  const status     = form.get('status')      as string | null;
+  const requestId = form.get('request_id') as string | null;
+  const status = form.get('status') as string | null;
   const adminReply = (form.get('admin_reply') as string | null)?.slice(0, 5000) ?? null;
 
-  if (!isValidUUID(requestId)) return redirect('/dashboard/admin/demandes?error=' + encodeURIComponent('ID invalide'));
+  if (!isValidUUID(requestId))
+    return redirect('/dashboard/admin/demandes?error=' + encodeURIComponent('ID invalide'));
 
   const validStatuses = ['pending', 'in_progress', 'resolved'];
   if (status && !validStatuses.includes(status)) {
@@ -31,7 +32,9 @@ export const POST: APIRoute = async (Astro) => {
     .eq('id', requestId);
 
   if (error) {
-    return redirect('/dashboard/admin/demandes?error=' + encodeURIComponent('Erreur lors de la mise à jour'));
+    return redirect(
+      '/dashboard/admin/demandes?error=' + encodeURIComponent('Erreur lors de la mise à jour')
+    );
   }
 
   return redirect('/dashboard/admin/demandes?saved=1');

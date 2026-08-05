@@ -48,6 +48,7 @@ interface ImportMetaEnv {
    */
   readonly GTM_ID?: string;
   readonly INDEXNOW_KEY?: string;
+  readonly INDEXNOW_SECRET?: string;
   readonly CRON_SECRET?: string;
 }
 

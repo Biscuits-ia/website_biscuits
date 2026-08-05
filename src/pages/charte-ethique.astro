@@ -5,14 +5,43 @@ import Layout from '@/layouts/Layout.astro';
 import Breadcrumb from '@/components/Breadcrumb.astro';
 
 const engagements = [
-  { icon: 'unlock', titre: 'Open Source', description: 'Tous nos outils sont open source. Le code est public, auditable par toute personne souhaitant verifier nos pratiques.' },
-  { icon: 'no-entry', titre: 'Zero revente de donnees', description: 'Nous ne vendons ni ne louons les donnees de nos utilisateurs. Jamais. Vos donnees vous appartiennent.' },
-  { icon: 'earth', titre: 'Interet general', description: 'Biscuits IA est une association loi 1901. Notre mission est d ordre public, sans actionnaires a satisfaire.' },
-  { icon: 'handshake', titre: 'Solidarite numerique', description: 'Nos outils sont gratuits pour le grand public, les associations et les structures publiques. La fracture numerique, c est notre combat.' },
-  { icon: 'shield', titre: 'Protection de l enfance', description: 'Tout contenu pedocriminel porte a notre connaissance est signale sans delai a PHAROS et au 3018. Nous n assurons pas d accompagnement direct des mineurs ni de leurs familles : ces demarches relevent des services publics et des associations specialisees, seuls competents.' },
-  { icon: 'hands', titre: 'Aucun profit sur la detresse', description: 'Nous documentons les mecanismes d arnaque, d usurpation et de chantage dans nos ressources libres et via Anti Pepins, pour que chacun apprenne a les reconnaitre. Nous n accompagnons pas les victimes individuellement et ne tirons aucun benefice de leur situation.' },
+  {
+    icon: 'unlock',
+    titre: 'Open Source',
+    description:
+      'Tous nos outils sont open source. Le code est public, auditable par toute personne souhaitant verifier nos pratiques.',
+  },
+  {
+    icon: 'no-entry',
+    titre: 'Zero revente de donnees',
+    description:
+      'Nous ne vendons ni ne louons les donnees de nos utilisateurs. Jamais. Vos donnees vous appartiennent.',
+  },
+  {
+    icon: 'earth',
+    titre: 'Interet general',
+    description:
+      'Biscuits IA est une association loi 1901. Notre mission est d ordre public, sans actionnaires a satisfaire.',
+  },
+  {
+    icon: 'handshake',
+    titre: 'Solidarite numerique',
+    description:
+      'Nos outils sont gratuits pour le grand public, les associations et les structures publiques. La fracture numerique, c est notre combat.',
+  },
+  {
+    icon: 'shield',
+    titre: 'Protection de l enfance',
+    description:
+      'Tout contenu pedocriminel porte a notre connaissance est signale sans delai a PHAROS et au 3018. Nous n assurons pas d accompagnement direct des mineurs ni de leurs familles : ces demarches relevent des services publics et des associations specialisees, seuls competents.',
+  },
+  {
+    icon: 'hands',
+    titre: 'Aucun profit sur la detresse',
+    description:
+      'Nous documentons les mecanismes d arnaque, d usurpation et de chantage dans nos ressources libres et via Anti Pepins, pour que chacun apprenne a les reconnaitre. Nous n accompagnons pas les victimes individuellement et ne tirons aucun benefice de leur situation.',
+  },
 ];
-
 ---
 
 <Layout
@@ -23,7 +52,11 @@ const engagements = [
   <section class="charte-hero">
     <div class="charte-hero__inner">
       <h1>Notre Charte Ethique</h1>
-      <p>Transparence, solidarite, responsabilite et protection des plus vulnerables. Voici nos engagements concrets, ceux que nous respectons et ceux sur lesquels vous pouvez nous challenger.</p>
+      <p>
+        Transparence, solidarite, responsabilite et protection des plus vulnerables. Voici nos
+        engagements concrets, ceux que nous respectons et ceux sur lesquels vous pouvez nous
+        challenger.
+      </p>
     </div>
   </section>
 
@@ -31,13 +64,17 @@ const engagements = [
     <div class="charte-container">
       <h2>Nos Engagements</h2>
       <div class="engagements-grid">
-        {engagements.map((eng) => (
-          <div class="engagement-card">
-            <span class="engagement-icon" aria-hidden="true">{eng.icon}</span>
-            <h3>{eng.titre}</h3>
-            <p>{eng.description}</p>
-          </div>
-        ))}
+        {
+          engagements.map((eng) => (
+            <div class="engagement-card">
+              <span class="engagement-icon" aria-hidden="true">
+                {eng.icon}
+              </span>
+              <h3>{eng.titre}</h3>
+              <p>{eng.description}</p>
+            </div>
+          ))
+        }
       </div>
     </div>
   </section>
@@ -45,79 +82,101 @@ const engagements = [
   <section class="charte-actions">
     <div class="charte-container">
       <h2>Si vous voyez un manquement, dites-le nous</h2>
-      <p>Cette charte n''a de valeur que si elle est respectee et verifiee. Si vous constatez un ecart entre ces principes et ce que vous observez, ecrivez-nous. Chaque signalement est lu et traite.</p>
+      <p>
+        Cette charte n''a de valeur que si elle est respectee et verifiee. Si vous constatez un
+        ecart entre ces principes et ce que vous observez, ecrivez-nous. Chaque signalement est lu
+        et traite.
+      </p>
       <a href="/contact" class="cta-link">Nous contacter</a>
     </div>
   </section>
 </Layout>
 
 <style>
-.charte-hero {
-  background: linear-gradient(135deg, var(--color-secondary), var(--color-primary));
-  color: var(--color-bg-alt);
-  padding: 4rem 1rem 3rem;
-  text-align: center;
-}
-.charte-hero__inner { max-width: 760px; margin: 0 auto; padding-top: 2rem; }
-.charte-hero h1 { font-size: 2.5rem; margin-bottom: 1rem; }
-.charte-hero p { font-size: 1.05rem; opacity: 0.95; }
+  .charte-hero {
+    background: linear-gradient(135deg, var(--color-secondary), var(--color-primary));
+    color: var(--color-bg-alt);
+    padding: 4rem 1rem 3rem;
+    text-align: center;
+  }
+  .charte-hero__inner {
+    max-width: 760px;
+    margin: 0 auto;
+    padding-top: 2rem;
+  }
+  .charte-hero h1 {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+  }
+  .charte-hero p {
+    font-size: 1.05rem;
+    opacity: 0.95;
+  }
 
-.charte-engagements {
-  padding: 3rem 1rem;
-}
-.charte-container { max-width: 1100px; margin: 0 auto; }
-.charte-container h2 {
-  font-size: 2rem;
-  color: var(--color-primary);
-  margin-bottom: 1.5rem;
-  text-align: center;
-}
-.engagements-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 1.5rem;
-}
-.engagement-card {
-  background: var(--color-bg-alt);
-  border-radius: 1.25rem;
-  box-shadow: var(--shadow-sm);
-  border: 1px solid var(--color-border-second);
-  padding: 1.75rem 1.5rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-.engagement-icon { font-size: 2rem; }
-.engagement-card h3 { color: var(--color-secondary); font-size: 1.15rem; }
+  .charte-engagements {
+    padding: 3rem 1rem;
+  }
+  .charte-container {
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+  .charte-container h2 {
+    font-size: 2rem;
+    color: var(--color-primary);
+    margin-bottom: 1.5rem;
+    text-align: center;
+  }
+  .engagements-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+  }
+  .engagement-card {
+    background: var(--color-bg-alt);
+    border-radius: 1.25rem;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--color-border-second);
+    padding: 1.75rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .engagement-icon {
+    font-size: 2rem;
+  }
+  .engagement-card h3 {
+    color: var(--color-secondary);
+    font-size: 1.15rem;
+  }
 
-.charte-actions {
-  padding: 3rem 1rem 4rem;
-  background: var(--color-bg-alt);
-  text-align: center;
-}
-.charte-actions h2 {
-  font-size: 1.4rem;
-  margin: 0 0 0.75rem;
-  color: var(--color-text);
-}
-.charte-actions p {
-  color: var(--color-text-light);
-  max-width: 640px;
-  margin: 0 auto 1.25rem;
-  line-height: 1.6;
-}
-.cta-link {
-  display: inline-block;
-  padding: 0.75rem 1.5rem;
-  background: var(--color-primary);
-  color: var(--color-bg-alt);
-  font-weight: 700;
-  border: 2px solid var(--color-border);
-  text-decoration: none;
-}
-.cta-link:hover {
-  transform: translate(-2px, -2px);
-  box-shadow: 4px 4px 0 var(--color-border);
-  color: var(--color-bg-alt);
-}
+  .charte-actions {
+    padding: 3rem 1rem 4rem;
+    background: var(--color-bg-alt);
+    text-align: center;
+  }
+  .charte-actions h2 {
+    font-size: 1.4rem;
+    margin: 0 0 0.75rem;
+    color: var(--color-text);
+  }
+  .charte-actions p {
+    color: var(--color-text-light);
+    max-width: 640px;
+    margin: 0 auto 1.25rem;
+    line-height: 1.6;
+  }
+  .cta-link {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    background: var(--color-primary);
+    color: var(--color-bg-alt);
+    font-weight: 700;
+    border: 2px solid var(--color-border);
+    text-decoration: none;
+  }
+  .cta-link:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 4px 4px 0 var(--color-border);
+    color: var(--color-bg-alt);
+  }
 </style>

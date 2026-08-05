@@ -1,53 +1,66 @@
----export const prerender = true;
+---
+export const prerender = true;
 
-
-
-import BaseLayout from "@/layouts/Layout.astro";
+import BaseLayout from '@/layouts/Layout.astro';
 import Breadcrumb from '@/components/Breadcrumb.astro';
 ---
 
-<BaseLayout title="Politique Cookies - Biscuits IA" description="Politique cookies conforme CNIL et RGPD. Cookies techniques et mesure d'audience.">
+<BaseLayout
+  title="Politique Cookies - Biscuits IA"
+  description="Politique cookies conforme CNIL et RGPD. Cookies techniques et mesure d'audience."
+>
   <Breadcrumb />
-  <main class="legal-wrapper">
+  <div class="legal-wrapper">
     <h1>Politique Cookies</h1>
     <p><strong>Dernière mise à jour :</strong> 4 avril 2026</p>
 
     <p>
-      Le site <strong>Biscuits IA</strong>, association d'intérêt général, solidaire, d'entraide et de partage des connaissances, utilise des cookies pour assurer le fonctionnement du site, la sécurité et la mesure d'audience, dans le respect de votre vie privée, de vos droits et de notre mission d'intérêt général, solidaire, d'entraide et de partage des connaissances.
-      Certains cookies nécessitent votre consentement avant leur activation (Google Tag / Google Analytics, Vercel Speed Insights), tandis que d'autres sont strictement techniques et exemptés.
+      Le site <strong>Biscuits IA</strong>, association d'intérêt général, solidaire, d'entraide et
+      de partage des connaissances, utilise des cookies pour assurer le fonctionnement du site, la
+      sécurité et la mesure d'audience, dans le respect de votre vie privée, de vos droits et de
+      notre mission d'intérêt général, solidaire, d'entraide et de partage des connaissances.
+      Certains cookies nécessitent votre consentement avant leur activation (Google Tag / Google
+      Analytics, Vercel Speed Insights), tandis que d'autres sont strictement techniques et
+      exemptés.
     </p>
 
     <h2>1. Cookies techniques</h2>
 
     <h3>1.1. Fonctionnement du site</h3>
-    <p>
-      Ces cookies sont indispensables pour :
-    </p>
+    <p>Ces cookies sont indispensables pour :</p>
     <ul>
       <li>maintenir votre session et votre authentification</li>
       <li>sécuriser les formulaires et l'accès à votre espace</li>
       <li>assurer le bon fonctionnement technique du site</li>
     </ul>
     <p>
-      Ces cookies sont strictement nécessaires et sont <strong>exemptés de consentement</strong> selon la CNIL, dans le cadre de notre mission associative, d'intérêt général et solidaire.
+      Ces cookies sont strictement nécessaires et sont <strong>exemptés de consentement</strong> selon
+      la CNIL, dans le cadre de notre mission associative, d'intérêt général et solidaire.
     </p>
 
     <h2>2. Cookies de mesure d'audience</h2>
 
     <h3>2.1. Google Tag Manager / Google Analytics</h3>
     <p>
-      Nous utilisons Google Tag Manager et Google Analytics pour analyser l'utilisation du site et améliorer l'expérience utilisateur, dans le cadre de notre mission d'intérêt général, solidaire et d'entraide.
-      Ces cookies permettent de mesurer le trafic, les pages visitées, le temps passé sur le site et les interactions.
+      Nous utilisons Google Tag Manager et Google Analytics pour analyser l'utilisation du site et
+      améliorer l'expérience utilisateur, dans le cadre de notre mission d'intérêt général,
+      solidaire et d'entraide. Ces cookies permettent de mesurer le trafic, les pages visitées, le
+      temps passé sur le site et les interactions.
     </p>
-    <p>Cookies concernés : <code>_ga</code>, <code>_ga_XXXXXXXXXX</code> (où XXXXXXXXXX correspond à votre ID de mesure GA4), <code>_gid</code>, <code>_gat</code></p>
     <p>
-      Ces cookies <strong>ne sont activés qu'avec votre consentement</strong>. Vous pouvez accepter ou refuser à tout moment via le bandeau cookie ou vos paramètres, dans le respect de notre engagement associatif, d'intérêt général et solidaire.
+      Cookies concernés : <code>_ga</code>, <code>_ga_XXXXXXXXXX</code> (où XXXXXXXXXX correspond à votre
+      ID de mesure GA4), <code>_gid</code>, <code>_gat</code>
+    </p>
+    <p>
+      Ces cookies <strong>ne sont activés qu'avec votre consentement</strong>. Vous pouvez accepter
+      ou refuser à tout moment via le bandeau cookie ou vos paramètres, dans le respect de notre
+      engagement associatif, d'intérêt général et solidaire.
     </p>
 
     <h3>2.2. Vercel Speed Insights</h3>
     <p>
-      Nous utilisons Vercel Speed Insights pour mesurer les performances de notre site.
-      Ce service place un cookie pour collecter des données d'utilisation anonymisées.
+      Nous utilisons Vercel Speed Insights pour mesurer les performances de notre site. Ce service
+      place un cookie pour collecter des données d'utilisation anonymisées.
     </p>
     <p>
       Ce cookie <strong>ne sont activés qu'avec votre consentement</strong>.
@@ -55,7 +68,8 @@ import Breadcrumb from '@/components/Breadcrumb.astro';
 
     <h2>3. Stockage local (localStorage)</h2>
     <p>
-      Nous stockons vos préférences cookies dans le localStorage de votre navigateur avec les clés suivantes :
+      Nous stockons vos préférences cookies dans le localStorage de votre navigateur avec les clés
+      suivantes :
     </p>
     <ul>
       <li><code>cookie-consent</code> : les préférences sélectionnées (nécessaire/analytics)</li>
@@ -63,28 +77,38 @@ import Breadcrumb from '@/components/Breadcrumb.astro';
       <li><code>cookie-consent-version</code> : la version de la politique</li>
     </ul>
     <p>
-      Ces données sont uniquement utilisées pour mémoriser vos préférences et ne sont jamais partagées avec des tiers.
+      Ces données sont uniquement utilisées pour mémoriser vos préférences et ne sont jamais
+      partagées avec des tiers.
     </p>
 
     <h2>4. Gestion des cookies</h2>
     <p>
-      Vous pouvez configurer votre navigateur pour bloquer certains cookies, mais certaines fonctionnalités (session, sécurité, mesure d'audience) pourraient ne plus fonctionner correctement, ce qui pourrait impacter notre capacité à vous offrir un service de qualité dans le cadre de notre mission associative, d'intérêt général et solidaire.
+      Vous pouvez configurer votre navigateur pour bloquer certains cookies, mais certaines
+      fonctionnalités (session, sécurité, mesure d'audience) pourraient ne plus fonctionner
+      correctement, ce qui pourrait impacter notre capacité à vous offrir un service de qualité dans
+      le cadre de notre mission associative, d'intérêt général et solidaire.
     </p>
-    <p>
-      Pour retirer votre consentement aux cookies Google et Vercel, vous pouvez :
-    </p>
+    <p>Pour retirer votre consentement aux cookies Google et Vercel, vous pouvez :</p>
     <ul>
       <li>Cliquer sur le bouton "Gérer mes cookies" en bas de page</li>
       <li>Cliquer sur le bouton "Refuser" du bandeau cookie si présent</li>
-      <li>Utiliser les <a href="https://tools.google.com/dlpage/gaoptout" target="_blank" rel="noopener noreferrer">outils de désactivation Google Analytics</a></li>
+      <li>
+        Utiliser les <a
+          href="https://tools.google.com/dlpage/gaoptout"
+          target="_blank"
+          rel="noopener noreferrer">outils de désactivation Google Analytics</a
+        >
+      </li>
       <li>Supprimer les cookies via votre navigateur</li>
     </ul>
 
     <h2>5. Mise à jour</h2>
     <p>
-      Cette politique sera mise à jour si de nouveaux cookies ou outils de suivi sont ajoutés, dans le respect de notre engagement associatif, d'intérêt général et solidaire. La version la plus récente est toujours publiée sur ce site.
+      Cette politique sera mise à jour si de nouveaux cookies ou outils de suivi sont ajoutés, dans
+      le respect de notre engagement associatif, d'intérêt général et solidaire. La version la plus
+      récente est toujours publiée sur ce site.
     </p>
-  </main>
+  </div>
 
   <style>
     .legal-wrapper {
@@ -93,7 +117,9 @@ import Breadcrumb from '@/components/Breadcrumb.astro';
       padding: 1.5rem;
       line-height: 1.7;
     }
-    h1, h2, h3 {
+    h1,
+    h2,
+    h3 {
       margin-top: 4%;
     }
     ul {

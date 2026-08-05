@@ -6,52 +6,62 @@ const result = await requireAuth(Astro);
 if (result instanceof Response) return result;
 
 const { user, supabase } = result;
-const userId    = user.id;
+const userId = user.id;
 const userEmail = user.email ?? '';
-const userName  = user.user_metadata?.full_name ?? userEmail.split('@')[0];
+const userName = user.user_metadata?.full_name ?? userEmail.split('@')[0];
 
 // ── Statistiques personnelles ─────────────────────────────────────
-const [
-  { count: totalDemandes },
-  { data: recentDemandesRaw },
-] = await Promise.all([
+const [{ count: totalDemandes }, { data: recentDemandesRaw }] = await Promise.all([
   supabase.from('requests').select('*', { count: 'exact', head: true }).eq('user_id', userId),
-  supabase.from('requests').select('subject, status, created_at').eq('user_id', userId).order('created_at', { ascending: false }).limit(5),
+  supabase
+    .from('requests')
+    .select('subject, status, created_at')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
+    .limit(5),
 ]);
 
 // Pré-calcul pour éviter les TypeScript generics dans le template
 const statusDotClass: Record<string, string> = {
-  pending:     'warn',
+  pending: 'warn',
   in_progress: 'info',
-  resolved:    'ok',
+  resolved: 'ok',
 };
 
 interface DemandeRow {
-  subject:    string;
-  status:     string;
+  subject: string;
+  status: string;
   created_at: string;
-  dateLabel:  string;
-  dotClass:   string;
+  dateLabel: string;
+  dotClass: string;
 }
 
-const recentDemandes: DemandeRow[] = (recentDemandesRaw ?? []).map((d: any): DemandeRow => ({
-  subject:    d.subject,
-  status:     d.status,
-  created_at: d.created_at,
-  dateLabel:  new Date(d.created_at).toLocaleDateString('fr-FR'),
-  dotClass:   statusDotClass[d.status] ?? 'warn',
-}));
+type DemandeSource = Omit<DemandeRow, 'dateLabel' | 'dotClass'>;
+
+const recentDemandes: DemandeRow[] = (recentDemandesRaw ?? []).map(
+  (d: DemandeSource): DemandeRow => ({
+    subject: d.subject,
+    status: d.status,
+    created_at: d.created_at,
+    dateLabel: new Date(d.created_at).toLocaleDateString('fr-FR'),
+    dotClass: statusDotClass[d.status] ?? 'warn',
+  })
+);
 ---
 
-<DashboardLayout title="Vue d'ensemble" activePage="overview" userName={userName} userEmail={userEmail} authResult={result}>
+<DashboardLayout
+  title="Vue d'ensemble"
+  activePage="overview"
+  userName={userName}
+  userEmail={userEmail}
+  authResult={result}
+>
   <!-- Bienvenue -->
   <div class="mb-7">
     <h1 class="text-lg font-normal tracking-tight text-primary">
       Bonjour, {userName.split(' ')[0]} 👋
     </h1>
-    <p class="description">
-      Voici un aperçu de votre activité sur Biscuits IA.
-    </p>
+    <p class="description">Voici un aperçu de votre activité sur Biscuits IA.</p>
   </div>
 
   <!-- Stats cards -->
@@ -71,23 +81,22 @@ const recentDemandes: DemandeRow[] = (recentDemandesRaw ?? []).map((d: any): Dem
       </a>
     </div>
 
-    {recentDemandes.length > 0 ? (
-      <div class="timeline">
-        {recentDemandes.map((item) => (
-          <div class="timeline-item">
-            <div class={`timeline-dot ${item.dotClass}`} />
-            <div class="timeline-body">
-              <div class="timeline-event">{item.subject}</div>
-              <div class="timeline-meta">{item.dateLabel}</div>
+    {
+      recentDemandes.length > 0 ? (
+        <div class="timeline">
+          {recentDemandes.map((item) => (
+            <div class="timeline-item">
+              <div class={`timeline-dot ${item.dotClass}`} />
+              <div class="timeline-body">
+                <div class="timeline-event">{item.subject}</div>
+                <div class="timeline-meta">{item.dateLabel}</div>
+              </div>
             </div>
-          </div>
-        ))}
-      </div>
-    ) : (
-      <p class="text-muted text-xl py-4">
-        Aucune demande pour le moment.
-      </p>
-    )}
+          ))}
+        </div>
+      ) : (
+        <p class="text-muted text-xl py-4">Aucune demande pour le moment.</p>
+      )
+    }
   </div>
-
 </DashboardLayout>

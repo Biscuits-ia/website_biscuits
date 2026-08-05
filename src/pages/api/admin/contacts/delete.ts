@@ -12,16 +12,16 @@ export const POST: APIRoute = async (Astro) => {
   const form = await request.formData();
   const contactId = form.get('contact_id') as string | null;
 
-  if (!isValidUUID(contactId)) return redirect('/dashboard/admin/contacts?error=' + encodeURIComponent('ID invalide'));
+  if (!isValidUUID(contactId))
+    return redirect('/dashboard/admin/contacts?error=' + encodeURIComponent('ID invalide'));
 
   const admin = createSupabaseAdminClient();
-  const { error } = await admin
-    .from('contact_submissions')
-    .delete()
-    .eq('id', contactId);
+  const { error } = await admin.from('contact_submissions').delete().eq('id', contactId);
 
   if (error) {
-    return redirect('/dashboard/admin/contacts?error=' + encodeURIComponent('Erreur lors de la suppression'));
+    return redirect(
+      '/dashboard/admin/contacts?error=' + encodeURIComponent('Erreur lors de la suppression')
+    );
   }
 
   return redirect('/dashboard/admin/contacts?saved=1');

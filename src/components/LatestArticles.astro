@@ -10,30 +10,38 @@ interface Props {
 const { articles } = Astro.props;
 ---
 
-{articles.length > 0 && (
-  <section class="latest-articles" aria-labelledby="latest-articles-title">
-    <div class="container">
-      <header class="latest-header">
-        <h2 id="latest-articles-title">Derniers articles du blog</h2>
-        <a href="/blog" class="latest-all">Voir tous les articles →</a>
-      </header>
-      <div class="latest-grid">
-        {articles.map((article) => (
-          <a href={`/blog/${article.id}`} class="latest-card">
-            <span class="latest-date">
-              <time datetime={article.data.pubDate.toISOString()}>
-                {article.data.pubDate.toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' })}
-              </time>
-            </span>
-            <h3 class="latest-title">{article.data.title}</h3>
-            {article.data.description && <p class="latest-desc">{article.data.description}</p>}
-            <span class="latest-cta">Lire l'article →</span>
+{
+  articles.length > 0 && (
+    <section class="latest-articles" aria-labelledby="latest-articles-title">
+      <div class="container">
+        <header class="latest-header">
+          <h2 id="latest-articles-title">Derniers articles du blog</h2>
+          <a href="/blog" class="latest-all">
+            Voir tous les articles →
           </a>
-        ))}
+        </header>
+        <div class="latest-grid">
+          {articles.map((article) => (
+            <a href={`/blog/${article.id}`} class="latest-card">
+              <span class="latest-date">
+                <time datetime={article.data.pubDate.toISOString()}>
+                  {article.data.pubDate.toLocaleDateString('fr-FR', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                  })}
+                </time>
+              </span>
+              <h3 class="latest-title">{article.data.title}</h3>
+              {article.data.description && <p class="latest-desc">{article.data.description}</p>}
+              <span class="latest-cta">Lire l'article →</span>
+            </a>
+          ))}
+        </div>
       </div>
-    </div>
-  </section>
-)}
+    </section>
+  )
+}
 
 <style>
   .latest-articles {
@@ -81,7 +89,10 @@ const { articles } = Astro.props;
     border-radius: var(--radius-xl);
     text-decoration: none;
     color: inherit;
-    transition: transform var(--transition-base), box-shadow var(--transition-base), border-color var(--transition-base);
+    transition:
+      transform var(--transition-base),
+      box-shadow var(--transition-base),
+      border-color var(--transition-base);
   }
   .latest-card:hover {
     transform: translateY(-4px);

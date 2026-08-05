@@ -1,42 +1,59 @@
----export const prerender = true;
-
-
+---
+export const prerender = true;
 
 import BaseLayout from '@/layouts/Layout.astro';
 import Breadcrumb from '@/components/Breadcrumb.astro';
 ---
 
-<BaseLayout 
+<BaseLayout
   title="Rendre l'IA accessible aux petites structures | Biscuits IA"
   description="L'intelligence artificielle ne devrait pas être réservée aux grandes entreprises. Nous adaptons ces outils au grand public, aux associations et aux collectivités."
 >
   <article class="combat-page">
-  <Breadcrumb />
+    <Breadcrumb />
     <div class="container">
       <header class="hero">
         <div class="hero-content">
           <h1>Rendre l'IA accessible aux petites structures</h1>
-          <p class="subtitle">Briser la fracture numérique : pour que chaque association puisse s'approprier les technologies de demain sans barrière financière.</p>
+          <p class="subtitle">
+            Briser la fracture numérique : pour que chaque association puisse s'approprier les
+            technologies de demain sans barrière financière.
+          </p>
         </div>
       </header>
 
       <section class="problem">
         <h2>Le problème</h2>
         <p>
-         l'IA est trop souvent présentée comme un luxe pour multinationales. Nous militons pour une IA de proximité, dimensionnée pour le terrain et le bénévolat.
+          l'IA est trop souvent présentée comme un luxe pour multinationales. Nous militons pour une
+          IA de proximité, dimensionnée pour le terrain et le bénévolat.
         </p>
         <p>
-          Résultat : soit on ne fait rien en pensant que « ce n'est pas pour nous », soit on se fait vendre 
-          des solutions inadaptées à prix d'or.
+          Résultat : soit on ne fait rien en pensant que « ce n'est pas pour nous », soit on se fait
+          vendre des solutions inadaptées à prix d'or.
         </p>
-        
+
         <div class="examples">
           <h3>Situations concrètes</h3>
           <ul>
-          <li>L'association qui passe 10 heures par mois à répondre aux mêmes questions par email, au lieu de se concentrer sur son action associative, son engagement d'intérêt général et sa communauté</li>
-          <li>L'artisan qui retape manuellement ses devis parce qu'il ne sait pas qu'on peut automatiser ça, perdant ainsi du temps précieux pour son activité</li>
-          <li>La responsable de structure qui passe ses soirées à faire du tri de documents qu'un outil pourrait classer, au détriment de son engagement associatif, de sa mission d'intérêt général et de son impact social</li>
-          <li>Le gérant qui renonce à publier sur les réseaux sociaux « parce qu'il n'a pas le temps », limitant ainsi sa visibilité et son impact dans sa communauté</li>
+            <li>
+              L'association qui passe 10 heures par mois à répondre aux mêmes questions par email,
+              au lieu de se concentrer sur son action associative, son engagement d'intérêt général
+              et sa communauté
+            </li>
+            <li>
+              L'artisan qui retape manuellement ses devis parce qu'il ne sait pas qu'on peut
+              automatiser ça, perdant ainsi du temps précieux pour son activité
+            </li>
+            <li>
+              La responsable de structure qui passe ses soirées à faire du tri de documents qu'un
+              outil pourrait classer, au détriment de son engagement associatif, de sa mission
+              d'intérêt général et de son impact social
+            </li>
+            <li>
+              Le gérant qui renonce à publier sur les réseaux sociaux « parce qu'il n'a pas le temps
+              », limitant ainsi sa visibilité et son impact dans sa communauté
+            </li>
           </ul>
         </div>
       </section>
@@ -44,56 +61,86 @@ import Breadcrumb from '@/components/Breadcrumb.astro';
       <section class="position">
         <h2>Notre position</h2>
         <p>
-          Nous pensons que l'IA peut être utile à petite échelle, pour des besoins simples et concrets. 
-          Pas besoin d'un chatbot de 10 000 € quand un formulaire bien fait et quelques réponses automatiques suffisent, surtout lorsqu'on parle de structures à but non lucratif, d'intérêt général et de solidarité.
+          Nous pensons que l'IA peut être utile à petite échelle, pour des besoins simples et
+          concrets. Pas besoin d'un chatbot de 10 000 € quand un formulaire bien fait et quelques
+          réponses automatiques suffisent, surtout lorsqu'on parle de structures à but non lucratif,
+          d'intérêt général et de solidarité.
         </p>
         <p>
-          La plupart des petites structures n'ont pas besoin de « solutions IA sur-mesure ». 
-          Elles ont besoin qu'on leur montre comment utiliser des outils existants, gratuits ou peu coûteux,
-          adaptés à leurs vrais besoins et à leur mission d'intérêt général, solidaire et d'entraide.
+          La plupart des petites structures n'ont pas besoin de « solutions IA sur-mesure ». Elles
+          ont besoin qu'on leur montre comment utiliser des outils existants, gratuits ou peu
+          coûteux, adaptés à leurs vrais besoins et à leur mission d'intérêt général, solidaire et
+          d'entraide.
         </p>
         <p>
-          L'accessibilité, c'est aussi le temps d'apprentissage. Nous préférons passer 2 heures à former quelqu'un 
-          plutôt que de lui vendre une solution qu'il ne saura pas maintenir, dans une démarche d'entraide, de solidarité, d'intérêt général et de partage des connaissances.
+          L'accessibilité, c'est aussi le temps d'apprentissage. Nous préférons passer 2 heures à
+          former quelqu'un plutôt que de lui vendre une solution qu'il ne saura pas maintenir, dans
+          une démarche d'entraide, de solidarité, d'intérêt général et de partage des connaissances.
         </p>
       </section>
 
       <section class="actions">
         <h2>Ce que nous faisons concrètement</h2>
         <ul>
-          <li>Nous proposons des <strong>ateliers gratuits</strong> pour découvrir les bases de l'IA utile, adaptés aux réalités associatives, d'intérêt général et solidaires</li>
-          <li>Nous documentons des <strong>cas d'usage accessibles</strong> : automatiser une newsletter, trier des candidatures, générer des comptes-rendus, dans une logique d'intérêt général et solidaire</li>
-          <li>Nous créons des <strong>modèles et templates réutilisables</strong> que les structures peuvent adapter elles-mêmes, favorisant l'autonomie</li>
-          <li>Nous recommandons des <strong>outils gratuits ou peu coûteux</strong> (moins de 50 € par mois) avant de proposer du développement sur-mesure, pour rester dans des budgets accessibles, solidaires et équitables</li>
-          <li>Nous accompagnons les structures dans l'appropriation : formation, documentation, support, dans une démarche d'entraide, d'intérêt général et de solidarité</li>
-          <li>Nous montons des <strong>projets mutualisés</strong> entre plusieurs petites structures pour partager les coûts et les expériences, dans une logique de solidarité, d'entraide et de partage</li>
+          <li>
+            Nous proposons des <strong>ateliers gratuits</strong> pour découvrir les bases de l'IA utile,
+            adaptés aux réalités associatives, d'intérêt général et solidaires
+          </li>
+          <li>
+            Nous documentons des <strong>cas d'usage accessibles</strong> : automatiser une newsletter,
+            trier des candidatures, générer des comptes-rendus, dans une logique d'intérêt général et
+            solidaire
+          </li>
+          <li>
+            Nous créons des <strong>modèles et templates réutilisables</strong> que les structures peuvent
+            adapter elles-mêmes, favorisant l'autonomie
+          </li>
+          <li>
+            Nous recommandons des <strong>outils gratuits ou peu coûteux</strong> (moins de 50 € par mois)
+            avant de proposer du développement sur-mesure, pour rester dans des budgets accessibles, solidaires
+            et équitables
+          </li>
+          <li>
+            Nous accompagnons les structures dans l'appropriation : formation, documentation,
+            support, dans une démarche d'entraide, d'intérêt général et de solidarité
+          </li>
+          <li>
+            Nous montons des <strong>projets mutualisés</strong> entre plusieurs petites structures pour
+            partager les coûts et les expériences, dans une logique de solidarité, d'entraide et de partage
+          </li>
         </ul>
       </section>
 
       <section class="impact">
         <h2>Pourquoi c'est important</h2>
         <p>
-          Les associations et les collectivités représentent une part essentielle du tissu social. 
-          Si les outils numériques restent inaccessibles pour elles, on creuse un fossé entre ceux qui peuvent 
-          se payer l'innovation et les autres, alors que ces structures ont souvent un impact social direct.
+          Les associations et les collectivités représentent une part essentielle du tissu social.
+          Si les outils numériques restent inaccessibles pour elles, on creuse un fossé entre ceux
+          qui peuvent se payer l'innovation et les autres, alors que ces structures ont souvent un
+          impact social direct.
         </p>
         <p>
-          Une association qui gagne 5 heures par semaine sur des tâches administratives, c'est 5 heures de plus 
-          pour accompagner ses bénéficiaires et renforcer son action associative. Une mairie qui automatise ses comptes-rendus, c'est du temps libéré pour 
-          développer son activité et contribuer à l'économie locale.
+          Une association qui gagne 5 heures par semaine sur des tâches administratives, c'est 5
+          heures de plus pour accompagner ses bénéficiaires et renforcer son action associative. Une
+          mairie qui automatise ses comptes-rendus, c'est du temps libéré pour développer son
+          activité et contribuer à l'économie locale.
         </p>
         <p>
-          L'IA ne devrait pas être un luxe. Elle devrait être un outil parmi d'autres, 
-          accessible à ceux qui en ont vraiment besoin, dans une logique de solidarité, d'intérêt général, d'entraide et de partage des connaissances.
+          L'IA ne devrait pas être un luxe. Elle devrait être un outil parmi d'autres, accessible à
+          ceux qui en ont vraiment besoin, dans une logique de solidarité, d'intérêt général,
+          d'entraide et de partage des connaissances.
         </p>
       </section>
 
       <section class="cta">
         <div class="cta-content">
           <h2>Vous voulez vous y mettre ?</h2>
-          <p>Pas besoin de tout comprendre ni de tout ma®triser. On commence simple, on avance à votre rythme, dans une démarche collaborative, solidaire et d'entraide.</p>
+          <p>
+            Pas besoin de tout comprendre ni de tout ma®triser. On commence simple, on avance à
+            votre rythme, dans une démarche collaborative, solidaire et d'entraide.
+          </p>
           <div class="cta-buttons">
-            <a href="/atelier" class="button">Voir les prochains ateliers</a>
+            <a href="/services" class="button">Voir nos services</a>
             <a href="/services" class="button-secondary">Découvrir des exemples concrets</a>
           </div>
         </div>
@@ -194,7 +241,7 @@ import Breadcrumb from '@/components/Breadcrumb.astro';
 
   .actions ul li::before,
   .examples ul li::before {
-    content: "→";
+    content: '→';
     position: absolute;
     left: 0;
     color: #4a5568;
@@ -240,7 +287,10 @@ import Breadcrumb from '@/components/Breadcrumb.astro';
     text-decoration: none;
     font-weight: 600;
     font-size: 1rem;
-    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    transition:
+      transform 0.2s ease,
+      box-shadow 0.2s ease,
+      border-color 0.2s ease;
     border: 2px solid transparent;
   }
 

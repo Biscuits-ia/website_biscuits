@@ -41,14 +41,13 @@ const {
   canonical,
   ogImage = '/og-default.webp',
   ogType = 'website',
+  noindex = false,
   schema,
 } = Astro.props;
 
 const siteUrl = import.meta.env.SITE || 'https://biscuits-ia.com';
 
-const fullCanonical = canonical
-  ? `${siteUrl}${canonical}`
-  : `${siteUrl}${Astro.url.pathname}`;
+const fullCanonical = canonical ? `${siteUrl}${canonical}` : `${siteUrl}${Astro.url.pathname}`;
 
 // Suffixe de marque ajoute seulement s'il ne fait pas deborder le titre.
 // Google tronque l'affichage autour de 60-65 caracteres : sur un titre
@@ -85,119 +84,126 @@ const criticalCSS = `
 `;
 ---
 
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fr-FR" dir="ltr">
-<head>
-  <link rel="preload" href={interLatinWoff2} as="font" type="font/woff2" crossorigin />
-  <BaseHead
-    fullTitle={fullTitle}
-    description={description}
-    fullCanonical={fullCanonical}
-    siteUrl={siteUrl}
-    ogImage={ogImage}
-    ogType={ogType}
-    schema={schema}
-    isProd={isProd}
-    nonce={nonce}
-  >
-    {/* `set:html` plutot que `define:vars` : ce dernier fait perdre l'attribut
+  <head>
+    <link rel="preload" href={interLatinWoff2} as="font" type="font/woff2" crossorigin />
+    <BaseHead
+      fullTitle={fullTitle}
+      description={description}
+      fullCanonical={fullCanonical}
+      siteUrl={siteUrl}
+      ogImage={ogImage}
+      ogType={ogType}
+      noindex={noindex}
+      schema={schema}
+      isProd={isProd}
+      nonce={nonce}
+    >
+      {
+        /* `set:html` plutot que `define:vars` : ce dernier fait perdre l'attribut
         nonce au build, ce qui faisait bloquer le script par la CSP SSR.
-        jsonIsland() echappe la valeur (cf. lib/jsonLd.ts). */}
-    <script is:inline nonce={nonce} set:html={`window.__ANALYTICS_DISABLED__ = ${jsonIsland(analyticsDisabled)};`} />
-    <style set:html={criticalCSS}></style>
-  </BaseHead>
-</head>
+        jsonIsland() echappe la valeur (cf. lib/jsonLd.ts). */
+      }
+      <script
+        is:inline
+        nonce={nonce}
+        set:html={`window.__ANALYTICS_DISABLED__ = ${jsonIsland(analyticsDisabled)};`}
+      />
+      <style set:html={criticalCSS}></style>
+    </BaseHead>
+  </head>
 
-<body>
-  <!--
+  <body>
+    <!--
     Pas de h1 global ici : chaque page pose son propre h1 (unique) dans
     <main>. Le Header (mega-menu) n'utilise que des h2/h3 -> convertis en
     <p>/<span> visually-hidden pour ne pas apparaitre avant le h1 de page
     dans le plan du document (cf. Header.astro). Le Footer garde ses h2 :
     ils suivent le h1 de <main> dans l'ordre du DOM, hierarchie valide.
   -->
-  <Header />
+    <Header />
 
-  <main id="main-content" role="main">
-    <slot />
-  </main>
+    <main id="main-content" role="main">
+      <slot />
+    </main>
 
-  <Footer />
+    <Footer />
 
-  <!-- Service Worker (PWA, activé uniquement après opt-in analytics + consentement cookies) -->
-  <script is:inline nonce={nonce}>
-    if (typeof window !== "undefined" && "serviceWorker" in navigator) {
-      const reg = function() { navigator.serviceWorker.register("/sw.js").catch(function() {}); };
-      if ("requestIdleCallback" in window) window.requestIdleCallback(reg, { timeout: 5000 });
-      else window.addEventListener("load", reg);
+    <!-- Service Worker (PWA, activé uniquement après opt-in analytics + consentement cookies) -->
+    <script is:inline nonce={nonce}>
+      if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
+        const reg = function () {
+          navigator.serviceWorker.register('/sw.js').catch(function () {});
+        };
+        if ('requestIdleCallback' in window) window.requestIdleCallback(reg, { timeout: 5000 });
+        else window.addEventListener('load', reg);
+      }
+    </script>
+
+    <!-- Bandeau cookies : composant Astro vanilla (zéro runtime React). -->
+    <CookieConsent nonce={nonce} />
+  </body><style is:global>
+    /* Styles non-critiques pour éviter le FOUC */
+    .skip-link {
+      position: absolute;
+      top: -100px;
+      left: 0;
+      background: var(--color-primary);
+      color: var(--color-bg-elevated);
+      padding: var(--spacing-sm, 0.75rem) var(--spacing-md, 1.5rem);
+      z-index: var(--z-tooltip, 9999);
+      font-weight: var(--font-weight-semibold, 600);
+      text-decoration: none;
+      border-radius: 0 0 var(--radius-md, 0.5rem) 0;
+      transition: top var(--transition-fast, 0.2s) ease-in-out;
+      font-size: 1rem;
     }
-  </script>
 
-  <!-- Bandeau cookies : composant Astro vanilla (zéro runtime React). -->
-  <CookieConsent nonce={nonce} />
-</body>
-
-<style is:global>
-  /* Styles non-critiques pour éviter le FOUC */
-  .skip-link {
-    position: absolute;
-    top: -100px;
-    left: 0;
-    background: var(--color-primary);
-    color: var(--color-bg-elevated);
-    padding: var(--spacing-sm, 0.75rem) var(--spacing-md, 1.5rem);
-    z-index: var(--z-tooltip, 9999);
-    font-weight: var(--font-weight-semibold, 600);
-    text-decoration: none;
-    border-radius: 0 0 var(--radius-md, 0.5rem) 0;
-    transition: top var(--transition-fast, 0.2s) ease-in-out;
-    font-size: 1rem;
-  }
-
-  .skip-link:focus {
-    top: 0;
-    outline: 3px solid var(--color-text);
-    outline-offset: 2px;
-  }
-
-  .skip-link:focus-visible {
-    outline: 3px solid var(--color-text);
-    outline-offset: 2px;
-  }
-
-  main {
-    min-height: 60vh;
-  }
-
-  /* Amélioration du contraste pour l'accessibilité */
-  ::selection {
-    background-color: var(--color-primary);
-    color: var(--color-bg-elevated);
-  }
-
-  /* Focus visible amélioré (Accessibility) */
-  :focus-visible {
-    outline: 3px solid var(--color-primary);
-    outline-offset: 2px;
-  }
-
-  /* Réduction du mouvement pour accessibilité */
-  @media (prefers-reduced-motion: reduce) {
-    *,
-    *::before,
-    *::after {
-      animation-duration: 0.01ms !important;
-      animation-iteration-count: 1 !important;
-      transition-duration: 0.01ms !important;
-      scroll-behavior: auto !important;
+    .skip-link:focus {
+      top: 0;
+      outline: 3px solid var(--color-text);
+      outline-offset: 2px;
     }
-  }
 
-  /* Dark mode support */
-  @media (prefers-color-scheme: dark) {
-    :root {
-      color-scheme: dark;
+    .skip-link:focus-visible {
+      outline: 3px solid var(--color-text);
+      outline-offset: 2px;
     }
-  }
-</style>
+
+    main {
+      min-height: 60vh;
+    }
+
+    /* Amélioration du contraste pour l'accessibilité */
+    ::selection {
+      background-color: var(--color-primary);
+      color: var(--color-bg-elevated);
+    }
+
+    /* Focus visible amélioré (Accessibility) */
+    :focus-visible {
+      outline: 3px solid var(--color-primary);
+      outline-offset: 2px;
+    }
+
+    /* Réduction du mouvement pour accessibilité */
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+
+    /* Dark mode support */
+    @media (prefers-color-scheme: dark) {
+      :root {
+        color-scheme: dark;
+      }
+    }
+  </style>
 </html>

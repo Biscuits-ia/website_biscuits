@@ -16,7 +16,7 @@
 import { defineMiddleware } from 'astro:middleware';
 import { rateLimit } from './lib/rateLimit';
 import { getClientIpOrNull } from './lib/http';
-import { createSupabaseClient, createSupabaseAdminClient } from './lib/supabase';
+import { createSupabaseClient } from './lib/supabase';
 import { logError, requestContext } from './lib/observability';
 import crypto from 'node:crypto';
 
@@ -31,63 +31,14 @@ import crypto from 'node:crypto';
 //   2. plafond dur LOGOUT_CACHE_MAX : au-dela, on evince la plus ancienne
 //      entree inseree (une Map JS conserve l'ordre d'insertion).
 
-const LOGOUT_CACHE_TTL_MS = 30_000;
-const LOGOUT_CACHE_MAX = 10_000;
-const CLEANUP_INTERVAL_MS = 60_000;
-
-interface LogoutCacheEntry {
-  lastLogoutAtMs: number | null;
-  expiresAt: number;
-}
-const logoutCache = new Map<string, LogoutCacheEntry>();
-let lastLogoutCleanup = 0;
-
-function setLogoutCache(userId: string, entry: LogoutCacheEntry): void {
-  const now = Date.now();
-
-  // Purge amortie des entrees expirees.
-  if (now - lastLogoutCleanup > CLEANUP_INTERVAL_MS) {
-    lastLogoutCleanup = now;
-    for (const [key, value] of logoutCache) {
-      if (value.expiresAt <= now) logoutCache.delete(key);
-    }
-  }
-
-  // Plafond dur : eviction FIFO (la 1re clef iteree est la plus ancienne).
-  if (!logoutCache.has(userId) && logoutCache.size >= LOGOUT_CACHE_MAX) {
-    const oldest = logoutCache.keys().next().value;
-    if (oldest !== undefined) logoutCache.delete(oldest);
-  }
-
-  logoutCache.set(userId, entry);
-}
-
 // ─── Routes publiques ─────────────────────────────────────────────────────────
-
-const PUBLIC_AUTH_PATHS = new Set([
-  '/connexion',
-  '/inscription',
-  '/auth/connexion',
-  '/auth/inscription',
-  '/auth/callback',
-  '/auth/confirm',
-  '/auth/verifier-token-inscription',
-  '/auth/mot-de-passe-oublie',
-  '/auth/reinitialiser-mot-de-passe',
-]);
-
-function isPublicPath(pathname: string): boolean {
-  if (PUBLIC_AUTH_PATHS.has(pathname)) return true;
-  if (pathname.startsWith('/_astro/') || pathname.startsWith('/favicon')) return true;
-  return false;
-}
 
 // ─── Rate-limit ───────────────────────────────────────────────────────────────
 
 async function checkRouteRateLimit(
   context: { request: Request; clientAddress?: string },
   isDev: boolean,
-  pathname: string,
+  pathname: string
 ): Promise<Response | null> {
   if (isDev) return null;
   if (!pathname.startsWith('/api/') && !pathname.startsWith('/auth/')) return null;
@@ -137,42 +88,41 @@ async function checkRouteRateLimit(
 // names", le navigateur les ecrit lui-meme et refuse toute surcharge par fetch/XHR.
 
 const SAFE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS']);
+const SERVER_TO_SERVER_PATHS = new Set(['/api/cron/aggregate-downloads', '/api/indexnow']);
+const NOINDEX_PATHS = new Set([
+  '/connexion',
+  '/inscription',
+  '/mot-de-passe-oublie',
+  '/reinitialisation-mot-de-passe',
+  '/verifier-code-inscription',
+  '/verifier-code-reinitialisation',
+]);
 
-function isCrossSiteMutation(request: Request): boolean {
+function mustNotBeIndexed(pathname: string): boolean {
+  return (
+    NOINDEX_PATHS.has(pathname) ||
+    pathname.startsWith('/auth/') ||
+    pathname.startsWith('/api/') ||
+    pathname.startsWith('/dashboard/')
+  );
+}
+
+function isInvalidMutationOrigin(
+  request: Request,
+  pathname: string,
+  expectedOrigin: string
+): boolean {
   if (SAFE_METHODS.has(request.method)) return false;
-  return request.headers.get('sec-fetch-site') === 'cross-site';
+  if (SERVER_TO_SERVER_PATHS.has(pathname)) return false;
+
+  const origin = request.headers.get('origin');
+  if (!origin || origin !== expectedOrigin) return true;
+
+  const fetchSite = request.headers.get('sec-fetch-site');
+  return fetchSite === 'cross-site' || fetchSite === 'same-site';
 }
 
 // ─── Lecture last_logout_at (cache 30 s) ──────────────────────────────────────
-
-async function readLastLogoutAtMs(userId: string): Promise<number | null> {
-  const cached = logoutCache.get(userId);
-  if (cached && cached.expiresAt > Date.now()) return cached.lastLogoutAtMs;
-
-  let value: number | null;
-  try {
-    const admin = createSupabaseAdminClient();
-    const { data, error } = await admin
-      .from('profiles')
-      .select('last_logout_at')
-      .eq('id', userId)
-      .maybeSingle();
-
-    if (error) {
-      value = error.code === '42703' ? 0 : null;
-      if (error.code !== '42703') console.error('[middleware] readLastLogoutAtMs:', error.message);
-    } else {
-      const ms = data?.last_logout_at ? Date.parse(data.last_logout_at) : 0;
-      value = Number.isFinite(ms) ? ms : null;
-    }
-  } catch (err) {
-    console.error('[middleware] readLastLogoutAtMs exception:', err);
-    return null;
-  }
-
-  setLogoutCache(userId, { lastLogoutAtMs: value, expiresAt: Date.now() + LOGOUT_CACHE_TTL_MS });
-  return value;
-}
 
 // ─── Guard de session ─────────────────────────────────────────────────────────
 
@@ -187,35 +137,6 @@ async function readLastLogoutAtMs(userId: string): Promise<number | null> {
  * la session comme invalidee et on force la redirection vers /connexion
  * (SANS appeler signOut cote serveur -- celui-ci revoquerait le refresh).
  */
-async function handleSessionGuard(
-  supabase: ReturnType<typeof createSupabaseClient>,
-): Promise<'ok' | 'invalidated' | 'unauthenticated'> {
-  try {
-    const {
-      data: { user },
-      error,
-    } = await supabase.auth.getUser();
-    if (error || !user) {
-      // AuthApiError ici = access token invalide ou expire.
-      // On retourne 'unauthenticated' -- pas d'erreur a logger, c'est normal.
-      return 'unauthenticated';
-    }
-
-    // Verification last_logout_at : si un logout a eu lieu dans les 5 dernieres
-    // minutes, on invalide la session par securite.
-    const lastLogoutAtMs = await readLastLogoutAtMs(user.id);
-    if (lastLogoutAtMs === null || lastLogoutAtMs === 0) return 'ok';
-
-    const fiveMinAgo = Date.now() - 5 * 60_000;
-    if (lastLogoutAtMs > fiveMinAgo) return 'invalidated';
-
-    return 'ok';
-  } catch (err) {
-    console.error('[middleware] handleSessionGuard exception:', err);
-    return 'ok'; // Fail-open.
-  }
-}
-
 // ─── CSP (routes SSR uniquement) ──────────────────────────────────────────────
 //
 // SUPPRIME LE 2026-07-08 : `injectNonce(html, nonce)`.
@@ -260,7 +181,7 @@ function buildCsp(nonce: string, isDev: boolean): string {
       'http://localhost:4321',
       'ws://localhost:4321',
       'http://127.0.0.1:4321',
-      'ws://127.0.0.1:4321',
+      'ws://127.0.0.1:4321'
     );
   }
 
@@ -313,36 +234,23 @@ export const onRequest = defineMiddleware(async (context, next) => {
 
   const { pathname } = context.url;
 
-  // 1. Garde CSRF : refuse les mutations declenchees cross-site.
-  if (isCrossSiteMutation(context.request)) {
-    return new Response(JSON.stringify({ error: 'Requete cross-site refusee.' }), {
+  // 1. Toute mutation navigateur doit provenir de l'origine exacte. Les routes
+  // serveur-a-serveur exclues ici verifient leur secret dans leur handler.
+  if (isInvalidMutationOrigin(context.request, pathname, context.url.origin)) {
+    return new Response(JSON.stringify({ error: 'Origine de requete refusee.' }), {
       status: 403,
       headers: { 'Content-Type': 'application/json' },
     });
   }
 
-  // 2. Rate-limit (distribue via Upstash, avec fallback in-memory L1 + laissez-passer).
+  // 2. Rate-limit local borne. Le Firewall Vercel peut completer cette
+  // protection avec des regles distribuees sans dependance applicative.
   const rl = await checkRouteRateLimit(context, isDev, pathname);
   if (rl) return rl;
 
-  // 3. Guard de session (skip routes publiques).
-  if (!isPublicPath(pathname)) {
-    const guard = await handleSessionGuard(supabase);
-    if (guard === 'invalidated') {
-      // IMPORTANT : on ne fait PAS de signOut() cote serveur.
-      // signOut() consomme le refresh_token et declenche la rotation,
-      // ce qui peut revoquer la session d'un autre onglet / onduleur.
-      // On laisse simplement le navigateur rediriger vers /connexion.
-      if (pathname.startsWith('/api/')) {
-        return new Response(JSON.stringify({ error: 'Session invalidee.' }), {
-          status: 401,
-          headers: { 'Content-Type': 'application/json' },
-        });
-      }
-      if (pathname !== '/connexion') return context.redirect('/connexion?session=invalidee');
-    }
-    // 'unauthenticated' -> les pages protegees gerent via requireAuth().
-  }
+  // 3. L'autorisation reste appliquee dans les routes par requireAuth/
+  // requireAdmin. Ne pas dupliquer getUser() ici evite un appel reseau et
+  // supprime l'ancien mode fail-open central.
 
   // 4. Requete.
   //
@@ -354,7 +262,11 @@ export const onRequest = defineMiddleware(async (context, next) => {
   try {
     response = await next();
   } catch (err) {
-    logError('[middleware] erreur non geree pendant le rendu', err, requestContext(context.request));
+    logError(
+      '[middleware] erreur non geree pendant le rendu',
+      err,
+      requestContext(context.request)
+    );
     throw err;
   }
 
@@ -375,5 +287,8 @@ export const onRequest = defineMiddleware(async (context, next) => {
   // en regex : cela bufferisait l'integralite du HTML et supprimait le streaming
   // d'Astro (TTFB = temps de rendu complet, au lieu de "des le <head>").
   response.headers.set('Content-Security-Policy', buildCsp(nonce, isDev));
+  if (mustNotBeIndexed(pathname)) {
+    response.headers.set('X-Robots-Tag', 'noindex, nofollow');
+  }
   return response;
 });

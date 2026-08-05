@@ -12,34 +12,31 @@ import { getClientIp } from '@/lib/http';
 import { createHash } from 'node:crypto';
 
 const schema = z.object({
-  document_type:    z.enum(['cgu', 'rgpd']),
+  document_type: z.enum(['cgu', 'rgpd']),
   document_version: z.string().min(1).max(20),
-  context:          z.enum(['payment', 'registration', 'manual']).default('manual'),
-  registration_id:  z.string().uuid().optional(),
+  context: z.enum(['payment', 'registration', 'manual']).default('manual'),
+  registration_id: z.string().uuid().optional(),
 });
 
 export const POST: APIRoute = async ({ request, cookies, clientAddress }) => {
   const supabase = createSupabaseClient({ request, cookies });
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   // Si pas connecte, on accepte quand meme mais on stocke l\'email
-  let userId: string | null = null;
-  let email: string | null = null;
-  if (user) {
-    userId = user.id;
-    email  = user.email ?? null;
-  } else {
+  if (!user) {
     // Pour les acceptations anonymes (avant inscription), on peut quand meme
     // stocker l\'IP hash et le user agent pour preuve. Mais on a besoin d\'un
     // identifiant. On refuse l\'acceptation anonyme pour CGV (preuve juridique faible).
     return new Response(
       JSON.stringify({ error: 'Vous devez etre connecte pour accepter un document legal.' }),
-      { status: 401, headers: { 'Content-Type': 'application/json' } },
+      { status: 401, headers: { 'Content-Type': 'application/json' } }
     );
   }
 
   // Parse le body (form ou json)
-  let body: Record<string, unknown> = {};
+  let body: Record<string, unknown>;
   const contentType = request.headers.get('content-type') ?? '';
   if (contentType.includes('application/json')) {
     try {
@@ -55,10 +52,10 @@ export const POST: APIRoute = async ({ request, cookies, clientAddress }) => {
   const parsed = schema.safeParse(body);
   if (!parsed.success) {
     const msg = parsed.error.issues[0]?.message ?? 'Donnees invalides.';
-    return new Response(
-      JSON.stringify({ error: msg }),
-      { status: 400, headers: { 'Content-Type': 'application/json' } },
-    );
+    return new Response(JSON.stringify({ error: msg }), {
+      status: 400,
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
 
   // Hash de l\'IP (RGPD : on ne stocke pas l\'IP en clair).
@@ -79,25 +76,25 @@ export const POST: APIRoute = async ({ request, cookies, clientAddress }) => {
   const { data, error } = await admin
     .from('legal_acceptance')
     .insert({
-      user_id:          userId,
-      document_type:    parsed.data.document_type,
+      user_id: user.id,
+      document_type: parsed.data.document_type,
       document_version: parsed.data.document_version,
-      context:          parsed.data.context,
-      registration_id:  parsed.data.registration_id ?? null,
-      ip_hash:          ipHash,
-      user_agent:       userAgent,
-      email:            email,
-      accepted_at:      new Date().toISOString(),
+      context: parsed.data.context,
+      registration_id: parsed.data.registration_id ?? null,
+      ip_hash: ipHash,
+      user_agent: userAgent,
+      email: user.email ?? null,
+      accepted_at: new Date().toISOString(),
     })
     .select('id, accepted_at')
     .single();
 
   if (error || !data) {
     console.error('[legal/accept] insert error:', error?.message);
-    return new Response(
-      JSON.stringify({ error: 'Erreur lors de l\'enregistrement.' }),
-      { status: 500, headers: { 'Content-Type': 'application/json' } },
-    );
+    return new Response(JSON.stringify({ error: "Erreur lors de l'enregistrement." }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
 
   // Si on est dans un contexte de formulaire (Content-Type: form), on redirige
@@ -107,8 +104,8 @@ export const POST: APIRoute = async ({ request, cookies, clientAddress }) => {
     return new Response(null, { status: 303, headers: { Location: referer } });
   }
 
-  return new Response(
-    JSON.stringify({ ok: true, id: data.id, accepted_at: data.accepted_at }),
-    { status: 200, headers: { 'Content-Type': 'application/json' } },
-  );
+  return new Response(JSON.stringify({ ok: true, id: data.id, accepted_at: data.accepted_at }), {
+    status: 200,
+    headers: { 'Content-Type': 'application/json' },
+  });
 };

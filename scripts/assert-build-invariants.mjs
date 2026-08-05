@@ -21,7 +21,8 @@ let failures = 0;
 
 /** @param {string} label @param {() => boolean | string} fn */
 function assert(label, fn) {
-  let ok, detail = '';
+  let ok,
+    detail = '';
   try {
     const r = fn();
     ok = r === true;
@@ -39,11 +40,16 @@ const read = (p) => fs.readFileSync(path.join(DIST, p), 'utf8');
 const exists = (p) => fs.existsSync(path.join(DIST, p));
 
 // ── robots.txt ───────────────────────────────────────────────────────────────
-assert('robots.txt existe (astro-robots-txt n a pas ete "Skipped")', () => exists('robots.txt') || 'dist/client/robots.txt absent');
+assert(
+  'robots.txt existe (astro-robots-txt n a pas ete "Skipped")',
+  () => exists('robots.txt') || 'dist/client/robots.txt absent'
+);
 assert('robots.txt interdit /dashboard', () => read('robots.txt').includes('Disallow: /dashboard'));
 assert('robots.txt interdit /api', () => read('robots.txt').includes('Disallow: /api'));
-assert('robots.txt declare une policy GPTBot', () => read('robots.txt').includes('User-agent: GPTBot'));
-assert('robots.txt pointe sur sitemap-index.xml', () => read('robots.txt').includes('sitemap-index.xml'));
+assert('robots.txt declare une policy GPTBot', () =>
+  read('robots.txt').includes('User-agent: GPTBot')
+);
+assert('robots.txt pointe sur sitemap.xml', () => read('robots.txt').includes('/sitemap.xml'));
 assert('robots.txt reference llms.txt', () => read('robots.txt').includes('llms.txt'));
 
 // ── llms-full.txt (P4 #37) ───────────────────────────────────────────────────
@@ -51,8 +57,10 @@ assert('robots.txt reference llms.txt', () => read('robots.txt').includes('llms.
 // connexion Supabase en service_role pour un contenu statique par nature.
 // `export const prerender = false` reintroduit ne se voit qu'ici : cote source,
 // le fichier a exactement la meme tete.
-assert('llms-full.txt est prerendu (fichier statique, pas une lambda)', () =>
-  exists('llms-full.txt') || 'dist/client/llms-full.txt absent : prerender = false ?');
+assert(
+  'llms-full.txt est prerendu (fichier statique, pas une lambda)',
+  () => exists('llms-full.txt') || 'dist/client/llms-full.txt absent : prerender = false ?'
+);
 
 // Les deux assertions sur /trombinoscope (P4 #32 : page prerendue, sans nonce
 // fige) sont retirees avec la page elle-meme.
@@ -64,8 +72,32 @@ assert('llms-full.txt est prerendu (fichier statique, pas une lambda)', () =>
 // plutot que d'ajouter un cas particulier de plus.
 
 // ── sitemap ──────────────────────────────────────────────────────────────────
-assert('aucun sitemap.xml statique ne masque sitemap-index.xml', () => !exists('sitemap.xml') || 'public/sitemap.xml est revenu');
+assert('sitemap.xml conventionnel genere', () => exists('sitemap.xml'));
+assert('sitemap.xml reference le sitemap detaille', () =>
+  read('sitemap.xml').includes('https://biscuits-ia.com/sitemap-0.xml')
+);
 assert('sitemap-index.xml genere', () => exists('sitemap-index.xml'));
+
+// Un octet NUL dans un fichier texte peut etre tolere par le build tout en
+// produisant un contenu corrompu pour les lecteurs, moteurs et extracteurs.
+assert('aucun octet NUL dans les sources et artefacts texte', () => {
+  const roots = ['src', 'public', 'scripts', DIST];
+  const textExtensions = /\.(astro|css|html|js|json|jsx|md|mdx|mjs|ts|tsx|txt|xml|ya?ml)$/i;
+  const offenders = [];
+
+  for (const root of roots) {
+    if (!fs.existsSync(root)) continue;
+    for (const rel of fs.readdirSync(root, { recursive: true })) {
+      if (typeof rel !== 'string' || !textExtensions.test(rel)) continue;
+      const file = path.join(root, rel);
+      if (fs.statSync(file).isFile() && fs.readFileSync(file).includes(0)) {
+        offenders.push(file);
+      }
+    }
+  }
+
+  return offenders.length === 0 || `octet(s) NUL trouve(s) dans : ${offenders.join(', ')}`;
+});
 
 // Item P1-6 : trancher /logiciels et /anti-pepins.
 // L'audit §4.4 signalait ces deux pages comme inatteignables (301 en amont
@@ -74,11 +106,16 @@ assert('sitemap-index.xml genere', () => exists('sitemap-index.xml'));
 // regression silencieuse (ex: un redirect reintroduit dans vercel.json).
 assert('/logiciels est dans le sitemap (page reelle, pas un 301)', () => {
   const xml = read('sitemap-0.xml');
-  return xml.includes('/logiciels/') || '/logiciels absent du sitemap';
+  return (
+    xml.includes('<loc>https://biscuits-ia.com/logiciels</loc>') || '/logiciels absent du sitemap'
+  );
 });
 assert('/anti-pepins est dans le sitemap (page reelle, pas un 301)', () => {
   const xml = read('sitemap-0.xml');
-  return xml.includes('/anti-pepins/') || '/anti-pepins absent du sitemap';
+  return (
+    xml.includes('<loc>https://biscuits-ia.com/anti-pepins</loc>') ||
+    '/anti-pepins absent du sitemap'
+  );
 });
 
 // ── CSP / nonce ──────────────────────────────────────────────────────────────
@@ -110,7 +147,8 @@ const SSR_DIR = '.vercel/output/functions/_render.func/dist/server';
 assert('aucun <script> inline sans nonce dans les chunks SSR', () => {
   if (!fs.existsSync(SSR_DIR)) return `${SSR_DIR} absent : lancer 'astro build'`;
 
-  const files = fs.readdirSync(SSR_DIR, { recursive: true })
+  const files = fs
+    .readdirSync(SSR_DIR, { recursive: true })
     .filter((f) => typeof f === 'string' && f.endsWith('.mjs'))
     .map((f) => path.join(SSR_DIR, f))
     // render_*.mjs est le RUNTIME d'Astro, pas notre code. Il contient les
@@ -123,7 +161,8 @@ assert('aucun <script> inline sans nonce dans les chunks SSR', () => {
   for (const file of files) {
     // Les commentaires en debut de ligne (docs, exemple XSS de lib/jsonLd.ts)
     // contiennent des balises <script> qui ne sont jamais emises.
-    const code = fs.readFileSync(file, 'utf8')
+    const code = fs
+      .readFileSync(file, 'utf8')
       .split('\n')
       .filter((line) => !/^\s*(\/\/|\*|\/\*)/.test(line))
       .join('\n');
@@ -141,8 +180,10 @@ assert('aucun <script> inline sans nonce dans les chunks SSR', () => {
       offenders.push(`${path.basename(file)} : <script${attrs.slice(0, 40).replace(/\s+/g, ' ')}`);
     }
   }
-  return offenders.length === 0
-    || `${offenders.length} script(s) sans nonce :\n      -> ${[...new Set(offenders)].join('\n      -> ')}`;
+  return (
+    offenders.length === 0 ||
+    `${offenders.length} script(s) sans nonce :\n      -> ${[...new Set(offenders)].join('\n      -> ')}`
+  );
 });
 
 // Corollaire architectural (P4 #44) : en Astro 7, `Astro.locals` n'est injecte
@@ -162,7 +203,8 @@ assert('aucun <script> inline sans nonce dans les chunks SSR', () => {
 assert('Astro.locals n est pas reference dans un composant (P4 #44)', () => {
   if (!fs.existsSync(SSR_DIR)) return `${SSR_DIR} absent : lancer 'astro build'`;
 
-  const files = fs.readdirSync(SSR_DIR, { recursive: true })
+  const files = fs
+    .readdirSync(SSR_DIR, { recursive: true })
     .filter((f) => typeof f === 'string' && f.endsWith('.mjs'))
     .map((f) => path.join(SSR_DIR, f))
     .filter((f) => !path.basename(f).startsWith('render_'));
@@ -195,7 +237,8 @@ assert('Astro.locals n est pas reference dans un composant (P4 #44)', () => {
       // On retire les commentaires de la region pour eviter les faux positifs
       // (un exemple XSS dans un JSDoc qui parle de `Astro.locals` n'est pas
       // un acces reel au runtime).
-      const bodyNoComments = body.split('\n')
+      const bodyNoComments = body
+        .split('\n')
         .filter((line) => !/^\s*(\/\/|\*|\/\*)/.test(line))
         .join('\n');
       if (/\bAstro\.locals\b/.test(bodyNoComments)) {
@@ -203,8 +246,10 @@ assert('Astro.locals n est pas reference dans un composant (P4 #44)', () => {
       }
     }
   }
-  return offenders.length === 0
-    || `${offenders.length} chunk(s) composent(s) reference(nt) Astro.locals :\n      -> ${offenders.join('\n      -> ')}`;
+  return (
+    offenders.length === 0 ||
+    `${offenders.length} chunk(s) composent(s) reference(nt) Astro.locals :\n      -> ${offenders.join('\n      -> ')}`
+  );
 });
 
 // Corollaire : tant que `security.csp` n'est pas active, Astro emet le bootstrap
@@ -219,7 +264,8 @@ assert('aucun island client:* sur une page SSR', () => {
     // calendrier admin React par un composant serveur Astro + JS vanilla inline.
   ]);
 
-  const pages = fs.readdirSync(PAGES, { recursive: true })
+  const pages = fs
+    .readdirSync(PAGES, { recursive: true })
     .filter((f) => typeof f === 'string' && f.endsWith('.astro'));
 
   const found = [];
@@ -231,7 +277,8 @@ assert('aucun island client:* sur une page SSR', () => {
     // composants importes depuis la page (1 niveau, suffisant ici).
     const bodies = [src];
     for (const m of src.matchAll(/from '(?:@\/|\.{1,2}\/)[^']*\/([A-Z][\w-]*)\.astro'/g)) {
-      const hit = fs.readdirSync('src/components', { recursive: true })
+      const hit = fs
+        .readdirSync('src/components', { recursive: true })
         .find((f) => typeof f === 'string' && path.basename(f) === `${m[1]}.astro`);
       if (hit) bodies.push(fs.readFileSync(path.join('src/components', hit), 'utf8'));
     }
@@ -244,8 +291,8 @@ assert('aucun island client:* sur une page SSR', () => {
 });
 
 // ── IP client : un seul point de verite ──────────────────────────────────────
-// `cf-connecting-ip`, `x-real-ip` et `x-forwarded-for` ne sont PAS ecrits par
-// Vercel : un appelant les choisit librement. Seul `x-vercel-forwarded-for`
+// Les en-tetes IP de proxy generiques ne sont PAS ecrits par Vercel : un
+// appelant peut les choisir librement. Seul `x-vercel-forwarded-for`
 // (et `clientAddress` qui en derive) est ecrase par la plateforme.
 //
 // L'item P1 #3 a corrige `lib/http.ts`, mais deux routes lisaient encore ces
@@ -256,22 +303,26 @@ assert('aucune lecture directe d un header IP forgeable hors lib/http.ts', () =>
   const ROOT = 'src';
   const FORGEABLE = /headers\.get\(\s*['"](cf-connecting-ip|x-real-ip|x-forwarded-for)['"]\s*\)/;
 
-  const files = fs.readdirSync(ROOT, { recursive: true })
+  const files = fs
+    .readdirSync(ROOT, { recursive: true })
     .filter((f) => typeof f === 'string' && /\.(ts|astro)$/.test(f))
     .filter((f) => f.split(path.sep).join('/') !== 'lib/http.ts');
 
   const offenders = files.filter((rel) =>
-    FORGEABLE.test(fs.readFileSync(path.join(ROOT, rel), 'utf8')),
+    FORGEABLE.test(fs.readFileSync(path.join(ROOT, rel), 'utf8'))
   );
-  return offenders.length === 0
-    || `header IP forgeable lu dans : ${offenders.join(', ')} -- utiliser getClientIp()`;
+  return (
+    offenders.length === 0 ||
+    `header IP forgeable lu dans : ${offenders.join(', ')} -- utiliser getClientIp()`
+  );
 });
 
 // ── JSON-LD ──────────────────────────────────────────────────────────────────
 // jsonLd() doit echapper < > & : aucun de ces caracteres ne doit subsister
 // bruts dans un bloc ld+json, et le JSON doit rester parsable.
 assert('tous les blocs JSON-LD sont echappes et valides', () => {
-  const files = fs.readdirSync(DIST, { recursive: true })
+  const files = fs
+    .readdirSync(DIST, { recursive: true })
     .filter((f) => typeof f === 'string' && f.endsWith('.html'))
     .map((f) => path.join(DIST, f));
   let blocks = 0;
@@ -299,7 +350,9 @@ assert('aucune requete vers fonts.googleapis.com', () => {
 assert('aucun @import Google Fonts dans le CSS bundle', () => {
   const dir = path.join(DIST, '_astro');
   const css = fs.readdirSync(dir).filter((f) => f.endsWith('.css'));
-  const bad = css.filter((f) => fs.readFileSync(path.join(dir, f), 'utf8').includes('fonts.googleapis.com'));
+  const bad = css.filter((f) =>
+    fs.readFileSync(path.join(dir, f), 'utf8').includes('fonts.googleapis.com')
+  );
   return bad.length === 0 || `Google Fonts dans : ${bad.join(', ')}`;
 });
 assert('Inter est self-hostee (woff2 emis)', () => {
@@ -311,7 +364,10 @@ assert('Inter est self-hostee (woff2 emis)', () => {
 // inlineStylesheets:'always' inlinait ~94 Ko de CSS dans chaque page.
 assert('le CSS inline de index.html reste sous 8 Ko', () => {
   const html = read('index.html');
-  const bytes = [...html.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g)].reduce((a, m) => a + m[1].length, 0);
+  const bytes = [...html.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g)].reduce(
+    (a, m) => a + m[1].length,
+    0
+  );
   return bytes < 8192 || `${bytes} octets de CSS inline`;
 });
 
@@ -320,13 +376,18 @@ assert('le CSS inline de index.html reste sous 8 Ko', () => {
 // un navigateur). Mais on verifie que le spec qui le porte N'EST PAS
 // supprimé par inadvertance : retirer le fichier, c'est supprimer l'a11y
 // silencieusement, exactement le pattern que ce script combat.
-assert('spec a11y-contrast (axe-core) present', () =>
-  fs.existsSync('tests/e2e/a11y-contrast.spec.ts')
-  || 'tests/e2e/a11y-contrast.spec.ts absent : audit P2 #38 supprime ?');
+assert(
+  'spec a11y-contrast (axe-core) present',
+  () =>
+    fs.existsSync('tests/e2e/a11y-contrast.spec.ts') ||
+    'tests/e2e/a11y-contrast.spec.ts absent : audit P2 #38 supprime ?'
+);
 assert('dep @axe-core/playwright declaree', () => {
   const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
-  return Boolean(pkg.devDependencies?.['@axe-core/playwright'])
-  || '@axe-core/playwright absent de devDependencies';
+  return (
+    Boolean(pkg.devDependencies?.['@axe-core/playwright']) ||
+    '@axe-core/playwright absent de devDependencies'
+  );
 });
 
 // ── secrets scan (P2 #39) ─────────────────────────────────────────────────────
@@ -334,20 +395,22 @@ assert('dep @axe-core/playwright declaree', () => {
 // module Node), mais on verifie la presence de la config et du job CI qui
 // l'integre. Sans cette assertion, supprimer .gitleaks.toml ou le job
 // secrets-scan retablirait la faille en silence.
-assert('.gitleaks.toml present', () =>
-  fs.existsSync('.gitleaks.toml')
-  || '.gitleaks.toml absent : audit P2 #39 supprime ?');
+assert(
+  '.gitleaks.toml present',
+  () => fs.existsSync('.gitleaks.toml') || '.gitleaks.toml absent : audit P2 #39 supprime ?'
+);
 assert('CI integre le scan secrets gitleaks', () => {
   if (!fs.existsSync('.github/workflows/ci.yml')) return 'ci.yml absent';
   const yml = fs.readFileSync('.github/workflows/ci.yml', 'utf8');
-  return /gitleaks/i.test(yml)
-  || 'job gitleaks absent de .github/workflows/ci.yml';
+  return /gitleaks/i.test(yml) || 'job gitleaks absent de .github/workflows/ci.yml';
 });
 assert('CI integre le job a11y contrast', () => {
   if (!fs.existsSync('.github/workflows/ci.yml')) return 'ci.yml absent';
   const yml = fs.readFileSync('.github/workflows/ci.yml', 'utf8');
-  return /a11y-contrast/.test(yml) && /axe-core/.test(yml)
-  || 'job a11y axe-core absent de .github/workflows/ci.yml';
+  return (
+    (/a11y-contrast/.test(yml) && /axe-core/.test(yml)) ||
+    'job a11y axe-core absent de .github/workflows/ci.yml'
+  );
 });
 
 console.log(`\n${failures === 0 ? 'TOUTES LES ASSERTIONS PASSENT' : `${failures} ECHEC(S)`}`);

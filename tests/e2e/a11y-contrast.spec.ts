@@ -73,7 +73,7 @@ test.describe('Audit de contraste (axe-core)', () => {
             return iterations === Infinity;
           }),
         undefined,
-        { timeout: 10_000 },
+        { timeout: 10_000 }
       );
 
       const accessibilityScanResults = await new AxeBuilder({ page })
@@ -90,8 +90,8 @@ test.describe('Audit de contraste (axe-core)', () => {
       // Sortie du rapport (toujours) : permet d'inspecter ce qui a ete vu,
       // y compris les "moderate" qui ne font pas echouer.
       console.log(
-        `[axe] ${gabarit.path} : ${accessibilityScanResults.violations.length} violation(s) `
-        + `(${bloquantes.length} bloquante(s))`
+        `[axe] ${gabarit.path} : ${accessibilityScanResults.violations.length} violation(s) ` +
+          `(${bloquantes.length} bloquante(s))`
       );
       for (const v of bloquantes) {
         console.log(`  - [${v.impact}] ${v.id} : ${v.help}`);
@@ -100,29 +100,10 @@ test.describe('Audit de contraste (axe-core)', () => {
         }
       }
 
-      // Politique de tolerance (cf. audit.md P2 #38 - cloture) :
-      // En local (npm run test:e2e), on ECHOUE dur : c'est le moment ou
-      // un dev peut iterer sur theme.css. En CI, on n'echoue PAS : la CI
-      // sert de barometre (les violations remontent dans la run), pas de
-      // barrage. Bloquer la CI reviendrait a empecher tout merge avant
-      // que l'integralite de la dette a11y soit corrigee, ce qui n'est
-      // pas l'objectif de P2 #38 (l'objectif est d'AVOIR UN INSTRUMENT,
-      // pas de tout corriger d'un coup).
-      const enLocal = !process.env.CI;
-
-      if (enLocal) {
-        expect(
-          bloquantes,
-          `${bloquantes.length} violation(s) de contraste serieuse(s) ou critique(s) sur ${gabarit.path}`
-        ).toEqual([]);
-      } else {
-        // Annotation GitHub Actions : visible dans la UI de la run sans
-        // faire echouer le job.
-        test.info().annotations.push({
-          type: 'a11y-contrast',
-          description: `${bloquantes.length} bloquante(s) sur ${gabarit.path} (rapport : ${accessibilityScanResults.violations.length} total)`,
-        });
-      }
+      expect(
+        bloquantes,
+        `${bloquantes.length} violation(s) WCAG serieuse(s) ou critique(s) sur ${gabarit.path}`
+      ).toEqual([]);
     });
   }
 });

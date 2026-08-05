@@ -1,44 +1,66 @@
----export const prerender = true;
-
-
+---
+export const prerender = true;
 
 import BaseLayout from '@/layouts/Layout.astro';
 import Breadcrumb from '@/components/Breadcrumb.astro';
 ---
 
-<BaseLayout 
+<BaseLayout
   title="Libérer les savoirs : Vers une autonomie numérique partagée | Biscuits IA"
   description="Nous documentons ce que nous faisons, accompagnons nos partenaires et partageons nos méthodes en accès libre pour que le savoir profite à tous."
 >
   <article class="combat-page">
-  <Breadcrumb />
+    <Breadcrumb />
     <div class="container">
       <header class="hero">
         <div class="hero-content">
           <h1>Libérer les savoirs : Vers une autonomie numérique partagée</h1>
-          <p class="subtitle">Vous rendre autonomes plutôt que vous garder dépendants, dans une logique d'intérêt général, solidaire, d'entraide et de partage</p>
+          <p class="subtitle">
+            Vous rendre autonomes plutôt que vous garder dépendants, dans une logique d'intérêt
+            général, solidaire, d'entraide et de partage
+          </p>
         </div>
       </header>
 
       <section class="problem">
         <h2>Le problème</h2>
         <p>
-          Vous faites appel à un prestataire pour mettre en place un outil. Il fait son travail, vous facture, et part. 
-          Trois mois plus tard, vous voulez modifier quelque chose. Impossible sans rappeler le prestataire. 
-          Vous voulez comprendre comment ça marche. Pas de documentation. Vous êtes pieds et poings liés, et votre action associative, votre activité et votre mission d'intérêt général en pâtissent.
+          Vous faites appel à un prestataire pour mettre en place un outil. Il fait son travail,
+          vous facture, et part. Trois mois plus tard, vous voulez modifier quelque chose.
+          Impossible sans rappeler le prestataire. Vous voulez comprendre comment ça marche. Pas de
+          documentation. Vous êtes pieds et poings liés, et votre action associative, votre activité
+          et votre mission d'intérêt général en pâtissent.
         </p>
         <p>
-          Certains prestataires cultivent cette dépendance. Ils ne documentent rien, n'expliquent rien, ne forment personne. 
-          Résultat : vous devez repasser par eux pour le moindre ajustement. C'est rentable pour eux, coûteux pour vous, surtout quand vos budgets sont limités et que chaque euro compte pour votre mission associative.
+          Certains prestataires cultivent cette dépendance. Ils ne documentent rien, n'expliquent
+          rien, ne forment personne. Résultat : vous devez repasser par eux pour le moindre
+          ajustement. C'est rentable pour eux, coûteux pour vous, surtout quand vos budgets sont
+          limités et que chaque euro compte pour votre mission associative.
         </p>
-        
+
         <div class="examples">
           <h3>Situations courantes</h3>
           <ul>
-          <li>Une association qui paie 200 € à chaque fois qu'elle veut ajouter une page à son site parce que personne ne lui a expliqué comment faire, alors que ces fonds pourraient servir à son action associative et à sa mission d'intérêt général</li>
-          <li>Une association avec un outil sur-mesure dont le code est illisible et non documenté, impossible à reprendre par un autre développeur, ce qui limite son action et son impact</li>
-          <li>Un collectif qui doit refaire entièrement un système parce que le prestataire initial n'a laissé aucune trace de comment ça fonctionne, gaspillant ainsi des ressources précieuses qui pourraient servir à sa mission associative</li>
-          <li>Une collectivités qui paie une maintenance annuelle de 3 000 € juste pour avoir le droit de poser des questions, au lieu d'investir dans des projets d'intérêt général et de solidarité</li>
+            <li>
+              Une association qui paie 200 € à chaque fois qu'elle veut ajouter une page à son site
+              parce que personne ne lui a expliqué comment faire, alors que ces fonds pourraient
+              servir à son action associative et à sa mission d'intérêt général
+            </li>
+            <li>
+              Une association avec un outil sur-mesure dont le code est illisible et non documenté,
+              impossible à reprendre par un autre développeur, ce qui limite son action et son
+              impact
+            </li>
+            <li>
+              Un collectif qui doit refaire entièrement un système parce que le prestataire initial
+              n'a laissé aucune trace de comment ça fonctionne, gaspillant ainsi des ressources
+              précieuses qui pourraient servir à sa mission associative
+            </li>
+            <li>
+              Une collectivités qui paie une maintenance annuelle de 3 000 € juste pour avoir le
+              droit de poser des questions, au lieu d'investir dans des projets d'intérêt général et
+              de solidarité
+            </li>
           </ul>
         </div>
       </section>
@@ -46,85 +68,133 @@ import Breadcrumb from '@/components/Breadcrumb.astro';
       <section class="position">
         <h2>Notre position</h2>
         <p>
-          Nous pensons que notre rôle n'est pas de vous garder captifs, mais de vous rendre autonomes, surtout quand vous agissez dans une logique d'intérêt général et solidaire. 
-          Vous devriez comprendre ce que nous faisons, pouvoir le modifier vous-mêmes, et être capables de 
-          faire appel à quelqu'un d'autre si besoin, sans dépendre éternellement d'un prestataire, pour mieux servir votre mission associative.
+          Nous pensons que notre rôle n'est pas de vous garder captifs, mais de vous rendre
+          autonomes, surtout quand vous agissez dans une logique d'intérêt général et solidaire.
+          Vous devriez comprendre ce que nous faisons, pouvoir le modifier vous-mêmes, et être
+          capables de faire appel à quelqu'un d'autre si besoin, sans dépendre éternellement d'un
+          prestataire, pour mieux servir votre mission associative.
         </p>
         <p>
-          Partager la connaissance ne nous fait pas perdre du travail. Au contraire, cela crée de la confiance et renforce la solidarité. 
-          Les clients qui comprennent ce qu'on fait reviennent pour des projets plus complexes, pas pour du dépannage de base, et peuvent ainsi mieux servir leur mission et leur communauté.
+          Partager la connaissance ne nous fait pas perdre du travail. Au contraire, cela crée de la
+          confiance et renforce la solidarité. Les clients qui comprennent ce qu'on fait reviennent
+          pour des projets plus complexes, pas pour du dépannage de base, et peuvent ainsi mieux
+          servir leur mission et leur communauté.
         </p>
         <p>
-          La connaissance ne devrait pas être un monopole. Elle devrait circuler librement pour que tout le monde 
-          puisse progresser, surtout dans le secteur associatif où chaque compétence supplémentaire peut faire la différence et renforcer l'impact social.
+          La connaissance ne devrait pas être un monopole. Elle devrait circuler librement pour que
+          tout le monde puisse progresser, surtout dans le secteur associatif où chaque compétence
+          supplémentaire peut faire la différence et renforcer l'impact social.
         </p>
       </section>
 
       <section class="actions">
         <h2>Ce que nous faisons concrètement</h2>
         <ul>
-          <li>Nous <strong>documentons tout ce que nous créons</strong> : comment ça marche, comment le modifier, où trouver de l'aide, pour favoriser votre autonomie et votre mission d'intérêt général</li>
-          <li>Nous organisons des <strong>sessions de formation</strong> pour que vos équipes puissent maintenir les outils sans nous, surtout pour les structures associatives et d'intérêt général</li>
-          <li>Nous publions des <strong>guides et tutoriels librement accessibles</strong> sur les sujets que nous maîtrisons, dans une logique de partage, d'entraide et d'intérêt général</li>
-          <li>Nous partageons nos <strong>méthodes et nos templates</strong> pour que d'autres puissent les réutiliser, renforçant ainsi la solidarité entre structures et leur impact social</li>
-          <li>Nous écrivons du <strong>code lisible et commenté</strong>, pas du code qui nous rend indispensables, pour que vous puissiez évoluer librement et servir votre mission associative</li>
-          <li>Nous animons des <strong>ateliers gratuits</strong> pour diffuser les bonnes pratiques, surtout pour les petites structures et les associations</li>
+          <li>
+            Nous <strong>documentons tout ce que nous créons</strong> : comment ça marche, comment le
+            modifier, où trouver de l'aide, pour favoriser votre autonomie et votre mission d'intérêt
+            général
+          </li>
+          <li>
+            Nous organisons des <strong>sessions de formation</strong> pour que vos équipes puissent maintenir
+            les outils sans nous, surtout pour les structures associatives et d'intérêt général
+          </li>
+          <li>
+            Nous publions des <strong>guides et tutoriels librement accessibles</strong> sur les sujets
+            que nous maîtrisons, dans une logique de partage, d'entraide et d'intérêt général
+          </li>
+          <li>
+            Nous partageons nos <strong>méthodes et nos templates</strong> pour que d'autres puissent
+            les réutiliser, renforçant ainsi la solidarité entre structures et leur impact social
+          </li>
+          <li>
+            Nous écrivons du <strong>code lisible et commenté</strong>, pas du code qui nous rend
+            indispensables, pour que vous puissiez évoluer librement et servir votre mission
+            associative
+          </li>
+          <li>
+            Nous animons des <strong>ateliers gratuits</strong> pour diffuser les bonnes pratiques, surtout
+            pour les petites structures et les associations
+          </li>
         </ul>
       </section>
 
       <section class="examples-sharing">
         <h2>Concrètement, ça veut dire quoi ?</h2>
-        <p>Quand nous livrons un projet, vous recevez, dans une démarche d'intérêt général et solidaire :</p>
+        <p>
+          Quand nous livrons un projet, vous recevez, dans une démarche d'intérêt général et
+          solidaire :
+        </p>
         <ul>
           <li>Un <strong>guide d'utilisation</strong> en français, sans jargon technique</li>
-          <li>Une <strong>documentation technique</strong> pour qu'un autre développeur puisse reprendre le code</li>
+          <li>
+            Une <strong>documentation technique</strong> pour qu'un autre développeur puisse reprendre
+            le code
+          </li>
           <li>Un <strong>temps de formation</strong> pour vos équipes, inclus</li>
-          <li>Les <strong>accès complets</strong> aux outils, aux codes sources, aux bases de données</li>
-          <li>Une <strong>liste de ressources</strong> pour aller plus loin si vous le souhaitez</li>
+          <li>
+            Les <strong>accès complets</strong> aux outils, aux codes sources, aux bases de données
+          </li>
+          <li>
+            Une <strong>liste de ressources</strong> pour aller plus loin si vous le souhaitez
+          </li>
         </ul>
-        <p class="note">Si vous partez, vous partez avec tout. C'est normal, surtout quand on agit dans une logique d'intérêt général et de solidarité.</p>
+        <p class="note">
+          Si vous partez, vous partez avec tout. C'est normal, surtout quand on agit dans une
+          logique d'intérêt général et de solidarité.
+        </p>
       </section>
 
       <section class="impact">
         <h2>Pourquoi c'est important</h2>
         <p>
-          Les petites structures n'ont pas les moyens de dépendre éternellement d'un prestataire, surtout quand elles agissent dans une logique d'intérêt général et solidaire. 
-          Elles doivent pouvoir gérer leurs outils au quotidien, faire évoluer leurs systèmes, 
-          et changer de partenaire si elles le souhaitent, pour mieux servir leur mission et leur communauté.
+          Les petites structures n'ont pas les moyens de dépendre éternellement d'un prestataire,
+          surtout quand elles agissent dans une logique d'intérêt général et solidaire. Elles
+          doivent pouvoir gérer leurs outils au quotidien, faire évoluer leurs systèmes, et changer
+          de partenaire si elles le souhaitent, pour mieux servir leur mission et leur communauté.
         </p>
         <p>
-          Partager la connaissance, c'est aussi favoriser la montée en compétences et la solidarité. Une personne formée aujourd'hui 
-          pourra former quelqu'un d'autre demain. C'est comme ça qu'un écosystème se développe, surtout dans le secteur associatif et d'intérêt général.
+          Partager la connaissance, c'est aussi favoriser la montée en compétences et la solidarité.
+          Une personne formée aujourd'hui pourra former quelqu'un d'autre demain. C'est comme ça
+          qu'un écosystème se développe, surtout dans le secteur associatif et d'intérêt général.
         </p>
         <p>
-          Enfin, c'est une question d'éthique et de solidarité. Vous nous payez pour un travail. Ce travail devrait vous appartenir 
-          complètement, pas partiellement, surtout quand il sert une mission d'intérêt général et de solidarité.
+          Enfin, c'est une question d'éthique et de solidarité. Vous nous payez pour un travail. Ce
+          travail devrait vous appartenir complètement, pas partiellement, surtout quand il sert une
+          mission d'intérêt général et de solidarité.
         </p>
       </section>
 
       <section class="transparency">
         <h2>Notre philosophie de la documentation</h2>
         <p>
-          Nous publions régulièrement des guides sur notre site. Certains disent que c'est « donner le bâton pour se faire battre », 
-          que les gens vont faire eux-mêmes au lieu de nous payer, surtout dans le secteur associatif où chaque euro compte pour la mission.
+          Nous publions régulièrement des guides sur notre site. Certains disent que c'est « donner
+          le bâton pour se faire battre », que les gens vont faire eux-mêmes au lieu de nous payer,
+          surtout dans le secteur associatif où chaque euro compte pour la mission.
         </p>
         <p>
-          Nous pensons le contraire. Les personnes qui peuvent se débrouiller seules le feront de toute façon.
-          Celles qui ont besoin d'aide apprécient de travailler avec quelqu'un qui partage sa connaissance plutôt 
-          que de la garder secrète, surtout quand il s'agit de servir une cause commune et d'intérêt général.
+          Nous pensons le contraire. Les personnes qui peuvent se débrouiller seules le feront de
+          toute façon. Celles qui ont besoin d'aide apprécient de travailler avec quelqu'un qui
+          partage sa connaissance plutôt que de la garder secrète, surtout quand il s'agit de servir
+          une cause commune et d'intérêt général.
         </p>
         <p>
-          Et franchement, si quelqu'un apprend assez pour ne plus avoir besoin de nous, c'est qu'on a bien fait notre travail, surtout quand cela renforce l'autonomie de structures engagées et leur mission d'intérêt général.
+          Et franchement, si quelqu'un apprend assez pour ne plus avoir besoin de nous, c'est qu'on
+          a bien fait notre travail, surtout quand cela renforce l'autonomie de structures engagées
+          et leur mission d'intérêt général.
         </p>
       </section>
 
       <section class="cta">
         <div class="cta-content">
           <h2>Vous voulez apprendre ?</h2>
-          <p>Consultez nos ressources libres ou rejoignez un de nos ateliers. Pas d'inscription, pas de vente forcée, dans une démarche d'entraide, de solidarité et d'intérêt général.</p>
+          <p>
+            Consultez nos ressources libres ou rejoignez un de nos ateliers. Pas d'inscription, pas
+            de vente forcée, dans une démarche d'entraide, de solidarité et d'intérêt général.
+          </p>
           <div class="cta-buttons">
             <a href="/ressources" class="button">Accéder aux ressources</a>
-            <a href="/atelier" class="button-secondary">Voir les prochains ateliers</a>
+            <a href="/services" class="button-secondary">Voir nos services</a>
           </div>
         </div>
       </section>
@@ -247,7 +317,7 @@ import Breadcrumb from '@/components/Breadcrumb.astro';
   .actions ul li::before,
   .examples ul li::before,
   .examples-sharing ul li::before {
-    content: "→";
+    content: '→';
     position: absolute;
     left: 0;
     color: #4a5568;
@@ -295,7 +365,10 @@ import Breadcrumb from '@/components/Breadcrumb.astro';
     border-radius: 8px;
     font-weight: 600;
     font-size: 1rem;
-    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    transition:
+      transform 0.2s ease,
+      box-shadow 0.2s ease,
+      border-color 0.2s ease;
     border: 2px solid transparent;
   }
 

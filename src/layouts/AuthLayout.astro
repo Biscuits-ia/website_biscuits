@@ -7,7 +7,6 @@ import '@/styles/theme.css';
 import '@/styles/global.css';
 import '@/styles/auth.css';
 
-
 export interface Props {
   title: string;
   description: string;
@@ -31,9 +30,7 @@ const {
 
 const siteUrl = import.meta.env.SITE || 'https://biscuits-ia.com';
 
-const fullCanonical = canonical 
-  ? `${siteUrl}${canonical}` 
-  : `${siteUrl}${Astro.url.pathname}`;
+const fullCanonical = canonical ? `${siteUrl}${canonical}` : `${siteUrl}${Astro.url.pathname}`;
 
 const fullTitle = title.includes('|') ? title : `${title} | Biscuits IA`;
 
@@ -41,28 +38,28 @@ const isProd = import.meta.env.PROD;
 const nonce = Astro.locals.nonce;
 ---
 
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fr" dir="ltr">
-<head>
-  <BaseHead
-    fullTitle={fullTitle}
-    description={description}
-    fullCanonical={fullCanonical}
-    siteUrl={siteUrl}
-    ogImage={ogImage}
-    ogType={ogType}
-    schema={schema}
-    isProd={isProd}
-    nonce={nonce}
-  />
-</head>
+  <head>
+    <BaseHead
+      fullTitle={fullTitle}
+      description={description}
+      fullCanonical={fullCanonical}
+      siteUrl={siteUrl}
+      ogImage={ogImage}
+      ogType={ogType}
+      noindex={true}
+      schema={schema}
+      isProd={isProd}
+      nonce={nonce}
+    />
+  </head>
 
-<body>
+  <body>
+    <Header />
 
-  <Header />
-
-  <slot />
+    <slot />
 
     <Footer />
-</body>
+  </body>
 </html>

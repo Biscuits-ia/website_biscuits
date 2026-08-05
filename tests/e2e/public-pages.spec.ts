@@ -44,7 +44,9 @@ test.describe('Pages publiques critiques', () => {
     // Un champ email et un bouton de soumission : c'est le minimum
     // pour qu'un utilisateur bloque puisse demander un lien de reset.
     await expect(page.getByLabel(/email/i).first()).toBeVisible();
-    await expect(page.getByRole('button', { name: /envoyer|reinitialiser|recevoir/i })).toBeVisible();
+    await expect(
+      page.getByRole('button', { name: /envoyer|reinitialiser|recevoir/i })
+    ).toBeVisible();
   });
 
   test('/inscription se charge et presente le formulaire', async ({ page }) => {
@@ -54,6 +56,8 @@ test.describe('Pages publiques critiques', () => {
     // Meme minimum : email + bouton. Le reste du formulaire (mot de
     // passe, organisation...) peut evoluer sans casser le test.
     await expect(page.getByLabel(/email/i).first()).toBeVisible();
-    await expect(page.getByRole('button', { name: /inscrire|inscription|compte|cr[eé]er/i })).toBeVisible();
+    await expect(
+      page.getByRole('button', { name: /inscrire|inscription|compte|cr[eé]er/i })
+    ).toBeVisible();
   });
 });

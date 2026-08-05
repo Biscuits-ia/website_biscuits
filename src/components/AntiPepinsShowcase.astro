@@ -6,7 +6,7 @@ const arnaques = [
   'Phishing bancaire',
   'Smishing de livraison',
   'Faux support Microsoft',
-  'Fausse offre d\'emploi',
+  "Fausse offre d'emploi",
   'Arnaque au president',
   'Hameconnage sentimental',
 ];
@@ -18,7 +18,10 @@ const arnaques = [
       <p class="ap-eyebrow">Pilier 3 - Service public</p>
       <h2 id="ap-title">Anti Pepins : votre garde-fou contre les arnaques</h2>
       <p class="ap-lead">
-        Un SMS douteux, un mail suspect, un lien inconnu : <strong>collez-le dans Anti Pepins</strong>, on vous dit en quelques secondes s'il s'agit d'une arnaque. Gratuit, anonyme, sans inscription.
+        Un SMS douteux, un mail suspect, un lien inconnu : <strong
+          >collez-le dans Anti Pepins</strong
+        >, on vous dit en quelques secondes s'il s'agit d'une arnaque. Gratuit, anonyme, sans
+        inscription.
       </p>
 
       <div class="ap-types">
@@ -44,7 +47,12 @@ const arnaques = [
       </div>
 
       <div class="ap-actions">
-        <a href="https://anti-pepins.biscuits-ia.com/" class="ap-btn-primary" rel="noopener noreferrer" target="_blank">
+        <a
+          href="https://anti-pepins.biscuits-ia.com/"
+          class="ap-btn-primary"
+          rel="noopener noreferrer"
+          target="_blank"
+        >
           Ouvrir Anti Pepins
           <span class="ap-ext" aria-hidden="true">↗</span>
         </a>
@@ -57,7 +65,11 @@ const arnaques = [
 <style>
   .ap-section {
     padding: 5rem 1.5rem;
-    background: linear-gradient(135deg, var(--color-accent-caramel) 0%, var(--color-secondary) 100%);
+    background: linear-gradient(
+      135deg,
+      var(--color-accent-caramel) 0%,
+      var(--color-secondary) 100%
+    );
     color: var(--color-text);
     position: relative;
     overflow: hidden;
@@ -70,7 +82,13 @@ const arnaques = [
     left: 0;
     right: 0;
     bottom: 0;
-    background-image: repeating-linear-gradient(45deg, transparent, transparent 40px, rgba(255, 255, 255, 0.05) 40px, rgba(255, 255, 255, 0.05) 80px);
+    background-image: repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 40px,
+      rgba(255, 255, 255, 0.05) 40px,
+      rgba(255, 255, 255, 0.05) 80px
+    );
     pointer-events: none;
   }
 
@@ -191,7 +209,9 @@ const arnaques = [
     border: 2px solid var(--color-border);
     text-decoration: none;
     box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.3);
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    transition:
+      transform 0.15s ease,
+      box-shadow 0.15s ease;
   }
 
   .ap-btn-primary:hover {

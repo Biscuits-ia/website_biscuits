@@ -48,13 +48,13 @@ export const POST: APIRoute = async (Astro) => {
     .from('software')
     .update({
       name,
-      description:    sanitize(form.get('description'), 1000),
-      category:       sanitize(form.get('category'), 60),
-      logo_url:       sanitize(form.get('logo_url'), 500),
-      download_url:   sanitize(form.get('download_url'), 500),
-      website_url:    sanitize(form.get('website_url'), 500),
-      is_free:        isChecked(form.get('is_free')),
-      is_visible:     isChecked(form.get('is_visible')),
+      description: sanitize(form.get('description'), 1000),
+      category: sanitize(form.get('category'), 60),
+      logo_url: sanitize(form.get('logo_url'), 500),
+      download_url: sanitize(form.get('download_url'), 500),
+      website_url: sanitize(form.get('website_url'), 500),
+      is_free: isChecked(form.get('is_free')),
+      is_visible: isChecked(form.get('is_visible')),
     })
     .eq('id', id);
 

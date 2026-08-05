@@ -16,9 +16,7 @@ type ChangePasswordBody = {
  */
 function createSupabaseClientForLogin() {
   const url = import.meta.env.SUPABASE_URL;
-  const key =
-    import.meta.env.PUBLIC_SUPABASE_PUBLISHABLE_KEY ??
-    import.meta.env.SUPABASE_ANON_KEY;
+  const key = import.meta.env.PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? import.meta.env.SUPABASE_ANON_KEY;
   if (!url || !key) {
     throw new Error('[auth] Configuration Supabase manquante.');
   }
@@ -54,10 +52,13 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
   }
 
   if (newPassword !== confirmPassword) {
-    return new Response(JSON.stringify({ message: 'Les nouveaux mots de passe ne correspondent pas.' }), {
-      status: 400,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    return new Response(
+      JSON.stringify({ message: 'Les nouveaux mots de passe ne correspondent pas.' }),
+      {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      }
+    );
   }
 
   const passwordError = validatePassword(newPassword);
@@ -73,7 +74,10 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
   const supabase = locals.supabase ?? createSupabaseClient({ request, cookies, locals });
 
   // Verifier que l'utilisateur est authentifie
-  const { data: { user }, error: userError } = await supabase.auth.getUser();
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
   if (userError || !user) {
     return new Response(JSON.stringify({ message: 'Utilisateur non authentifie.' }), {
       status: 401,
@@ -107,7 +111,8 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
   });
 
   if (error) {
-    return new Response(JSON.stringify({ message: 'Erreur lors du changement de mot de passe : ' + error.message }), {
+    console.error('[api/change-password] update failed:', error.message);
+    return new Response(JSON.stringify({ message: 'Erreur lors du changement de mot de passe.' }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' },
     });

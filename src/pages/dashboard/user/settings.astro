@@ -1,44 +1,99 @@
 ---
 import DashboardLayout from '../../../layouts/DashboardLayout.astro';
 import { requireAuth } from '../../../lib/auth';
+import {
+  MAX_ADDRESS,
+  MAX_DESCRIPTION,
+  MAX_EMAIL,
+  MAX_NAME,
+  MAX_ORGANIZATION,
+  MAX_PHONE,
+} from '../../../lib/validation';
 
 const result = await requireAuth(Astro);
 if (result instanceof Response) return result;
 
 const { user } = result;
-const userEmail    = user.email ?? '';
-const userName     = user.user_metadata?.full_name ?? userEmail.split('@')[0];
-const userPhone    = user.user_metadata?.phone ?? '';
-const userOrg      = user.user_metadata?.organization ?? '';
+const userEmail = user.email ?? '';
+const userName = user.user_metadata?.full_name ?? userEmail.split('@')[0];
+const userPhone = user.user_metadata?.phone ?? '';
+const userOrg = user.user_metadata?.organization ?? '';
 const emailConfirmed = !!user.email_confirmed_at;
+const emailStatus = Astro.url.searchParams.get('email');
 
 // Gestion des messages flash via query param
-const saved   = Astro.url.searchParams.get('saved')   === '1';
-const pwSaved = Astro.url.searchParams.get('pw')     === '1';
-const error   = Astro.url.searchParams.get('error')  ?? '';
-const assoc   = Astro.url.searchParams.get('assoc')  ?? '';
-const assocMsg = Astro.url.searchParams.get('msg')   ?? '';
+const saved = Astro.url.searchParams.get('saved') === '1';
+const pwSaved = Astro.url.searchParams.get('pw') === '1';
+const error = Astro.url.searchParams.get('error') ?? '';
+const assoc = Astro.url.searchParams.get('assoc') ?? '';
+const assocMsg = Astro.url.searchParams.get('msg') ?? '';
 ---
 
-<DashboardLayout title="Paramètres" activePage="settings" userName={userName} userEmail={userEmail} authResult={result}>
-
+<DashboardLayout
+  title="Paramètres"
+  activePage="settings"
+  userName={userName}
+  userEmail={userEmail}
+  authResult={result}
+>
   <div class="container w-full mb-6 text-center">
-    <h1 class="text-xl font-bold tracking-tight text-primary">
-      Paramètres du compte
-    </h1>
+    <h1 class="text-xl font-bold tracking-tight text-primary">Paramètres du compte</h1>
     <p class="text-muted text-lg mt-1">
       Gérez vos informations personnelles et la sécurité de votre compte.
     </p>
   </div>
 
-  {saved   && <div class="flash flash-ok"  role="alert">✓ Profil mis à jour avec succès.</div>}
-  {pwSaved && <div class="flash flash-ok" role="alert">✓ Mot de passe mis à jour.</div>}
-  {error   && <div class="flash flash-err" role="alert">✗ {decodeURIComponent(error)}</div>}
-  {assoc === 'ok'  && <div class="flash flash-ok"  role="alert">✓ {decodeURIComponent(assocMsg) || 'Profil association créé avec succès.'}</div>}
-  {assoc === 'err' && <div class="flash flash-err" role="alert">✗ {decodeURIComponent(assocMsg) || 'Erreur lors de la création du profil association.'}</div>}
+  {
+    saved && (
+      <div class="flash flash-ok" role="alert">
+        ✓ Profil mis à jour avec succès.
+      </div>
+    )
+  }
+  {
+    emailStatus === 'pending' && (
+      <div class="flash flash-ok" role="status">
+        Confirmez le changement depuis les messages envoyés à vos deux adresses email.
+      </div>
+    )
+  }
+  {
+    emailStatus === 'confirmed' && (
+      <div class="flash flash-ok" role="status">
+        ✓ Nouvelle adresse email confirmée.
+      </div>
+    )
+  }
+  {
+    pwSaved && (
+      <div class="flash flash-ok" role="alert">
+        ✓ Mot de passe mis à jour.
+      </div>
+    )
+  }
+  {
+    error && (
+      <div class="flash flash-err" role="alert">
+        ✗ {decodeURIComponent(error)}
+      </div>
+    )
+  }
+  {
+    assoc === 'ok' && (
+      <div class="flash flash-ok" role="alert">
+        ✓ {decodeURIComponent(assocMsg) || 'Profil association créé avec succès.'}
+      </div>
+    )
+  }
+  {
+    assoc === 'err' && (
+      <div class="flash flash-err" role="alert">
+        ✗ {decodeURIComponent(assocMsg) || 'Erreur lors de la création du profil association.'}
+      </div>
+    )
+  }
 
   <div class="flex flex-row gap-5 flex-wrap justify-between">
-
     <!-- Profil -->
     <div class="card flex-1">
       <div class="card-header">
@@ -49,7 +104,6 @@ const assocMsg = Astro.url.searchParams.get('msg')   ?? '';
       </div>
 
       <form method="POST" action="/auth/update-profile" class="flex flex-col gap-4">
-
         <div class="field">
           <label for="full_name">Nom complet</label>
           <input
@@ -59,6 +113,7 @@ const assocMsg = Astro.url.searchParams.get('msg')   ?? '';
             value={userName}
             placeholder="Votre nom complet"
             autocomplete="name"
+            maxlength={MAX_NAME}
             class="border border-border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
@@ -72,17 +127,38 @@ const assocMsg = Astro.url.searchParams.get('msg')   ?? '';
             value={userEmail}
             placeholder="vous@exemple.com"
             autocomplete="email"
+            maxlength={MAX_EMAIL}
             class="border border-border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
-          {!emailConfirmed && (
-            <span class="text-xs text-warn mt-1 font-mono">
-              ⚠ Vérifiez votre boîte mail pour confirmer cette adresse.
-            </span>
-          )}
+          {
+            !emailConfirmed && (
+              <span class="text-xs text-warn mt-1 font-mono">
+                ⚠ Vérifiez votre boîte mail pour confirmer cette adresse.
+              </span>
+            )
+          }
         </div>
 
         <div class="field">
-          <label for="phone">Téléphone <span class="text-muted font-normal">(optionnel)</span></label>
+          <label for="current_password_for_email"
+            >Mot de passe actuel <span class="text-muted font-normal"
+              >(uniquement si l'email change)</span
+            ></label
+          >
+          <input
+            type="password"
+            id="current_password_for_email"
+            name="current_password_for_email"
+            autocomplete="current-password"
+            maxlength="128"
+            class="border border-border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          />
+        </div>
+
+        <div class="field">
+          <label for="phone"
+            >Téléphone <span class="text-muted font-normal">(optionnel)</span></label
+          >
           <input
             type="tel"
             id="phone"
@@ -90,12 +166,15 @@ const assocMsg = Astro.url.searchParams.get('msg')   ?? '';
             value={userPhone}
             placeholder="+33 6 00 00 00 00"
             autocomplete="tel"
+            maxlength={MAX_PHONE}
             class="border border-border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
 
         <div class="field">
-          <label for="organization">Organisation <span class="text-muted font-normal">(optionnel)</span></label>
+          <label for="organization"
+            >Organisation <span class="text-muted font-normal">(optionnel)</span></label
+          >
           <input
             type="text"
             id="organization"
@@ -103,6 +182,7 @@ const assocMsg = Astro.url.searchParams.get('msg')   ?? '';
             value={userOrg}
             placeholder="Nom de votre association / structure"
             autocomplete="organization"
+            maxlength={MAX_ORGANIZATION}
             class="border border-border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
@@ -110,7 +190,6 @@ const assocMsg = Astro.url.searchParams.get('msg')   ?? '';
         <div>
           <button type="submit" class="btn btn-primary">Sauvegarder</button>
         </div>
-
       </form>
     </div>
 
@@ -131,28 +210,37 @@ const assocMsg = Astro.url.searchParams.get('msg')   ?? '';
             id="assoc_structure_name"
             name="structure_name"
             placeholder="Nom de votre association"
+            maxlength={MAX_NAME}
+            required
             class="border border-border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
 
         <div class="field">
-          <label for="assoc_siret">Numéro SIRET <span class="text-muted font-normal">(optionnel)</span></label>
+          <label for="assoc_siret"
+            >Numéro SIRET <span class="text-muted font-normal">(optionnel)</span></label
+          >
           <input
             type="text"
             id="assoc_siret"
             name="siret"
             placeholder="14 chiffres"
+            inputmode="numeric"
+            maxlength="14"
             class="border border-border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
 
         <div class="field">
-          <label for="assoc_rna">Numéro RNA <span class="text-muted font-normal">(optionnel)</span></label>
+          <label for="assoc_rna"
+            >Numéro RNA <span class="text-muted font-normal">(optionnel)</span></label
+          >
           <input
             type="text"
             id="assoc_rna"
             name="rna_number"
             placeholder="W123456789"
+            maxlength="10"
             class="border border-border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
@@ -164,6 +252,8 @@ const assocMsg = Astro.url.searchParams.get('msg')   ?? '';
             id="assoc_address"
             name="address"
             placeholder="123 rue Exemple, 75000 Paris"
+            maxlength={MAX_ADDRESS}
+            required
             class="border border-border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
@@ -175,6 +265,8 @@ const assocMsg = Astro.url.searchParams.get('msg')   ?? '';
             id="assoc_phone"
             name="phone_number"
             placeholder="+33 6 00 00 00 00"
+            maxlength={MAX_PHONE}
+            required
             class="border border-border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
@@ -186,19 +278,23 @@ const assocMsg = Astro.url.searchParams.get('msg')   ?? '';
             id="assoc_email"
             name="contact_email"
             placeholder="contact@votre-structure.fr"
+            maxlength={MAX_EMAIL}
+            required
             class="border border-border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
 
         <div class="field">
-          <label for="assoc_description">Description <span class="text-muted font-normal">(optionnel)</span></label>
+          <label for="assoc_description"
+            >Description <span class="text-muted font-normal">(optionnel)</span></label
+          >
           <textarea
             id="assoc_description"
             name="description"
             placeholder="Présentez brièvement votre structure..."
+            maxlength={MAX_DESCRIPTION}
             class="border border-border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            style="min-height: 80px; resize: vertical;"
-          ></textarea>
+            style="min-height: 80px; resize: vertical;"></textarea>
         </div>
 
         <div>
@@ -214,7 +310,6 @@ const assocMsg = Astro.url.searchParams.get('msg')   ?? '';
       </div>
 
       <form method="POST" action="/auth/update-password" class="flex flex-col gap-4">
-
         <div class="field">
           <label for="current_password">Mot de passe actuel</label>
           <input
@@ -237,9 +332,7 @@ const assocMsg = Astro.url.searchParams.get('msg')   ?? '';
             autocomplete="new-password"
             class="border border-border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
-          <span class="text-sm text-muted mt-1 font-mono">
-            Minimum 8 caractères.
-          </span>
+          <span class="text-sm text-muted mt-1 font-mono"> Minimum 8 caractères. </span>
         </div>
 
         <div class="field">
@@ -257,10 +350,8 @@ const assocMsg = Astro.url.searchParams.get('msg')   ?? '';
         <div>
           <button type="submit" class="btn btn-primary">Mettre à jour le mot de passe</button>
         </div>
-
       </form>
     </div>
-
   </div>
 
   <!-- Danger zone -->
@@ -269,19 +360,11 @@ const assocMsg = Astro.url.searchParams.get('msg')   ?? '';
       <span class="card-title text-err">Zone de danger</span>
     </div>
     <p class="text-lg text-secondary mb-4">
-      La suppression de votre compte est irréversible. Toutes vos données seront effacées définitivement.
+      La suppression de votre compte est irréversible. Toutes vos données seront effacées
+      définitivement.
     </p>
-    <form
-      id="delete-account-form"
-      method="POST"
-      action="/auth/delete-account"
-      class="inline"
-    >
-      <button
-        type="submit"
-        class="btn btn-danger"
-        data-confirm-delete="1"
-      >
+    <form id="delete-account-form" method="POST" action="/auth/delete-account" class="inline">
+      <button type="submit" class="btn btn-danger" data-confirm-delete="1">
         Supprimer mon compte
       </button>
     </form>
@@ -312,8 +395,7 @@ const assocMsg = Astro.url.searchParams.get('msg')   ?? '';
           if (redirect) {
             window.location.href = redirect;
           } else if (data && typeof data.error === 'string') {
-            window.location.href =
-              `/dashboard/user/settings?error=${encodeURIComponent(data.error)}`;
+            window.location.href = `/dashboard/user/settings?error=${encodeURIComponent(data.error)}`;
           } else {
             btn.disabled = false;
           }
@@ -324,13 +406,15 @@ const assocMsg = Astro.url.searchParams.get('msg')   ?? '';
       });
     }
 
-    bindAjaxForm('form[action="/auth/update-profile"]',   '/dashboard/user/settings?saved=1');
-    bindAjaxForm('form[action="/auth/update-password"]',  '/dashboard/user/settings?pw=1');
+    bindAjaxForm('form[action="/auth/update-profile"]', '/dashboard/user/settings?saved=1');
+    bindAjaxForm('form[action="/auth/update-password"]', '/dashboard/user/settings?pw=1');
     /* Confirmation native avant suppression du compte (defense anti-CSRF) */
     const delForm = document.querySelector('form#delete-account-form');
     if (delForm instanceof HTMLFormElement) {
       delForm.addEventListener('submit', (e) => {
-        if (!window.confirm('Supprimer definitivement votre compte ? Cette action est irreversible.')) {
+        if (
+          !window.confirm('Supprimer definitivement votre compte ? Cette action est irreversible.')
+        ) {
           e.preventDefault();
           return;
         }
@@ -355,11 +439,10 @@ const assocMsg = Astro.url.searchParams.get('msg')   ?? '';
           });
           const data = await res.json().catch(() => ({}));
           const status = res.ok ? 'ok' : 'err';
-          const msg    = res.ok
+          const msg = res.ok
             ? (data.message ?? 'Profil association créé avec succès.')
-            : (data.error   ?? 'Erreur lors de la création du profil.');
-          window.location.href =
-            `/dashboard/user/settings?assoc=${status}&msg=${encodeURIComponent(msg)}`;
+            : (data.error ?? 'Erreur lors de la création du profil.');
+          window.location.href = `/dashboard/user/settings?assoc=${status}&msg=${encodeURIComponent(msg)}`;
         } catch (err) {
           console.error('Association form submit failed:', err);
           btn.disabled = false;
@@ -391,6 +474,14 @@ const assocMsg = Astro.url.searchParams.get('msg')   ?? '';
     border: var(--brutal-border-thin);
     box-shadow: var(--shadow-sm);
   }
-  .flash-ok  { background: var(--ok-bg);  color: var(--ok-fg);  border-color: var(--ok); }
-  .flash-err { background: var(--err-bg); color: var(--err-fg); border-color: var(--err); }
+  .flash-ok {
+    background: var(--ok-bg);
+    color: var(--ok-fg);
+    border-color: var(--ok);
+  }
+  .flash-err {
+    background: var(--err-bg);
+    color: var(--err-fg);
+    border-color: var(--err);
+  }
 </style>

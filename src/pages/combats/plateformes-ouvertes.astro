@@ -1,45 +1,68 @@
----export const prerender = true;
-
-
+---
+export const prerender = true;
 
 import BaseLayout from '@/layouts/Layout.astro';
 import Breadcrumb from '@/components/Breadcrumb.astro';
 ---
 
-<BaseLayout 
+<BaseLayout
   title="Souveraineté Numérique : Reprendre les clés de vos outils | Biscuits IA"
   description="Nous encourageons les solutions ouvertes et ma®trisables pour éviter que les petites structures ne deviennent prisonnières de leurs outils."
 >
   <article class="combat-page">
-  <Breadcrumb />
+    <Breadcrumb />
     <div class="container">
       <header class="hero">
         <div class="hero-content">
           <h1>Souveraineté Numérique : Reprendre les clés de vos outils</h1>
-          <p class="subtitle">Garder le contrôle de vos données et de vos outils, surtout pour les structures à but non lucratif, d'intérêt général, solidaires et d'entraide</p>
+          <p class="subtitle">
+            Garder le contrôle de vos données et de vos outils, surtout pour les structures à but
+            non lucratif, d'intérêt général, solidaires et d'entraide
+          </p>
         </div>
       </header>
 
       <section class="problem">
         <h2>Le problème</h2>
         <p>
-          Vous commencez avec un outil gratuit ou peu coûteux. Vous y entrez vos contacts, vos documents, vos processus.
-          Après quelques mois, tout votre fonctionnement repose dessus. Et là, les prix augmentent. Ou les conditions changent. 
-          Ou le service ferme. Et vous êtes coincés, surtout quand votre budget est limité et que votre mission d'intérêt général, associative et solidaire en pâtissent.
+          Vous commencez avec un outil gratuit ou peu coûteux. Vous y entrez vos contacts, vos
+          documents, vos processus. Après quelques mois, tout votre fonctionnement repose dessus. Et
+          là, les prix augmentent. Ou les conditions changent. Ou le service ferme. Et vous êtes
+          coincés, surtout quand votre budget est limité et que votre mission d'intérêt général,
+          associative et solidaire en pâtissent.
         </p>
         <p>
-          C'est le piège du « lock-in » : vous ne pouvez plus partir sans tout reconstruire de zéro. 
-          Vos données sont dans un format propriétaire. Vos automatisations ne fonctionnent que sur cette plateforme. 
-          Impossible de migrer facilement, surtout quand vous n'avez pas les ressources pour tout refaire et que cela compromet votre action associative, votre mission d'intérêt général et votre communauté.
+          C'est le piège du « lock-in » : vous ne pouvez plus partir sans tout reconstruire de zéro.
+          Vos données sont dans un format propriétaire. Vos automatisations ne fonctionnent que sur
+          cette plateforme. Impossible de migrer facilement, surtout quand vous n'avez pas les
+          ressources pour tout refaire et que cela compromet votre action associative, votre mission
+          d'intérêt général et votre communauté.
         </p>
-        
+
         <div class="examples">
           <h3>Cas vécus</h3>
           <ul>
-          <li>Une association qui a vu son abonnement passer de 30 € à 150 € par mois après 2 ans d'utilisation, avec 3 000 contacts déjà enregistrés, alors que son budget est limité et que ces fonds pourraient servir à son action associative, à sa mission d'intérêt général et à sa communauté</li>
-          <li>Une collectivité dont l'outil de gestion a été racheté et qui a dû tout refaire car les nouvelles conditions étaient inacceptables, au détriment de son service aux usagers et de son autonomie</li>
-          <li>Un collectif qui a perdu l'accès à ses archives quand un service a fermé sans préavis, compromettant ainsi son action collective, son engagement d'intérêt général et son impact social</li>
-          <li>Une collectivités qui paie des fonctionnalités dont elle n'a pas besoin car impossible de garder seulement ce qui l'intéresse, alors que ces fonds pourraient servir à des projets d'intérêt général, de solidarité et d'entraide</li>
+            <li>
+              Une association qui a vu son abonnement passer de 30 € à 150 € par mois après 2 ans
+              d'utilisation, avec 3 000 contacts déjà enregistrés, alors que son budget est limité
+              et que ces fonds pourraient servir à son action associative, à sa mission d'intérêt
+              général et à sa communauté
+            </li>
+            <li>
+              Une collectivité dont l'outil de gestion a été racheté et qui a dû tout refaire car
+              les nouvelles conditions étaient inacceptables, au détriment de son service aux
+              usagers et de son autonomie
+            </li>
+            <li>
+              Un collectif qui a perdu l'accès à ses archives quand un service a fermé sans préavis,
+              compromettant ainsi son action collective, son engagement d'intérêt général et son
+              impact social
+            </li>
+            <li>
+              Une collectivités qui paie des fonctionnalités dont elle n'a pas besoin car impossible
+              de garder seulement ce qui l'intéresse, alors que ces fonds pourraient servir à des
+              projets d'intérêt général, de solidarité et d'entraide
+            </li>
           </ul>
         </div>
       </section>
@@ -47,62 +70,103 @@ import Breadcrumb from '@/components/Breadcrumb.astro';
       <section class="position">
         <h2>Notre position</h2>
         <p>
-          Nous privilégions les solutions qui vous laissent ma®tres de vos données et de votre organisation, surtout pour les structures à but non lucratif, d'intérêt général et solidaires. 
-          Cela ne veut pas dire tout faire soi-même, mais choisir des outils qui permettent de partir si besoin, sans compromettre votre mission associative, votre action d'intérêt général et votre autonomie.
+          Nous privilégions les solutions qui vous laissent ma®tres de vos données et de votre
+          organisation, surtout pour les structures à but non lucratif, d'intérêt général et
+          solidaires. Cela ne veut pas dire tout faire soi-même, mais choisir des outils qui
+          permettent de partir si besoin, sans compromettre votre mission associative, votre action
+          d'intérêt général et votre autonomie.
         </p>
         <p>
-          Un bon outil devrait pouvoir exporter vos données dans un format standard, surtout quand elles servent une mission d'intérêt général, associative et solidaire. 
-          Il devrait fonctionner avec d'autres services. Il devrait être clair sur ce qu'il fait de vos informations, pour garantir la transparence, la solidarité et l'entraide.
+          Un bon outil devrait pouvoir exporter vos données dans un format standard, surtout quand
+          elles servent une mission d'intérêt général, associative et solidaire. Il devrait
+          fonctionner avec d'autres services. Il devrait être clair sur ce qu'il fait de vos
+          informations, pour garantir la transparence, la solidarité et l'entraide.
         </p>
         <p>
-          Nous ne sommes pas contre les plateformes en soi. Nous sommes contre le fait qu'elles vous enferment 
-          et vous rendent dépendants, surtout quand cela compromet votre action associative, votre activité, votre mission d'intérêt général et votre communauté.
+          Nous ne sommes pas contre les plateformes en soi. Nous sommes contre le fait qu'elles vous
+          enferment et vous rendent dépendants, surtout quand cela compromet votre action
+          associative, votre activité, votre mission d'intérêt général et votre communauté.
         </p>
       </section>
 
       <section class="actions">
         <h2>Ce que nous faisons concrètement</h2>
         <ul>
-          <li>Nous recommandons des <strong>solutions open-source</strong> quand elles existent et sont adaptées, surtout pour les structures à but non lucratif, d'intérêt général et solidaires</li>
-          <li>Nous aidons à <strong>exporter et migrer les données</strong> depuis des plateformes propriétaires, pour préserver votre autonomie, votre mission d'intérêt général et votre solidarité</li>
-          <li>Nous utilisons des <strong>formats standards</strong> (CSV, JSON, Markdown) pour que vos données restent lisibles partout, surtout quand elles servent une mission d'intérêt général, associative et solidaire</li>
-          <li>Nous documentons les <strong>alternatives aux outils fermés</strong> les plus courants, en privilégiant les solutions accessibles, solidaires et d'intérêt général</li>
-          <li>Nous créons des <strong>ponts entre services</strong> pour que vous ne soyez pas limités à un seul écosystème, favorisant ainsi la solidarité, l'entraide et l'autonomie</li>
-          <li>Nous évaluons la <strong>portabilité des solutions</strong> avant de les recommander, pour éviter les dépendances coûteuses et préserver votre mission associative et d'intérêt général</li>
+          <li>
+            Nous recommandons des <strong>solutions open-source</strong> quand elles existent et sont
+            adaptées, surtout pour les structures à but non lucratif, d'intérêt général et solidaires
+          </li>
+          <li>
+            Nous aidons à <strong>exporter et migrer les données</strong> depuis des plateformes propriétaires,
+            pour préserver votre autonomie, votre mission d'intérêt général et votre solidarité
+          </li>
+          <li>
+            Nous utilisons des <strong>formats standards</strong> (CSV, JSON, Markdown) pour que vos données
+            restent lisibles partout, surtout quand elles servent une mission d'intérêt général, associative
+            et solidaire
+          </li>
+          <li>
+            Nous documentons les <strong>alternatives aux outils fermés</strong> les plus courants, en
+            privilégiant les solutions accessibles, solidaires et d'intérêt général
+          </li>
+          <li>
+            Nous créons des <strong>ponts entre services</strong> pour que vous ne soyez pas limités à
+            un seul écosystème, favorisant ainsi la solidarité, l'entraide et l'autonomie
+          </li>
+          <li>
+            Nous évaluons la <strong>portabilité des solutions</strong> avant de les recommander, pour
+            éviter les dépendances coûteuses et préserver votre mission associative et d'intérêt général
+          </li>
         </ul>
       </section>
 
       <section class="impact">
         <h2>Pourquoi c'est important</h2>
         <p>
-          La dépendance aux plateformes fermées crée une vulnérabilité économique, surtout pour les structures à but non lucratif, d'intérêt général et solidaires. Quand un fournisseur sait que vous ne pouvez pas partir, 
-          il peut augmenter ses prix ou dégrader son service sans crainte de vous perdre, compromettant ainsi votre mission d'intérêt général et associative.
+          La dépendance aux plateformes fermées crée une vulnérabilité économique, surtout pour les
+          structures à but non lucratif, d'intérêt général et solidaires. Quand un fournisseur sait
+          que vous ne pouvez pas partir, il peut augmenter ses prix ou dégrader son service sans
+          crainte de vous perdre, compromettant ainsi votre mission d'intérêt général et
+          associative.
         </p>
         <p>
-          C'est aussi une question de pérennité, de solidarité et d'entraide. Une petite structure qui existe depuis 20 ans peut se retrouver bloquée 
-          parce qu'un outil sur lequel elle comptait dispara®t ou change de modèle économique, au détriment de son action associative et de son engagement d'intérêt général.
+          C'est aussi une question de pérennité, de solidarité et d'entraide. Une petite structure
+          qui existe depuis 20 ans peut se retrouver bloquée parce qu'un outil sur lequel elle
+          comptait dispara®t ou change de modèle économique, au détriment de son action associative
+          et de son engagement d'intérêt général.
         </p>
         <p>
-          Enfin, c'est une question de souveraineté, de responsabilité et de solidarité. Vos données vous appartiennent, surtout quand elles servent une mission d'intérêt général, associative et solidaire. Vous devriez pouvoir les récupérer, 
-          les déplacer, les utiliser comme bon vous semble, sans dépendre d'un fournisseur et sans compromettre votre action.
+          Enfin, c'est une question de souveraineté, de responsabilité et de solidarité. Vos données
+          vous appartiennent, surtout quand elles servent une mission d'intérêt général, associative
+          et solidaire. Vous devriez pouvoir les récupérer, les déplacer, les utiliser comme bon
+          vous semble, sans dépendre d'un fournisseur et sans compromettre votre action.
         </p>
       </section>
 
       <section class="transparency">
         <h2>Notre propre approche</h2>
         <p>
-          Nous appliquons ces principes à nos propres services, surtout pour les structures à but non lucratif, d'intérêt général et solidaires. Les solutions que nous développons utilisent des formats ouverts. 
-          Les données que vous nous confiez restent exportables. Si vous voulez partir, nous vous aidons à le faire proprement, dans une démarche d'entraide et de solidarité.
+          Nous appliquons ces principes à nos propres services, surtout pour les structures à but
+          non lucratif, d'intérêt général et solidaires. Les solutions que nous développons
+          utilisent des formats ouverts. Les données que vous nous confiez restent exportables. Si
+          vous voulez partir, nous vous aidons à le faire proprement, dans une démarche d'entraide
+          et de solidarité.
         </p>
         <p>
-          Nous préférons gagner votre confiance par la qualité de notre travail plutôt que par votre impossibilité de changer de prestataire, surtout quand votre mission d'intérêt général, associative et solidaire est en jeu.
+          Nous préférons gagner votre confiance par la qualité de notre travail plutôt que par votre
+          impossibilité de changer de prestataire, surtout quand votre mission d'intérêt général,
+          associative et solidaire est en jeu.
         </p>
       </section>
 
       <section class="cta">
         <div class="cta-content">
           <h2>Vous voulez reprendre le contrôle ?</h2>
-          <p>Nous pouvons vous aider à évaluer vos outils actuels et à identifier des alternatives plus ouvertes, pour préserver votre autonomie, votre mission d'intérêt général, votre action associative et votre solidarité.</p>
+          <p>
+            Nous pouvons vous aider à évaluer vos outils actuels et à identifier des alternatives
+            plus ouvertes, pour préserver votre autonomie, votre mission d'intérêt général, votre
+            action associative et votre solidarité.
+          </p>
           <div class="cta-buttons">
             <a href="/services" class="button">Demander un audit</a>
             <a href="/ressources" class="button-secondary">Voir le comparatif des alternatives</a>
@@ -210,7 +274,7 @@ import Breadcrumb from '@/components/Breadcrumb.astro';
 
   .actions ul li::before,
   .examples ul li::before {
-    content: "→";
+    content: '→';
     position: absolute;
     left: 0;
     color: #4a5568;
@@ -256,7 +320,10 @@ import Breadcrumb from '@/components/Breadcrumb.astro';
     text-decoration: none;
     font-weight: 600;
     font-size: 1rem;
-    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    transition:
+      transform 0.2s ease,
+      box-shadow 0.2s ease,
+      border-color 0.2s ease;
     border: 2px solid transparent;
   }
 

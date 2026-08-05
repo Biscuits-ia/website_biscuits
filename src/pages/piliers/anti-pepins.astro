@@ -11,8 +11,9 @@ const schema = {
   type: 'Service' as const,
   data: {
     serviceType: 'Service public anti-arnaques',
-    name: 'Anti Pepins - detecteur d\'arnaques',
-    description: 'Anti Pepins est un service public gratuit pour analyser un message suspect (SMS, mail, lien) et obtenir un avis immediat. Edite par Biscuits IA.',
+    name: "Anti Pepins - detecteur d'arnaques",
+    description:
+      'Anti Pepins est un service public gratuit pour analyser un message suspect (SMS, mail, lien) et obtenir un avis immediat. Edite par Biscuits IA.',
   },
 };
 ---
@@ -29,10 +30,16 @@ const schema = {
       <p class="eyebrow eyebrow-anti">Pilier 3</p>
       <h1>Anti Pepins : analysez vos messages suspects en quelques secondes</h1>
       <p class="lead">
-        Anti Pepins est notre service public : un site gratuit ou vous collez un SMS, un e-mail ou un lien recu, et l'outil vous dit en clair s'il s'agit d'une arnaque, et pourquoi. Edite et maintenu par Biscuits IA, en partenariat avec des associations de lutte contre les arnaques.
+        Anti Pepins est notre service public : un site gratuit ou vous collez un SMS, un e-mail ou
+        un lien recu, et l'outil vous dit en clair s'il s'agit d'une arnaque, et pourquoi. Edite et
+        maintenu par Biscuits IA, en partenariat avec des associations de lutte contre les arnaques.
       </p>
       <div class="hero-cta">
-        <a href="https://anti-pepins.biscuits-ia.com/" class="btn-primary btn-external" rel="noopener noreferrer">
+        <a
+          href="https://anti-pepins.biscuits-ia.com/"
+          class="btn-primary btn-external"
+          rel="noopener noreferrer"
+        >
           Ouvrir Anti Pepins
         </a>
         <a href="#comment-ca-marche" class="btn-ghost">Comment ca marche</a>
@@ -47,17 +54,26 @@ const schema = {
         <article class="step">
           <span class="step-num">1</span>
           <h3>Vous collez le message</h3>
-          <p>SMS douteux, mail suspect, lien inconnu : copiez-collez le contenu (ou l'URL) dans l'analyseur Anti Pepins.</p>
+          <p>
+            SMS douteux, mail suspect, lien inconnu : copiez-collez le contenu (ou l'URL) dans
+            l'analyseur Anti Pepins.
+          </p>
         </article>
         <article class="step">
           <span class="step-num">2</span>
           <h3>On analyse les signaux</h3>
-          <p>Anti Pepins verifie le domaine, la presence dans nos bases de signalements, les patterns connus (phishing, smishing, fausse livraison, faux support).</p>
+          <p>
+            Anti Pepins verifie le domaine, la presence dans nos bases de signalements, les patterns
+            connus (phishing, smishing, fausse livraison, faux support).
+          </p>
         </article>
         <article class="step">
           <span class="step-num">3</span>
           <h3>On vous dit quoi faire</h3>
-          <p>Vous recevez un avis clair : arnaque probable, douteux, ou probablement legitime. Et les bons reflexes a adopter.</p>
+          <p>
+            Vous recevez un avis clair : arnaque probable, douteux, ou probablement legitime. Et les
+            bons reflexes a adopter.
+          </p>
         </article>
       </div>
     </div>
@@ -69,7 +85,10 @@ const schema = {
       <div class="grid">
         <article class="card">
           <h3>100 % gratuit</h3>
-          <p>Le service est finance par Biscuits IA et ses partenaires associatifs. Aucun modele freemium, aucune pub, aucune revente de vos donnees.</p>
+          <p>
+            Le service est finance par Biscuits IA et ses partenaires associatifs. Aucun modele
+            freemium, aucune pub, aucune revente de vos donnees.
+          </p>
         </article>
         <article class="card">
           <h3>Rapide</h3>
@@ -77,11 +96,17 @@ const schema = {
         </article>
         <article class="card">
           <h3>Confidentiel</h3>
-          <p>Vos messages ne sont pas stockes. Anti Pepins n'envoie rien a des tiers et n'utilise pas vos donnees pour entrainer des modeles.</p>
+          <p>
+            Vos messages ne sont pas stockes. Anti Pepins n'envoie rien a des tiers et n'utilise pas
+            vos donnees pour entrainer des modeles.
+          </p>
         </article>
         <article class="card">
           <h3>Marque blanche pour associations</h3>
-          <p>Les associations de lutte contre les arnaques peuvent deployer Anti Pepins sur leur propre domaine, avec leurs couleurs et leur charte.</p>
+          <p>
+            Les associations de lutte contre les arnaques peuvent deployer Anti Pepins sur leur
+            propre domaine, avec leurs couleurs et leur charte.
+          </p>
           <a href="/contact?sujet=anti-pepins-wh">Devis marque blanche</a>
         </article>
       </div>
@@ -91,8 +116,14 @@ const schema = {
   <section class="signalements">
     <div class="container">
       <h2>Vous voulez signaler une nouvelle arnaque ?</h2>
-      <p>Anti Pepins apprend grace a la communaute. Si vous avez recu un message d'arnaque non reference, vous pouvez nous le transmettre. Notre equipe le verifie, puis l'ajoute a la base de detection.</p>
-      <a href="/contact?sujet=signalement-anti-pepins" class="btn-primary">Proposer un signalement</a>
+      <p>
+        Anti Pepins apprend grace a la communaute. Si vous avez recu un message d'arnaque non
+        reference, vous pouvez nous le transmettre. Notre equipe le verifie, puis l'ajoute a la base
+        de detection.
+      </p>
+      <a href="/contact?sujet=signalement-anti-pepins" class="btn-primary"
+        >Proposer un signalement</a
+      >
     </div>
   </section>
 </Layout>

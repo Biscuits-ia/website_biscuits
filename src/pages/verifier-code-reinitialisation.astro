@@ -3,127 +3,171 @@ import AuthLayout from '../layouts/AuthLayout.astro';
 import { createSupabaseClient } from '../lib/supabase';
 
 const supabase = createSupabaseClient(Astro);
-const { data: { user } } = await supabase.auth.getUser();
+const {
+  data: { user },
+} = await supabase.auth.getUser();
 if (user) return Astro.redirect('/dashboard/user');
 
 const nonce = Astro.locals.nonce;
 const prefilledEmail = (Astro.url.searchParams.get('email') ?? '').trim();
 ---
 
-<AuthLayout title="Vérifier le code" description="Entrez le code de vérification pour réinitialiser votre mot de passe.">
-	<div class="auth-shell">
-		<div class="auth-card-wrap">
-			<div class="auth-card">
-				<h1 class="auth-title">Vérifier le code</h1>
-				<p class="auth-lead">
-					Entrez le code reçu par email. Une fois validé, vous pourrez définir un nouveau mot de passe.
-				</p>
+<AuthLayout
+  title="Vérifier le code"
+  description="Entrez le code de vérification pour réinitialiser votre mot de passe."
+>
+  <div class="auth-shell">
+    <div class="auth-card-wrap">
+      <div class="auth-card">
+        <h1 class="auth-title">Vérifier le code</h1>
+        <p class="auth-lead">
+          Entrez le code reçu par email. Une fois validé, vous pourrez définir un nouveau mot de
+          passe.
+        </p>
 
-				<div class="auth-field-md">
-					<label for="email" class="auth-label">Adresse email</label>
-					<input type="email" id="email" placeholder="vous@exemple.com" autocomplete="email" class="auth-input" value={prefilledEmail} />
-				</div>
+        <div class="auth-field-md">
+          <label for="email" class="auth-label">Adresse email</label>
+          <input
+            type="email"
+            id="email"
+            placeholder="vous@exemple.com"
+            autocomplete="email"
+            class="auth-input"
+            value={prefilledEmail}
+          />
+        </div>
 
-				<div class="auth-field-lg">
-					<label for="token" class="auth-label">Code de vérification</label>
-					<input type="text" id="token" placeholder="123456" autocomplete="one-time-code" inputmode="numeric" class="auth-input" maxlength="10" />
-				</div>
+        <div class="auth-field-lg">
+          <label for="token" class="auth-label">Code de vérification</label>
+          <input
+            type="text"
+            id="token"
+            placeholder="123456"
+            autocomplete="one-time-code"
+            inputmode="numeric"
+            class="auth-input"
+            maxlength="10"
+          />
+        </div>
 
-				<button id="verify-btn" class="auth-btn-primary" type="button">
-					<span id="btn-text">Vérifier le code</span>
-					<svg id="btn-loader" class="auth-spinner auth-hidden" width="14" height="14"
-							 viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
-						<path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
-					</svg>
-				</button>
+        <button id="verify-btn" class="auth-btn-primary" type="button">
+          <span id="btn-text">Vérifier le code</span>
+          <svg
+            id="btn-loader"
+            class="auth-spinner auth-hidden"
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            aria-hidden="true"
+          >
+            <path
+              d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"
+            ></path>
+          </svg>
+        </button>
 
-				<div id="msg" class="auth-msg" hidden role="alert"></div>
+        <div id="msg" class="auth-msg" hidden role="alert"></div>
 
-				<div class="auth-back-row">
-					<a href="/mot-de-passe-oublie" class="auth-link-back">← Demander un nouveau code</a>
-				</div>
-			</div>
-		</div>
-	</div>
+        <div class="auth-back-row">
+          <a href="/mot-de-passe-oublie" class="auth-link-back">← Demander un nouveau code</a>
+        </div>
+      </div>
+    </div>
+  </div>
 </AuthLayout>
 
 <style>
-	/* Deltas propres a ce tunnel (brun oklch 53.958). Le reste vient de auth.css. */
-	.auth-lead { color: #7a6040; }
-	.auth-input:focus { border-color: oklch(53.958% 0.10717 58.243); }
-	.auth-input::placeholder { color: #c4b89a; }
-	.auth-btn-primary { background: oklch(53.958% 0.10717 58.243); }
-	.auth-btn-primary:hover { background: #754819; }
-	.auth-btn-primary:active { background: #8b5822; }
+  /* Deltas propres a ce tunnel (brun oklch 53.958). Le reste vient de auth.css. */
+  .auth-lead {
+    color: #7a6040;
+  }
+  .auth-input:focus {
+    border-color: oklch(53.958% 0.10717 58.243);
+  }
+  .auth-input::placeholder {
+    color: #c4b89a;
+  }
+  .auth-btn-primary {
+    background: oklch(53.958% 0.10717 58.243);
+  }
+  .auth-btn-primary:hover {
+    background: #754819;
+  }
+  .auth-btn-primary:active {
+    background: #8b5822;
+  }
 </style>
 
 <script is:inline nonce={nonce}>
-	const msgEl = document.getElementById('msg');
-	const btn = document.getElementById('verify-btn');
-	const btnText = document.getElementById('btn-text');
-	const btnLoader = document.getElementById('btn-loader');
-	const emailInput = document.getElementById('email');
-	const tokenInput = document.getElementById('token');
+  const msgEl = document.getElementById('msg');
+  const btn = document.getElementById('verify-btn');
+  const btnText = document.getElementById('btn-text');
+  const btnLoader = document.getElementById('btn-loader');
+  const emailInput = document.getElementById('email');
+  const tokenInput = document.getElementById('token');
 
-	function showMsg(text, type) {
-		if (type === undefined) type = 'error';
-		msgEl.textContent = text;
-		msgEl.className = 'auth-msg ' + type;
-		// `hidden` et non `style.display` : la regle agent-utilisateur du HTML est
-		// `[hidden] { display: none !important }`, et un !important d'agent bat un
-		// style inline. Le message restait donc invisible malgre son texte.
-		msgEl.hidden = false;
-	}
+  function showMsg(text, type) {
+    if (type === undefined) type = 'error';
+    msgEl.textContent = text;
+    msgEl.className = 'auth-msg ' + type;
+    // `hidden` et non `style.display` : la regle agent-utilisateur du HTML est
+    // `[hidden] { display: none !important }`, et un !important d'agent bat un
+    // style inline. Le message restait donc invisible malgre son texte.
+    msgEl.hidden = false;
+  }
 
-	function setLoading(loading) {
-		btn.disabled = loading;
-		btnText.style.display = loading ? 'none' : 'block';
-		btnLoader.style.display = loading ? 'block' : 'none';
-	}
+  function setLoading(loading) {
+    btn.disabled = loading;
+    btnText.style.display = loading ? 'none' : 'block';
+    btnLoader.style.display = loading ? 'block' : 'none';
+  }
 
-	async function handleVerify() {
-		const email = emailInput.value.trim().toLowerCase();
-		const token = tokenInput.value.trim();
+  async function handleVerify() {
+    const email = emailInput.value.trim().toLowerCase();
+    const token = tokenInput.value.trim();
 
-		msgEl.hidden = true;
+    msgEl.hidden = true;
 
-		if (!email) return showMsg('Veuillez entrer votre adresse email.');
-		if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return showMsg('Adresse email invalide.');
-		if (!token) return showMsg('Veuillez entrer le code reçu par email.');
-		if (!/^[0-9A-Za-z]{6,10}$/.test(token)) return showMsg('Code invalide.');
+    if (!email) return showMsg('Veuillez entrer votre adresse email.');
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return showMsg('Adresse email invalide.');
+    if (!token) return showMsg('Veuillez entrer le code reçu par email.');
+    if (!/^[0-9A-Za-z]{6,10}$/.test(token)) return showMsg('Code invalide.');
 
-		setLoading(true);
-		try {
-			const formData = new FormData();
-			formData.set('email', email);
-			formData.set('token', token);
+    setLoading(true);
+    try {
+      const formData = new FormData();
+      formData.set('email', email);
+      formData.set('token', token);
 
-			const res = await fetch('/auth/verifier-token-reinitialisation', {
-			method: 'POST',
-			body: formData,
-		});
+      const res = await fetch('/auth/verifier-token-reinitialisation', {
+        method: 'POST',
+        body: formData,
+      });
 
-			const data = await res.json();
-			if (!res.ok) {
-				return showMsg(data.error || 'Impossible de vérifier le code.');
-			}
+      const data = await res.json();
+      if (!res.ok) {
+        return showMsg(data.error || 'Impossible de vérifier le code.');
+      }
 
-			showMsg('Code vérifié. Redirection…', 'success');
-			setTimeout(function() {
-				window.location.href = '/reinitialisation-mot-de-passe';
-			}, 700);
-		} catch (err) {
-			showMsg('Une erreur est survenue. Veuillez réessayer.');
-		} finally {
-			setLoading(false);
-		}
-	}
+      showMsg('Code vérifié. Redirection…', 'success');
+      setTimeout(function () {
+        window.location.href = '/reinitialisation-mot-de-passe';
+      }, 700);
+    } catch (err) {
+      showMsg('Une erreur est survenue. Veuillez réessayer.');
+    } finally {
+      setLoading(false);
+    }
+  }
 
-	btn.addEventListener('click', handleVerify);
-	emailInput.addEventListener('keydown', function(e) {
-		if (e.key === 'Enter') handleVerify();
-	});
-	tokenInput.addEventListener('keydown', function(e) {
-		if (e.key === 'Enter') handleVerify();
-	});
+  btn.addEventListener('click', handleVerify);
+  emailInput.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') handleVerify();
+  });
+  tokenInput.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') handleVerify();
+  });
 </script>

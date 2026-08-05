@@ -4,7 +4,7 @@ declare global {
     gtag?: (
       command: 'event' | 'config' | 'set',
       targetOrAction: string,
-      params?: Record<string, any>
+      params?: Record<string, unknown>
     ) => void;
     loadGTMIfConsented?: () => void;
     /** Injecte le <link rel="preconnect"> vers GTM apres consentement. */
@@ -38,10 +38,10 @@ declare global {
   }
 
   interface WindowEventMap {
-    'cookieConsentUpdated': CustomEvent<{
+    cookieConsentUpdated: CustomEvent<{
       analytics: boolean;
     }>;
-    'showCookieBanner': Event;
+    showCookieBanner: Event;
   }
 }
 export {};

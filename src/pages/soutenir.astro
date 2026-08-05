@@ -45,7 +45,7 @@ const facons = [
     icon: '⚡',
     titre: 'Donner du temps',
     description:
-      "Benevolat technique, juridique, communication, evenementiel, terrain (agriculture, sante). Quelques heures par mois suffisent. On vous forme et on vous accompagne.",
+      'Benevolat technique, juridique, communication, evenementiel, terrain (agriculture, sante). Quelques heures par mois suffisent. On vous forme et on vous accompagne.',
     href: '/rejoignez-nous',
     externe: false,
     cta: 'Voir les besoins',
@@ -65,12 +65,11 @@ const facons = [
       <p class="eyebrow">Soutenir l'association</p>
       <h1>Une association Loi 1901, financee par ceux qui l'utilisent</h1>
       <p class="lead">
-        Biscuits IA est une association d'interet general. Nous ne cherchons pas la
-        croissance : nous cherchons l'impact. Nos tarifs (logiciels, ateliers,
-        accompagnements) sont calcules au plus juste pour financer la mission, pas pour
-        remunerer des actionnaires. Vos dons et votre temps completent ce financement
-        pour ce que le marche ne couvre pas : la recherche participative, l'acces
-        gratuit pour les publics vulnerables, et les ressources libres.
+        Biscuits IA est une association d'interet general. Nous ne cherchons pas la croissance :
+        nous cherchons l'impact. Nos tarifs (logiciels, ateliers, accompagnements) sont calcules au
+        plus juste pour financer la mission, pas pour remunerer des actionnaires. Vos dons et votre
+        temps completent ce financement pour ce que le marche ne couvre pas : la recherche
+        participative, l'acces gratuit pour les publics vulnerables, et les ressources libres.
       </p>
     </div>
   </section>
@@ -79,21 +78,29 @@ const facons = [
     <div class="container">
       <h2>Trois facons de nous aider</h2>
       <div class="ways-grid">
-        {facons.map((f) => (
-          <article class="way-card">
-            <span class="way-icon" aria-hidden="true">{f.icon}</span>
-            <h3>{f.titre}</h3>
-            <p>{f.description}</p>
-            <a
-              href={f.href}
-              class="way-cta"
-              {...(f.externe ? { rel: 'noopener noreferrer', target: '_blank' } : {})}
-            >
-              {f.cta}
-              {f.externe && <span class="way-ext" aria-hidden="true">↗</span>}
-            </a>
-          </article>
-        ))}
+        {
+          facons.map((f) => (
+            <article class="way-card">
+              <span class="way-icon" aria-hidden="true">
+                {f.icon}
+              </span>
+              <h3>{f.titre}</h3>
+              <p>{f.description}</p>
+              <a
+                href={f.href}
+                class="way-cta"
+                {...(f.externe ? { rel: 'noopener noreferrer', target: '_blank' } : {})}
+              >
+                {f.cta}
+                {f.externe && (
+                  <span class="way-ext" aria-hidden="true">
+                    ↗
+                  </span>
+                )}
+              </a>
+            </article>
+          ))
+        }
       </div>
     </div>
   </section>
@@ -102,31 +109,31 @@ const facons = [
     <div class="container">
       <h2>Pourquoi la recherche a besoin de vous</h2>
       <p>
-        Le 5e pilier de Biscuits IA, c'est la recherche participative et les modeles
-        ouverts au service de l'agriculture et de la sante. C'est aussi celui que le
-        marche finance le moins : pas de SaaS a vendre, pas de client direct a facturer.
-        Un modele ouvert, documente en francais, ne rapporte rien a court terme - mais
-        il peut aider des milliers de personnes a prendre de meilleures decisions.
+        Le 5e pilier de Biscuits IA, c'est la recherche participative et les modeles ouverts au
+        service de l'agriculture et de la sante. C'est aussi celui que le marche finance le moins :
+        pas de SaaS a vendre, pas de client direct a facturer. Un modele ouvert, documente en
+        francais, ne rapporte rien a court terme - mais il peut aider des milliers de personnes a
+        prendre de meilleures decisions.
       </p>
       <ul>
         <li>
-          <strong>Co-financer une etude.</strong> Une parcelle pilote, une enquete de
-          terrain, un prototype de modele : comptez 500 a 5000 EUR par projet selon
-          l'ampleur.
+          <strong>Co-financer une etude.</strong> Une parcelle pilote, une enquete de terrain, un prototype
+          de modele : comptez 500 a 5000 EUR par projet selon l'ampleur.
         </li>
         <li>
-          <strong>Financer une these ou un stage.</strong> 6 a 12 mois de travail
-          encadre sur une question de recherche concrete, avec livrables libres.
+          <strong>Financer une these ou un stage.</strong> 6 a 12 mois de travail encadre sur une question
+          de recherche concrete, avec livrables libres.
         </li>
         <li>
-          <strong>Mettre a disposition une donnee ou un terrain.</strong> Pas
-          d'argent, mais un acces a des donnees reelles : c'est parfois plus
-          precieux qu'un cheque.
+          <strong>Mettre a disposition une donnee ou un terrain.</strong> Pas d'argent, mais un acces
+          a des donnees reelles : c'est parfois plus precieux qu'un cheque.
         </li>
       </ul>
       <p class="why-foot">
-        Vous etre une structure (collectivite, fondation, laboratoire, association
-        soeur) ? On etablit ensemble un partenariat structure. <a href="/contact?sujet=partenariat">Discutons-en</a>.
+        Vous etre une structure (collectivite, fondation, laboratoire, association soeur) ? On
+        etablit ensemble un partenariat structure. <a href="/contact?sujet=partenariat"
+          >Discutons-en</a
+        >.
       </p>
     </div>
   </section>
@@ -135,16 +142,14 @@ const facons = [
     <div class="container">
       <h2>Une autre idee ? Un coup de main en nature ?</h2>
       <p>
-        Un echange de 20 minutes suffit pour voir ensemble comment contribuer. C'est
-        gratuit, sans engagement, et on repond a tout le monde.
+        Un echange de 20 minutes suffit pour voir ensemble comment contribuer. C'est gratuit, sans
+        engagement, et on repond a tout le monde.
       </p>
       <div class="contact-actions">
         <a href="/contact?sujet=soutenir" class="btn-primary" data-contact-sujet>
           Nous ecrire (<span data-sujet-label>{sujetAfficheDefaut}</span>)
         </a>
-        <a href="/contact?sujet=partenariat" class="btn-ghost">
-          Proposer un partenariat
-        </a>
+        <a href="/contact?sujet=partenariat" class="btn-ghost"> Proposer un partenariat </a>
       </div>
     </div>
   </section>

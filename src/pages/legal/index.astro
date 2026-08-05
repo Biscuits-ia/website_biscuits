@@ -1,32 +1,64 @@
 ---
-import BaseLayout from "@/layouts/Layout.astro";
-import { createSupabaseClient } from "@/lib/supabase";
+import BaseLayout from '@/layouts/Layout.astro';
+import { createSupabaseClient } from '@/lib/supabase';
 import Breadcrumb from '@/components/Breadcrumb.astro';
 
 export const prerender = false;
 
 const supabase = createSupabaseClient({ request: Astro.request, cookies: Astro.cookies });
 const { data: compliance } = await supabase
-  .from("legal_compliance")
-  .select("cgu_activees, cgu_version, rgpd_version, prochain_audit")
-  .eq("id", 1)
+  .from('legal_compliance')
+  .select('cgu_activees, cgu_version, rgpd_version, prochain_audit')
+  .eq('id', 1)
   .maybeSingle();
 
 const cguActive = compliance?.cgu_activees ?? false;
 const cguVersion = compliance?.cgu_version ?? null;
-const rgpdVersion = compliance?.rgpd_version ?? "1.0";
+const rgpdVersion = compliance?.rgpd_version ?? '1.0';
 const prochainAudit = compliance?.prochain_audit ?? null;
 
 function formatDate(iso: string | null | undefined): string {
-  if (!iso) return "-";
-  return new Date(iso).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
+  if (!iso) return '-';
+  return new Date(iso).toLocaleDateString('fr-FR', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
 }
 
 const documents = [
-  { href: "/legal/mentions-legales", title: "Mentions legales", description: "Identite de l editeur, hebergeur, directeur de la publication.", version: "1.0", updatedAt: "24 juin 2026", isActive: true },
-  { href: "/legal/cgu", title: "Conditions Generales d Utilisation (CGU)", description: "Regles d utilisation du site, propriete intellectuelle, responsabilite.", version: cguVersion ?? "1.0", updatedAt: "-", isActive: cguActive },
-  { href: "/legal/politique-de-confidentialite", title: "Politique de confidentialite (RGPD)", description: "Donnees collectees, finalites, sous-traitants, vos droits RGPD.", version: rgpdVersion, updatedAt: "4 avril 2026", isActive: true },
-  { href: "/legal/cookies", title: "Politique des cookies", description: "Cookies utilises, duree de conservation, comment les refuser.", version: "1.0", updatedAt: "-", isActive: true },
+  {
+    href: '/legal/mentions-legales',
+    title: 'Mentions legales',
+    description: 'Identite de l editeur, hebergeur, directeur de la publication.',
+    version: '1.0',
+    updatedAt: '24 juin 2026',
+    isActive: true,
+  },
+  {
+    href: '/legal/cgu',
+    title: 'Conditions Generales d Utilisation (CGU)',
+    description: 'Regles d utilisation du site, propriete intellectuelle, responsabilite.',
+    version: cguVersion ?? '1.0',
+    updatedAt: '-',
+    isActive: cguActive,
+  },
+  {
+    href: '/legal/politique-de-confidentialite',
+    title: 'Politique de confidentialite (RGPD)',
+    description: 'Donnees collectees, finalites, sous-traitants, vos droits RGPD.',
+    version: rgpdVersion,
+    updatedAt: '4 avril 2026',
+    isActive: true,
+  },
+  {
+    href: '/legal/cookies',
+    title: 'Politique des cookies',
+    description: 'Cookies utilises, duree de conservation, comment les refuser.',
+    version: '1.0',
+    updatedAt: '-',
+    isActive: true,
+  },
 ];
 ---
 
@@ -39,24 +71,27 @@ const documents = [
     <div class="container">
       <h1>Documents legaux</h1>
       <p class="lead">
-        Cette page recense l ensemble des documents juridiques regissant l utilisation
-        du site <strong>biscuits-ia.com</strong> et les relations entre l association
+        Cette page recense l ensemble des documents juridiques regissant l utilisation du site <strong
+          >biscuits-ia.com</strong
+        > et les relations entre l association
         <strong>Biscuits IA</strong> et ses membres / utilisateurs.
       </p>
       <div class="legal-grid">
-        {documents.map((doc) => (
-          <a href={doc.href} class={`legal-card${doc.isActive ? "" : " is-draft"}`}>
-            <div class="legal-card-head">
-              <h2>{doc.title}</h2>
-              {!doc.isActive && <span class="badge badge-draft">Brouillon</span>}
-            </div>
-            <p>{doc.description}</p>
-            <div class="legal-card-foot">
-              <span class="legal-version">v{doc.version}</span>
-              <span class="legal-date">Mis a jour le {doc.updatedAt}</span>
-            </div>
-          </a>
-        ))}
+        {
+          documents.map((doc) => (
+            <a href={doc.href} class={`legal-card${doc.isActive ? '' : ' is-draft'}`}>
+              <div class="legal-card-head">
+                <h2>{doc.title}</h2>
+                {!doc.isActive && <span class="badge badge-draft">Brouillon</span>}
+              </div>
+              <p>{doc.description}</p>
+              <div class="legal-card-foot">
+                <span class="legal-version">v{doc.version}</span>
+                <span class="legal-date">Mis a jour le {doc.updatedAt}</span>
+              </div>
+            </a>
+          ))
+        }
       </div>
       <aside class="legal-contact">
         <h2>Une question ?</h2>
@@ -68,38 +103,145 @@ const documents = [
           Association Biscuits IA - RNA W863012707 - SIRET 10151660700013<br />
           President : Alexis Gallard
         </p>
-        {prochainAudit && (
-          <p class="muted small">
-            Prochain audit legal prevu le : <strong>{formatDate(prochainAudit)}</strong>
-          </p>
-        )}
+        {
+          prochainAudit && (
+            <p class="muted small">
+              Prochain audit legal prevu le : <strong>{formatDate(prochainAudit)}</strong>
+            </p>
+          )
+        }
       </aside>
     </div>
   </section>
 </BaseLayout>
 
 <style>
-  .legal-page { padding: 4rem 0 6rem; background: var(--color-bg); min-height: 70vh; }
-  .container { max-width: 960px; margin: 0 auto; padding: 0 24px; }
-  h1 { font-size: clamp(2rem, 4vw, 2.8rem); margin-bottom: 16px; color: var(--color-text); }
-  .lead { font-size: 1.1rem; color: var(--color-text-light); line-height: 1.6; margin-bottom: 24px; max-width: 720px; }
-  .alert { padding: 14px 18px; margin-bottom: 28px; border: 3px solid var(--color-border); box-shadow: var(--shadow-sm); }
-  .alert-warn { background: #fef3c7; color: var(--color-text); }
-  .legal-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; margin-bottom: 40px; }
-  .legal-card { display: flex; flex-direction: column; gap: 8px; padding: 20px; border: 3px solid var(--color-border); background: var(--color-bg-alt); box-shadow: var(--shadow-sm); text-decoration: none; color: var(--color-text); transition: transform var(--transition-fast), box-shadow var(--transition-fast); }
-  .legal-card:hover { transform: translate(-3px, -3px); box-shadow: var(--shadow-md); }
-  .legal-card.is-draft { opacity: 0.6; border-style: dashed; }
-  .legal-card-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-  .legal-card h2 { font-size: 1.05rem; margin: 0; color: var(--color-text); }
-  .legal-card p { color: var(--color-text-light); font-size: 0.95rem; line-height: 1.5; margin: 0; flex: 1; }
-  .legal-card-foot { display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--color-text-muted); padding-top: 8px; border-top: 1px dashed var(--color-border); }
-  .badge { padding: 2px 8px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; }
-  .badge-draft { background: #fef3c7; color: var(--color-text); }
-  .legal-contact { background: var(--color-bg-alt); padding: 24px; border: 3px solid var(--color-border); box-shadow: var(--shadow-sm); }
-  .legal-contact h2 { font-size: 1.25rem; margin: 0 0 8px; }
-  .legal-contact p { margin: 0 0 8px; line-height: 1.6; }
-  .internal-tools { background: #fef3c7; border: 2px solid #d8c3a0; padding: 10px 14px; font-size: 0.9rem; margin-top: 12px; }
-  .muted { color: var(--color-text-muted); }
-  .small { font-size: 0.85rem; }
-  @media (max-width: 600px) { .legal-grid { grid-template-columns: 1fr; } }
+  .legal-page {
+    padding: 4rem 0 6rem;
+    background: var(--color-bg);
+    min-height: 70vh;
+  }
+  .container {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+  h1 {
+    font-size: clamp(2rem, 4vw, 2.8rem);
+    margin-bottom: 16px;
+    color: var(--color-text);
+  }
+  .lead {
+    font-size: 1.1rem;
+    color: var(--color-text-light);
+    line-height: 1.6;
+    margin-bottom: 24px;
+    max-width: 720px;
+  }
+  .alert {
+    padding: 14px 18px;
+    margin-bottom: 28px;
+    border: 3px solid var(--color-border);
+    box-shadow: var(--shadow-sm);
+  }
+  .alert-warn {
+    background: #fef3c7;
+    color: var(--color-text);
+  }
+  .legal-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 16px;
+    margin-bottom: 40px;
+  }
+  .legal-card {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 20px;
+    border: 3px solid var(--color-border);
+    background: var(--color-bg-alt);
+    box-shadow: var(--shadow-sm);
+    text-decoration: none;
+    color: var(--color-text);
+    transition:
+      transform var(--transition-fast),
+      box-shadow var(--transition-fast);
+  }
+  .legal-card:hover {
+    transform: translate(-3px, -3px);
+    box-shadow: var(--shadow-md);
+  }
+  .legal-card.is-draft {
+    opacity: 0.6;
+    border-style: dashed;
+  }
+  .legal-card-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .legal-card h2 {
+    font-size: 1.05rem;
+    margin: 0;
+    color: var(--color-text);
+  }
+  .legal-card p {
+    color: var(--color-text-light);
+    font-size: 0.95rem;
+    line-height: 1.5;
+    margin: 0;
+    flex: 1;
+  }
+  .legal-card-foot {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+    padding-top: 8px;
+    border-top: 1px dashed var(--color-border);
+  }
+  .badge {
+    padding: 2px 8px;
+    font-size: 0.7rem;
+    font-weight: 800;
+    text-transform: uppercase;
+  }
+  .badge-draft {
+    background: #fef3c7;
+    color: var(--color-text);
+  }
+  .legal-contact {
+    background: var(--color-bg-alt);
+    padding: 24px;
+    border: 3px solid var(--color-border);
+    box-shadow: var(--shadow-sm);
+  }
+  .legal-contact h2 {
+    font-size: 1.25rem;
+    margin: 0 0 8px;
+  }
+  .legal-contact p {
+    margin: 0 0 8px;
+    line-height: 1.6;
+  }
+  .internal-tools {
+    background: #fef3c7;
+    border: 2px solid #d8c3a0;
+    padding: 10px 14px;
+    font-size: 0.9rem;
+    margin-top: 12px;
+  }
+  .muted {
+    color: var(--color-text-muted);
+  }
+  .small {
+    font-size: 0.85rem;
+  }
+  @media (max-width: 600px) {
+    .legal-grid {
+      grid-template-columns: 1fr;
+    }
+  }
 </style>

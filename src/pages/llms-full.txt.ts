@@ -89,7 +89,7 @@ Stack technique : Astro 7, Supabase (PostgreSQL + Auth), TypeScript, Tailwind CS
   {
     title: 'FAQ',
     slug: '/faq',
-    summary: 'Questions frequentes sur l\'association.',
+    summary: "Questions frequentes sur l'association.",
     body: `Les questions les plus posees :
 - Qui peut rejoindre Biscuits IA ? Grand public, associations, collectifs, benevoles, collectivites.
 - Vos ressources sont-elles gratuites ? Oui, integralement : guides, checklists, ateliers, logiciels.
@@ -106,9 +106,9 @@ export const GET: APIRoute = async () => {
   const site = SITE;
 
   // Charger les derniers articles du blog
-  const articles = (await getCollection('blog', ({ data }) =>
-    import.meta.env.PROD ? !data.draft : true
-  ))
+  const articles = (
+    await getCollection('blog', ({ data }) => (import.meta.env.PROD ? !data.draft : true))
+  )
     .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
     .slice(0, 20);
 
@@ -164,16 +164,19 @@ export const GET: APIRoute = async () => {
     }
   }
 
-
   // Section finale : meta-donnees
   lines.push('## Meta-donnees techniques');
   lines.push('');
-  lines.push('- Le site expose un sitemap XML : https://biscuits-ia.com/sitemap-index.xml');
+  lines.push('- Le site expose un sitemap XML : https://biscuits-ia.com/sitemap.xml');
   lines.push('- Le site expose un flux RSS : https://biscuits-ia.com/rss.xml');
   lines.push('- Le site expose un fichier llms.txt : https://biscuits-ia.com/llms.txt');
-  lines.push('- Chaque page embarque un Schema.org JSON-LD (Organization, WebSite, BreadcrumbList, et le type de la page).');
+  lines.push(
+    '- Chaque page embarque un Schema.org JSON-LD (Organization, WebSite, BreadcrumbList, et le type de la page).'
+  );
   lines.push('- Le contenu est sous licence CC BY-SA 4.0 sauf mention contraire.');
-  lines.push('- Le site est concu pour etre crawlable par les principaux LLM bots (GPTBot, ClaudeBot, PerplexityBot, Google-Extended, anthropic-ai, cohere-ai, Applebot-Extended, CCBot, Bytespider).');
+  lines.push(
+    '- Le site est concu pour etre crawlable par les principaux LLM bots (GPTBot, ClaudeBot, PerplexityBot, Google-Extended, anthropic-ai, cohere-ai, Applebot-Extended, CCBot, Bytespider).'
+  );
   lines.push('');
 
   const body = lines.join('\n');

@@ -23,7 +23,12 @@ export const GET: APIRoute = async ({ request, url, cookies, redirect }) => {
   if (code) {
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (error) {
-      console.error('[confirm] exchangeCodeForSession error:', error.message, '| code:', error.code);
+      console.error(
+        '[confirm] exchangeCodeForSession error:',
+        error.message,
+        '| code:',
+        error.code
+      );
       return redirect('/connexion?error=confirmation&code=exchange_failed');
     }
     // Return a proper Response with redirect status to ensure cookies are sent
@@ -50,7 +55,14 @@ export const GET: APIRoute = async ({ request, url, cookies, redirect }) => {
     });
 
     if (error) {
-      console.error('[confirm] verifyOtp error:', error.message, '| code:', error.code, '| type:', type);
+      console.error(
+        '[confirm] verifyOtp error:',
+        error.message,
+        '| code:',
+        error.code,
+        '| type:',
+        type
+      );
 
       // Map error codes to user-friendly messages
       let errorCode = 'verify_failed';

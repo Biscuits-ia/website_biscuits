@@ -8,7 +8,8 @@ const produits = [
     statut: 'Disponible',
     statutClass: 'status-live',
     tagline: 'Analyse de messages suspects (SMS, mails, liens)',
-    description: 'Notre service public gratuit, ouvert a tous. Base de signaux mise a jour quotidiennement par la communaute.',
+    description:
+      'Notre service public gratuit, ouvert a tous. Base de signaux mise a jour quotidiennement par la communaute.',
     href: '/anti-pepins',
     cta: 'Decouvrir',
   },
@@ -17,7 +18,8 @@ const produits = [
     statut: 'Beta 2026',
     statutClass: 'status-soon',
     tagline: 'Gestion de benevolat, beneficiaires, rendez-vous, base documentaire',
-    description: 'Outil modulaire pour les associations. Hebergement gere ou self-hosted. Code source libre (AGPLv3).',
+    description:
+      'Outil modulaire pour les associations. Hebergement gere ou self-hosted. Code source libre (AGPLv3).',
     href: '/contact?sujet=suite-associative',
     cta: 'Rejoindre la beta',
   },
@@ -26,7 +28,8 @@ const produits = [
     statut: 'Roadmap 2026',
     statutClass: 'status-soon',
     tagline: 'Plateforme dediee aux associations specialisees',
-    description: 'Centralisation multi-utilisateurs, generation de dossiers PHAROS, statistiques publiques pour rapports annuels.',
+    description:
+      'Centralisation multi-utilisateurs, generation de dossiers PHAROS, statistiques publiques pour rapports annuels.',
     href: '/contact?sujet=signalement-pro',
     cta: 'Programme beta',
   },
@@ -39,27 +42,37 @@ const produits = [
       <p class="sw-eyebrow">Pilier 2 - Logiciels pour associations</p>
       <h2 id="sw-title">Des logiciels libres et gratuits, au service de l'interet general</h2>
       <p class="sw-intro">
-        Anti Pepins, Suite associative, Outil de signalement : des outils a but non lucratif pour les associations, les structures publiques et le grand public. Logiciels libres, hebergeables sur votre infrastructure, maintenus par notre equipe, et gratuits.
+        Anti Pepins, Suite associative, Outil de signalement : des outils a but non lucratif pour
+        les associations, les structures publiques et le grand public. Logiciels libres,
+        hebergeables sur votre infrastructure, maintenus par notre equipe, et gratuits.
       </p>
     </header>
 
     <div class="sw-grid">
-      {produits.map((p) => (
-        <article class="sw-card">
-          <header>
-            <span class={`sw-status ${p.statutClass}`}>{p.statut}</span>
-            <h3>{p.nom}</h3>
-            <p class="sw-tag">{p.tagline}</p>
-          </header>
-          <p class="sw-desc">{p.description}</p>
-          <a href={p.href} class="sw-cta">
-            {p.cta}
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-              <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </a>
-        </article>
-      ))}
+      {
+        produits.map((p) => (
+          <article class="sw-card">
+            <header>
+              <span class={`sw-status ${p.statutClass}`}>{p.statut}</span>
+              <h3>{p.nom}</h3>
+              <p class="sw-tag">{p.tagline}</p>
+            </header>
+            <p class="sw-desc">{p.description}</p>
+            <a href={p.href} class="sw-cta">
+              {p.cta}
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <path
+                  d="M3 8h10M9 4l4 4-4 4"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </a>
+          </article>
+        ))
+      }
     </div>
 
     <div class="sw-foot">

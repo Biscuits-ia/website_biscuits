@@ -75,7 +75,7 @@ src/
 - **Sessions** : middleware Astro vÃ©rifie le JWT via `supabase.auth.getUser()` (round-trip serveur, signature vÃ©rifiÃ©e) puis invalide les sessions expirÃ©es via `last_logout_at` dans `profiles`.
 - **RLS** : toutes les tables Supabase ont des Row-Level Security policies. Le service role est rÃ©servÃ© aux Ã©critures inter-utilisateurs (audit, export).
 - **CSP** : nonce par requÃªte gÃ©nÃ©rÃ© dans `src/middleware.ts` et injectÃ© dans tous les `<script>` inline.
-- **Rate-limit** : en mÃ©moire (limite par IP + route). Pour la production Ã  fort trafic, migrer vers Upstash Redis ou Vercel KV.
+- **Rate-limit** : en mémoire (limite par IP + route), complétable par le Firewall Vercel pour une protection distribuée.
 
 ## DÃ©ploiement
 

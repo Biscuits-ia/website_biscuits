@@ -23,11 +23,11 @@ const faq = [
   },
   {
     q: 'Vos ateliers sont-ils en ligne ou en présentiel ?',
-    a: 'Les deux. Les sessions en ligne accueillent jusqu\'à 15 participants. Les ateliers en présentiel ont lieu à Poitiers et dans les villes partenaires, sur demande.',
+    a: "Les deux. Les sessions en ligne accueillent jusqu'à 15 participants. Les ateliers en présentiel ont lieu à Poitiers et dans les villes partenaires, sur demande.",
   },
   {
     q: 'Vous aidez uniquement les associations ?',
-    a: 'Non : nous nous adressons aussi au grand public, aux collectivités et aux collectifs. En revanche, nous ne travaillons pas pour les entreprises — notre mission est d\'intérêt général.',
+    a: "Non : nous nous adressons aussi au grand public, aux collectivités et aux collectifs. En revanche, nous ne travaillons pas pour les entreprises — notre mission est d'intérêt général.",
   },
   {
     q: 'Vos outils sont-ils open source ?',
@@ -35,7 +35,7 @@ const faq = [
   },
   {
     q: 'Vos ateliers sont-ils payants ?',
-    a: "Non, ils sont gratuits, y compris les interventions sur mesure en association ou en collectivité. Écrivez-nous pour organiser une session.",
+    a: 'Non, ils sont gratuits, y compris les interventions sur mesure en association ou en collectivité. Écrivez-nous pour organiser une session.',
   },
   {
     q: 'Anti Pepins est-il vraiment gratuit ?',
@@ -47,7 +47,7 @@ const faq = [
   },
   {
     q: "Comment signaler une arnaque ou un contenu suspect que j'ai reçu ?",
-    a: "Utilisez Anti Pepins pour une première analyse instantanée. Pour un signalement officiel, adressez-vous à PHAROS (contenus illicites) ou au 3018 (violences numériques envers les mineurs), qui sont les services compétents.",
+    a: 'Utilisez Anti Pepins pour une première analyse instantanée. Pour un signalement officiel, adressez-vous à PHAROS (contenus illicites) ou au 3018 (violences numériques envers les mineurs), qui sont les services compétents.',
   },
 ];
 
@@ -70,22 +70,36 @@ const schema = {
       <header class="faq-header">
         <h1>Questions fréquentes</h1>
         <p class="faq-lead">
-          Tout ce que vous devez savoir sur Biscuits IA, nos ateliers, nos ressources et notre accompagnement. Une autre question ? <a href="/contact">Écrivez-nous</a>.
+          Tout ce que vous devez savoir sur Biscuits IA, nos ateliers, nos ressources et notre
+          accompagnement. Une autre question ? <a href="/contact">Écrivez-nous</a>.
         </p>
       </header>
 
       <div class="faq-list">
-        {faq.map(({ q, a }) => (
-          <details class="faq-item">
-            <summary class="faq-question">
-              <span>{q}</span>
-              <svg class="faq-chevron" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <polyline points="6 9 12 15 18 9"></polyline>
-              </svg>
-            </summary>
-            <p class="faq-answer">{a}</p>
-          </details>
-        ))}
+        {
+          faq.map(({ q, a }) => (
+            <details class="faq-item">
+              <summary class="faq-question">
+                <span>{q}</span>
+                <svg
+                  class="faq-chevron"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>
+              </summary>
+              <p class="faq-answer">{a}</p>
+            </details>
+          ))
+        }
       </div>
     </div>
   </section>
@@ -119,7 +133,10 @@ const schema = {
     margin: 0;
   }
 
-  .faq-lead a { color: var(--color-primary); font-weight: 700; }
+  .faq-lead a {
+    color: var(--color-primary);
+    font-weight: 700;
+  }
 
   .faq-list {
     display: flex;
@@ -152,7 +169,9 @@ const schema = {
     list-style: none;
   }
 
-  .faq-question::-webkit-details-marker { display: none; }
+  .faq-question::-webkit-details-marker {
+    display: none;
+  }
 
   .faq-chevron {
     flex-shrink: 0;
@@ -171,6 +190,8 @@ const schema = {
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .faq-chevron { transition: none; }
+    .faq-chevron {
+      transition: none;
+    }
   }
 </style>

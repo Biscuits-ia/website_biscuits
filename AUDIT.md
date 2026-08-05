@@ -516,3 +516,18 @@ Un sous-domaine utilise volontairement Cloudflare. Les nameservers `demi.ns.clou
 ### Travail hors code encore nécessaire
 
 Cette livraison améliore l'exploration, la compréhension thématique et la crédibilité des contenus, mais une position dans le top 3 ne peut pas être garantie techniquement. La prochaine phase doit s'appuyer sur les requêtes et pages réellement visibles dans Google Search Console et Bing Webmaster Tools : consolider les pages qui reçoivent déjà des impressions, réviser régulièrement les contenus sensibles au temps, obtenir des liens éditoriaux pertinents et éviter de publier plusieurs articles visant exactement la même intention de recherche.
+
+## 14. Correction du Cumulative Layout Shift — 5 août 2026
+
+### Cause racine
+
+L'intégration locale `async-css-swap` transformait les feuilles de style des 149 pages pré-rendues en `preload`, puis appliquait les styles après leur téléchargement par JavaScript. Sur un cache froid ou un réseau ralenti, le navigateur dessinait donc le contenu sans sa mise en page définitive avant de repositionner l'ensemble du viewport. La mesure instrumentée a reproduit un CLS atteignant environ `0,62` sur `/blog` et `/blog/ia` en profil desktop.
+
+### Correction et garde-fou
+
+- retrait de l'intégration `async-css-swap` et de son script de post-traitement ;
+- restauration des feuilles `rel="stylesheet"` bloquantes pour garantir un premier rendu stable ;
+- ajout d'un invariant exécuté après chaque build, qui interdit le retour de `data-async-css` et exige la présence d'une feuille de style participant au premier rendu ;
+- validation sous Chromium avec cache froid, limitation réseau et ralentissement CPU.
+
+Après correction locale, les profils mobile et desktop mesurent `CLS = 0,00000` sur l'accueil, le blog, un article et une page guide. Le déploiement Vercel `dpl_8snkaPoKbChj86AEaeyYJnrk7o9H` a ensuite été validé sur `biscuits-ia.com` avec `CLS = 0,00000` sur le blog, l'article et le guide, et `0,00358` sur l'accueil desktop. Aucun chargement CSS asynchrone résiduel ni erreur Vercel n'a été observé. Cette mesure de laboratoire ne remplace pas les données terrain : le rapport Core Web Vitals de Search Console utilise les visites réelles agrégées et peut nécessiter jusqu'à 28 jours pour refléter durablement la nouvelle version.

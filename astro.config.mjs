@@ -10,7 +10,6 @@ import mdx from '@astrojs/mdx';
 
 import react from '@astrojs/react';
 
-import asyncCss from './scripts/astro-async-css.mjs';
 import rehypeLazyFigure from './scripts/rehype-lazy-figure.mjs';
 import rehypeTaskListA11y from './scripts/rehype-task-list-a11y.mjs';
 
@@ -170,7 +169,6 @@ export default defineConfig({
     }),
     mdx(),
     react(),
-    asyncCss(),
   ],
 
   output: 'server',

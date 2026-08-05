@@ -78,6 +78,15 @@ assert('sitemap.xml reference le sitemap detaille', () =>
 );
 assert('sitemap-index.xml genere', () => exists('sitemap-index.xml'));
 
+// Les feuilles globales doivent participer au premier rendu. Les convertir en
+// preload + swap JavaScript provoque un flash sans CSS, puis un déplacement de
+// tout le viewport lorsque les styles arrivent (CLS mesuré jusqu'à 0,62).
+assert('la CSS du premier rendu reste bloquante et stable', () => {
+  const html = read('index.html');
+  if (html.includes('data-async-css')) return 'swap CSS asynchrone détecté';
+  return /<link[^>]+rel="stylesheet"/.test(html) || 'aucune feuille CSS bloquante trouvée';
+});
+
 // Un octet NUL dans un fichier texte peut etre tolere par le build tout en
 // produisant un contenu corrompu pour les lecteurs, moteurs et extracteurs.
 assert('aucun octet NUL dans les sources et artefacts texte', () => {

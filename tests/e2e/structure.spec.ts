@@ -7,6 +7,9 @@ const PUBLIC_TEMPLATES = [
   '/blog/ia',
   '/blog/kit-protection-association-arnaque-ia',
   '/blog/tag/accessibilite',
+  '/guides/arnaques-ia',
+  '/guides/ia-associations',
+  '/guides/ia-open-source',
   '/legal/politique-de-confidentialite',
 ] as const;
 

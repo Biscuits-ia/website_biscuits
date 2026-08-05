@@ -35,6 +35,8 @@ type ArticleData = {
   image?: string;
   datePublished: string;
   dateModified?: string;
+  isPartOf?: { name: string; url: string };
+  citations?: string[];
   author?: string;
   authorSlug?: string;
   category?: string;
@@ -249,6 +251,16 @@ if (type === 'Service') {
       : undefined,
     datePublished: articleData.datePublished,
     dateModified: articleData.dateModified || articleData.datePublished,
+    ...(articleData.isPartOf
+      ? {
+          isPartOf: {
+            '@type': 'CollectionPage',
+            name: articleData.isPartOf.name,
+            url: articleData.isPartOf.url,
+          },
+        }
+      : {}),
+    ...(articleData.citations?.length ? { citation: articleData.citations } : {}),
     author: {
       '@type': 'Person',
       name: articleData.author || 'Biscuits IA',

@@ -1,0 +1,99 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import type { BlogCluster } from '@/lib/blogClusters';
+
+interface Props {
+  cluster: BlogCluster;
+  articles: CollectionEntry<'blog'>[];
+}
+
+const { cluster, articles } = Astro.props;
+---
+
+<aside class="cluster-nav" aria-labelledby="cluster-nav-title">
+  <div>
+    <span class="cluster-eyebrow">Cet article fait partie du dossier</span>
+    <h2 id="cluster-nav-title">
+      <a href={`/guides/${cluster.slug}`}>{cluster.shortTitle}</a>
+    </h2>
+    <p>{cluster.description}</p>
+  </div>
+  {
+    articles.length > 0 && (
+      <nav aria-label={`Poursuivre le dossier ${cluster.shortTitle}`}>
+        <span class="cluster-list-title">À lire ensuite</span>
+        <ul>
+          {articles.map((article) => (
+            <li>
+              <a href={`/blog/${article.id}`}>{article.data.title}</a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+    )
+  }
+</aside>
+
+<style>
+  .cluster-nav {
+    margin: 1.75rem 0 2rem;
+    padding: 1.25rem;
+    border: 2px solid var(--color-border);
+    border-left: 6px solid var(--color-primary);
+    border-radius: var(--radius-lg, 0.75rem);
+    background: var(--color-bg-alt);
+    box-shadow: var(--shadow-sm, 3px 3px 0 var(--color-border));
+  }
+
+  .cluster-eyebrow,
+  .cluster-list-title {
+    display: block;
+    color: var(--color-primary);
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  h2 {
+    margin: 0.35rem 0 0.5rem;
+    font-size: 1.25rem;
+    line-height: 1.3;
+  }
+
+  h2 a,
+  li a {
+    color: var(--color-text);
+  }
+
+  h2 a:hover,
+  li a:hover {
+    color: var(--color-primary);
+  }
+
+  p {
+    margin: 0;
+    color: var(--color-text-light);
+    line-height: 1.6;
+  }
+
+  nav {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--color-border);
+  }
+
+  ul {
+    margin: 0.6rem 0 0;
+    padding-left: 1.2rem;
+  }
+
+  li + li {
+    margin-top: 0.4rem;
+  }
+
+  li a {
+    font-weight: 650;
+    line-height: 1.45;
+  }
+</style>

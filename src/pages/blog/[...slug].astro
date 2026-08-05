@@ -11,6 +11,8 @@ import Layout from '@/layouts/Layout.astro';
 import ReadingTime from '@/components/ReadingTime.astro';
 import TableOfContents from '@/components/TableOfContents.astro';
 import Breadcrumb from '@/components/Breadcrumb.astro';
+import BlogClusterNav from '@/components/BlogClusterNav.astro';
+import { getBlogClusterForArticle, getClusterArticleIds } from '@/lib/blogClusters';
 
 // prerender = true exige getStaticPaths().
 export const getStaticPaths = (async () => {
@@ -51,7 +53,8 @@ const body = entry.body ?? '';
 const wordCount = body.split(/\s+/).filter(Boolean).length;
 const readingTimeMin = Math.max(1, Math.ceil(wordCount / 220));
 // Date de derniere relecture. Le comite editorial relit avant publication.
-const lastReviewedDate = entry.data.pubDate.toISOString();
+const modifiedDate = entry.data.updatedDate || entry.data.pubDate;
+const lastReviewedDate = entry.data.reviewedDate || entry.data.updatedDate || entry.data.pubDate;
 // GEO : slug auteur (Alexis -> alexis-gallard, sinon collectif).
 const authorSlug = (entry.data.author || 'Biscuits IA').toLowerCase().includes('alexis')
   ? 'alexis-gallard'
@@ -103,6 +106,12 @@ const sameTagArticles = publishedArticles
   )
   .slice(0, 6);
 
+const cluster = getBlogClusterForArticle(entry.id);
+const clusterArticleIds = getClusterArticleIds(entry.id);
+const clusterArticles = clusterArticleIds
+  .map((id) => publishedArticles.find((article) => article.id === id))
+  .filter((article): article is CollectionEntry<'blog'> => Boolean(article));
+
 // SEO : Open Graph specifique a l'article. `ogImage` (prioritaire) ou
 // `thumbnail` du frontmatter si presents, sinon repli sur l'image par defaut.
 const siteUrl = import.meta.env.SITE || 'https://biscuits-ia.com';
@@ -123,13 +132,22 @@ const articleSchema = {
     description: seoDescription,
     image: ogImage,
     datePublished: entry.data.pubDate.toISOString(),
-    dateModified: entry.data.pubDate.toISOString(),
+    dateModified: modifiedDate.toISOString(),
     author: entry.data.author || 'Biscuits IA',
     authorSlug,
     category: 'Intelligence Artificielle',
     keywords: entryTags,
     wordCount,
     readingTimeMin,
+    ...(cluster
+      ? {
+          isPartOf: {
+            name: cluster.title,
+            url: `${siteUrl}/guides/${cluster.slug}`,
+          },
+          citations: cluster.sources.map((source) => source.url),
+        }
+      : {}),
   },
 };
 ---
@@ -140,12 +158,16 @@ const articleSchema = {
   canonical={`/blog/${entry.id}`}
   ogType="article"
   ogImage={ogImage}
+  author={entry.data.author || 'Biscuits IA'}
+  publishedTime={entry.data.pubDate.toISOString()}
+  modifiedTime={modifiedDate.toISOString()}
+  tags={entryTags}
   schema={articleSchema}
   geo={{
     author: entry.data.author || 'Biscuits IA',
     authorUrl: `/auteur/${authorSlug}`,
     contentType: 'human-reviewed',
-    lastReviewed: lastReviewedDate,
+    lastReviewed: lastReviewedDate.toISOString(),
     expertise: entryTags[0] || 'intelligence-artificielle',
   }}
 >
@@ -219,14 +241,51 @@ const articleSchema = {
           <div class="meta-item">
             <ReadingTime content={body} />
           </div>
+          {
+            entry.data.updatedDate && (
+              <div class="meta-item">
+                Mis à jour le{' '}
+                <time datetime={entry.data.updatedDate.toISOString()}>
+                  {entry.data.updatedDate.toLocaleDateString('fr-FR', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                  })}
+                </time>
+              </div>
+            )
+          }
         </div>
       </header>
+
+      {cluster && <BlogClusterNav cluster={cluster} articles={clusterArticles} />}
 
       <TableOfContents headings={headings} />
 
       <div class="prose">
         <Content />
       </div>
+
+      {
+        cluster && (
+          <section class="article-sources" aria-labelledby="article-sources-title">
+            <h2 id="article-sources-title">Sources de référence</h2>
+            <p>
+              Ce contenu s'appuie notamment sur les ressources institutionnelles et documentations
+              officielles suivantes.
+            </p>
+            <ul>
+              {cluster.sources.map((source) => (
+                <li>
+                  <a href={source.url} target="_blank" rel="noopener noreferrer">
+                    {source.name} — {source.publisher}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )
+      }
 
       {
         relatedArticles.length > 0 && (
@@ -569,6 +628,39 @@ const articleSchema = {
     margin: 2rem auto;
     box-shadow: var(--shadow-md, 5px 5px 0 var(--color-border));
     border: 2px solid var(--color-border);
+  }
+
+  .article-sources {
+    margin: 3rem 0 0;
+    padding: 1.25rem 1.5rem;
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-lg, 0.75rem);
+    background: var(--color-bg-alt);
+  }
+
+  .article-sources h2 {
+    margin: 0 0 0.5rem;
+    font-size: 1.35rem;
+  }
+
+  .article-sources p {
+    margin: 0;
+    color: var(--color-text-light);
+    line-height: 1.55;
+  }
+
+  .article-sources ul {
+    margin: 0.85rem 0 0;
+    padding-left: 1.2rem;
+  }
+
+  .article-sources li + li {
+    margin-top: 0.4rem;
+  }
+
+  .article-sources a {
+    color: var(--color-primary);
+    font-weight: 650;
   }
 
   /* === RELATED POSTS === */

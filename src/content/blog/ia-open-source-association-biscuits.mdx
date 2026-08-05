@@ -1,10 +1,12 @@
 ---
-title: "IA open source en pratique : comment Biscuits IA aide les associations et les collectivités à reprendre la main"
+title: 'IA open source en pratique : comment Biscuits IA aide les associations et les collectivités à reprendre la main'
 description: "Llama, Mistral, Qwen, Phi, DeepSeek : tour d'horizon 2026 des modèles IA open source, et guide concret pour les déployer en autonomie dans une association ou une petite structure."
 pubDate: 2026-06-18T09:00:00Z
-author: "Biscuits IA"
+updatedDate: 2026-08-05T00:00:00Z
+reviewedDate: 2026-08-05T00:00:00Z
+author: 'Biscuits IA'
 featured: true
-tags: ["ia", "open-source", "llm", "self-hosting", "souverainete", "associations"]
+tags: ['ia', 'open-source', 'llm', 'self-hosting', 'souverainete', 'associations']
 ---
 
 import Callout from '@/components/Callout.astro';
@@ -12,13 +14,18 @@ import ComparisonGrid from '@/components/ComparisonGrid.astro';
 
 L'IA générative est devenue indispensable. Mais pour une association, une mairie, un collectif ou un particulier, **déléguer toute son intelligence à ChatGPT, Claude ou Gemini** pose vite question : où vont mes données ? combien ça coûte à grande échelle ? que se passe-t-il si le service ferme ?
 
-L'IA open source est la réponse. Mais entre la promesse et la réalité, il y a un **gouffre technique** que peu de structures peuvent combler seules.
+Les modèles ouverts et les logiciels libres constituent une option sérieuse. Mais entre la promesse et la réalité, il existe un **gouffre technique** que peu de structures peuvent combler seules.
 
 C'est exactement pour ça que Biscuits IA existe. Et c'est ce qu'on vous explique dans ce guide.
 
 <Callout type="info" title="Ce que vous allez lire">
-Un panorama à jour des modèles open source en 2026, un comparatif honnête avec les solutions propriétaires, un guide pas-à-pas pour évaluer, tester et déployer une IA en autonomie, et un éclairage sur **la manière dont Biscuits IA accompagne concrètement** les associations et les collectivités dans cette démarche.
+  Un panorama à jour des modèles open source en 2026, un comparatif honnête avec les solutions
+  propriétaires, un guide pas-à-pas pour évaluer, tester et déployer une IA en autonomie, et un
+  éclairage sur **la manière dont Biscuits IA accompagne concrètement** les associations et les
+  collectivités dans cette démarche.
 </Callout>
+
+Pour passer directement à la pratique, consultez notre [comparatif des modèles IA ouverts](/blog/comparatif-ia-open-source-2026), puis le tutoriel pour [installer Ollama sur un ordinateur](/blog/ollama-heberger-llm-local). Pour interroger des documents internes, le parcours continue avec notre [guide RAG pour les associations](/blog/rag-documentation-association).
 
 ---
 
@@ -28,17 +35,43 @@ Pendant des années, l'IA de pointe était l'apanage de quelques géants améric
 
 ### Une bascule historique
 
-En 2023-2024, Meta publie Llama 2 puis Llama 3 en open source. Mistral AI, startup française, sort Mistral 7B puis Mixtral. Alibaba publie Qwen, Microsoft Phi, Google Gemma, DeepSeek DeepSeek-V3.
+En 2023-2026, Meta publie les familles Llama, Mistral AI diffuse plusieurs modèles, et d'autres éditeurs proposent Qwen, Phi, Gemma ou DeepSeek. Leurs licences ne donnent pas toutes les mêmes droits.
 
-Résultat : en 2026, **les meilleurs modèles du monde sont disponibles en open source**, avec des licences qui permettent une utilisation commerciale, parfois sans restriction majeure.
+Le terme « open source » est souvent utilisé trop largement. Certains modèles sont réellement compatibles avec la définition de l'Open Source Initiative ; d'autres publient seulement leurs poids sous une licence communautaire. Avant tout déploiement, vérifiez la licence du modèle, les usages autorisés et les obligations de redistribution.
+
+<Callout type="warning" title="Open source ou poids ouverts ?">
+  Un modèle téléchargeable n'est pas automatiquement open source. La [définition Open Source AI de
+  l'OSI](https://opensource.org/ai/open-source-ai-definition) exige notamment les éléments
+  nécessaires pour étudier, utiliser, modifier et partager le système.
+</Callout>
 
 <ComparisonGrid
   type="ai"
   items={[
-    { icon: '🧠', title: 'Qualité comparable', description: 'Sur de nombreux benchmarks, Llama 4, Mistral Large, Qwen 3 et DeepSeek-V3 rivalisent avec GPT-4o ou Claude 3.5 Sonnet, parfois les dépassent.' },
-    { icon: '💰', title: 'Coût maîtrisé', description: 'Une fois l\'infrastructure en place, le coût marginal d\'une requête tend vers zéro. Pas d\'abonnement par utilisateur, pas de facturation au token.' },
-    { icon: '🔒', title: 'Souveraineté', description: 'Les modèles tournent sur vos serveurs ou un cloud européen. Aucune donnée ne quitte votre périmètre. RGPD par conception.' },
-    { icon: '🛠️', title: 'Personnalisation', description: 'Vous pouvez fine-tuner le modèle sur vos propres données : vocabulaire de votre association, ton, processus métier spécifique.' }
+    {
+      icon: '🧠',
+      title: 'Qualité comparable',
+      description:
+        'Sur de nombreux benchmarks, Llama 4, Mistral Large, Qwen 3 et DeepSeek-V3 rivalisent avec GPT-4o ou Claude 3.5 Sonnet, parfois les dépassent.',
+    },
+    {
+      icon: '💰',
+      title: 'Coût maîtrisé',
+      description:
+        "Une fois l'infrastructure en place, le coût marginal d'une requête tend vers zéro. Pas d'abonnement par utilisateur, pas de facturation au token.",
+    },
+    {
+      icon: '🔒',
+      title: 'Souveraineté',
+      description:
+        'Les modèles tournent sur vos serveurs ou un cloud européen. Aucune donnée ne quitte votre périmètre. RGPD par conception.',
+    },
+    {
+      icon: '🛠️',
+      title: 'Personnalisation',
+      description:
+        'Vous pouvez fine-tuner le modèle sur vos propres données : vocabulaire de votre association, ton, processus métier spécifique.',
+    },
   ]}
 />
 
@@ -51,7 +84,9 @@ Résultat : en 2026, **les meilleurs modèles du monde sont disponibles en open 
 **3. L'autonomie.** Vous n'êtes plus dépendant d'un fournisseur qui peut changer ses conditions, augmenter ses prix, ou fermer son service. Votre IA vous appartient.
 
 <Callout type="warning" title="L'open source n'est pas magique">
-Avoir accès au code d'un modèle ne signifie pas savoir l'exploiter. Le déploiement, le fine-tuning, la mise en production, la maintenance : tout cela demande des compétences. C'est précisément **le fossé que Biscuits IA aide à combler**.
+  Avoir accès au code d'un modèle ne signifie pas savoir l'exploiter. Le déploiement, le
+  fine-tuning, la mise en production, la maintenance : tout cela demande des compétences. C'est
+  précisément **le fossé que Biscuits IA aide à combler**.
 </Callout>
 
 ---
@@ -62,14 +97,14 @@ Le paysage a énormément évolué. Voici une vue claire des principales options
 
 ### Les modèles généralistes
 
-| Modèle | Éditeur | Licence | Points forts | Idéal pour |
-|---|---|---|---|---|
-| **Llama 4** | Meta | Llama Community | Excellent polyvalence, multilingue, multimodal | Entreprises, associations, projets complexes |
-| **Mistral Large 2** | Mistral AI | Apache 2.0 / Mistral Research | Made in Europe, très bon en français, multilingue | Structures européennes soucieuses de souveraineté |
-| **Qwen 3** | Alibaba | Apache 2.0 | Excellentes performances, multilingue dont français | Usage général, très bon rapport qualité/prix |
-| **Phi-4** | Microsoft | MIT | Compact (3.8B), excellent sur petites machines | Edge computing, premiers pas, prototypes |
-| **DeepSeek-V3** | DeepSeek | Open source | Raisonnement, code, math | Projets techniques, traitement de code |
-| **Gemma 3** | Google | Gemma license | Léger, bien documenté, intégré Google ecosystem | Pédagogie, expérimentation, projets simples |
+| Modèle              | Éditeur    | Licence                       | Points forts                                        | Idéal pour                                        |
+| ------------------- | ---------- | ----------------------------- | --------------------------------------------------- | ------------------------------------------------- |
+| **Llama 4**         | Meta       | Llama Community               | Excellent polyvalence, multilingue, multimodal      | Entreprises, associations, projets complexes      |
+| **Mistral Large 2** | Mistral AI | Apache 2.0 / Mistral Research | Made in Europe, très bon en français, multilingue   | Structures européennes soucieuses de souveraineté |
+| **Qwen 3**          | Alibaba    | Apache 2.0                    | Excellentes performances, multilingue dont français | Usage général, très bon rapport qualité/prix      |
+| **Phi-4**           | Microsoft  | MIT                           | Compact (3.8B), excellent sur petites machines      | Edge computing, premiers pas, prototypes          |
+| **DeepSeek-V3**     | DeepSeek   | Open source                   | Raisonnement, code, math                            | Projets techniques, traitement de code            |
+| **Gemma 3**         | Google     | Gemma license                 | Léger, bien documenté, intégré Google ecosystem     | Pédagogie, expérimentation, projets simples       |
 
 ### Les modèles spécialisés
 
@@ -81,7 +116,9 @@ Le paysage a énormément évolué. Voici une vue claire des principales options
 - **BLOOM** (BigScience) : multilingue académique
 
 <Callout type="info" title="Notre conseil 2026 pour les associations">
-Pour une première mise en Å“uvre, nous recommandons **Mistral Large 2** (souveraineté européenne) ou **Llama 4 8B** (léger, polyvalent, excellent en français). Pour des usages techniques pointus, **DeepSeek-V3** ou **Codestral** sont imbattables.
+  Pour une première mise en Å“uvre, nous recommandons **Mistral Large 2** (souveraineté européenne)
+  ou **Llama 4 8B** (léger, polyvalent, excellent en français). Pour des usages techniques pointus,
+  **DeepSeek-V3** ou **Codestral** sont imbattables.
 </Callout>
 
 ---
@@ -93,6 +130,7 @@ C'est la question que toute organisation doit se poser. Voici un arbre de décis
 ### Les critères de choix
 
 **Choisissez l'API propriétaire (ChatGPT, Claude) si :**
+
 - Vous faites moins de 10 000 requêtes par mois
 - Vous n'avez pas de données sensibles
 - Vous voulez un résultat immédiat sans infrastructure
@@ -100,6 +138,7 @@ C'est la question que toute organisation doit se poser. Voici un arbre de décis
 - Vous êtes prêt à payer un abonnement
 
 **Choisissez l'open source si :**
+
 - Vous manipulez des données personnelles (adhérents, usagers, patients)
 - Vous avez plus de 50 000 requêtes par mois
 - Vous avez un projet sur plusieurs années
@@ -108,6 +147,7 @@ C'est la question que toute organisation doit se poser. Voici un arbre de décis
 - Vous voulez maîtriser vos coûts à long terme
 
 **Choisissez une approche hybride si :**
+
 - Vous utilisez l'API pour les usages non sensibles
 - Vous déployez l'open source pour les usages critiques
 - Vous voulez bénéficier des deux mondes
@@ -115,9 +155,24 @@ C'est la question que toute organisation doit se poser. Voici un arbre de décis
 <ComparisonGrid
   type="comparison"
   items={[
-    { icon: '☁️', title: 'API propriétaire', description: 'Setup immédiat, pas d\'infrastructure, facturation à l\'usage. Données hébergées hors UE par défaut. Dépendance au fournisseur.' },
-    { icon: '🖥️', title: 'IA open source', description: 'Investissement initial, compétences techniques requises, contrôle total. Données souveraines. Indépendance vis-à-vis des fournisseurs.' },
-    { icon: '🔀', title: 'Approche hybride', description: 'Combine les deux selon les usages. Plus complexe à gérer mais optimise coût, sécurité et performance. Idéal pour les structures matures.' }
+    {
+      icon: '☁️',
+      title: 'API propriétaire',
+      description:
+        "Setup immédiat, pas d'infrastructure, facturation à l'usage. Données hébergées hors UE par défaut. Dépendance au fournisseur.",
+    },
+    {
+      icon: '🖥️',
+      title: 'IA open source',
+      description:
+        'Investissement initial, compétences techniques requises, contrôle total. Données souveraines. Indépendance vis-à-vis des fournisseurs.',
+    },
+    {
+      icon: '🔀',
+      title: 'Approche hybride',
+      description:
+        'Combine les deux selon les usages. Plus complexe à gérer mais optimise coût, sécurité et performance. Idéal pour les structures matures.',
+    },
   ]}
 />
 
@@ -125,17 +180,19 @@ C'est la question que toute organisation doit se poser. Voici un arbre de décis
 
 Pour une association qui fait 100 000 requêtes par mois :
 
-| Solution | Coût mensuel estimé |
-|---|---|
-| OpenAI API (GPT-4o-mini) | 150 - 500 â‚¬ |
-| Mistral API (Mistral Small) | 100 - 300 â‚¬ |
-| Auto-hébergement open source | 80 - 200 â‚¬ (serveur cloud) + temps humain |
-| Auto-hébergement sur poste existant | 0 â‚¬ + temps humain |
+| Solution                            | Coût mensuel estimé                         |
+| ----------------------------------- | ------------------------------------------- |
+| OpenAI API (GPT-4o-mini)            | 150 - 500 â‚¬                               |
+| Mistral API (Mistral Small)         | 100 - 300 â‚¬                               |
+| Auto-hébergement open source        | 80 - 200 â‚¬ (serveur cloud) + temps humain |
+| Auto-hébergement sur poste existant | 0 â‚¬ + temps humain                        |
 
 **Le point de bascule** se situe généralement autour de **50 000 à 100 000 requêtes par mois**. En dessous, l'API est souvent plus rentable. Au-dessus, l'open source devient intéressant.
 
 <Callout type="tip" title="La main d'Å“uvre, le vrai coût">
-Le calcul ci-dessus oublie le principal : le **temps humain** pour mettre en place, maintenir, faire évoluer. Comptez 1 à 5 jours-homme pour la mise en place, puis 0.5 à 1 jour par mois pour la maintenance. C'est là que l'accompagnement Biscuits IA fait la différence.
+  Le calcul ci-dessus oublie le principal : le **temps humain** pour mettre en place, maintenir,
+  faire évoluer. Comptez 1 à 5 jours-homme pour la mise en place, puis 0.5 à 1 jour par mois pour la
+  maintenance. C'est là que l'accompagnement Biscuits IA fait la différence.
 </Callout>
 
 ---
@@ -147,6 +204,7 @@ Vous avez décidé de vous lancer. Voici les étapes concrètes, telles que nous
 ### Étape 1 : Définir le cas d'usage (1 semaine)
 
 Avant de toucher au code, on clarifie :
+
 - **Quel problème** l'IA doit-elle résoudre ?
 - **Quels utilisateurs** vont s'en servir ?
 - **Quelles données** seront traitées ?
@@ -158,6 +216,7 @@ Sans cette étape, on se retrouve à déployer un modèle pour rien.
 ### Étape 2 : Choisir le bon modèle (1 à 2 semaines)
 
 On évalue 2 à 3 modèles candidats sur des cas concrets :
+
 - Qualité des réponses sur vos données typiques
 - Performance en français
 - Temps de réponse (latence)
@@ -173,10 +232,30 @@ Plusieurs options d'hébergement :
 <ComparisonGrid
   type="comparison"
   items={[
-    { icon: '🏠', title: 'On-premise (chez vous)', description: 'Serveur physique dans vos locaux. Contrôle total, mais investissement lourd. Convient aux grandes structures ou aux données très sensibles.' },
-    { icon: '☁️', title: 'Cloud européen', description: 'Scaleway, OVHcloud, Hetzner. Données en Europe, coûts maîtrisés, pas d\'investissement initial. Notre recommandation par défaut.' },
-    { icon: '🌍', title: 'Cloud US (AWS, GCP, Azure)', description: 'Puissant et flexible, mais données hors UE. À éviter pour les données personnelles d\'adhérents européens.' },
-    { icon: '💻', title: 'Poste de travail', description: 'Pour les tests et prototypes uniquement. Modèles légers (Phi-4, Gemma 3) sur Mac M-series ou PC avec GPU.' }
+    {
+      icon: '🏠',
+      title: 'On-premise (chez vous)',
+      description:
+        'Serveur physique dans vos locaux. Contrôle total, mais investissement lourd. Convient aux grandes structures ou aux données très sensibles.',
+    },
+    {
+      icon: '☁️',
+      title: 'Cloud européen',
+      description:
+        "Scaleway, OVHcloud, Hetzner. Données en Europe, coûts maîtrisés, pas d'investissement initial. Notre recommandation par défaut.",
+    },
+    {
+      icon: '🌍',
+      title: 'Cloud US (AWS, GCP, Azure)',
+      description:
+        "Puissant et flexible, mais données hors UE. À éviter pour les données personnelles d'adhérents européens.",
+    },
+    {
+      icon: '💻',
+      title: 'Poste de travail',
+      description:
+        'Pour les tests et prototypes uniquement. Modèles légers (Phi-4, Gemma 3) sur Mac M-series ou PC avec GPU.',
+    },
   ]}
 />
 
@@ -208,6 +287,7 @@ Pour un usage en production, on passe par **vLLM** ou **Ollama + Open WebUI** (i
 ### Étape 5 : Connecter à vos outils (2 à 4 semaines)
 
 L'IA seule n'a que peu d'intérêt. La valeur vient de son **intégration** à vos outils existants :
+
 - **Site web** : chatbot d'assistance, FAQ augmentée
 - **Messagerie** : rédaction d'emails, résumé de fils de discussion
 - **GED / SharePoint** : recherche sémantique dans vos documents
@@ -217,12 +297,16 @@ L'IA seule n'a que peu d'intérêt. La valeur vient de son **intégration** à v
 On utilise des frameworks d'orchestration comme **LangChain**, **LlamaIndex**, ou **Flowise** pour chaîner le LLM avec vos données et vos APIs.
 
 <Callout type="warning" title="Le RAG, indispensable pour les usages professionnels">
-Pour qu'une IA connaisse vos documents, votre vocabulaire, vos processus, on ne la fine-tune pas (coûteux, complexe). On utilise le **RAG** (Retrieval-Augmented Generation) : l'IA va chercher les bonnes informations dans vos documents avant de répondre. C'est la méthode standard en 2026, et elle fonctionne remarquablement bien.
+  Pour qu'une IA connaisse vos documents, votre vocabulaire, vos processus, on ne la fine-tune pas
+  (coûteux, complexe). On utilise le **RAG** (Retrieval-Augmented Generation) : l'IA va chercher les
+  bonnes informations dans vos documents avant de répondre. C'est la méthode standard en 2026, et
+  elle fonctionne remarquablement bien.
 </Callout>
 
 ### Étape 6 : Sécuriser, monitorer, améliorer (continu)
 
 Une IA en production demande une **gouvernance** :
+
 - Logs des requêtes et réponses (traçabilité RGPD)
 - Filtrage des contenus dangereux (jailbreak, prompt injection)
 - Monitoring des dérives (hallucinations, biais)
@@ -239,19 +323,20 @@ Soyons honnêtes : déployer une IA open source en autonomie n'est pas trivial. 
 
 Faire tourner un LLM demande de la **RAM** et idéalement un **GPU**.
 
-| Modèle | Taille | RAM minimum | GPU recommandé |
-|---|---|---|---|
-| Phi-4 (3.8B) | ~3 Go | 8 Go | Optionnel |
-| Llama 4 8B | ~5 Go | 10 Go | Recommandé |
-| Mistral Small | ~14 Go | 16 Go | Fortement recommandé |
-| Llama 4 70B | ~40 Go | 48 Go | Nécessaire |
-| Mistral Large 2 | ~120 Go | 128 Go | GPU pro obligatoire |
+| Modèle          | Taille  | RAM minimum | GPU recommandé       |
+| --------------- | ------- | ----------- | -------------------- |
+| Phi-4 (3.8B)    | ~3 Go   | 8 Go        | Optionnel            |
+| Llama 4 8B      | ~5 Go   | 10 Go       | Recommandé           |
+| Mistral Small   | ~14 Go  | 16 Go       | Fortement recommandé |
+| Llama 4 70B     | ~40 Go  | 48 Go       | Nécessaire           |
+| Mistral Large 2 | ~120 Go | 128 Go      | GPU pro obligatoire  |
 
 Pour les associations, on recommande généralement de **commencer avec un modèle 7-8B** (Phi-4, Llama 4 8B, Mistral Small) sur une machine modeste, puis de monter en taille si nécessaire.
 
 ### Le défi n°2 : La performance
 
 Un modèle open source sera souvent **2 à 5 fois plus lent** qu'une API propriétaire sur la même machine. Pour les usages interactifs, il faut :
+
 - Choisir un modèle adapté à votre hardware
 - Optimiser la quantification (Q4, Q5, Q8)
 - Prévoir un GPU si vous voulez du temps réel
@@ -260,6 +345,7 @@ Un modèle open source sera souvent **2 à 5 fois plus lent** qu'une API propri�
 ### Le défi n°3 : La qualité
 
 Un modèle 8B sera moins performant qu'un modèle 70B. Pour compenser :
+
 - Utiliser le **RAG** pour enrichir le contexte
 - Faire du **prompt engineering** soigné
 - Évaluer régulièrement la qualité
@@ -268,13 +354,16 @@ Un modèle 8B sera moins performant qu'un modèle 70B. Pour compenser :
 ### Le défi n°4 : La sécurité
 
 Une IA mal configurée peut fuiter des données, générer des contenus dangereux, ou être manipulée par prompt injection. On met en place :
+
 - **Filtrage des entrées** (détection de tentatives de jailbreak)
 - **Filtrage des sorties** (contenus dangereux, données personnelles)
 - **Sandboxing** (isolation du modèle)
 - **Logs et audit** (traçabilité)
 
 <Callout type="error" title="L'erreur classique du débutant">
-Beaucoup de structures achètent un GPU à 5 000 â‚¬ avant d'avoir testé si le modèle convient à leur besoin. **Testez d'abord sur du matériel modeste ou dans le cloud**, validez l'usage, puis investissez dans l'infrastructure dédiée si nécessaire.
+  Beaucoup de structures achètent un GPU à 5 000 â‚¬ avant d'avoir testé si le modèle convient à
+  leur besoin. **Testez d'abord sur du matériel modeste ou dans le cloud**, validez l'usage, puis
+  investissez dans l'infrastructure dédiée si nécessaire.
 </Callout>
 
 ---
@@ -288,6 +377,7 @@ Biscuits IA est une association d'intérêt général. Notre mission : **rendre 
 **1. L'audit (gratuit pour les associations)**
 
 On commence par comprendre :
+
 - Vos besoins réels (pas le besoin rêvé)
 - Vos contraintes (budget, compétences, infrastructure)
 - Vos données (volume, sensibilité, localisation)
@@ -304,6 +394,7 @@ Durée : 2 à 4 semaines.
 **3. Le déploiement**
 
 On industrialise la solution :
+
 - Infrastructure stable (serveur, monitoring, sauvegardes)
 - Interface utilisateur adaptée à votre équipe
 - Connexion à vos outils existants
@@ -314,6 +405,7 @@ Durée : 1 à 3 mois selon la complexité.
 **4. La formation**
 
 On forme votre équipe à :
+
 - Utiliser l'IA au quotidien
 - Comprendre ses limites
 - Détecter les problèmes
@@ -324,6 +416,7 @@ Durée : 2 à 5 jours selon le public.
 **5. L'accompagnement continu**
 
 On reste disponibles pour :
+
 - Les questions techniques
 - Les évolutions fonctionnelles
 - La veille technologique
@@ -336,10 +429,30 @@ Durée : aussi longtemps que nécessaire.
 <ComparisonGrid
   type="comparison"
   items={[
-    { icon: '🤝', title: 'Ateliers de découverte', description: '1 à 3 jours, en présentiel. Démystifier l\'IA, comprendre l\'open source, identifier les cas d\'usage pertinents. Idéal pour démarrer.' },
-    { icon: '🛠️', title: 'Mission d\'intégration', description: '2 à 6 mois, accompagnement complet. Audit, prototype, déploiement, formation. Pour les structures prêtes à se lancer.' },
-    { icon: '🌱', title: 'Co-développement', description: 'On construit ensemble, votre équipe monte en compétences. Idéal pour les structures qui veulent internaliser l\'expertise.' },
-    { icon: '🛡️', title: 'Support continu', description: 'Maintenance, mises à jour, support technique, veille. Pour les structures qui ont déployé et veulent pérenniser.' }
+    {
+      icon: '🤝',
+      title: 'Ateliers de découverte',
+      description:
+        "1 à 3 jours, en présentiel. Démystifier l'IA, comprendre l'open source, identifier les cas d'usage pertinents. Idéal pour démarrer.",
+    },
+    {
+      icon: '🛠️',
+      title: "Mission d'intégration",
+      description:
+        '2 à 6 mois, accompagnement complet. Audit, prototype, déploiement, formation. Pour les structures prêtes à se lancer.',
+    },
+    {
+      icon: '🌱',
+      title: 'Co-développement',
+      description:
+        "On construit ensemble, votre équipe monte en compétences. Idéal pour les structures qui veulent internaliser l'expertise.",
+    },
+    {
+      icon: '🛡️',
+      title: 'Support continu',
+      description:
+        'Maintenance, mises à jour, support technique, veille. Pour les structures qui ont déployé et veulent pérenniser.',
+    },
   ]}
 />
 
@@ -353,7 +466,9 @@ Biscuits IA n'est pas un éditeur de logiciel. C'est une **association d'intér�
 - **Transmission** : notre objectif est que vous deveniez autonomes, pas que vous dépendiez de nous indéfiniment.
 
 <Callout type="tip" title="Le bon réflexe avant de se lancer">
-Avant d'investir du temps et de l'argent, **participez à l'un de nos ateliers de découverte**. En une journée, vous aurez une vision claire de ce qui est possible, de ce qui est réaliste pour votre structure, et des prochaines étapes concrètes. C'est gratuit pour les associations.
+  Avant d'investir du temps et de l'argent, **participez à l'un de nos ateliers de découverte**. En
+  une journée, vous aurez une vision claire de ce qui est possible, de ce qui est réaliste pour
+  votre structure, et des prochaines étapes concrètes. C'est gratuit pour les associations.
 </Callout>
 
 ---
@@ -411,10 +526,10 @@ Mais cette chance ne se concrétisera pas toute seule. Il faut des **compétence
 <Callout type="tip" title="Un atelier pour démarrer">
 Biscuits IA propose régulièrement des **ateliers d'initiation à l'IA open source** : comprendre les modèles, les tester, les déployer. Au programme : démos live, manipulations guidées, et plan d'action personnalisé pour votre structure.
 
-*Prochaines sessions visibles sur notre site. Associations : nous contacter pour les tarifs solidaires.*
+_Prochaines sessions visibles sur notre site. Associations : nous contacter pour les tarifs solidaires._
+
 </Callout>
 
 ---
 
-*Vous avez déjà déployé une IA open source dans votre structure ? Partagez votre retour d'expérience en commentaire — vos apprentissages peuvent aider d'autres associations à se lancer. 🍪*
-
+_Vous avez déjà déployé une IA open source dans votre structure ? Partagez votre retour d'expérience en commentaire — vos apprentissages peuvent aider d'autres associations à se lancer. 🍪_

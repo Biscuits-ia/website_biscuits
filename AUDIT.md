@@ -482,3 +482,37 @@ Cet addendum remplace les constats SEO historiques lorsqu'ils décrivent un éta
 Un sous-domaine utilise volontairement Cloudflare. Les nameservers `demi.ns.cloudflare.com` et `marvin.ns.cloudflare.com` doivent donc être conservés. Cela n'impose pas que le site principal traverse le proxy : Cloudflare peut rester le fournisseur DNS de toute la zone tout en appliquant le proxy uniquement au sous-domaine qui en a besoin.
 
 **Configuration recommandée :** conserver le proxy actif sur le sous-domaine concerné ; placer les entrées de `biscuits-ia.com` et `www` en mode « DNS uniquement » lorsqu'elles pointent vers Vercel ; conserver les enregistrements MX/SPF/DKIM/DMARC et ne pas modifier les nameservers du domaine.
+
+## 13. Renforcement éditorial et cocons SEO — 5 août 2026
+
+### Architecture mise en place
+
+- création de trois pages piliers indexables : `/guides/arnaques-ia`, `/guides/ia-associations` et `/guides/ia-open-source` ;
+- rattachement explicite des 33 articles du blog à un seul de ces trois parcours, sans article orphelin ni doublon de classification ;
+- ajout, dans chaque article, d'un lien vers son guide parent et de trois lectures suivantes sélectionnées dans le même thème ;
+- ajout des trois guides à la page d'accueil du blog et au pied de page afin de réduire leur profondeur de crawl ;
+- ajout de sources institutionnelles ou documentaires adaptées à chaque thème ;
+- enrichissement du schéma `Article` avec `isPartOf`, `citation`, date de publication et date de modification ;
+- prise en charge éditoriale des champs `updatedDate` et `reviewedDate` sans fabriquer de fausse date de mise à jour ;
+- révision des trois contenus pivots sur la détection des arnaques, l'IA pour les associations et l'IA open source ;
+- ajout de tests automatisés sur les canonicals, les directives robots, le maillage, les métadonnées Open Graph, les sources et les données structurées.
+
+### Validation et production
+
+| Contrôle | Résultat |
+|---|---|
+| Build Astro | réussi, 149 pages HTML traitées |
+| Typecheck Astro | 0 erreur, 0 avertissement, 0 suggestion |
+| ESLint et Prettier | réussis |
+| Invariants de build | tous réussis |
+| Audit des dépendances de production | 0 vulnérabilité connue |
+| Tests SEO et structure en local | 15/15 réussis |
+| Tests SEO et structure sur `biscuits-ia.com` | 15/15 réussis |
+| Crawl du sitemap public | 71 URL, toutes en HTTP 200, avec canonical et sans `noindex` |
+| Déploiement Vercel | `dpl_4nwYMmKGhdbMg7toQpwXiP4K18TB`, `READY`, cible production |
+| Alias | `https://biscuits-ia.com` |
+| Erreurs Vercel observées après déploiement | aucune |
+
+### Travail hors code encore nécessaire
+
+Cette livraison améliore l'exploration, la compréhension thématique et la crédibilité des contenus, mais une position dans le top 3 ne peut pas être garantie techniquement. La prochaine phase doit s'appuyer sur les requêtes et pages réellement visibles dans Google Search Console et Bing Webmaster Tools : consolider les pages qui reçoivent déjà des impressions, réviser régulièrement les contenus sensibles au temps, obtenir des liens éditoriaux pertinents et éviter de publier plusieurs articles visant exactement la même intention de recherche.

@@ -1,24 +1,29 @@
 ---
-title: "Comprendre l'IA : Comment l'Intelligence Artificielle fonctionne vraiment"
-description: "Un guide simple et concret pour comprendre l'IA, ses usages, ses limites, et comment elle transforme le métier de développeur."
+title: "Intelligence artificielle pour les associations : comprendre avant d'agir"
+description: "Un guide simple pour comprendre le fonctionnement de l'IA, ses usages et ses limites avant de l'adopter dans une association ou une petite structure."
 pubDate: 2024-01-20T14:30:00Z
-author: "Biscuits IA"
+updatedDate: 2026-08-05T00:00:00Z
+reviewedDate: 2026-08-05T00:00:00Z
+author: 'Biscuits IA'
 featured: false
-tags: ["ia", "intelligence-artificielle", "dev", "productivite"]
+tags: ['ia', 'intelligence-artificielle', 'dev', 'productivite']
 ---
 
 import Callout from '@/components/Callout.astro';
 import ComparisonGrid from '@/components/ComparisonGrid.astro';
 
-L'intelligence artificielle est **partout** : dans nos téléphones, nos outils de développement, les réseaux sociaux, et maintenant même dans nos éditeurs de code.
+L'intelligence artificielle est **partout** : dans nos téléphones, les outils bureautiques, les moteurs de recherche et les logiciels utilisés par les associations.
 
 On en parle beaucoup, mais **comment ça marche vraiment ?** Et surtout : **que peut faire l'IA… et que ne peut-elle pas faire ?**
 
-Bienvenue dans ce premier article technique de Biscuits du Dev 🥠
+Ce guide pose les bases avant de choisir un outil ou d'envoyer des données de membres dans un assistant conversationnel.
 
 <Callout type="info">
-Cet article est conçu pour être accessible aux développeurs de tous niveaux. Aucun prérequis en machine learning nécessaire !
+  Cet article est conçu pour les bénévoles, salariés et responsables associatifs. Aucun prérequis
+  technique n'est nécessaire.
 </Callout>
+
+Une fois ces bases acquises, poursuivez avec le guide pour [automatiser les tâches répétitives d'une association](/blog/automatiser-taches-ia-associations) et vérifiez les précautions détaillées dans notre article [RGPD pour les petites structures](/blog/rgpd-petites-structures).
 
 ---
 
@@ -27,13 +32,15 @@ Cet article est conçu pour être accessible aux développeurs de tous niveaux. 
 Contrairement à ce qu'on pourrait croire, l'IA dans la majorité des cas **n'est pas une entité qui "pense"**.
 
 Elle se base sur :
+
 - 🔢 De très grands **modèles statistiques**
 - 📊 Entraînés sur d'**énormes quantités de données**
 - 🎯 Capables d'apprendre des **motifs** (patterns)
 - 💬 Et de générer des **réponses plausibles**
 
 <Callout type="warning" title="Idée reçue à combattre">
-L'IA **ne comprend pas** votre texte comme un humain. Elle prédit simplement ce qui a statistiquement le plus de chances d'être correct, en se basant sur des milliards d'exemples.
+  L'IA **ne comprend pas** votre texte comme un humain. Elle prédit simplement ce qui a
+  statistiquement le plus de chances d'être correct, en se basant sur des milliards d'exemples.
 </Callout>
 
 ### Le principe en une phrase
@@ -51,11 +58,13 @@ Voici une version **simplifiée** du fonctionnement d'un modèle comme GPT :
 ### Les 5 étapes du processus
 
 **1. Input : On lui donne du texte**
+
 ```
 "Écris-moi une fonction JavaScript pour..."
 ```
 
 **2. Tokenization : Le modèle découpe le texte en tokens**
+
 ```
 ["Écris", "-", "moi", "une", "fonction", "JavaScript", ...]
 ```
@@ -64,6 +73,7 @@ Voici une version **simplifiée** du fonctionnement d'un modèle comme GPT :
 Le modèle cherche des patterns dans des milliards d'exemples similaires
 
 **4. Prédiction : Il calcule une probabilité pour le mot suivant**
+
 ```
 Probabilité : "function" (87%), "const" (8%), "let" (3%)...
 ```
@@ -72,20 +82,24 @@ Probabilité : "function" (87%), "const" (8%), "let" (3%)...
 Jusqu'à produire une réponse complète et cohérente
 
 <Callout type="tip">
-Un modèle comme GPT-4 contient environ **1,76 trillion de paramètres**. C'est comme si chaque neurone du cerveau humain avait 250 000 connexions !
+  Un modèle comme GPT-4 contient environ **1,76 trillion de paramètres**. C'est comme si chaque
+  neurone du cerveau humain avait 250 000 connexions !
 </Callout>
 
 ### Exemple concret
 
 Imaginons que tu demandes :
+
 ```javascript
 // Prompt : "Écris une fonction qui inverse une chaîne"
 ```
 
 L'IA va :
+
 1. Reconnaître le pattern "fonction JavaScript"
 2. Identifier le besoin "inverser une chaîne"
 3. Générer la solution la plus probable selon ses données
+
 ```javascript
 // Réponse générée
 function reverseString(str) {
@@ -104,6 +118,7 @@ L'intelligence artificielle ne **"remplace" pas** les développeurs, mais elle l
 <Callout type="success" title="Les super-pouvoirs de l'IA">
 
 **Génération de code boilerplate**
+
 ```typescript
 // Tu demandes : "Crée un composant React avec state"
 // Elle génère instantanément le squelette complet
@@ -113,7 +128,7 @@ L'intelligence artificielle ne **"remplace" pas** les développeurs, mais elle l
 Parfait pour comprendre du legacy code ou des algorithmes obscurs
 
 **Debugging rapide**  
-Elle repère souvent les erreurs de syntaxe et les bugs logiques en quelques secondes 
+Elle repère souvent les erreurs de syntaxe et les bugs logiques en quelques secondes
 
 **Documentation automatique**  
 Génère des commentaires et de la doc à partir de ton code
@@ -162,25 +177,25 @@ Le vrai pouvoir arrive quand on **combine** l'humain et l'IA :
 
 ### Ce que l'humain apporte
 
-<ComparisonGrid 
+<ComparisonGrid
   type="human"
   items={[
     { icon: '🎨', title: 'Intuition', description: 'Comprendre les besoins non exprimés' },
     { icon: '💡', title: 'Créativité', description: 'Trouver des solutions originales' },
     { icon: '📚', title: 'Expérience', description: 'Éviter les pièges déjà rencontrés' },
-    { icon: '🎯', title: 'Vision d\'ensemble', description: 'Voir comment tout s\'articule' }
+    { icon: '🎯', title: "Vision d'ensemble", description: "Voir comment tout s'articule" },
   ]}
 />
 
 ### Ce que l'IA apporte
 
-<ComparisonGrid 
+<ComparisonGrid
   type="ai"
   items={[
     { icon: '⚡', title: 'Vitesse', description: 'Génération instantanée de code' },
     { icon: '🔄', title: 'Répétition', description: 'Pas de fatigue sur les tâches répétitives' },
     { icon: '📊', title: 'Standardisation', description: 'Code conforme aux best practices' },
-    { icon: '🌐', title: 'Connaissance large', description: 'Accès à des millions de patterns' }
+    { icon: '🌐', title: 'Connaissance large', description: 'Accès à des millions de patterns' },
   ]}
 />
 
@@ -188,6 +203,7 @@ Le vrai pouvoir arrive quand on **combine** l'humain et l'IA :
 **Humain pour la stratégie → IA pour l'exécution → Humain pour la validation**
 
 Exemple concret : Tu définis l'architecture de ton app, l'IA génère les composants de base, et tu les personnalises selon tes besoins spécifiques.
+
 </Callout>
 
 ---
@@ -199,6 +215,7 @@ Comme tout outil, l'IA a des **limites importantes** à connaître :
 ### 1. Hallucinations
 
 L'IA peut inventer des **réponses fausses mais crédibles**
+
 ```javascript
 // ⚠️ Elle peut générer du code qui a l'air correct mais ne marche pas
 async function fetchAPI() {
@@ -208,7 +225,8 @@ async function fetchAPI() {
 ```
 
 <Callout type="warning">
-Vérifie toujours le code généré, surtout pour les APIs et les librairies que tu ne connais pas bien.
+  Vérifie toujours le code généré, surtout pour les APIs et les librairies que tu ne connais pas
+  bien.
 </Callout>
 
 ### 2. Dépendance aux données d'entraînement
@@ -228,8 +246,8 @@ Elle ne "comprend" pas ton code comme un humain. Elle fait juste du pattern matc
 Elle ne peut pas dire "attends, ta solution est mauvaise, voilà pourquoi..."
 
 <Callout type="info" title="Règle d'or">
-**L'IA est un assistant puissant, mais pas un expert.**  
-Traite ses suggestions comme celles d'un junior dev : utiles, mais à valider systématiquement.
+  **L'IA est un assistant puissant, mais pas un expert.** Traite ses suggestions comme celles d'un
+  junior dev : utiles, mais à valider systématiquement.
 </Callout>
 
 ---
@@ -278,14 +296,16 @@ Et chez Biscuits du Dev, c'est exactement ce qu'on aime : **des outils qui te do
 📚 "Comment utiliser l'IA pour coder plus vite (sans devenir dépendant)"
 
 Au programme :
+
 - Workflow concret avec GitHub Copilot
 - Prompts efficaces pour ChatGPT
 - Quand utiliser (ou pas) l'IA
 - Exercices pratiques
 
-*Disponible bientôt sur Biscuits du Dev !*
+_Disponible bientôt sur Biscuits du Dev !_
+
 </Callout>
 
 ---
 
-*Tu as aimé cet article ? Partage-le avec tes collègues devs ! 🍪*
+_Tu as aimé cet article ? Partage-le avec tes collègues devs ! 🍪_

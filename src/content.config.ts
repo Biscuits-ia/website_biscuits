@@ -7,6 +7,8 @@ const blog = defineCollection({
   schema: z.object({
     title: z.string(),
     pubDate: z.coerce.date(),
+    updatedDate: z.coerce.date().optional(),
+    reviewedDate: z.coerce.date().optional(),
     description: z.string().optional(),
     author: z.string().optional(),
     // Accepte un chemin d'asset local (résolu par Astro) ou une URL absolue.

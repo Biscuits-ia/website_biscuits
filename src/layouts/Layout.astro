@@ -21,6 +21,10 @@ export interface Props {
   ogImage?: string;
   ogType?: 'website' | 'article';
   noindex?: boolean;
+  author?: string;
+  publishedTime?: string;
+  modifiedTime?: string;
+  tags?: string[];
   schema?: {
     type: 'Organization' | 'NGO' | 'Service' | 'FAQPage' | 'Article' | 'WebPage' | 'ContactPage';
     data?: Record<string, unknown>;
@@ -42,6 +46,10 @@ const {
   ogImage = '/og-default.webp',
   ogType = 'website',
   noindex = false,
+  author,
+  publishedTime,
+  modifiedTime,
+  tags = [],
   schema,
 } = Astro.props;
 
@@ -96,6 +104,10 @@ const criticalCSS = `
       ogImage={ogImage}
       ogType={ogType}
       noindex={noindex}
+      author={author}
+      publishedTime={publishedTime}
+      modifiedTime={modifiedTime}
+      tags={tags}
       schema={schema}
       isProd={isProd}
       nonce={nonce}

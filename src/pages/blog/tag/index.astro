@@ -1,0 +1,102 @@
+---
+export const prerender = true;
+
+import { getCollection } from 'astro:content';
+import Layout from '@/layouts/Layout.astro';
+import Breadcrumb from '@/components/Breadcrumb.astro';
+
+const slugifyTag = (tag: string): string =>
+  tag
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '');
+
+const articles = (await getCollection('blog')).filter((article) =>
+  import.meta.env.PROD ? !article.data.draft : true
+);
+const counts = new Map<string, { label: string; count: number }>();
+for (const article of articles) {
+  for (const tag of (article.data.tags ?? []) as string[]) {
+    const slug = slugifyTag(tag);
+    const current = counts.get(slug);
+    counts.set(slug, { label: current?.label ?? tag, count: (current?.count ?? 0) + 1 });
+  }
+}
+const primaryTags = [...counts.entries()]
+  .filter(([, value]) => value.count >= 3)
+  .sort((a, b) => b[1].count - a[1].count)
+  .map(([slug, value]) => ({ slug, ...value }));
+---
+
+<Layout
+  title="Thèmes du blog"
+  description="Les principaux thèmes traités par le blog Biscuits IA."
+  canonical="/blog/tag"
+  noindex={true}
+>
+  <Breadcrumb labels={{ tag: 'Thèmes' }} />
+  <div class="tag-index">
+    <header>
+      <h1>Thèmes du blog</h1>
+      <p>Les thèmes ci-dessous regroupent au moins trois articles complémentaires.</p>
+    </header>
+    <ul>
+      {
+        primaryTags.map((tag) => (
+          <li>
+            <a href={`/blog/tag/${tag.slug}`}>
+              <strong>#{tag.label}</strong>
+              <span>{tag.count} articles</span>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</Layout>
+
+<style>
+  .tag-index {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 2rem 1rem 5rem;
+  }
+  header p {
+    color: var(--color-text-light);
+  }
+  ul {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.75rem;
+    margin: 2rem 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  a {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    padding: 1rem;
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-lg, 0.75rem);
+    background: var(--color-bg-alt);
+    text-decoration: none;
+  }
+  a:hover {
+    border-color: var(--color-primary);
+  }
+  strong {
+    color: var(--color-primary);
+  }
+  span {
+    color: var(--color-text-light);
+  }
+  @media (max-width: 680px) {
+    ul {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

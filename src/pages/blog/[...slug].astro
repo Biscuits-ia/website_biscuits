@@ -71,6 +71,15 @@ const slugifyTag = (tag: string): string =>
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/(^-|-$)/g, '');
 
+const globalTagCounts = new Map<string, number>();
+for (const article of publishedArticles) {
+  for (const tag of ((article.data.tags as string[]) || []) as string[]) {
+    const tagSlug = slugifyTag(tag);
+    globalTagCounts.set(tagSlug, (globalTagCounts.get(tagSlug) ?? 0) + 1);
+  }
+}
+const isIndexableTag = (tag: string): boolean => (globalTagCounts.get(slugifyTag(tag)) ?? 0) >= 3;
+
 // Articles relies : 3 articles partageant au moins un tag, hors article courant.
 const entryTags = ((entry.data.tags as string[]) || []) as string[];
 const relatedArticles = publishedArticles
@@ -373,11 +382,15 @@ const articleSchema = {
           entry.data.tags && entry.data.tags.length > 0 && (
             <nav class="article-tags" aria-label="Tags de l'article">
               <span class="article-tags-label">Tags</span>
-              {entry.data.tags.map((tag: string) => (
-                <a href={`/blog/tag/${slugifyTag(tag)}`} class="tag tag-link">
-                  #{tag}
-                </a>
-              ))}
+              {entry.data.tags.map((tag: string) =>
+                isIndexableTag(tag) ? (
+                  <a href={`/blog/tag/${slugifyTag(tag)}`} class="tag tag-link">
+                    #{tag}
+                  </a>
+                ) : (
+                  <span class="tag">#{tag}</span>
+                )
+              )}
             </nav>
           )
         }

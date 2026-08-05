@@ -95,7 +95,8 @@ export default defineConfig({
       filter: (page) => {
         // Les tags restent decouvrables par le maillage interne. Leur retrait
         // du sitemap evite d'y pousser les pages de taxonomie trop faibles.
-        if (new URL(page).pathname.startsWith('/blog/tag/')) return false;
+        const pagePath = new URL(page).pathname;
+        if (pagePath === '/blog/tag' || pagePath.startsWith('/blog/tag/')) return false;
         const excludePaths = [
           '/admin',
           '/api',

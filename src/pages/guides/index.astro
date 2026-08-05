@@ -1,0 +1,100 @@
+---
+export const prerender = true;
+
+import Layout from '@/layouts/Layout.astro';
+import Breadcrumb from '@/components/Breadcrumb.astro';
+import { BLOG_CLUSTERS } from '@/lib/blogClusters';
+
+const title = 'Guides pratiques sur l’intelligence artificielle';
+const description =
+  'Tous les guides Biscuits IA sur les arnaques, les usages associatifs et les solutions open source.';
+---
+
+<Layout
+  title={title}
+  description={description}
+  canonical="/guides"
+  schema={{ type: 'WebPage', data: { name: title, description } }}
+>
+  <Breadcrumb labels={{ guides: 'Guides' }} />
+  <div class="index-page">
+    <header>
+      <span>Centre de ressources</span>
+      <h1>Guides pratiques</h1>
+      <p>
+        Trois parcours structurés pour comprendre les risques, choisir des usages utiles et garder
+        la maîtrise de vos outils numériques.
+      </p>
+    </header>
+    <section aria-labelledby="guide-list-title">
+      <h2 id="guide-list-title">Choisir un parcours</h2>
+      <div class="card-grid">
+        {
+          BLOG_CLUSTERS.map((cluster) => (
+            <a href={`/guides/${cluster.slug}`} class="card">
+              <small>{cluster.eyebrow}</small>
+              <h3>{cluster.shortTitle}</h3>
+              <p>{cluster.description}</p>
+              <strong>{cluster.articleIds.length} articles →</strong>
+            </a>
+          ))
+        }
+      </div>
+    </section>
+  </div>
+</Layout>
+
+<style>
+  .index-page {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2rem 1rem 5rem;
+  }
+  header {
+    max-width: 850px;
+    margin-bottom: 3rem;
+  }
+  header > span,
+  small {
+    color: var(--color-primary);
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  h1 {
+    margin: 0.5rem 0 1rem;
+  }
+  header p,
+  .card p {
+    color: var(--color-text-light);
+    line-height: 1.65;
+  }
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+    margin-top: 1.5rem;
+  }
+  .card {
+    display: block;
+    padding: 1.4rem;
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-xl, 1rem);
+    background: var(--color-bg-alt);
+    text-decoration: none;
+  }
+  .card:hover {
+    border-color: var(--color-primary);
+  }
+  .card h3 {
+    margin: 0.6rem 0;
+  }
+  .card strong {
+    color: var(--color-primary);
+  }
+  @media (max-width: 760px) {
+    .card-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

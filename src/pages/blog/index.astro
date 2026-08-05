@@ -46,8 +46,12 @@ for (const a of sorted) {
   }
 }
 const allTags = Array.from(tagCounts.entries())
+  // Une taxonomie avec 80 pages pour 33 articles dilue le crawl. On ne lie
+  // comme pages de thème que les tags disposant d'au moins trois contenus.
+  .filter(([, meta]) => meta.count >= 3)
   .sort((a, b) => b[1].count - a[1].count || a[0].localeCompare(b[0]))
   .map(([slug, meta]) => ({ slug, display: meta.display, count: meta.count }));
+const indexableTagSlugs = allTags.map((tag) => tag.slug);
 
 // Articles en vedette : on prend les 3 plus recents marques featured:true,
 // sinon on complete avec les plus recents.
@@ -306,15 +310,19 @@ const pageDescription = `${total} articles sur l'IA generative, la cybersecurite
                   <div class="card-footer">
                     {article.data.tags && article.data.tags.length > 0 && (
                       <div class="card-tags">
-                        {(article.data.tags as string[]).slice(0, 3).map((tag: string) => (
-                          <a
-                            href={`/blog/tag/${slugifyTag(tag)}`}
-                            class="tag"
-                            data-tag-slug={slugifyTag(tag)}
-                          >
-                            #{tag}
-                          </a>
-                        ))}
+                        {(article.data.tags as string[]).slice(0, 3).map((tag: string) =>
+                          indexableTagSlugs.includes(slugifyTag(tag)) ? (
+                            <a
+                              href={`/blog/tag/${slugifyTag(tag)}`}
+                              class="tag"
+                              data-tag-slug={slugifyTag(tag)}
+                            >
+                              #{tag}
+                            </a>
+                          ) : (
+                            <span class="tag">#{tag}</span>
+                          )
+                        )}
                       </div>
                     )}
                     <span class="read-more">
@@ -399,7 +407,7 @@ const pageDescription = `${total} articles sur l'IA generative, la cybersecurite
   </div>
 </Layout>
 
-<script is:inline define:vars={{ allArticlesForSearch, totalPages, PAGE_SIZE }}>
+<script is:inline define:vars={{ allArticlesForSearch, totalPages, PAGE_SIZE, indexableTagSlugs }}>
   // Moteur de recherche + filtre tag + pagination cote client.
   (function () {
     const searchInput = document.getElementById('blog-search');
@@ -456,7 +464,12 @@ const pageDescription = `${total} articles sur l'IA generative, la cybersecurite
     function renderCard(article) {
       const tagsHtml = (article.tags || [])
         .slice(0, 3)
-        .map((t) => `<a href="/blog/tag/${slugify(t)}" class="tag">#${escapeHtml(t)}</a>`)
+        .map((t) => {
+          const slug = slugify(t);
+          return indexableTagSlugs.includes(slug)
+            ? `<a href="/blog/tag/${slug}" class="tag">#${escapeHtml(t)}</a>`
+            : `<span class="tag">#${escapeHtml(t)}</span>`;
+        })
         .join('');
       return `
         <article class="article-card" data-article-id="${article.id}">

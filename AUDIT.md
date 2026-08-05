@@ -531,3 +531,32 @@ L'intégration locale `async-css-swap` transformait les feuilles de style des 14
 - validation sous Chromium avec cache froid, limitation réseau et ralentissement CPU.
 
 Après correction locale, les profils mobile et desktop mesurent `CLS = 0,00000` sur l'accueil, le blog, un article et une page guide. Le déploiement Vercel `dpl_8snkaPoKbChj86AEaeyYJnrk7o9H` a ensuite été validé sur `biscuits-ia.com` avec `CLS = 0,00000` sur le blog, l'article et le guide, et `0,00358` sur l'accueil desktop. Aucun chargement CSS asynchrone résiduel ni erreur Vercel n'a été observé. Cette mesure de laboratoire ne remplace pas les données terrain : le rapport Core Web Vitals de Search Console utilise les visites réelles agrégées et peut nécessiter jusqu'à 28 jours pour refléter durablement la nouvelle version.
+
+## 15. Analyse des exports Google Search Console — 5 août 2026
+
+Les quatre exports transmis couvrent les données du 7 mai au 24 juillet 2026. Au dernier point disponible, Google connaissait 406 URL : 91 indexées et 315 non indexées. Le saut du 11 juillet, de 125 à 406 URL connues, indique une découverte massive de variantes, taxonomies ou anciennes routes, et non la création progressive de 281 pages éditoriales nouvelles.
+
+| Motif Google | URL | Interprétation |
+|---|---:|---|
+| Autre page avec balise canonique correcte | 49 | Exclusion généralement normale d'une variante au profit de sa canonical |
+| Introuvable (404) | 15 | À vérifier URL par URL ; les exports agrégés ne contiennent pas les exemples |
+| Bloquée par `robots.txt` | 7 | Cohérent pour les API, espaces privés et tableaux de bord |
+| Page avec redirection | 3 | Normal si la destination est la bonne URL canonique |
+| Détectée, actuellement non indexée | 231 | Principal problème de priorité de crawl et de prolifération d'URL |
+| Explorée, actuellement non indexée | 9 | À arbitrer selon la qualité et l'intention de chaque URL exemple |
+| Google a choisi une autre canonical | 1 | Nécessite impérativement l'URL exemple pour comparer contenu et signaux |
+| Indexée malgré le blocage robots | 2 | Les URL doivent être identifiées ; Google ne peut pas lire un `noindex` sur une page interdite au crawl |
+
+### Corrections consécutives à l'analyse
+
+- désactivation de l'option Vercel `directoryListing`, qui exposait des listes de fichiers en HTTP 200 ;
+- création de vraies pages pour `/guides`, `/auteur`, `/public` et `/blog/tag` ;
+- conservation de `/blog/tag` en `noindex` et hors sitemap ;
+- réduction du maillage de 80 pages de tags à 15 thèmes disposant d'au moins trois articles ;
+- maintien des 65 pages de tags faibles en `noindex`, mais retrait de l'essentiel de leurs liens entrants afin de réduire progressivement le gaspillage de crawl ;
+- remplacement des liens email publics réécrits par Cloudflare en `/cdn-cgi/l/email-protection`, source d'URL artificielles en 404, par le formulaire `/contact` ;
+- ajout d'invariants et de tests navigateur contre les listings Vercel, le maillage excessif des tags et les liens Cloudflare artificiels.
+
+La version corrigée a été déployée sous `dpl_HbAorhkgWrtP86RXVED8eaR5BqfQ` (`READY`). Les 17 tests d'indexation et de structure passent sur la production ; le sitemap contient désormais 74 URL, toutes en HTTP 200, sans `noindex` et avec une canonical. Aucun log d'erreur Vercel n'a été observé après validation.
+
+Pour solder précisément les 15 erreurs 404, la canonical divergente et les deux URL indexées malgré `robots.txt`, il faudra exporter les exemples d'URL affichés à l'intérieur de chaque ligne du rapport Search Console. Les quatre CSV actuels ne contiennent que les totaux par motif.

@@ -1,0 +1,100 @@
+---
+export const prerender = true;
+
+import Layout from '@/layouts/Layout.astro';
+import Breadcrumb from '@/components/Breadcrumb.astro';
+
+const authors = [
+  {
+    slug: 'alexis-gallard',
+    name: 'Alexis Gallard',
+    role: 'Président et fondateur',
+    description: 'IA générative, éthique du numérique, open source et médiation numérique.',
+  },
+  {
+    slug: 'biscuits-ia',
+    name: 'Équipe Biscuits IA',
+    role: 'Collectif éditorial',
+    description: 'Bénévoles et contributeurs qui relisent et documentent les contenus du site.',
+  },
+];
+
+const title = 'Auteurs et comité éditorial';
+const description =
+  'Découvrez les auteurs, expertises et règles de relecture des contenus Biscuits IA.';
+---
+
+<Layout
+  title={title}
+  description={description}
+  canonical="/auteur"
+  schema={{ type: 'WebPage', data: { name: title, description } }}
+>
+  <Breadcrumb labels={{ auteur: 'Auteurs' }} />
+  <div class="authors-page">
+    <header>
+      <h1>Auteurs et comité éditorial</h1>
+      <p>
+        Nos contenus sont attribués, documentés et relus afin que vous puissiez identifier leur
+        origine et le domaine d’expertise mobilisé.
+      </p>
+    </header>
+    <section class="authors-grid" aria-label="Auteurs Biscuits IA">
+      {
+        authors.map((author) => (
+          <a href={`/auteur/${author.slug}`} class="author-card">
+            <small>{author.role}</small>
+            <h2>{author.name}</h2>
+            <p>{author.description}</p>
+            <strong>Voir le profil →</strong>
+          </a>
+        ))
+      }
+    </section>
+  </div>
+</Layout>
+
+<style>
+  .authors-page {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 2rem 1rem 5rem;
+  }
+  header {
+    max-width: 760px;
+    margin-bottom: 2.5rem;
+  }
+  header p,
+  .author-card p {
+    color: var(--color-text-light);
+    line-height: 1.65;
+  }
+  .authors-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+  }
+  .author-card {
+    padding: 1.5rem;
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-xl, 1rem);
+    background: var(--color-bg-alt);
+    text-decoration: none;
+  }
+  .author-card:hover {
+    border-color: var(--color-primary);
+  }
+  small,
+  .author-card strong {
+    color: var(--color-primary);
+    font-weight: 800;
+  }
+  .author-card h2 {
+    margin: 0.5rem 0;
+  }
+  @media (max-width: 680px) {
+    .authors-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

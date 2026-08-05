@@ -73,6 +73,14 @@ const visible = import.meta.env.PROD
   ? allArticles.filter((a: CollectionEntry<'blog'>) => !a.data.draft)
   : allArticles;
 
+const globalTagCounts = new Map<string, number>();
+for (const article of visible) {
+  for (const tag of ((article.data.tags as string[]) || []) as string[]) {
+    const slug = slugifyTag(tag);
+    globalTagCounts.set(slug, (globalTagCounts.get(slug) ?? 0) + 1);
+  }
+}
+
 const articles = visible
   .filter((a: CollectionEntry<'blog'>) => {
     const tags = ((a.data.tags as string[]) || []) as string[];
@@ -93,6 +101,7 @@ for (const a of articles) {
   }
 }
 const relatedTags = Array.from(coOccurrence.entries())
+  .filter(([name]) => (globalTagCounts.get(slugifyTag(name)) ?? 0) >= 3)
   .sort((a, b) => b[1] - a[1])
   .slice(0, 8)
   .map(([name, count]) => ({ name, count }));

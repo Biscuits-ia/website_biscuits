@@ -10,7 +10,6 @@ import mdx from '@astrojs/mdx';
 
 import react from '@astrojs/react';
 
-import asyncCss from './scripts/astro-async-css.mjs';
 import rehypeLazyFigure from './scripts/rehype-lazy-figure.mjs';
 import rehypeTaskListA11y from './scripts/rehype-task-list-a11y.mjs';
 
@@ -96,7 +95,8 @@ export default defineConfig({
       filter: (page) => {
         // Les tags restent decouvrables par le maillage interne. Leur retrait
         // du sitemap evite d'y pousser les pages de taxonomie trop faibles.
-        if (new URL(page).pathname.startsWith('/blog/tag/')) return false;
+        const pagePath = new URL(page).pathname;
+        if (pagePath === '/blog/tag' || pagePath.startsWith('/blog/tag/')) return false;
         const excludePaths = [
           '/admin',
           '/api',
@@ -170,7 +170,6 @@ export default defineConfig({
     }),
     mdx(),
     react(),
-    asyncCss(),
   ],
 
   output: 'server',

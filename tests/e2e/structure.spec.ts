@@ -4,12 +4,16 @@ import { countHeadings } from './helpers/dom';
 const PUBLIC_TEMPLATES = [
   '/',
   '/blog',
+  '/blog/tag',
   '/blog/ia',
   '/blog/kit-protection-association-arnaque-ia',
   '/blog/tag/accessibilite',
+  '/auteur',
+  '/guides',
   '/guides/arnaques-ia',
   '/guides/ia-associations',
   '/guides/ia-open-source',
+  '/public',
   '/legal/politique-de-confidentialite',
 ] as const;
 

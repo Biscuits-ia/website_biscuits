@@ -1,0 +1,94 @@
+---
+export const prerender = true;
+
+import Layout from '@/layouts/Layout.astro';
+import Breadcrumb from '@/components/Breadcrumb.astro';
+
+const audiences = [
+  {
+    href: '/public/associations',
+    title: 'Associations',
+    description: 'Gagner du temps, protéger les bénévoles et choisir des outils adaptés.',
+  },
+  {
+    href: '/public/collectivites',
+    title: 'Collectivités',
+    description: 'Déployer des usages responsables au service des agents et des citoyens.',
+  },
+  {
+    href: '/public/citoyens',
+    title: 'Citoyens',
+    description: 'Comprendre l’IA, reconnaître les risques et utiliser des solutions accessibles.',
+  },
+];
+
+const title = 'Nos ressources selon votre situation';
+const description =
+  'Ressources Biscuits IA pour les associations, les collectivités et les citoyens.';
+---
+
+<Layout
+  title={title}
+  description={description}
+  canonical="/public"
+  schema={{ type: 'WebPage', data: { name: title, description } }}
+>
+  <Breadcrumb labels={{ public: 'Publics' }} />
+  <div class="audience-page">
+    <header>
+      <h1>À qui s’adressent nos ressources ?</h1>
+      <p>Choisissez votre situation pour accéder directement aux conseils les plus utiles.</p>
+    </header>
+    <section class="audience-grid" aria-label="Choisir un public">
+      {
+        audiences.map((audience) => (
+          <a href={audience.href} class="audience-card">
+            <h2>{audience.title}</h2>
+            <p>{audience.description}</p>
+            <strong>Découvrir →</strong>
+          </a>
+        ))
+      }
+    </section>
+  </div>
+</Layout>
+
+<style>
+  .audience-page {
+    max-width: 1050px;
+    margin: 0 auto;
+    padding: 2rem 1rem 5rem;
+  }
+  header {
+    max-width: 760px;
+    margin-bottom: 2.5rem;
+  }
+  header p,
+  .audience-card p {
+    color: var(--color-text-light);
+    line-height: 1.65;
+  }
+  .audience-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+  }
+  .audience-card {
+    padding: 1.5rem;
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-xl, 1rem);
+    background: var(--color-bg-alt);
+    text-decoration: none;
+  }
+  .audience-card:hover {
+    border-color: var(--color-primary);
+  }
+  .audience-card strong {
+    color: var(--color-primary);
+  }
+  @media (max-width: 760px) {
+    .audience-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

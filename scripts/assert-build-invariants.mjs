@@ -78,6 +78,40 @@ assert('sitemap.xml reference le sitemap detaille', () =>
 );
 assert('sitemap-index.xml genere', () => exists('sitemap-index.xml'));
 
+assert('les repertoires publics ont une vraie page index', () => {
+  const required = [
+    'guides/index.html',
+    'auteur/index.html',
+    'public/index.html',
+    'blog/tag/index.html',
+  ];
+  const missing = required.filter((file) => !exists(file));
+  return missing.length === 0 || `index manquant(s) : ${missing.join(', ')}`;
+});
+assert('le repertoire des tags noindex reste hors sitemap', () => {
+  const xml = read('sitemap-0.xml');
+  return !xml.includes('<loc>https://biscuits-ia.com/blog/tag</loc>');
+});
+assert('aucun mailto public ne declenche la reecriture Cloudflare', () => {
+  const offenders = [];
+  for (const rel of fs.readdirSync(DIST, { recursive: true })) {
+    if (typeof rel !== 'string' || !rel.endsWith('.html')) continue;
+    const file = path.join(DIST, rel);
+    if (fs.readFileSync(file, 'utf8').includes('mailto:contact@biscuits-ia.com'))
+      offenders.push(rel);
+  }
+  return offenders.length === 0 || `mailto public trouve dans : ${offenders.join(', ')}`;
+});
+
+// Les feuilles globales doivent participer au premier rendu. Les convertir en
+// preload + swap JavaScript provoque un flash sans CSS, puis un déplacement de
+// tout le viewport lorsque les styles arrivent (CLS mesuré jusqu'à 0,62).
+assert('la CSS du premier rendu reste bloquante et stable', () => {
+  const html = read('index.html');
+  if (html.includes('data-async-css')) return 'swap CSS asynchrone détecté';
+  return /<link[^>]+rel="stylesheet"/.test(html) || 'aucune feuille CSS bloquante trouvée';
+});
+
 // Un octet NUL dans un fichier texte peut etre tolere par le build tout en
 // produisant un contenu corrompu pour les lecteurs, moteurs et extracteurs.
 assert('aucun octet NUL dans les sources et artefacts texte', () => {

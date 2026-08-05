@@ -12,7 +12,7 @@ export const POST: APIRoute = async (context) => {
   const { request, redirect } = context;
   const adminDb = createSupabaseAdminClient();
 
-  const form       = await request.formData();
+  const form = await request.formData();
   const resourceId = getFormString(form, 'resource_id');
   if (!isValidUUID(resourceId)) return new Response('resource_id invalide', { status: 400 });
 
@@ -24,18 +24,20 @@ export const POST: APIRoute = async (context) => {
     .single();
 
   if (fetchError || !resource) {
-    return redirect('/dashboard/admin/resources?error=' + encodeURIComponent('Ressource introuvable.'));
+    return redirect(
+      '/dashboard/admin/resources?error=' + encodeURIComponent('Ressource introuvable.')
+    );
   }
 
   // Supprime l'enregistrement BDD
-  const { error: deleteError } = await adminDb
-    .from('resources')
-    .delete()
-    .eq('id', resourceId);
+  const { error: deleteError } = await adminDb.from('resources').delete().eq('id', resourceId);
 
   if (deleteError) {
     console.error('[supprimer] Supabase error:', deleteError.message);
-    return redirect('/dashboard/admin/resources?error=' + encodeURIComponent('Erreur lors de la suppression de la ressource.'));
+    return redirect(
+      '/dashboard/admin/resources?error=' +
+        encodeURIComponent('Erreur lors de la suppression de la ressource.')
+    );
   }
 
   // Supprime le fichier du Storage (best-effort — ne bloque pas si échoue)

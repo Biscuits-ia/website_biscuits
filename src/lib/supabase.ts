@@ -45,7 +45,7 @@ function resolvePublishableKey(): string {
         : '';
   if (!key) {
     throw new Error(
-      '[supabase] Cle publique manquante (PUBLIC_SUPABASE_PUBLISHABLE_KEY ou SUPABASE_ANON_KEY).',
+      '[supabase] Cle publique manquante (PUBLIC_SUPABASE_PUBLISHABLE_KEY ou SUPABASE_ANON_KEY).'
     );
   }
   return key;
@@ -95,10 +95,10 @@ interface AstroContextLike {
  * Client SSR -- seule source de verite cote serveur.
  * Utilise par le middleware et les guards d'authentification.
  *
- * IMPORTANT : ce client NE doit PAS appeler signOut()/refreshSession()/getSession()
- * cote serveur -- il faut uniquement getUser() pour valider le JWT reseau.
- * Toute operation de mutation (signOut, updateUser, etc.) doit etre faite via
- * le client browser SDK ou via l'API Admin (service_role).
+ * IMPORTANT : ne jamais appeler refreshSession()/getSession() ni signOut() global.
+ * Les seules mutations Auth admises sont celles des routes dediees et protegees :
+ * signOut({ scope: 'local' }) sur le POST de deconnexion, et updateUser() apres
+ * reauthentification explicite pour les operations sensibles.
  */
 export function createSupabaseClient(context: AstroContextLike) {
   const url = resolveSupabaseUrl();
@@ -153,6 +153,21 @@ export function createSupabaseClient(context: AstroContextLike) {
       // code de verification ici : c'est fait cote client). On garde
       // 'implicit' pour eviter toute interference avec le code-verifier.
       flowType: 'implicit',
+    },
+  });
+}
+
+/**
+ * Client ephemere sans cookie, reserve a la reauthentification d'une operation
+ * sensible. Il ne persiste et ne rafraichit aucune session.
+ */
+export function createSupabaseVerificationClient() {
+  return createClient(resolveSupabaseUrl(), resolvePublishableKey(), {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+      skipAutoInitialize: true,
+      detectSessionInUrl: false,
     },
   });
 }

@@ -3,7 +3,7 @@
 // Politique de confidentialite (RGPD) - version complete avec sous-traitants reels
 // Mise a jour : 24 juin 2026
 
-import BaseLayout from "@/layouts/Layout.astro";
+import BaseLayout from '@/layouts/Layout.astro';
 import Breadcrumb from '@/components/Breadcrumb.astro';
 
 export const prerender = true;
@@ -15,15 +15,15 @@ export const prerender = true;
   noindex={false}
 >
   <Breadcrumb />
-  <main class="legal-wrapper">
+  <div class="legal-wrapper">
     <div class="container">
       <h1 class="title">Politique de Confidentialite</h1>
       <p class="update">Derniere mise a jour : 24 juin 2026 - Version 1.1</p>
 
       <p>
-        La presente politique explique comment <strong>Biscuits IA</strong>, association
-        Loi 1901 d\'interet general, collecte, utilise et protege vos donnees personnelles
-        dans le cadre de ses activites associatives et de ses services numeriques.
+        La presente politique explique comment <strong>Biscuits IA</strong>, association Loi 1901
+        d\'interet general, collecte, utilise et protege vos donnees personnelles dans le cadre de
+        ses activites associatives et de ses services numeriques.
       </p>
 
       <h2>1. Responsable du traitement</h2>
@@ -33,7 +33,8 @@ export const prerender = true;
         RNA : W863012707 - SIRET : 10151660700013<br />
         Siege : 2 B RUE de la Cueille Mirebalaise, Appartement 4, 86000 Poitiers, France<br />
         Responsable legal : Alexis Gallard, President<br />
-        Email de contact : <a href="mailto:contact@biscuits-ia.com">contact@biscuits-ia.com</a><br />
+        Email de contact : <a href="mailto:contact@biscuits-ia.com">contact@biscuits-ia.com</a><br
+        />
         Site : <a href="https://biscuits-ia.com">https://biscuits-ia.com</a>
       </p>
 
@@ -59,34 +60,45 @@ export const prerender = true;
       <ul>
         <li>Identifiant de session (UUID)</li>
         <li>Statut de l\'inscription (confirmee, en attente, annulee)</li>
-        <li>Pour les formations payantes : montant choisi, methode de paiement, reference de paiement (anonymisee)</li>
-        <li>Pour les parrainages : code de redemption, mode (pool ou nominatif), email du beneficiaire</li>
+        <li>
+          Pour les formations payantes : montant choisi, methode de paiement, reference de paiement
+          (anonymisee)
+        </li>
+        <li>
+          Pour les parrainages : code de redemption, mode (pool ou nominatif), email du beneficiaire
+        </li>
         <li>Pour les demandes d\'exoneration : motivation libre (50-500 caracteres)</li>
       </ul>
 
       <h3>2.4 Donnees de paiement</h3>
       <p>
-        Les inscriptions aux formations sont reglees par <strong>virement bancaire</strong>.
-        Les dons sont collectes sur la plateforme <strong>HelloAsso</strong>, hors de ce site.
-        Biscuits IA <strong>ne stocke aucun numero de carte bancaire</strong>
-        et n\'a pas acces a vos coordonnees bancaires. Seules les references de paiement
-        (ID de transaction, montant, statut) sont conservees dans notre base de donnees,
-        dans le respect de nos obligations comptables legales (10 ans).
+        Les inscriptions aux formations sont reglees par <strong>virement bancaire</strong>. Les
+        dons sont collectes sur la plateforme <strong>HelloAsso</strong>, hors de ce site. Biscuits
+        IA <strong>ne stocke aucun numero de carte bancaire</strong>
+        et n\'a pas acces a vos coordonnees bancaires. Seules les references de paiement (ID de transaction,
+        montant, statut) sont conservees dans notre base de donnees, dans le respect de nos obligations
+        comptables legales (10 ans).
       </p>
 
       <h3>2.5 Donnees de correspondance</h3>
       <p>
-        Lorsque vous nous contactez (formulaire de contact, email), nous conservons le contenu
-        et les metadonnees de nos echanges pendant la duree necessaire au traitement de votre
-        demande, puis pendant 3 ans a des fins de suivi.
+        Lorsque vous nous contactez (formulaire de contact, email), nous conservons le contenu et
+        les metadonnees de nos echanges pendant la duree necessaire au traitement de votre demande,
+        puis pendant 3 ans a des fins de suivi.
       </p>
 
       <h3>2.6 Donnees techniques (logs, cookies)</h3>
-      <p>Le Site utilise uniquement des cookies et traceurs strictement necessaires a son fonctionnement :</p>
+      <p>
+        Le Site utilise uniquement des cookies et traceurs strictement necessaires a son
+        fonctionnement :
+      </p>
       <ul>
         <li>Cookie de session (authentification, duree : session)</li>
         <li>Cookie de preference (consentement cookies, duree : 12 mois)</li>
-        <li>Logs serveur (adresse IP, user agent) conserves 12 mois pour la securite (Vercel + Supabase)</li>
+        <li>
+          Logs serveur (adresse IP, user agent) conserves 12 mois pour la securite (Vercel +
+          Supabase)
+        </li>
       </ul>
       <p>
         Nous utilisons Vercel Web Analytics (mesure d\'audience anonymisee, sans cookie, sans
@@ -99,21 +111,53 @@ export const prerender = true;
           <tr><th>Finalite</th><th>Base legale</th></tr>
         </thead>
         <tbody>
-          <tr><td>Gestion du compte utilisateur et authentification</td><td>Article 6(1)(b) RGPD - execution du contrat</td></tr>
-          <tr><td>Inscription aux ateliers et formations (y compris gratuites)</td><td>Article 6(1)(b) RGPD - execution du contrat</td></tr>
-          <tr><td>Traitement des paiements et remboursements</td><td>Article 6(1)(b) RGPD - execution du contrat</td></tr>
-          <tr><td>Emission des recus fiscaux et obligations comptables</td><td>Article 6(1)(c) RGPD - obligation legale</td></tr>
-          <tr><td>Envoi d\'emails transactionnels (confirmations, convocations)</td><td>Article 6(1)(b) RGPD - execution du contrat</td></tr>
-          <tr><td>Securite du Site, prevention de la fraude</td><td>Article 6(1)(f) RGPD - interet legitime</td></tr>
-          <tr><td>Amelioration du Site (analytics anonymisees)</td><td>Article 6(1)(f) RGPD - interet legitime</td></tr>
-          <tr><td>Gestion des demandes d\'acces, rectification, suppression (vos droits)</td><td>Article 6(1)(c) RGPD - obligation legale</td></tr>
+          <tr
+            ><td>Gestion du compte utilisateur et authentification</td><td
+              >Article 6(1)(b) RGPD - execution du contrat</td
+            ></tr
+          >
+          <tr
+            ><td>Inscription aux ateliers et formations (y compris gratuites)</td><td
+              >Article 6(1)(b) RGPD - execution du contrat</td
+            ></tr
+          >
+          <tr
+            ><td>Traitement des paiements et remboursements</td><td
+              >Article 6(1)(b) RGPD - execution du contrat</td
+            ></tr
+          >
+          <tr
+            ><td>Emission des recus fiscaux et obligations comptables</td><td
+              >Article 6(1)(c) RGPD - obligation legale</td
+            ></tr
+          >
+          <tr
+            ><td>Envoi d\'emails transactionnels (confirmations, convocations)</td><td
+              >Article 6(1)(b) RGPD - execution du contrat</td
+            ></tr
+          >
+          <tr
+            ><td>Securite du Site, prevention de la fraude</td><td
+              >Article 6(1)(f) RGPD - interet legitime</td
+            ></tr
+          >
+          <tr
+            ><td>Amelioration du Site (analytics anonymisees)</td><td
+              >Article 6(1)(f) RGPD - interet legitime</td
+            ></tr
+          >
+          <tr
+            ><td>Gestion des demandes d\'acces, rectification, suppression (vos droits)</td><td
+              >Article 6(1)(c) RGPD - obligation legale</td
+            ></tr
+          >
         </tbody>
       </table>
 
       <h2>4. Sous-traitants et destinataires</h2>
       <p>
-        Vos donnees sont transmises aux sous-traitants suivants, dans la stricte mesure
-        necessaire a l\'execution de leur mission :
+        Vos donnees sont transmises aux sous-traitants suivants, dans la stricte mesure necessaire a
+        l\'execution de leur mission :
       </p>
 
       <table class="legal-table">
@@ -161,13 +205,21 @@ export const prerender = true;
 
       <h2>5. Transferts de donnees hors Union Europeenne</h2>
       <p>
-        Certains sous-traitants (Supabase, Vercel) peuvent transferer des donnees vers
-        des serveurs situes aux Etats-Unis. Ces transferts sont encadres par :
+        Certains sous-traitants (Supabase, Vercel) peuvent transferer des donnees vers des serveurs
+        situes aux Etats-Unis. Ces transferts sont encadres par :
       </p>
       <ul>
-        <li>Les <strong>Clauses Contractuelles Types</strong> (CCT) de la Commission europeenne ;</li>
-        <li>Des mesures de protection complementaires (chiffrement en transit et au repos, pseudonymisation) ;</li>
-        <li>Le <strong>Data Privacy Framework</strong> UE-US (adequation decision reconnissant les entreprises americaines certifiees).</li>
+        <li>
+          Les <strong>Clauses Contractuelles Types</strong> (CCT) de la Commission europeenne ;
+        </li>
+        <li>
+          Des mesures de protection complementaires (chiffrement en transit et au repos,
+          pseudonymisation) ;
+        </li>
+        <li>
+          Le <strong>Data Privacy Framework</strong> UE-US (adequation decision reconnissant les entreprises
+          americaines certifiees).
+        </li>
       </ul>
 
       <h2>6. Duree de conservation</h2>
@@ -176,10 +228,25 @@ export const prerender = true;
           <tr><th>Type de donnees</th><th>Duree</th><th>Base</th></tr>
         </thead>
         <tbody>
-          <tr><td>Donnees de compte (email, nom, profil)</td><td>Tant que le compte est actif + 3 ans apres suppression</td><td>Interet legitime (gestion)</td></tr>
-          <tr><td>Inscriptions aux ateliers/formations</td><td>3 ans apres la derniere activite</td><td>Suivi pedagogique</td></tr>
-          <tr><td>Pieces comptables (paiements, recus)</td><td>10 ans</td><td>Obligation legale (Code de commerce)</td></tr>
-          <tr><td>Logs serveur (IP, user agent)</td><td>12 mois</td><td>Securite (recommandation CNIL)</td></tr>
+          <tr
+            ><td>Donnees de compte (email, nom, profil)</td><td
+              >Tant que le compte est actif + 3 ans apres suppression</td
+            ><td>Interet legitime (gestion)</td></tr
+          >
+          <tr
+            ><td>Inscriptions aux ateliers/formations</td><td>3 ans apres la derniere activite</td
+            ><td>Suivi pedagogique</td></tr
+          >
+          <tr
+            ><td>Pieces comptables (paiements, recus)</td><td>10 ans</td><td
+              >Obligation legale (Code de commerce)</td
+            ></tr
+          >
+          <tr
+            ><td>Logs serveur (IP, user agent)</td><td>12 mois</td><td
+              >Securite (recommandation CNIL)</td
+            ></tr
+          >
           <tr><td>Cookies de session</td><td>Session de navigation</td><td>Fonctionnement</td></tr>
           <tr><td>Cookie de consentement</td><td>12 mois</td><td>Recommandation CNIL</td></tr>
         </tbody>
@@ -188,13 +255,25 @@ export const prerender = true;
       <h2>7. Securite des donnees</h2>
       <p>L\'Association met en oeuvre les mesures techniques et organisationnelles appropriees :</p>
       <ul>
-        <li><strong>Chiffrement en transit</strong> : HTTPS / TLS obligatoire sur l\'ensemble du Site ;</li>
+        <li>
+          <strong>Chiffrement en transit</strong> : HTTPS / TLS obligatoire sur l\'ensemble du Site ;
+        </li>
         <li><strong>Chiffrement au repos</strong> : base de donnees chiffree (Supabase) ;</li>
-        <li><strong>Hashage des mots de passe</strong> : bcrypt avec salt, gere par Supabase Auth ;</li>
-        <li><strong>Row Level Security (RLS)</strong> : chaque table n\'expose que les donnees necessaires a l\'utilisateur concerne ;</li>
-        <li><strong>Acces admin restreint</strong> : seuls les administrateurs de l\'Association ont acces aux donnees, via le dashboard admin securise ;</li>
+        <li>
+          <strong>Hashage des mots de passe</strong> : bcrypt avec salt, gere par Supabase Auth ;
+        </li>
+        <li>
+          <strong>Row Level Security (RLS)</strong> : chaque table n\'expose que les donnees necessaires
+          a l\'utilisateur concerne ;
+        </li>
+        <li>
+          <strong>Acces admin restreint</strong> : seuls les administrateurs de l\'Association ont acces
+          aux donnees, via le dashboard admin securise ;
+        </li>
         <li><strong>Journalisation</strong> : toute action admin est tracee (logs) ;</li>
-        <li><strong>Backups quotidiens</strong> : les donnees sont sauvegardees automatiquement par Supabase.</li>
+        <li>
+          <strong>Backups quotidiens</strong> : les donnees sont sauvegardees automatiquement par Supabase.
+        </li>
       </ul>
       <p>
         En cas de violation de donnees personnelles, l\'Association s\'engage a notifier la CNIL
@@ -205,43 +284,69 @@ export const prerender = true;
       <h2>8. Vos droits (RGPD)</h2>
       <p>Vous disposez a tout moment des droits suivants :</p>
       <ul>
-        <li><strong>Droit d\'acces</strong> (article 15) : obtenir une copie de vos donnees personnelles ;</li>
-        <li><strong>Droit de rectification</strong> (article 16) : corriger vos donnees inexactes ou incompletes ;</li>
-        <li><strong>Droit a l\'effacement</strong> (article 17) : demander la suppression de vos donnees (sous reserve des obligations legales de conservation) ;</li>
-        <li><strong>Droit a la limitation</strong> (article 18) : limiter temporairement le traitement ;</li>
-        <li><strong>Droit a la portabilite</strong> (article 20) : recevoir vos donnees dans un format structure et lisible par machine (JSON, CSV) ;</li>
-        <li><strong>Droit d\'opposition</strong> (article 21) : vous opposer a un traitement fonde sur l\'interet legitime ;</li>
-        <li><strong>Droit de retirer votre consentement</strong> (article 7.3) : la ou le traitement est fonde sur le consentement ;</li>
-        <li><strong>Droit de definir des directives post-mortem</strong> (loi Informatique et Libertes, art. 85) ;</li>
-        <li><strong>Droit d\'introduire une reclamation</strong> aupres de la CNIL (3 place de Fontenoy, 75007 Paris).</li>
+        <li>
+          <strong>Droit d\'acces</strong> (article 15) : obtenir une copie de vos donnees personnelles
+          ;
+        </li>
+        <li>
+          <strong>Droit de rectification</strong> (article 16) : corriger vos donnees inexactes ou incompletes
+          ;
+        </li>
+        <li>
+          <strong>Droit a l\'effacement</strong> (article 17) : demander la suppression de vos donnees
+          (sous reserve des obligations legales de conservation) ;
+        </li>
+        <li>
+          <strong>Droit a la limitation</strong> (article 18) : limiter temporairement le traitement ;
+        </li>
+        <li>
+          <strong>Droit a la portabilite</strong> (article 20) : recevoir vos donnees dans un format structure
+          et lisible par machine (JSON, CSV) ;
+        </li>
+        <li>
+          <strong>Droit d\'opposition</strong> (article 21) : vous opposer a un traitement fonde sur l\'interet
+          legitime ;
+        </li>
+        <li>
+          <strong>Droit de retirer votre consentement</strong> (article 7.3) : la ou le traitement est
+          fonde sur le consentement ;
+        </li>
+        <li>
+          <strong>Droit de definir des directives post-mortem</strong> (loi Informatique et Libertes,
+          art. 85) ;
+        </li>
+        <li>
+          <strong>Droit d\'introduire une reclamation</strong> aupres de la CNIL (3 place de Fontenoy,
+          75007 Paris).
+        </li>
       </ul>
 
       <h3>8.1 Exercice de vos droits</h3>
       <p>
         Pour exercer vos droits, contactez-nous a
-        <a href="mailto:contact@biscuits-ia.com">contact@biscuits-ia.com</a> en precisant
-        votre demande et en joignant un justificatif d\'identite (copie de carte d\'identite
-        ou passeport, conformement aux recommandations de la CNIL).
+        <a href="mailto:contact@biscuits-ia.com">contact@biscuits-ia.com</a> en precisant votre demande
+        et en joignant un justificatif d\'identite (copie de carte d\'identite ou passeport, conformement
+        aux recommandations de la CNIL).
       </p>
       <p>
-        Nous nous engageons a repondre dans un delai d\'<strong>un mois</strong> a compter de
-        la reception de votre demande. Ce delai peut etre proroge de deux mois supple\'mentaires
-        en cas de demande complexe ou de nombreuses demandes, avec information prealable
-        conformement a l\'article 12.3 du RGPD.
+        Nous nous engageons a repondre dans un delai d\'<strong>un mois</strong> a compter de la reception
+        de votre demande. Ce delai peut etre proroge de deux mois supple\'mentaires en cas de demande
+        complexe ou de nombreuses demandes, avec information prealable conformement a l\'article 12.3
+        du RGPD.
       </p>
 
       <h2>9. Cookies</h2>
       <p>
         Le Site utilise des cookies tel que detaille dans la
-        <a href="/legal/cookies">Politique des cookies</a>. Vous pouvez a tout moment
-        modifier vos preferences via le bandeau de consentement.
+        <a href="/legal/cookies">Politique des cookies</a>. Vous pouvez a tout moment modifier vos
+        preferences via le bandeau de consentement.
       </p>
 
       <h2>10. Modifications de la presente politique</h2>
       <p>
-        L\'Association se reserve le droit de modifier la presente politique de confidentialite
-        a tout moment. Toute modification substantielle sera notifiee aux utilisateurs inscrits
-        par email au moins 30 jours avant son entree en vigueur.
+        L\'Association se reserve le droit de modifier la presente politique de confidentialite a
+        tout moment. Toute modification substantielle sera notifiee aux utilisateurs inscrits par
+        email au moins 30 jours avant son entree en vigueur.
       </p>
 
       <p class="update-footer">
@@ -249,7 +354,7 @@ export const prerender = true;
         <a href="/legal">Retour a l\'index des documents legaux</a>
       </p>
     </div>
-  </main>
+  </div>
 </BaseLayout>
 
 <style>
@@ -285,7 +390,8 @@ export const prerender = true;
     margin: 20px 0 8px;
     color: var(--color-text);
   }
-  p, li {
+  p,
+  li {
     color: var(--color-text);
     line-height: 1.7;
     margin-bottom: 8px;
@@ -294,7 +400,9 @@ export const prerender = true;
     margin: 8px 0 12px;
     padding-left: 24px;
   }
-  li { margin-bottom: 4px; }
+  li {
+    margin-bottom: 4px;
+  }
   /* Souligne : un lien noye dans un paragraphe ne doit pas se distinguer par
      la seule couleur (WCAG 1.4.1). Le contraste lien/texte etait de 2.26:1,
      sous le minimum de 3:1 exige quand la couleur est le seul indice. */
@@ -308,7 +416,8 @@ export const prerender = true;
     margin: 16px 0;
     font-size: 0.9rem;
   }
-  .legal-table th, .legal-table td {
+  .legal-table th,
+  .legal-table td {
     padding: 10px 12px;
     border: 2px solid var(--color-border);
     text-align: left;
@@ -327,7 +436,12 @@ export const prerender = true;
     border-top: 1px solid var(--color-border);
   }
   @media (max-width: 600px) {
-    .legal-table { font-size: 0.8rem; }
-    .legal-table th, .legal-table td { padding: 6px 8px; }
+    .legal-table {
+      font-size: 0.8rem;
+    }
+    .legal-table th,
+    .legal-table td {
+      padding: 6px 8px;
+    }
   }
 </style>

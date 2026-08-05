@@ -7,59 +7,77 @@ import Breadcrumb from '@/components/Breadcrumb.astro';
 // Cas d'usage concrets avec probleme/solution/resultat - version pour associations
 const useCases = [
   {
-    title: "Gagner 10h/mois sur la gestion administrative",
-    category: "Gain de temps",
-    problem: "Un bénévole passait 3h/semaine à ressaisir des formulaires et répondre aux demandes répétitives par email. Le reste de l'équipe en avait marre de ces tâches qui n'apportaient rien à la mission.",
-    solution: "Nous avons mis en place un assistant IA conversationnel répondant aux questions fréquentes (horaires, tarifs, inscriptions) et un flux automatique pour la saisie des formulaires. Tout ça sans coder, simplement en configurant.",
-    result: "- 10h/mois gagnés\n- 90% des demandes traitées automatiquement\n- Bénévoles plus satisfaits, libérés des tâches répétitives",
-    image: "⏱️",
-    featured: true
+    title: 'Gagner 10h/mois sur la gestion administrative',
+    category: 'Gain de temps',
+    problem:
+      "Un bénévole passait 3h/semaine à ressaisir des formulaires et répondre aux demandes répétitives par email. Le reste de l'équipe en avait marre de ces tâches qui n'apportaient rien à la mission.",
+    solution:
+      'Nous avons mis en place un assistant IA conversationnel répondant aux questions fréquentes (horaires, tarifs, inscriptions) et un flux automatique pour la saisie des formulaires. Tout ça sans coder, simplement en configurant.',
+    result:
+      '- 10h/mois gagnés\n- 90% des demandes traitées automatiquement\n- Bénévoles plus satisfaits, libérés des tâches répétitives',
+    image: '⏱️',
+    featured: true,
   },
   {
-    title: "Automatiser les relances de paiement",
-    category: "Finance",
-    problem: "Les relances de paiement prenaient 5h/semaine. Beaucoup de dons étaient retardés par des oublis. L'équipe n'avait pas le temps de suivre ça correctement.",
-    solution: "Mise en place d'une automatisation qui détecte les paiements en attente et envoie des relances personnalisées par email après 3, 7 et 14 jours. Plus besoin de garder une liste à jour.",
-    result: "- 85% des relances automatiques\n- 30% d'amélioration du délai de paiement\n- 0h/semaine sur cette tâche",
-    image: "💰",
-    featured: false
+    title: 'Automatiser les relances de paiement',
+    category: 'Finance',
+    problem:
+      "Les relances de paiement prenaient 5h/semaine. Beaucoup de dons étaient retardés par des oublis. L'équipe n'avait pas le temps de suivre ça correctement.",
+    solution:
+      "Mise en place d'une automatisation qui détecte les paiements en attente et envoie des relances personnalisées par email après 3, 7 et 14 jours. Plus besoin de garder une liste à jour.",
+    result:
+      "- 85% des relances automatiques\n- 30% d'amélioration du délai de paiement\n- 0h/semaine sur cette tâche",
+    image: '💰',
+    featured: false,
   },
   {
     title: "Simplifier l'administration pour les petits clubs",
-    category: "Association",
-    problem: "Un club de 15 bénévoles n'avait pas de système centralisé pour gérer les inscriptions et les réunions. Chacun perdait du temps à chercher les bonnes informations.",
-    solution: "Création d'un outil sur mesure avec gestion des profils, programmation des réunions, et envois automatiques de rappels. Tout le monde voit l'actualité en un coup d'œil.",
-    result: "- 100% des membres inscrits en ligne\n- 80% de réduction des oublis de réunion\n- 15 minutes pour préparer une réunion",
-    image: "📝",
-    featured: false
+    category: 'Association',
+    problem:
+      "Un club de 15 bénévoles n'avait pas de système centralisé pour gérer les inscriptions et les réunions. Chacun perdait du temps à chercher les bonnes informations.",
+    solution:
+      "Création d'un outil sur mesure avec gestion des profils, programmation des réunions, et envois automatiques de rappels. Tout le monde voit l'actualité en un coup d'œil.",
+    result:
+      '- 100% des membres inscrits en ligne\n- 80% de réduction des oublis de réunion\n- 15 minutes pour préparer une réunion',
+    image: '📝',
+    featured: false,
   },
   {
-    title: "Créer des rapports mensuels en 10 minutes",
-    category: "Reporting",
-    problem: "Les rapports mensuels prenaient 3h chaque mois avec copier-coller entre plusieurs outils. Le bureau ne les voyait qu'à la dernière minute.",
-    solution: "Automatisation avec extraction automatique des données, génération de rapports formatés et envoi par email aux membres. Les chiffres sont à jour en permanence.",
-    result: "- 10 minutes vs 3h par mois\n- Rapports plus réguliers et complets\n- Moins d'erreurs de saisie",
-    image: "📊",
-    featured: false
+    title: 'Créer des rapports mensuels en 10 minutes',
+    category: 'Reporting',
+    problem:
+      "Les rapports mensuels prenaient 3h chaque mois avec copier-coller entre plusieurs outils. Le bureau ne les voyait qu'à la dernière minute.",
+    solution:
+      'Automatisation avec extraction automatique des données, génération de rapports formatés et envoi par email aux membres. Les chiffres sont à jour en permanence.',
+    result:
+      "- 10 minutes vs 3h par mois\n- Rapports plus réguliers et complets\n- Moins d'erreurs de saisie",
+    image: '📊',
+    featured: false,
   },
   {
     title: "Améliorer l'accès à l'information pour les seniors",
-    category: "Inclusion",
-    problem: "Les seniors bénéficiaires n'arrivaient pas à trouver les informations sur le site ou à apprécier les documents PDF. L'aide était nécessaire à chaque fois.",
-    solution: "Création d'assistants conversationnels simples avec interface vocale, envoi d'information par SMS, et documents simplifiés en images. Les bénéficiaires sont plus autonomes.",
-    result: "- 60% d'amélioration du taux de lecture\n- 50% de plus d'appels réponses aux questions\n- Seniors plus autonomes",
-    image: "👵",
-    featured: false
+    category: 'Inclusion',
+    problem:
+      "Les seniors bénéficiaires n'arrivaient pas à trouver les informations sur le site ou à apprécier les documents PDF. L'aide était nécessaire à chaque fois.",
+    solution:
+      "Création d'assistants conversationnels simples avec interface vocale, envoi d'information par SMS, et documents simplifiés en images. Les bénéficiaires sont plus autonomes.",
+    result:
+      "- 60% d'amélioration du taux de lecture\n- 50% de plus d'appels réponses aux questions\n- Seniors plus autonomes",
+    image: '👵',
+    featured: false,
   },
   {
-    title: "Detecter et signaler les arnaques plus vite",
-    category: "Securite",
-    problem: "Les membres étaient parfois arnaqués avant que l'association puisse alerter. Le lien de confiance avec les bénéficiaires était mis à mal.",
-    solution: "Mise en place d'un système de signalement automatisé avec Telegram et analyse IA des messages suspects. Les alertes arrivent en temps réel.",
-    result: "- Detection en moins de 30 minutes\n- 15 signalements actionnes\n- Mise en relation rapide avec les associations specialisees",
-    image: "🛡️",
-    featured: false
-  }
+    title: 'Detecter et signaler les arnaques plus vite',
+    category: 'Securite',
+    problem:
+      "Les membres étaient parfois arnaqués avant que l'association puisse alerter. Le lien de confiance avec les bénéficiaires était mis à mal.",
+    solution:
+      "Mise en place d'un système de signalement automatisé avec Telegram et analyse IA des messages suspects. Les alertes arrivent en temps réel.",
+    result:
+      '- Detection en moins de 30 minutes\n- 15 signalements actionnes\n- Mise en relation rapide avec les associations specialisees',
+    image: '🛡️',
+    featured: false,
+  },
 ];
 ---
 
@@ -69,8 +87,9 @@ const useCases = [
   schema={{
     type: 'WebPage',
     data: {
-      name: 'Cas d\'usage Biscuits IA',
-      description: 'Exemples concrets d\'utilisation de l\'IA pour les associations : gain de temps, automatisation, simplification administrative.',
+      name: "Cas d'usage Biscuits IA",
+      description:
+        "Exemples concrets d'utilisation de l'IA pour les associations : gain de temps, automatisation, simplification administrative.",
     },
   }}
 >
@@ -79,7 +98,10 @@ const useCases = [
   <section class="cas-hero">
     <div class="container">
       <h1>Cas d'usage concrets</h1>
-      <p class="hero-subtitle">Comment les associations, ONG et collectivités utilisent l'IA pour faire plus avec moins — sans compétences techniques requises.</p>
+      <p class="hero-subtitle">
+        Comment les associations, ONG et collectivités utilisent l'IA pour faire plus avec moins —
+        sans compétences techniques requises.
+      </p>
     </div>
   </section>
 
@@ -87,36 +109,43 @@ const useCases = [
   <section class="cas-grid">
     <div class="container">
       <div class="cas-grid-inner">
-        {useCases.map((c) => (
-          <article class={`cas-card${c.featured ? ' featured' : ''}`} data-category={c.category}>
-            <div class="cas-icon" aria-hidden="true">{c.image}</div>
-            <div class="cas-header">
-              <h2>{c.title}</h2>
-              <span class="cas-category">{c.category}</span>
-            </div>
-
-            <div class="cas-content">
-              <div class="cas-section">
-                <h3>Le problème du terrain</h3>
-                <p>{c.problem}</p>
+        {
+          useCases.map((c) => (
+            <article class={`cas-card${c.featured ? ' featured' : ''}`} data-category={c.category}>
+              <div class="cas-icon" aria-hidden="true">
+                {c.image}
+              </div>
+              <div class="cas-header">
+                <h2>{c.title}</h2>
+                <span class="cas-category">{c.category}</span>
               </div>
 
-              <div class="cas-section">
-                <h3>La solution IA</h3>
-                <p>{c.solution}</p>
-              </div>
+              <div class="cas-content">
+                <div class="cas-section">
+                  <h3>Le problème du terrain</h3>
+                  <p>{c.problem}</p>
+                </div>
 
-              <div class="cas-section cas-result">
-                <h3>Les résultats concrets</h3>
-                <ul>
-                  {c.result.split('\n').filter(r => r.trim()).map((r) => (
-                    <li>{r.replace(/^-\s*/, '')}</li>
-                  ))}
-                </ul>
+                <div class="cas-section">
+                  <h3>La solution IA</h3>
+                  <p>{c.solution}</p>
+                </div>
+
+                <div class="cas-section cas-result">
+                  <h3>Les résultats concrets</h3>
+                  <ul>
+                    {c.result
+                      .split('\n')
+                      .filter((r) => r.trim())
+                      .map((r) => (
+                        <li>{r.replace(/^-\s*/, '')}</li>
+                      ))}
+                  </ul>
+                </div>
               </div>
-            </div>
-          </article>
-        ))}
+            </article>
+          ))
+        }
       </div>
     </div>
   </section>
@@ -126,7 +155,10 @@ const useCases = [
     <div class="container">
       <div class="cta-box">
         <h2>Votre structure pourrait faire pareil</h2>
-        <p class="cta-text">Une automatisation simple, c'est souvent 5 à 10 heures gagnées chaque mois. Découvrez ce qui est possible pour vous.</p>
+        <p class="cta-text">
+          Une automatisation simple, c'est souvent 5 à 10 heures gagnées chaque mois. Découvrez ce
+          qui est possible pour vous.
+        </p>
         <div class="cta-actions">
           <a href="/contact" class="btn-primary">Découvrir mon cas</a>
           <a href="/services" class="btn-secondary">Voir nos services</a>
@@ -164,7 +196,6 @@ const useCases = [
     margin: 0 auto;
     line-height: 1.65;
   }
-
 
   /* Grid */
   .cas-grid {
@@ -328,7 +359,9 @@ const useCases = [
     font-size: 1rem;
     text-decoration: none;
     border-radius: 10px;
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    transition:
+      transform 0.15s ease,
+      box-shadow 0.15s ease;
   }
 
   .btn-primary:hover {

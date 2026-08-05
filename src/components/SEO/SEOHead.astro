@@ -26,19 +26,12 @@ const {
 } = Astro.props;
 
 const siteUrl = import.meta.env.SITE || 'https://biscuits-ia.com';
-const fullOgImage = ogImage.startsWith('http')
-  ? ogImage
-  : `${siteUrl}${ogImage}`;
+const fullOgImage = ogImage.startsWith('http') ? ogImage : `${siteUrl}${ogImage}`;
 
-// Optimisation longueur description (SEO 2026)
-const seoDescription = description.length > 160
-  ? description.substring(0, 157) + '...'
-  : description;
-
-// Optimisation longueur titre (SEO 2026)
-const seoTitle = title.length > 65
-  ? title.substring(0, 62) + '...'
-  : title;
+// Les moteurs et plateformes sociales adaptent eux-memes l'extrait au support.
+// On conserve donc le sens complet au lieu de tronquer les metadonnees.
+const seoDescription = description.trim();
+const seoTitle = title.trim();
 ---
 
 <!-- ============================================
@@ -48,9 +41,8 @@ const seoTitle = title.length > 65
 <meta name="title" content={seoTitle} />
 <meta name="description" content={seoDescription} />
 
-
 <!-- Author et Copyright -->
-<meta name="author" content={author || "Biscuits IA"} />
+<meta name="author" content={author || 'Biscuits IA'} />
 <meta name="copyright" content="© 2026 Biscuits IA. Tous droits réservés." />
 
 <!-- Canonical URL (crucial pour éviter duplicate content) -->
@@ -78,18 +70,20 @@ const seoTitle = title.length > 65
 <meta property="og:site_name" content="Biscuits IA" />
 
 <!-- Article specific meta tags -->
-{ogType === 'article' && (
-  <>
-    <meta property="article:publisher" content={siteUrl} />
-    {author && <meta property="article:author" content={author} />}
-    {publishedTime && <meta property="article:published_time" content={publishedTime} />}
-    {modifiedTime && <meta property="article:modified_time" content={modifiedTime} />}
-    {tags.map((tag: string) => (
-      <meta property="article:tag" content={tag} />
-    ))}
-    <meta property="article:section" content="Intelligence Artificielle" />
-  </>
-)}
+{
+  ogType === 'article' && (
+    <>
+      <meta property="article:publisher" content={siteUrl} />
+      {author && <meta property="article:author" content={author} />}
+      {publishedTime && <meta property="article:published_time" content={publishedTime} />}
+      {modifiedTime && <meta property="article:modified_time" content={modifiedTime} />}
+      {tags.map((tag: string) => (
+        <meta property="article:tag" content={tag} />
+      ))}
+      <meta property="article:section" content="Intelligence Artificielle" />
+    </>
+  )
+}
 
 <!-- ============================================
      TWITTER CARD (Social SEO)
@@ -106,13 +100,30 @@ const seoTitle = title.length > 65
 <!-- ============================================
      ROBOTS & CRAWLING (Lighthouse SEO)
      ============================================ -->
-{noindex ? (
-  <meta name="robots" content="noindex, nofollow" />
-) : (
-  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
-)}
-<meta name="googlebot" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
-<meta name="bingbot" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+{
+  noindex ? (
+    <>
+      <meta name="robots" content="noindex, nofollow" />
+      <meta name="googlebot" content="noindex, nofollow" />
+      <meta name="bingbot" content="noindex, nofollow" />
+    </>
+  ) : (
+    <>
+      <meta
+        name="robots"
+        content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+      />
+      <meta
+        name="googlebot"
+        content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"
+      />
+      <meta
+        name="bingbot"
+        content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"
+      />
+    </>
+  )
+}
 
 <!-- ============================================
      MOBILE & PWA (Best Practices)
@@ -132,25 +143,29 @@ const seoTitle = title.length > 65
      - Google Search Console : https://search.google.com/search-console
      - Bing Webmaster Tools  : https://www.bing.com/webmasters
      ============================================ -->
-{/* NEUTRALISE le 2026-07-09 : la valeur "G-C0JDQG5D6Y" est un ID de MESURE GA4,
+{
+  /* NEUTRALISE le 2026-07-09 : la valeur "G-C0JDQG5D6Y" est un ID de MESURE GA4,
     PAS un jeton de verification Search Console (ceux-ci sont une longue chaine
     base64url de ~43 caracteres). Avec cette valeur, la verification de propriete
     echoue silencieusement -> on croit le site verifie alors qu'il ne l'est pas.
     Recuperer le vrai jeton sur https://search.google.com/search-console puis
-    reactiver la ligne ci-dessous avec la bonne valeur. */}
+    reactiver la ligne ci-dessous avec la bonne valeur. */
+}
 {/* <meta name="google-site-verification" content="LE_VRAI_JETON_ICI" /> */}
 <meta name="msvalidate.01" content="748E21A1FDE61F1B5D67115C71479EC5" />
 <!-- ============================================
      PERFORMANCE HINTS (Core Web Vitals)
      ============================================ -->
 <meta name="format-detection" content="telephone=no" />
-{/* RETIRE le 2026-07-09 : dns-prefetch + preconnect vers google-analytics.com.
+{
+  /* RETIRE le 2026-07-09 : dns-prefetch + preconnect vers google-analytics.com.
     Ils etablissaient une resolution DNS et une connexion TCP/TLS vers Google
     sur CHAQUE page, AVANT tout consentement analytics -> l'IP du visiteur etait
     transmise a Google sans opt-in (RGPD / CNIL). Cela contredisait la conception
     de BaseHead ("Aucun prechauffage TCP/TLS vers Google sans opt-in"). Le
     preconnect, s'il est souhaite, doit etre injecte APRES consentement (cf.
-    window.addGTMPreconnectIfConsented, non encore implemente). */}
+    window.addGTMPreconnectIfConsented, non encore implemente). */
+}
 
 <!-- ============================================
      CONTENT RATING & AUDIENCE
@@ -162,4 +177,9 @@ const seoTitle = title.length > 65
 <!-- ============================================
      RSS Feed
      ============================================ -->
-<link rel="alternate" type="application/rss+xml" title="Biscuits IA - RSS Feed" href={`${siteUrl}/rss.xml`} />
+<link
+  rel="alternate"
+  type="application/rss+xml"
+  title="Biscuits IA - RSS Feed"
+  href={`${siteUrl}/rss.xml`}
+/>

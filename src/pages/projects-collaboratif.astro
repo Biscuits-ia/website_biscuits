@@ -1,6 +1,5 @@
----export const prerender = true;
-
-
+---
+export const prerender = true;
 
 import BaseLayout from '@/layouts/Layout.astro';
 import Breadcrumb from '@/components/Breadcrumb.astro';
@@ -19,7 +18,8 @@ import Breadcrumb from '@/components/Breadcrumb.astro';
     <div class="container">
       <div class="hero-content">
         <p class="hero-subtitle">
-          Venez construire des outils utiles avec nous — même sans compétences techniques. Chaque contribution compte, grande ou petite.
+          Venez construire des outils utiles avec nous — même sans compétences techniques. Chaque
+          contribution compte, grande ou petite.
         </p>
         <div class="hero-stats">
           <div class="stat-item">
@@ -32,7 +32,9 @@ import Breadcrumb from '@/components/Breadcrumb.astro';
           </div>
           <div class="stat-item">
             <strong>🤝 Pour vous</strong>
-            <span>Une communauté où chaque contribution — même modeste — renforce le bien commun.</span>
+            <span
+              >Une communauté où chaque contribution — même modeste — renforce le bien commun.</span
+            >
           </div>
         </div>
       </div>
@@ -45,7 +47,7 @@ import Breadcrumb from '@/components/Breadcrumb.astro';
         <h2>Projets en cours</h2>
         <p>Contribuez à construire les outils de la solidarité numérique</p>
       </div>
-      
+
       <div class="projects-grid">
         <article class="project-card card-primary">
           <div class="card-icon">
@@ -53,7 +55,10 @@ import Breadcrumb from '@/components/Breadcrumb.astro';
           </div>
           <div class="card-content">
             <h3>Assistant IA associatif</h3>
-            <p>Un assistant pour centraliser vos documents et simplifier le quotidien de vos bénévoles — construit ensemble, pour l'intérêt général.</p>
+            <p>
+              Un assistant pour centraliser vos documents et simplifier le quotidien de vos
+              bénévoles — construit ensemble, pour l'intérêt général.
+            </p>
             <div class="card-meta">
               <span class="tag">En Développement</span>
             </div>
@@ -69,13 +74,17 @@ import Breadcrumb from '@/components/Breadcrumb.astro';
           </div>
           <div class="card-content">
             <h3>Anti Pépins</h3>
-            <p>Un collectif citoyen pour repérer et signaler les arnaques numériques. Ensemble, on devient plus fort face aux réseaux de brouteurs et aux faux outils IA.</p>
+            <p>
+              Un collectif citoyen pour repérer et signaler les arnaques numériques. Ensemble, on
+              devient plus fort face aux réseaux de brouteurs et aux faux outils IA.
+            </p>
             <div class="card-meta">
               <span class="tag-finished">Disponible</span>
             </div>
           </div>
           <div class="card-footer">
-            <a href="https://anti-pepins.biscuits-ia.com/" class="link-arrow">Découvrir le projet</a>
+            <a href="https://anti-pepins.biscuits-ia.com/" class="link-arrow">Découvrir le projet</a
+            >
           </div>
         </article>
 
@@ -85,7 +94,11 @@ import Breadcrumb from '@/components/Breadcrumb.astro';
           </div>
           <div class="card-content">
             <h3>Logiciels Basic</h3>
-            <p>Des logiciels simples et libres pour faciliter la gestion des associations et des structures publiques — parce que les structures d'intérêt général méritent de bons outils, elles aussi.</p>
+            <p>
+              Des logiciels simples et libres pour faciliter la gestion des associations et des
+              structures publiques — parce que les structures d'intérêt général méritent de bons
+              outils, elles aussi.
+            </p>
             <div class="card-meta">
               <span class="tag">En Développement</span>
             </div>
@@ -102,12 +115,20 @@ import Breadcrumb from '@/components/Breadcrumb.astro';
     <div class="container">
       <div class="cta-content">
         <h2>Envie de contribuer ?</h2>
-        <p>Rejoignez un projet, apportez vos idées, testez les outils — toutes les contributions sont les bienvenues, techniques ou non.</p>
+        <p>
+          Rejoignez un projet, apportez vos idées, testez les outils — toutes les contributions sont
+          les bienvenues, techniques ou non.
+        </p>
         <div class="cta-buttons">
           <a href="/rejoignez-nous" class="btn-primary">
             Participer maintenant
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <path d="M7.5 15L12.5 10L7.5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path
+                d="M7.5 15L12.5 10L7.5 5"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"></path>
             </svg>
           </a>
           <a href="/contact" class="btn-secondary">Nous contacter</a>
@@ -212,7 +233,10 @@ import Breadcrumb from '@/components/Breadcrumb.astro';
     background: var(--color-bg);
     padding: 32px;
     box-shadow: 10px 10px 0px rgb(0, 0, 0);
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition:
+      transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+      box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+      opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     border: 2px solid transparent;
     display: flex;
     flex-direction: column;
@@ -224,9 +248,15 @@ import Breadcrumb from '@/components/Breadcrumb.astro';
     box-shadow: 0 20px 40px rgb(0, 0, 0);
   }
 
-  .card-primary:hover { border-color: oklch(60.201% 0.11053 58.986); }
-  .card-secondary:hover { border-color: oklch(60.201% 0.11053 58.986); }
-  .card-tertiary:hover { border-color: oklch(60.201% 0.11053 58.986); }
+  .card-primary:hover {
+    border-color: oklch(60.201% 0.11053 58.986);
+  }
+  .card-secondary:hover {
+    border-color: oklch(60.201% 0.11053 58.986);
+  }
+  .card-tertiary:hover {
+    border-color: oklch(60.201% 0.11053 58.986);
+  }
 
   .card-icon {
     display: flex;
@@ -356,12 +386,16 @@ import Breadcrumb from '@/components/Breadcrumb.astro';
     flex-wrap: wrap;
   }
 
-  .btn-primary, .btn-secondary {
+  .btn-primary,
+  .btn-secondary {
     padding: 16px 32px;
     font-weight: 600;
     font-size: 1rem;
     text-decoration: none;
-    transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+    transition:
+      transform 0.3s ease,
+      box-shadow 0.3s ease,
+      border-color 0.3s ease;
     display: inline-flex;
     align-items: center;
     gap: 8px;
@@ -376,7 +410,7 @@ import Breadcrumb from '@/components/Breadcrumb.astro';
     transform: translateY(-2px);
   }
 
-  .btn-secondary {  
+  .btn-secondary {
     background: transparent;
     color: var(--color-gray-100);
     border: 2px solid var(--color-gray-100);
@@ -418,7 +452,8 @@ import Breadcrumb from '@/components/Breadcrumb.astro';
       flex-direction: column;
     }
 
-    .btn-primary, .btn-secondary {
+    .btn-primary,
+    .btn-secondary {
       width: 100%;
       justify-content: center;
     }

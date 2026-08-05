@@ -53,16 +53,12 @@ type ContactPageData = {
 type WebPageData = {
   name?: string;
   description?: string;
+  dateModified?: string;
   /** Selecteur CSS des elements a rendre comme speakable pour voice/AI snippets */
   speakableSelectors?: string[];
 };
 
-type SchemaData =
-  | ServiceData
-  | FAQData
-  | ArticleData
-  | WebPageData
-  | ContactPageData;
+type SchemaData = ServiceData | FAQData | ArticleData | WebPageData | ContactPageData;
 
 // Props du composant — le `type` discrimine l'union `data`.
 type Props = {
@@ -77,109 +73,107 @@ const siteUrl = import.meta.env.SITE || 'https://biscuits-ia.com';
 
 // Schema de base pour l'organisation (présent sur toutes les pages)
 const organizationSchema = {
-  "@context": "https://schema.org",
-  "@type": "NGO",
-  "@id": `${siteUrl}/#organization`,
-  "name": "Biscuits IA",
-  "legalName": "Biscuits IA",
-  "url": siteUrl,
-  "logo": {
-    "@type": "ImageObject",
-    "@id": `${siteUrl}/#logo`,
-    "url": `${siteUrl}/og-default.webp`,
-    "contentUrl": `${siteUrl}/og-default.webp`,
-    "caption": "Biscuits IA Logo",
-    "inLanguage": "fr-FR",
-    "width": "1200",
-    "height": "630"
+  '@context': 'https://schema.org',
+  '@type': 'NGO',
+  '@id': `${siteUrl}/#organization`,
+  name: 'Biscuits IA',
+  legalName: 'Biscuits IA',
+  url: siteUrl,
+  logo: {
+    '@type': 'ImageObject',
+    '@id': `${siteUrl}/#logo`,
+    url: `${siteUrl}/og-default.webp`,
+    contentUrl: `${siteUrl}/og-default.webp`,
+    caption: 'Biscuits IA Logo',
+    inLanguage: 'fr-FR',
+    width: '1200',
+    height: '630',
   },
-  "image": {
-    "@type": "ImageObject",
-    "url": `${siteUrl}/og-default.webp`,
-    "width": "1200",
-    "height": "630"
+  image: {
+    '@type': 'ImageObject',
+    url: `${siteUrl}/og-default.webp`,
+    width: '1200',
+    height: '630',
   },
-  "description": "Association Loi 1901 d'intérêt général. Nous rendons l'IA accessible au grand public, aux associations et aux collectivités, et menons des recherches participatives en accès libre. Outils et ateliers gratuits, jamais de prestation pour les entreprises.",
-  "email": "contact@biscuits-ia.com",
-  "telephone": "+33952587543",
-  "address": {
-    "@type": "PostalAddress",
-    "streetAddress": "2 B RUE de la Cueille Mirebalaise, Appartement 4",
-    "addressLocality": "Poitiers",
-    "postalCode": "86000",
-    "addressCountry": "FR",
-    "addressRegion": "Nouvelle-Aquitaine"
+  description:
+    "Association Loi 1901 d'intérêt général. Nous rendons l'IA accessible au grand public, aux associations et aux collectivités, et menons des recherches participatives en accès libre. Outils et ateliers gratuits, jamais de prestation pour les entreprises.",
+  email: 'contact@biscuits-ia.com',
+  telephone: '+33952587543',
+  address: {
+    '@type': 'PostalAddress',
+    streetAddress: '2 B RUE de la Cueille Mirebalaise, Appartement 4',
+    addressLocality: 'Poitiers',
+    postalCode: '86000',
+    addressCountry: 'FR',
+    addressRegion: 'Nouvelle-Aquitaine',
   },
-  "geo": {
-    "@type": "GeoCoordinates",
-    "latitude": "46.5802",
-    "longitude": "0.3404"
+  geo: {
+    '@type': 'GeoCoordinates',
+    latitude: '46.5802',
+    longitude: '0.3404',
   },
-  "sameAs": [
-    "https://github.com/Biscuits-Dev",
-    "https://www.linkedin.com/company/biscuits-ia"
-  ],
-  "contactPoint": [
+  sameAs: ['https://github.com/Biscuits-Dev', 'https://www.linkedin.com/company/biscuits-ia'],
+  contactPoint: [
     {
-      "@type": "ContactPoint",
-      "telephone": "+33952587543",
-      "contactType": "customer support",
-      "email": "contact@biscuits-ia.com",
-      "areaServed": "FR",
-      "availableLanguage": ["French"]
-    }
+      '@type': 'ContactPoint',
+      telephone: '+33952587543',
+      contactType: 'customer support',
+      email: 'contact@biscuits-ia.com',
+      areaServed: 'FR',
+      availableLanguage: ['French'],
+    },
   ],
-  "foundingDate": "2024",
-  "founders": [
+  foundingDate: '2024',
+  founders: [
     {
-      "@type": "Person",
-      "name": "Alexis Gallard"
-    }
+      '@type': 'Person',
+      name: 'Alexis Gallard',
+    },
   ],
-  "areaServed": {
-    "@type": "Place",
-    "name": "France"
+  areaServed: {
+    '@type': 'Place',
+    name: 'France',
   },
-  "knowsAbout": [
-    "Intelligence Artificielle",
-    "IA Générative",
+  knowsAbout: [
+    'Intelligence Artificielle',
+    'IA Générative',
     "Éthique de l'IA",
-    "IA open source",
-    "Fracture numérique",
-    "Autonomie numérique",
-    "Logiciels libres",
+    'IA open source',
+    'Fracture numérique',
+    'Autonomie numérique',
+    'Logiciels libres',
     "Détection d'arnaques en ligne",
-    "Recherche participative",
-    "Modèles ouverts",
-    "Open source"
+    'Recherche participative',
+    'Modèles ouverts',
+    'Open source',
   ],
-  "slogan": "L'IA accessible à tous, sans jargon et sans but lucratif",
-  "identifier": [
+  slogan: "L'IA accessible à tous, sans jargon et sans but lucratif",
+  identifier: [
     {
-      "@type": "PropertyValue",
-      "name": "RNA",
-      "value": "W863012707"
+      '@type': 'PropertyValue',
+      name: 'RNA',
+      value: 'W863012707',
     },
     {
-      "@type": "PropertyValue",
-      "name": "SIRET",
-      "value": "10151660700013"
-    }
-  ]
+      '@type': 'PropertyValue',
+      name: 'SIRET',
+      value: '10151660700013',
+    },
+  ],
 };
 
 // Website Schema
 const websiteSchema = {
-  "@context": "https://schema.org",
-  "@type": "WebSite",
-  "@id": `${siteUrl}/#website`,
-  "url": siteUrl,
-  "name": "Biscuits IA",
-  "description": "Association Loi 1901 — IA accessible à tous, sans jargon et sans but lucratif.",
-  "publisher": {
-    "@id": `${siteUrl}/#organization`
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  '@id': `${siteUrl}/#website`,
+  url: siteUrl,
+  name: 'Biscuits IA',
+  description: 'Association Loi 1901 — IA accessible à tous, sans jargon et sans but lucratif.',
+  publisher: {
+    '@id': `${siteUrl}/#organization`,
   },
-  "inLanguage": "fr-FR"
+  inLanguage: 'fr-FR',
 };
 
 // Schémas spécifiques selon le type de page
@@ -188,103 +182,108 @@ let specificSchema = {};
 if (type === 'Service') {
   const serviceData = data as ServiceData;
   specificSchema = {
-    "@context": "https://schema.org",
-    "@type": "Service",
-    "@id": `${Astro.url.href}#service`,
-    "serviceType": serviceData.serviceType || "Intelligence Artificielle",
-    "provider": {
-      "@id": `${siteUrl}/#organization`
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    '@id': `${Astro.url.href}#service`,
+    serviceType: serviceData.serviceType || 'Intelligence Artificielle',
+    provider: {
+      '@id': `${siteUrl}/#organization`,
     },
-    "name": serviceData.name || "Services IA",
-    "description": serviceData.description || "Accompagnement a l'intelligence artificielle pour le grand public, les associations et les collectivites",
-    "areaServed": {
-      "@type": "Country",
-      "name": "France"
+    name: serviceData.name || 'Services IA',
+    description:
+      serviceData.description ||
+      "Accompagnement a l'intelligence artificielle pour le grand public, les associations et les collectivites",
+    areaServed: {
+      '@type': 'Country',
+      name: 'France',
     },
     // Tous les services sont gratuits : une Offer a prix 0 le declare
     // explicitement aux moteurs, plutot qu'un AggregateOffer sans prix qui
     // laissait supposer une prestation payante.
-    "isRelatedTo": [
-      { "@type": "Service", "name": "Ateliers IA" },
-      { "@type": "Service", "name": "Diagnostic et feuille de route" },
-      { "@type": "Service", "name": "Logiciels libres pour l'interet general" },
-      { "@type": "Service", "name": "Anti Pepins : detection d'arnaques" }
+    isRelatedTo: [
+      { '@type': 'Service', name: 'Ateliers IA' },
+      { '@type': 'Service', name: 'Diagnostic et feuille de route' },
+      { '@type': 'Service', name: "Logiciels libres pour l'interet general" },
+      { '@type': 'Service', name: "Anti Pepins : detection d'arnaques" },
     ],
-    "offers": {
-      "@type": "Offer",
-      "price": "0",
-      "priceCurrency": "EUR",
-      "availability": "https://schema.org/InStock",
-      "seller": {
-        "@id": `${siteUrl}/#organization`
-      }
-    }
+    offers: {
+      '@type': 'Offer',
+      price: '0',
+      priceCurrency: 'EUR',
+      availability: 'https://schema.org/InStock',
+      seller: {
+        '@id': `${siteUrl}/#organization`,
+      },
+    },
   };
 } else if (type === 'FAQPage') {
   const faqData = data as FAQData;
   specificSchema = {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    "mainEntity": faqData.questions?.map((q) => ({
-      "@type": "Question",
-      "name": q.question,
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": q.answer
-      }
-    })) || []
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity:
+      faqData.questions?.map((q) => ({
+        '@type': 'Question',
+        name: q.question,
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: q.answer,
+        },
+      })) || [],
   };
 } else if (type === 'Article') {
   const articleData = data as ArticleData;
   specificSchema = {
-    "@context": "https://schema.org",
-    "@type": "Article",
-    "@id": `${Astro.url.href}#article`,
-    "headline": articleData.headline || articleData.title,
-    "description": articleData.description,
-    "image": articleData.image ? {
-      "@type": "ImageObject",
-      "url": articleData.image,
-      "width": 1200,
-      "height": 630
-    } : undefined,
-    "datePublished": articleData.datePublished,
-    "dateModified": articleData.dateModified || articleData.datePublished,
-    "author": {
-      "@type": "Person",
-      "name": articleData.author || "Biscuits IA",
-      "url": `${siteUrl}/auteur/${articleData.authorSlug || 'biscuits-ia'}`
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    '@id': `${Astro.url.href}#article`,
+    headline: articleData.headline || articleData.title,
+    description: articleData.description,
+    image: articleData.image
+      ? {
+          '@type': 'ImageObject',
+          url: articleData.image,
+          width: 1200,
+          height: 630,
+        }
+      : undefined,
+    datePublished: articleData.datePublished,
+    dateModified: articleData.dateModified || articleData.datePublished,
+    author: {
+      '@type': 'Person',
+      name: articleData.author || 'Biscuits IA',
+      url: `${siteUrl}/auteur/${articleData.authorSlug || 'biscuits-ia'}`,
     },
-    "publisher": {
-      "@id": `${siteUrl}/#organization`
+    publisher: {
+      '@id': `${siteUrl}/#organization`,
     },
-    "mainEntityOfPage": {
-      "@type": "WebPage",
-      "@id": Astro.url.href
+    mainEntityOfPage: {
+      '@type': 'WebPage',
+      '@id': Astro.url.href,
     },
-    "articleSection": articleData.category || "Intelligence Artificielle",
-    "keywords": articleData.keywords?.join(', '),
-    "wordCount": articleData.wordCount,
+    articleSection: articleData.category || 'Intelligence Artificielle',
+    keywords: articleData.keywords?.join(', '),
+    wordCount: articleData.wordCount,
     // ISO 8601 duration : signal de profondeur pour E-E-A-T et AI Overviews.
-    "timeRequired": articleData.readingTimeMin ? `PT${articleData.readingTimeMin}M` : undefined,
-    "inLanguage": "fr-FR"
+    timeRequired: articleData.readingTimeMin ? `PT${articleData.readingTimeMin}M` : undefined,
+    inLanguage: 'fr-FR',
   };
 } else if (type === 'ContactPage') {
   const contactData = data as ContactPageData;
   specificSchema = {
-    "@context": "https://schema.org",
-    "@type": "ContactPage",
-    "@id": Astro.url.href,
-    "url": Astro.url.href,
-    "name": contactData.name || "Contact",
-    "description": contactData.description || "Contactez Biscuits IA.",
-    "about": {
-      "@id": `${siteUrl}/#organization`
+    '@context': 'https://schema.org',
+    '@type': 'ContactPage',
+    '@id': Astro.url.href,
+    url: Astro.url.href,
+    name: contactData.name || 'Contact',
+    description: contactData.description || 'Contactez Biscuits IA.',
+    about: {
+      '@id': `${siteUrl}/#organization`,
     },
-    "isPartOf": {
-      "@id": `${siteUrl}/#website`
+    isPartOf: {
+      '@id': `${siteUrl}/#website`,
     },
-    "inLanguage": "fr-FR"
+    inLanguage: 'fr-FR',
   };
 } else if (type === 'WebPage') {
   // Branche manquante avant l'audit : `WebPage` était déclaré dans Props.type
@@ -292,59 +291,60 @@ if (type === 'Service') {
   // abandonné. Cf. AUDIT.md §3.
   const webPageData = data as WebPageData;
   specificSchema = {
-    "@context": "https://schema.org",
-    "@type": "WebPage",
-    "@id": Astro.url.href,
-    "url": Astro.url.href,
-    "name": webPageData.name || "Biscuits IA",
-    "description": webPageData.description || "Association Loi 1901 — IA accessible à tous.",
-    "isPartOf": {
-      "@id": `${siteUrl}/#website`
+    '@context': 'https://schema.org',
+    '@type': 'WebPage',
+    '@id': Astro.url.href,
+    url: Astro.url.href,
+    name: webPageData.name || 'Biscuits IA',
+    description: webPageData.description || 'Association Loi 1901 — IA accessible à tous.',
+    isPartOf: {
+      '@id': `${siteUrl}/#website`,
     },
-    "publisher": {
-      "@id": `${siteUrl}/#organization`
+    publisher: {
+      '@id': `${siteUrl}/#organization`,
     },
-    "inLanguage": "fr-FR",
-    "dateModified": new Date().toISOString().split('T')[0],
+    inLanguage: 'fr-FR',
+    ...(webPageData.dateModified ? { dateModified: webPageData.dateModified } : {}),
   };
 }
 
 // Combinaison de tous les schémas dans un graph
 const graphSchema = {
-  "@context": "https://schema.org",
-  "@graph": [
+  '@context': 'https://schema.org',
+  '@graph': [
     organizationSchema,
     websiteSchema,
-    ...(Object.keys(specificSchema).length > 0 ? [specificSchema] : [])
-  ]
+    ...(Object.keys(specificSchema).length > 0 ? [specificSchema] : []),
+  ],
 };
 
 // Pré-calcul des champs du bloc "Review" (résout le `as ArticleData` dans le template,
 // qui n'est pas autorisé par le parser JSX d'Astro dans certaines positions)
 const articleDataForReview = type === 'Article' ? (data as ArticleData) : null;
-const reviewSchema = articleDataForReview?.rating ? {
-  "@context": "https://schema.org",
-  "@type": "Review",
-  "itemReviewed": {
-    "@type": "Article",
-    "name": articleDataForReview.title
-  },
-  "reviewRating": {
-    "@type": "Rating",
-    "ratingValue": articleDataForReview.rating,
-    "bestRating": "5"
-  },
-  "author": {
-    "@type": "Person",
-    "name": articleDataForReview.reviewAuthor || "Biscuits IA"
-  }
-} : null;
+const reviewSchema = articleDataForReview?.rating
+  ? {
+      '@context': 'https://schema.org',
+      '@type': 'Review',
+      itemReviewed: {
+        '@type': 'Article',
+        name: articleDataForReview.title,
+      },
+      reviewRating: {
+        '@type': 'Rating',
+        ratingValue: articleDataForReview.rating,
+        bestRating: '5',
+      },
+      author: {
+        '@type': 'Person',
+        name: articleDataForReview.reviewAuthor || 'Biscuits IA',
+      },
+    }
+  : null;
 ---
 
 <!-- Schema.org Structured Data (JSON-LD) -->
 <script is:inline type="application/ld+json" set:html={jsonLd(graphSchema)} />
 
-<!-- Additional Rich Snippets -->
-{reviewSchema && (
-  <script is:inline type="application/ld+json" set:html={jsonLd(reviewSchema)} />
-)}
+<!-- Additional Rich Snippets -->{
+  reviewSchema && <script is:inline type="application/ld+json" set:html={jsonLd(reviewSchema)} />
+}

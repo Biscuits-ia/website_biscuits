@@ -24,53 +24,65 @@ const { data: associationProjects } = await supabase
   .order('created_at', { ascending: false });
 
 // ── Statistiques ─────────────────────────────────────────────────────────────
-const [
-  { count: totalProjects },
-  { count: activeProjects },
-] = await Promise.all([
-  supabase.from('association_projects').select('*', { count: 'exact', head: true }).eq('association_id', userId),
-  supabase.from('association_projects').select('*', { count: 'exact', head: true }).eq('association_id', userId).eq('status', 'active'),
+const [{ count: totalProjects }, { count: activeProjects }] = await Promise.all([
+  supabase
+    .from('association_projects')
+    .select('*', { count: 'exact', head: true })
+    .eq('association_id', userId),
+  supabase
+    .from('association_projects')
+    .select('*', { count: 'exact', head: true })
+    .eq('association_id', userId)
+    .eq('status', 'active'),
 ]);
 
 const statusDotClass: Record<string, string> = {
-  active:    'ok',
-  on_hold:   'warn',
+  active: 'ok',
+  on_hold: 'warn',
   completed: 'info',
-  archived:  'muted',
+  archived: 'muted',
 };
 
 interface ProjectRow {
-  id:         string;
-  title:      string;
+  id: string;
+  title: string;
   description: string | null;
-  status:     string;
-  priority:   string;
-  deadline:   string | null;
-  dateLabel:  string;
-  dotClass:   string;
+  status: string;
+  priority: string;
+  deadline: string | null;
+  dateLabel: string;
+  dotClass: string;
 }
 
-const projects: ProjectRow[] = (associationProjects ?? []).map((p: any): ProjectRow => ({
-  id:         p.id,
-  title:      p.title,
-  description: p.description,
-  status:     p.status,
-  priority:   p.priority,
-  deadline:   p.deadline,
-  dateLabel:  p.deadline ? new Date(p.deadline).toLocaleDateString('fr-FR') : '—',
-  dotClass:   statusDotClass[p.status] ?? 'muted',
-}));
+type ProjectSource = Omit<ProjectRow, 'dateLabel' | 'dotClass'>;
+
+const projects: ProjectRow[] = (associationProjects ?? []).map(
+  (p: ProjectSource): ProjectRow => ({
+    id: p.id,
+    title: p.title,
+    description: p.description,
+    status: p.status,
+    priority: p.priority,
+    deadline: p.deadline,
+    dateLabel: p.deadline ? new Date(p.deadline).toLocaleDateString('fr-FR') : '—',
+    dotClass: statusDotClass[p.status] ?? 'muted',
+  })
+);
 ---
 
-<DashboardLayout title="Association" role="association" activePage="overview" userName={userName} userEmail={userEmail} authResult={result}>
+<DashboardLayout
+  title="Association"
+  activePage="overview"
+  userName={userName}
+  userEmail={userEmail}
+  authResult={result}
+>
   <!-- Bienvenue -->
   <div class="mb-7">
     <h1 class="text-lg font-normal tracking-tight text-primary">
       Bonjour, {associationData?.structure_name ?? userName} 👋
     </h1>
-    <p class="description">
-      Espace dédié à votre association.
-    </p>
+    <p class="description">Espace dédié à votre association.</p>
   </div>
 
   <!-- Stats cards -->
@@ -90,49 +102,51 @@ const projects: ProjectRow[] = (associationProjects ?? []).map((p: any): Project
   </div>
 
   <!-- Informations de l'association -->
-  {associationData && (
-    <div class="card mb-6">
-      <div class="card-header">
-        <span class="card-title">Informations de votre structure</span>
-      </div>
-      <div class="card-content">
-        <div class="grid grid-cols-2 gap-4">
-          <div>
-            <span class="text-xs text-muted font-mono uppercase">Nom de la structure</span>
-            <p class="font-medium">{associationData.structure_name}</p>
-          </div>
-          <div>
-            <span class="text-xs text-muted font-mono uppercase">SIRET</span>
-            <p class="font-medium">{associationData.siret}</p>
-          </div>
-          <div>
-            <span class="text-xs text-muted font-mono uppercase">Téléphone</span>
-            <p class="font-medium">{associationData.phone_number}</p>
-          </div>
-          <div>
-            <span class="text-xs text-muted font-mono uppercase">Email</span>
-            <p class="font-medium">{associationData.contact_email}</p>
-          </div>
-          <div class="col-span-2">
-            <span class="text-xs text-muted font-mono uppercase">Adresse</span>
-            <p class="font-medium">{associationData.address}</p>
-          </div>
-          {associationData.description && (
-            <div class="col-span-2">
-              <span class="text-xs text-muted font-mono uppercase">Description</span>
-              <p class="font-medium">{associationData.description}</p>
+  {
+    associationData && (
+      <div class="card mb-6">
+        <div class="card-header">
+          <span class="card-title">Informations de votre structure</span>
+        </div>
+        <div class="card-content">
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <span class="text-xs text-muted font-mono uppercase">Nom de la structure</span>
+              <p class="font-medium">{associationData.structure_name}</p>
             </div>
-          )}
-          <div class="col-span-2">
-            <span class="text-xs text-muted font-mono uppercase">Statut de vérification</span>
-            <span class={`badge ${associationData.is_verified ? 'badge-ok' : 'badge-warn'}`}>
-              {associationData.is_verified ? '✓ Vérifié' : '⚠ En attente de vérification'}
-            </span>
+            <div>
+              <span class="text-xs text-muted font-mono uppercase">SIRET</span>
+              <p class="font-medium">{associationData.siret}</p>
+            </div>
+            <div>
+              <span class="text-xs text-muted font-mono uppercase">Téléphone</span>
+              <p class="font-medium">{associationData.phone_number}</p>
+            </div>
+            <div>
+              <span class="text-xs text-muted font-mono uppercase">Email</span>
+              <p class="font-medium">{associationData.contact_email}</p>
+            </div>
+            <div class="col-span-2">
+              <span class="text-xs text-muted font-mono uppercase">Adresse</span>
+              <p class="font-medium">{associationData.address}</p>
+            </div>
+            {associationData.description && (
+              <div class="col-span-2">
+                <span class="text-xs text-muted font-mono uppercase">Description</span>
+                <p class="font-medium">{associationData.description}</p>
+              </div>
+            )}
+            <div class="col-span-2">
+              <span class="text-xs text-muted font-mono uppercase">Statut de vérification</span>
+              <span class={`badge ${associationData.is_verified ? 'badge-ok' : 'badge-warn'}`}>
+                {associationData.is_verified ? '✓ Vérifié' : '⚠ En attente de vérification'}
+              </span>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  )}
+    )
+  }
 
   <!-- Projets de l'association -->
   <div class="card">
@@ -143,42 +157,44 @@ const projects: ProjectRow[] = (associationProjects ?? []).map((p: any): Project
       </a>
     </div>
 
-    {projects.length > 0 ? (
-      <div class="table-responsive">
-        <table class="table">
-          <thead>
-            <tr>
-              <th>Nom du projet</th>
-              <th>Statut</th>
-              <th>Priority</th>
-              <th>Échéance</th>
-            </tr>
-          </thead>
-          <tbody>
-            {projects.map((project) => (
+    {
+      projects.length > 0 ? (
+        <div class="table-responsive">
+          <table class="table">
+            <thead>
               <tr>
-                <td>
-                  <div class="font-medium">{project.title}</div>
-                  {project.description && (
-                    <div class="text-xs text-muted truncate max-w-[200px]">{project.description}</div>
-                  )}
-                </td>
-                <td>
-                  <span class={`badge badge-${project.dotClass}`}>{project.status}</span>
-                </td>
-                <td>
-                  <span class="text-sm">{project.priority}</span>
-                </td>
-                <td class="text-sm">{project.dateLabel}</td>
+                <th>Nom du projet</th>
+                <th>Statut</th>
+                <th>Priority</th>
+                <th>Échéance</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    ) : (
-      <p class="text-muted text-xl py-4">
-        Aucun projet pour le moment.
-      </p>
-    )}
+            </thead>
+            <tbody>
+              {projects.map((project) => (
+                <tr>
+                  <td>
+                    <div class="font-medium">{project.title}</div>
+                    {project.description && (
+                      <div class="text-xs text-muted truncate max-w-[200px]">
+                        {project.description}
+                      </div>
+                    )}
+                  </td>
+                  <td>
+                    <span class={`badge badge-${project.dotClass}`}>{project.status}</span>
+                  </td>
+                  <td>
+                    <span class="text-sm">{project.priority}</span>
+                  </td>
+                  <td class="text-sm">{project.dateLabel}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <p class="text-muted text-xl py-4">Aucun projet pour le moment.</p>
+      )
+    }
   </div>
 </DashboardLayout>

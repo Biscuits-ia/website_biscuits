@@ -1,7 +1,7 @@
 # Biscuits IA
 > Association Loi 1901 - Intelligence Artificielle accessible, ethique et open source.
 > Site principal : https://biscuits-ia.com
-> Documentation pour assistants IA et LLM crawlers. Derniere mise a jour : 2026-08-02.
+> Documentation pour assistants IA et LLM crawlers. Derniere mise a jour : 2026-08-05.
 > Format : spec https://llmstxt.org/
 
 ## A propos
@@ -55,7 +55,8 @@ Tout est gratuit.
 - Guides PDF libres de droits (CC BY-SA 4.0)
 
 ## Documentation technique
-- Sitemap XML : https://biscuits-ia.com/sitemap-index.xml
+- Sitemap XML : https://biscuits-ia.com/sitemap.xml
+- Index de sitemap : https://biscuits-ia.com/sitemap-index.xml
 - Sitemap detaille : https://biscuits-ia.com/sitemap-0.xml
 - Flux RSS : https://biscuits-ia.com/rss.xml
 - Version markdown complete du site (pour LLM) : https://biscuits-ia.com/llms-full.txt

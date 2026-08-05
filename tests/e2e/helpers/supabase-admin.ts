@@ -68,7 +68,7 @@ export function createAdminClient(): SupabaseClient {
 
   if (!url || !key) {
     throw new Error(
-      '[e2e] SUPABASE_URL et SUPABASE_SERVICE_ROLE_KEY sont requis pour les tests authentifiés.',
+      '[e2e] SUPABASE_URL et SUPABASE_SERVICE_ROLE_KEY sont requis pour les tests authentifiés.'
     );
   }
 

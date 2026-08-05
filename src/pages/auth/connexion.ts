@@ -1,16 +1,18 @@
 // With `output: 'static'` configured:
 // export const prerender = false;
-import type { APIRoute } from "astro";
-import { createSupabaseClient } from "@/lib/supabase";
+import type { APIRoute } from 'astro';
+import { createSupabaseClient } from '@/lib/supabase';
 
 export const POST: APIRoute = async ({ request, cookies }) => {
   const formData = await request.formData();
-  const email    = formData.get("email") instanceof File ? null : (formData.get("email") as string | null);
-  const password = formData.get("password") instanceof File ? null : (formData.get("password") as string | null);
+  const email =
+    formData.get('email') instanceof File ? null : (formData.get('email') as string | null);
+  const password =
+    formData.get('password') instanceof File ? null : (formData.get('password') as string | null);
   if (!email || !password) {
-    return new Response(JSON.stringify({ error: "Email et mot de passe requis." }), {
+    return new Response(JSON.stringify({ error: 'Email et mot de passe requis.' }), {
       status: 400,
-      headers: { "Content-Type": "application/json" },
+      headers: { 'Content-Type': 'application/json' },
     });
   }
 
@@ -22,18 +24,19 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 
   if (error) {
     // Ne jamais exposer les messages d'erreur internes Supabase au client
-    const msg = (error.message === 'Invalid login credentials' || error.message === 'Email not confirmed')
-      ? 'Email ou mot de passe incorrect.'
-      : 'Connexion impossible. Veuillez réessayer.';
+    const msg =
+      error.message === 'Invalid login credentials' || error.message === 'Email not confirmed'
+        ? 'Email ou mot de passe incorrect.'
+        : 'Connexion impossible. Veuillez réessayer.';
     return new Response(JSON.stringify({ error: msg }), {
       status: 401,
-      headers: { "Content-Type": "application/json" },
+      headers: { 'Content-Type': 'application/json' },
     });
   }
 
   // Les cookies de session sont posés automatiquement par createSupabaseClient → setAll
   return new Response(JSON.stringify({ success: true }), {
     status: 200,
-    headers: { "Content-Type": "application/json" },
+    headers: { 'Content-Type': 'application/json' },
   });
 };

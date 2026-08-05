@@ -31,11 +31,9 @@ function isSameOrigin(request: Request, url: URL): boolean {
  * ne sont plus utilises : on les purge uniquement s'ils existent, par
  * securite (transitions).
  */
-function purgeSupabaseAuthCookies(
-  cookies: {
-    delete: (name: string, options?: Record<string, unknown>) => void;
-  },
-): void {
+function purgeSupabaseAuthCookies(cookies: {
+  delete: (name: string, options?: Record<string, unknown>) => void;
+}): void {
   const names = ['supabase.auth.token'];
   for (let i = 0; i < 10; i++) {
     names.push(`supabase.auth.token.${i}`);
@@ -54,10 +52,10 @@ function purgeSupabaseAuthCookies(
 async function handleDelete(Astro: Parameters<APIRoute>[0]): Promise<Response> {
   // 1) CSRF check : la requete POST doit venir du meme origine.
   if (!isSameOrigin(Astro.request, Astro.url)) {
-    return new Response(
-      JSON.stringify({ error: 'Origine de la requete invalide.' }),
-      { status: 403, headers: { 'Content-Type': 'application/json' } },
-    );
+    return new Response(JSON.stringify({ error: 'Origine de la requete invalide.' }), {
+      status: 403,
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
 
   // 2) Reutiliser le client du middleware (meme session, pas de relecture
@@ -65,9 +63,15 @@ async function handleDelete(Astro: Parameters<APIRoute>[0]): Promise<Response> {
   const supabase = Astro.locals.supabase ?? createSupabaseClient(Astro);
 
   // 3) Verifier que l'utilisateur est connecte
-  const { data: { user }, error: userError } = await supabase.auth.getUser();
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
   if (userError || !user) {
-    return Astro.redirect('/connexion?error=' + encodeURIComponent('Vous devez etre connecte pour supprimer votre compte.'));
+    return Astro.redirect(
+      '/connexion?error=' +
+        encodeURIComponent('Vous devez etre connecte pour supprimer votre compte.')
+    );
   }
 
   // 4) Anonymiser la trace cote profiles (RGPD) AVANT de supprimer le user
@@ -95,7 +99,9 @@ async function handleDelete(Astro: Parameters<APIRoute>[0]): Promise<Response> {
   // 6) Supprimer le user de Supabase Auth (cascades via FK vers profiles)
   const deleted = await deleteUserFromSupabase(user.id);
   if (!deleted) {
-    return Astro.redirect('/?error=' + encodeURIComponent('La suppression a echoue. Reessaie ou contacte le support.'));
+    return Astro.redirect(
+      '/?error=' + encodeURIComponent('La suppression a echoue. Reessaie ou contacte le support.')
+    );
   }
 
   // 7) Purge des cookies de session (best effort).

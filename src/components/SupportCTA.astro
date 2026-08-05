@@ -6,15 +6,17 @@ const facons = [
   {
     icon: '\u2764',
     titre: 'Faire un don',
-    description: 'Votre don finance directement la sensibilisation, les ateliers IA pour les associations, et le developpement d\'Anti Pepins. HelloAsso, 100% securise, recu fiscal des 10 \u20ac.',
+    description:
+      "Votre don finance directement la sensibilisation, les ateliers IA pour les associations, et le developpement d'Anti Pepins. HelloAsso, 100% securise, recu fiscal des 10 \u20ac.",
     href: 'https://www.helloasso.com/associations/biscuits-ia',
     externe: true,
     cta: 'Donner',
   },
   {
     icon: '\u270D',
-    titre: 'Adherer a l\'association',
-    description: 'A partir de 10 \u20ac/an, vous soutenez la mission et vous beneficiez des ressources membres en avant-premiere.',
+    titre: "Adherer a l'association",
+    description:
+      'A partir de 10 \u20ac/an, vous soutenez la mission et vous beneficiez des ressources membres en avant-premiere.',
     href: '/rejoignez-nous',
     externe: false,
     cta: 'Adherer',
@@ -22,7 +24,8 @@ const facons = [
   {
     icon: '\u26A1',
     titre: 'Donner du temps',
-    description: 'Benevolat technique, juridique, communication, evenementiel. Quelques heures par mois suffisent. On vous forme.',
+    description:
+      'Benevolat technique, juridique, communication, evenementiel. Quelques heures par mois suffisent. On vous forme.',
     href: '/rejoignez-nous',
     externe: false,
     cta: 'Voir les besoins',
@@ -36,31 +39,43 @@ const facons = [
       <p class="sup-eyebrow">Soutenir l'association</p>
       <h2 id="sup-title">Trois facons de nous aider</h2>
       <p class="sup-intro">
-        Biscuits IA est une association Loi 1901 financee par les ventes de logiciels (pilier 3), les ateliers payants et la generosite de particuliers et d'entreprises. Chaque contribution compte, quelle que soit sa forme.
+        Biscuits IA est une association Loi 1901 financee par les ventes de logiciels (pilier 3),
+        les ateliers payants et la generosite de particuliers et d'entreprises. Chaque contribution
+        compte, quelle que soit sa forme.
       </p>
     </header>
 
     <div class="sup-grid">
-      {facons.map((f) => (
-        <article class="sup-card">
-          <span class="sup-icon" aria-hidden="true">{f.icon}</span>
-          <h3>{f.titre}</h3>
-          <p>{f.description}</p>
-          <a
-            href={f.href}
-            class="sup-cta"
-            {...(f.externe ? { rel: 'noopener noreferrer', target: '_blank' } : {})}
-          >
-            {f.cta}
-            {f.externe && <span class="sup-ext" aria-hidden="true">↗</span>}
-          </a>
-        </article>
-      ))}
+      {
+        facons.map((f) => (
+          <article class="sup-card">
+            <span class="sup-icon" aria-hidden="true">
+              {f.icon}
+            </span>
+            <h3>{f.titre}</h3>
+            <p>{f.description}</p>
+            <a
+              href={f.href}
+              class="sup-cta"
+              {...(f.externe ? { rel: 'noopener noreferrer', target: '_blank' } : {})}
+            >
+              {f.cta}
+              {f.externe && (
+                <span class="sup-ext" aria-hidden="true">
+                  ↗
+                </span>
+              )}
+            </a>
+          </article>
+        ))
+      }
     </div>
 
     <div class="sup-foot">
       <p>
-        <strong>Vous etes une entreprise ou une collectivite ?</strong> On peut etablir un partenariat structure (mecennat de competences, financement d'un projet, integration a notre gouvernance). <a href="/contact?sujet=partenariat">Discutons-en</a>.
+        <strong>Vous etes une entreprise ou une collectivite ?</strong> On peut etablir un partenariat
+        structure (mecennat de competences, financement d'un projet, integration a notre gouvernance).
+        <a href="/contact?sujet=partenariat">Discutons-en</a>.
       </p>
     </div>
   </div>

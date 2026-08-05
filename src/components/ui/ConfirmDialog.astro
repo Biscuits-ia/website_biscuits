@@ -11,7 +11,9 @@
 // À monter UNE fois globalement dans le layout (DashboardLayout.astro).
 //
 // Le nonce est passé en prop (cf. P4 #44) — voir Toast.astro pour la raison.
-interface Props { nonce?: string; }
+interface Props {
+  nonce?: string;
+}
 const { nonce } = Astro.props;
 ---
 
@@ -31,8 +33,8 @@ const { nonce } = Astro.props;
     border: 2px solid #000;
     border-radius: 8px;
     padding: 0;
-    background: #FDFAF4;
-    color: #2C2014;
+    background: #fdfaf4;
+    color: #2c2014;
     max-width: 420px;
     width: 90vw;
     box-shadow: 6px 6px 0 #000;
@@ -73,31 +75,35 @@ const { nonce } = Astro.props;
     border: 2px solid #000;
     transition: transform 0.05s ease;
   }
-  .confirm-actions .btn:hover { transform: translate(-1px, -1px); }
-  .confirm-actions .btn:active { transform: translate(0, 0); }
+  .confirm-actions .btn:hover {
+    transform: translate(-1px, -1px);
+  }
+  .confirm-actions .btn:active {
+    transform: translate(0, 0);
+  }
   .confirm-actions .btn-ghost {
     background: #fff;
-    color: #2C2014;
+    color: #2c2014;
   }
   .confirm-actions .btn-primary {
     background: oklch(53.958% 0.10717 58.243);
-    color: #FDFAF4;
+    color: #fdfaf4;
   }
   .confirm-actions .btn-danger {
-    background: #E24B4A;
+    background: #e24b4a;
     color: #fff;
   }
 </style>
 
 <script is:inline nonce={nonce}>
   (() => {
-    const dlg       = document.getElementById('confirm-dialog');
+    const dlg = document.getElementById('confirm-dialog');
     if (!dlg || dlg.dataset.bound === '1') return;
     dlg.dataset.bound = '1';
 
-    const titleEl   = dlg.querySelector('.confirm-title');
-    const msgEl     = dlg.querySelector('.confirm-message');
-    const okBtn     = dlg.querySelector('.confirm-ok');
+    const titleEl = dlg.querySelector('.confirm-title');
+    const msgEl = dlg.querySelector('.confirm-message');
+    const okBtn = dlg.querySelector('.confirm-ok');
     const cancelBtn = dlg.querySelector('.confirm-cancel');
 
     /**
@@ -112,12 +118,12 @@ const { nonce } = Astro.props;
      * @param {boolean} [opts.danger=false]  Style "danger" pour le bouton OK
      * @returns {Promise<boolean>}
      */
-    window.showConfirm = function(opts) {
+    window.showConfirm = function (opts) {
       return new Promise((resolve) => {
         const o = opts || {};
-        titleEl.textContent   = o.title || '';
-        msgEl.textContent     = o.message || '';
-        okBtn.textContent     = o.confirmLabel || 'Confirmer';
+        titleEl.textContent = o.title || '';
+        msgEl.textContent = o.message || '';
+        okBtn.textContent = o.confirmLabel || 'Confirmer';
         cancelBtn.textContent = o.cancelLabel || 'Annuler';
         okBtn.classList.toggle('btn-danger', !!o.danger);
         okBtn.classList.toggle('btn-primary', !o.danger);
@@ -132,12 +138,12 @@ const { nonce } = Astro.props;
           dlg.close();
           resolve(val);
         };
-        const onOk     = () => cleanup(true);
+        const onOk = () => cleanup(true);
         const onCancel = () => cleanup(false);
         // Si l'utilisateur ferme via ESC ou via form method="dialog",
         // l'event 'close' se déclenche. À ce moment, dialog.returnValue
         // contient la value du bouton cliqué ('' si ESC).
-        const onClose  = () => cleanup(dlg.returnValue === 'ok');
+        const onClose = () => cleanup(dlg.returnValue === 'ok');
 
         okBtn.addEventListener('click', onOk);
         cancelBtn.addEventListener('click', onCancel);

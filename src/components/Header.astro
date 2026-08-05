@@ -1,7 +1,6 @@
 ---
 const { pathname } = Astro.url;
-const isActive = (href: string) =>
-  href === '/' ? pathname === '/' : pathname.startsWith(href);
+const isActive = (href: string) => (href === '/' ? pathname === '/' : pathname.startsWith(href));
 ---
 
 <header class="site-header" data-header>
@@ -22,8 +21,20 @@ const isActive = (href: string) =>
             role="menuitem"
           >
             Nos piliers
-            <svg class="chevron" width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
-              <path d="M2 4L6 8L10 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <svg
+              class="chevron"
+              width="12"
+              height="12"
+              viewBox="0 0 12 12"
+              fill="none"
+              aria-hidden="true"
+            >
+              <path
+                d="M2 4L6 8L10 4"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"></path>
             </svg>
           </button>
 
@@ -119,7 +130,10 @@ const isActive = (href: string) =>
                   <div class="mega-items">
                     <a href="/piliers/recherche" class="mega-item">
                       <strong>Pilier 4 : Recherche</strong>
-                      <span>Recherches participatives et modeles ouverts pour l'agriculture et la sante.</span>
+                      <span
+                        >Recherches participatives et modeles ouverts pour l'agriculture et la
+                        sante.</span
+                      >
                     </a>
                     <a href="/contact" class="mega-item">
                       <strong>Rejoindre un programme</strong>
@@ -139,11 +153,27 @@ const isActive = (href: string) =>
             </div>
 
             <ul class="mega-mobile-menu" role="menu" aria-label="Nos piliers en mobile">
-              <li role="none"><a role="menuitem" href="/piliers/ia" class="mega-mobile-link">Pilier 1 : IA</a></li>
-              <li role="none"><a role="menuitem" href="/piliers/logiciels" class="mega-mobile-link">Pilier 2 : Logiciels</a></li>
-              <li role="none"><a role="menuitem" href="/piliers/anti-pepins" class="mega-mobile-link">Pilier 3 : Anti Pepins</a></li>
-              <li role="none"><a role="menuitem" href="/piliers/recherche" class="mega-mobile-link">Pilier 4 : Recherche</a></li>
-              <li role="none"><a role="menuitem" href="/services" class="mega-mobile-link">Nos services</a></li>
+              <li role="none">
+                <a role="menuitem" href="/piliers/ia" class="mega-mobile-link">Pilier 1 : IA</a>
+              </li>
+              <li role="none">
+                <a role="menuitem" href="/piliers/logiciels" class="mega-mobile-link"
+                  >Pilier 2 : Logiciels</a
+                >
+              </li>
+              <li role="none">
+                <a role="menuitem" href="/piliers/anti-pepins" class="mega-mobile-link"
+                  >Pilier 3 : Anti Pepins</a
+                >
+              </li>
+              <li role="none">
+                <a role="menuitem" href="/piliers/recherche" class="mega-mobile-link"
+                  >Pilier 4 : Recherche</a
+                >
+              </li>
+              <li role="none">
+                <a role="menuitem" href="/services" class="mega-mobile-link">Nos services</a>
+              </li>
             </ul>
           </div>
         </li>
@@ -158,27 +188,59 @@ const isActive = (href: string) =>
             role="menuitem"
           >
             Ressources
-            <svg class="chevron" width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
-              <path d="M2 4L6 8L10 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <svg
+              class="chevron"
+              width="12"
+              height="12"
+              viewBox="0 0 12 12"
+              fill="none"
+              aria-hidden="true"
+            >
+              <path
+                d="M2 4L6 8L10 4"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"></path>
             </svg>
           </button>
           <ul id="dropdown-ressources" class="dropdown-menu" role="menu">
-            <li role="none"><a role="menuitem" href="/ressources" class="dropdown-item">Ressources</a></li>
-            <li role="none"><a role="menuitem" href="/pourquoi" class="dropdown-item">Pourquoi Biscuits IA ?</a></li>
-            <li role="none"><a role="menuitem" href="/a-qui-s-adresse" class="dropdown-item">À qui s'adresse ?</a></li>
+            <li role="none">
+              <a role="menuitem" href="/ressources" class="dropdown-item">Ressources</a>
+            </li>
+            <li role="none">
+              <a role="menuitem" href="/pourquoi" class="dropdown-item">Pourquoi Biscuits IA ?</a>
+            </li>
+            <li role="none">
+              <a role="menuitem" href="/a-qui-s-adresse" class="dropdown-item">À qui s'adresse ?</a>
+            </li>
             <li role="none"><a role="menuitem" href="/faq" class="dropdown-item">FAQ</a></li>
-            <li role="none"><a role="menuitem" href="/charte-ethique" class="dropdown-item">Charte ethique</a></li>
+            <li role="none">
+              <a role="menuitem" href="/charte-ethique" class="dropdown-item">Charte ethique</a>
+            </li>
           </ul>
         </li>
 
         <li class="nav-item" role="none">
-          <a href="/blog" class={`nav-link ${isActive('/blog') ? 'nav-link--active' : ''}`} role="menuitem">Blog</a>
+          <a
+            href="/blog"
+            class={`nav-link ${isActive('/blog') ? 'nav-link--active' : ''}`}
+            role="menuitem">Blog</a
+          >
         </li>
         <li class="nav-item" role="none">
-          <a href="/rejoignez-nous" class={`nav-link ${isActive('/rejoignez-nous') ? 'nav-link--active' : ''}`} role="menuitem">Devenir bénévole</a>
+          <a
+            href="/rejoignez-nous"
+            class={`nav-link ${isActive('/rejoignez-nous') ? 'nav-link--active' : ''}`}
+            role="menuitem">Devenir bénévole</a
+          >
         </li>
         <li class="nav-item" role="none">
-          <a href="/contact" class={`nav-link ${isActive('/contact') ? 'nav-link--active' : ''}`} role="menuitem">Contact</a>
+          <a
+            href="/contact"
+            class={`nav-link ${isActive('/contact') ? 'nav-link--active' : ''}`}
+            role="menuitem">Contact</a
+          >
         </li>
       </ul>
     </nav>
@@ -187,7 +249,13 @@ const isActive = (href: string) =>
       <a href="/connexion" class="btn-login">Espace membre</a>
     </div>
 
-    <button class="hamburger" aria-label="Ouvrir le menu" aria-expanded="false" aria-controls="main-navigation" data-hamburger>
+    <button
+      class="hamburger"
+      aria-label="Ouvrir le menu"
+      aria-expanded="false"
+      aria-controls="main-navigation"
+      data-hamburger
+    >
       <span></span>
       <span></span>
       <span></span>
@@ -206,7 +274,9 @@ const isActive = (href: string) =>
     z-index: 1000;
     background: var(--color-bg-elevated);
     border-bottom: 1px solid var(--color-border-second);
-    transition: box-shadow 0.2s ease, transform 0.3s ease;
+    transition:
+      box-shadow 0.2s ease,
+      transform 0.3s ease;
   }
 
   .site-header.scrolled {
@@ -282,7 +352,7 @@ const isActive = (href: string) =>
 
   .nav-trigger:hover,
   .nav-link:hover,
-  .nav-trigger[aria-expanded="true"] {
+  .nav-trigger[aria-expanded='true'] {
     background: var(--color-accent-vanilla);
     color: var(--color-text);
   }
@@ -297,7 +367,7 @@ const isActive = (href: string) =>
     transition: transform 0.2s ease;
   }
 
-  .nav-trigger[aria-expanded="true"] .chevron {
+  .nav-trigger[aria-expanded='true'] .chevron {
     transform: rotate(180deg);
   }
 
@@ -323,11 +393,14 @@ const isActive = (href: string) =>
     opacity: 0;
     visibility: hidden;
     transform: translateY(-8px);
-    transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s ease;
+    transition:
+      opacity 0.2s ease,
+      transform 0.2s ease,
+      visibility 0.2s ease;
     z-index: 1100;
   }
 
-  .nav-trigger[aria-expanded="true"] + .dropdown-menu {
+  .nav-trigger[aria-expanded='true'] + .dropdown-menu {
     opacity: 1;
     visibility: visible;
     transform: translateY(0);
@@ -363,13 +436,16 @@ const isActive = (href: string) =>
     opacity: 0;
     visibility: hidden;
     transform: translateY(-8px);
-    transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s ease;
+    transition:
+      opacity 0.2s ease,
+      transform 0.2s ease,
+      visibility 0.2s ease;
     z-index: 1050;
     max-height: min(80vh, calc(100vh - 90px));
     overflow-y: auto;
   }
 
-  .nav-trigger[aria-expanded="true"] + .mega-panel {
+  .nav-trigger[aria-expanded='true'] + .mega-panel {
     opacity: 1;
     visibility: visible;
     transform: translateY(0);
@@ -425,7 +501,8 @@ const isActive = (href: string) =>
     cursor: pointer;
   }
 
-  .mega-cat:hover, .mega-cat.active {
+  .mega-cat:hover,
+  .mega-cat.active {
     background-color: var(--color-primary-dark);
   }
 
@@ -573,18 +650,20 @@ const isActive = (href: string) =>
     height: 2px;
     background: var(--color-text-light);
     border-radius: 999px;
-    transition: transform 0.2s ease, opacity 0.2s ease;
+    transition:
+      transform 0.2s ease,
+      opacity 0.2s ease;
   }
 
-  .hamburger[aria-expanded="true"] span:nth-child(1) {
+  .hamburger[aria-expanded='true'] span:nth-child(1) {
     transform: translateY(7px) rotate(45deg);
   }
 
-  .hamburger[aria-expanded="true"] span:nth-child(2) {
+  .hamburger[aria-expanded='true'] span:nth-child(2) {
     opacity: 0;
   }
 
-  .hamburger[aria-expanded="true"] span:nth-child(3) {
+  .hamburger[aria-expanded='true'] span:nth-child(3) {
     transform: translateY(-7px) rotate(-45deg);
   }
 
@@ -594,7 +673,9 @@ const isActive = (href: string) =>
     background: rgba(2, 6, 23, 0.35);
     opacity: 0;
     visibility: hidden;
-    transition: opacity 0.2s ease, visibility 0.2s ease;
+    transition:
+      opacity 0.2s ease,
+      visibility 0.2s ease;
     z-index: 950;
   }
 
@@ -655,7 +736,7 @@ const isActive = (href: string) =>
       padding: 0.3rem 0 0.3rem 0.5rem;
     }
 
-    .nav-trigger[aria-expanded="true"] + .dropdown-menu {
+    .nav-trigger[aria-expanded='true'] + .dropdown-menu {
       display: block;
     }
 
@@ -679,7 +760,7 @@ const isActive = (href: string) =>
       overflow: visible;
     }
 
-    .nav-trigger[aria-expanded="true"] + .mega-panel {
+    .nav-trigger[aria-expanded='true'] + .mega-panel {
       display: block;
     }
 
@@ -773,12 +854,16 @@ const isActive = (href: string) =>
       ticking = false;
     }
 
-    window.addEventListener('scroll', () => {
-      if (!ticking) {
-        window.requestAnimationFrame(onScroll);
-        ticking = true;
-      }
-    }, { passive: true });
+    window.addEventListener(
+      'scroll',
+      () => {
+        if (!ticking) {
+          window.requestAnimationFrame(onScroll);
+          ticking = true;
+        }
+      },
+      { passive: true }
+    );
 
     function closeAllMenus() {
       document.querySelectorAll('[data-mega-toggle], [data-dropdown-toggle]').forEach((btn) => {
@@ -948,4 +1033,3 @@ const isActive = (href: string) =>
 
   document.addEventListener('astro:page-load', initHeader);
 </script>
-

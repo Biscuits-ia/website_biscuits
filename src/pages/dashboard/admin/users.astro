@@ -11,11 +11,11 @@ const { user, supabase } = result;
 const userName = user.user_metadata?.full_name ?? user.email?.split('@')[0] ?? 'Admin';
 
 // ── Paramètres de recherche ───────────────────────────────────────────────────
-const page    = Math.max(1, Number(Astro.url.searchParams.get('page') ?? '1'));
+const page = Math.max(1, Number(Astro.url.searchParams.get('page') ?? '1'));
 const perPage = 20;
-const from    = (page - 1) * perPage;
-const search  = (Astro.url.searchParams.get('q') ?? '').replace(/[,.()\[\]]/g, '');
-const role    = Astro.url.searchParams.get('role') ?? '';
+const from = (page - 1) * perPage;
+const search = (Astro.url.searchParams.get('q') ?? '').replace(/[,.()[\]]/g, '');
+const role = Astro.url.searchParams.get('role') ?? '';
 
 let query = supabase
   .from('profiles')
@@ -24,7 +24,7 @@ let query = supabase
   .range(from, from + perPage - 1);
 
 if (search) query = query.or(`email.ilike.%${search}%,full_name.ilike.%${search}%`);
-if (role)   query = query.eq('role', role);
+if (role) query = query.eq('role', role);
 
 const { data: usersRaw, count } = await query;
 
@@ -35,71 +35,78 @@ const { data: usersRaw, count } = await query;
 type UserRole = 'admin' | 'moderator' | 'user' | 'benevole' | 'association';
 
 interface ProfileRow {
-  id:               string;
-  email:            string;
-  full_name:        string | null;
-  role:             string;            // brut depuis la BDD (peut contenir benevole/association)
-  created_at:       string;
-  last_sign_in_at:  string | null;
+  id: string;
+  email: string;
+  full_name: string | null;
+  role: string; // brut depuis la BDD (peut contenir benevole/association)
+  created_at: string;
+  last_sign_in_at: string | null;
 }
 
 function isUserRole(value: unknown): value is UserRole {
-  return value === 'admin' || value === 'moderator' || value === 'user'
-      || value === 'benevole' || value === 'association';
+  return (
+    value === 'admin' ||
+    value === 'moderator' ||
+    value === 'user' ||
+    value === 'benevole' ||
+    value === 'association'
+  );
 }
 
 const users = (usersRaw ?? []) as ProfileRow[];
 
 interface UserRow {
-  u:           ProfileRow;
-  roleBadge:   string;
-  roleLabel:   string;
-  createdStr:  string;
+  u: ProfileRow;
+  roleBadge: string;
+  roleLabel: string;
+  createdStr: string;
   lastSignStr: string;
 }
 
 const roleBadgeByRole: Record<string, string> = {
-  admin:      'badge-err',
-  moderator:  'badge-warn',
-  benevole:   'badge-info',
-  association:'badge-info',
-  user:       'badge-neutral',
+  admin: 'badge-err',
+  moderator: 'badge-warn',
+  benevole: 'badge-info',
+  association: 'badge-info',
+  user: 'badge-neutral',
 };
 
 const roleLabelByRole: Record<string, string> = {
-  admin:      'Admin',
-  moderator:  'Modérateur',
-  benevole:   'Bénévole',
-  association:'Association',
-  user:       'Utilisateur',
+  admin: 'Admin',
+  moderator: 'Modérateur',
+  benevole: 'Bénévole',
+  association: 'Association',
+  user: 'Utilisateur',
 };
 
 const userRows: UserRow[] = users.map((u: ProfileRow): UserRow => {
   const role = isUserRole(u.role) ? u.role : 'user';
   return {
     u,
-    roleBadge:   roleBadgeByRole[role] ?? 'badge-neutral',
-    roleLabel:   roleLabelByRole[role] ?? role,
-    createdStr:  new Date(u.created_at).toLocaleDateString('fr-FR'),
-    lastSignStr: u.last_sign_in_at
-      ? new Date(u.last_sign_in_at).toLocaleDateString('fr-FR')
-      : '—',
+    roleBadge: roleBadgeByRole[role] ?? 'badge-neutral',
+    roleLabel: roleLabelByRole[role] ?? role,
+    createdStr: new Date(u.created_at).toLocaleDateString('fr-FR'),
+    lastSignStr: u.last_sign_in_at ? new Date(u.last_sign_in_at).toLocaleDateString('fr-FR') : '—',
   };
 });
 
-const totalPages    = Math.ceil((count ?? 0) / perPage);
-const hasUsers      = userRows.length !== 0;
-const hasFilters    = search !== '' || role !== '';
-const hasPrevPage   = page !== 1;           // évite page > 1 dans le template
-const hasNextPage   = page !== totalPages && totalPages !== 0; // évite page < totalPages
-const prevPageHref  = `?page=${page - 1}&q=${search}&role=${role}`;
-const nextPageHref  = `?page=${page + 1}&q=${search}&role=${role}`;
-const pageLabel     = `${page} / ${totalPages}`;
-const countLabel    = `${count ?? 0} compte${(count ?? 0) !== 1 ? 's' : ''} enregistré${(count ?? 0) !== 1 ? 's' : ''}`;
+const totalPages = Math.ceil((count ?? 0) / perPage);
+const hasUsers = userRows.length !== 0;
+const hasFilters = search !== '' || role !== '';
+const hasPrevPage = page !== 1; // évite page > 1 dans le template
+const hasNextPage = page !== totalPages && totalPages !== 0; // évite page < totalPages
+const prevPageHref = `?page=${page - 1}&q=${search}&role=${role}`;
+const nextPageHref = `?page=${page + 1}&q=${search}&role=${role}`;
+const pageLabel = `${page} / ${totalPages}`;
+const countLabel = `${count ?? 0} compte${(count ?? 0) !== 1 ? 's' : ''} enregistré${(count ?? 0) !== 1 ? 's' : ''}`;
 ---
 
-<DashboardLayout title="Gestion des utilisateurs" activePage="users" userName={userName} authResult={result}>
-
+<DashboardLayout
+  title="Gestion des utilisateurs"
+  activePage="users"
+  userName={userName}
+  authResult={result}
+>
   <div class="page-header">
     <div>
       <h1 class="page-title">Utilisateurs</h1>
@@ -118,16 +125,20 @@ const countLabel    = `${count ?? 0} compte${(count ?? 0) !== 1 ? 's' : ''} enre
     />
     <select name="role" class="filter-input" data-autosubmit="1">
       <option value="">Tous les rôles</option>
-      <option value="user"       selected={role === 'user'}>Utilisateur</option>
-      <option value="benevole"   selected={role === 'benevole'}>Bénévole</option>
+      <option value="user" selected={role === 'user'}>Utilisateur</option>
+      <option value="benevole" selected={role === 'benevole'}>Bénévole</option>
       <option value="association" selected={role === 'association'}>Association</option>
-      <option value="moderator"  selected={role === 'moderator'}>Modérateur</option>
-      <option value="admin"      selected={role === 'admin'}>Admin</option>
+      <option value="moderator" selected={role === 'moderator'}>Modérateur</option>
+      <option value="admin" selected={role === 'admin'}>Admin</option>
     </select>
     <button type="submit" class="btn btn-primary btn-sm">Filtrer</button>
-    {hasFilters && (
-      <a href="/dashboard/admin/users" class="btn btn-ghost btn-xs">× Réinitialiser</a>
-    )}
+    {
+      hasFilters && (
+        <a href="/dashboard/admin/users" class="btn btn-ghost btn-xs">
+          × Réinitialiser
+        </a>
+      )
+    }
   </form>
 
   <!-- Table -->
@@ -144,72 +155,152 @@ const countLabel    = `${count ?? 0} compte${(count ?? 0) !== 1 ? 's' : ''} enre
           </tr>
         </thead>
         <tbody>
-          {hasUsers ? userRows.map(({ u, roleBadge, roleLabel, createdStr, lastSignStr }) => (
-            <tr>
-              <td>
-                <div class="user-cell">
-                  <span>{u.full_name ?? '—'}</span>
-                  <span class="user-email">{u.email}</span>
-                </div>
-              </td>
-              <td>
-                <span class={`badge ${roleBadge}`}>{roleLabel}</span>
-              </td>
-              <td class="mono xs muted">{createdStr}</td>
-              <td class="mono xs muted">{lastSignStr}</td>
-              <td>
-                <a href={`/dashboard/admin/users/${u.id}`} class="btn btn-ghost btn-xs">
-                  Voir
-                </a>
-              </td>
-            </tr>
-          )) : (
-            <tr>
-              <td colspan="6" class="empty-row">Aucun utilisateur trouvé.</td>
-            </tr>
-          )}
+          {
+            hasUsers ? (
+              userRows.map(({ u, roleBadge, roleLabel, createdStr, lastSignStr }) => (
+                <tr>
+                  <td>
+                    <div class="user-cell">
+                      <span>{u.full_name ?? '—'}</span>
+                      <span class="user-email">{u.email}</span>
+                    </div>
+                  </td>
+                  <td>
+                    <span class={`badge ${roleBadge}`}>{roleLabel}</span>
+                  </td>
+                  <td class="mono xs muted">{createdStr}</td>
+                  <td class="mono xs muted">{lastSignStr}</td>
+                  <td>
+                    <a href={`/dashboard/admin/users/${u.id}`} class="btn btn-ghost btn-xs">
+                      Voir
+                    </a>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colspan="6" class="empty-row">
+                  Aucun utilisateur trouvé.
+                </td>
+              </tr>
+            )
+          }
         </tbody>
       </table>
     </div>
   </div>
 
   <!-- Pagination — hasPrevPage / hasNextPage pré-calculés (évite < > dans template) -->
-  {totalPages !== 1 && totalPages !== 0 && (
-    <div class="pagination">
-      {hasPrevPage && <a href={prevPageHref} class="btn btn-ghost">← Précédent</a>}
-      <span class="page-indicator">{pageLabel}</span>
-      {hasNextPage && <a href={nextPageHref} class="btn btn-ghost">Suivant →</a>}
-    </div>
-  )}
-
+  {
+    totalPages !== 1 && totalPages !== 0 && (
+      <div class="pagination">
+        {hasPrevPage && (
+          <a href={prevPageHref} class="btn btn-ghost">
+            ← Précédent
+          </a>
+        )}
+        <span class="page-indicator">{pageLabel}</span>
+        {hasNextPage && (
+          <a href={nextPageHref} class="btn btn-ghost">
+            Suivant →
+          </a>
+        )}
+      </div>
+    )
+  }
 </DashboardLayout>
 
 <style>
   /* ── En-tête ── */
-  .page-header   { margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; }
-  .page-title    { font-size: 1.2rem; font-weight: 400; letter-spacing: -0.02em; }
-  .page-subtitle { color: var(--text-muted); font-size: 0.8rem; margin-top: 3px; }
+  .page-header {
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .page-title {
+    font-size: 1.2rem;
+    font-weight: 400;
+    letter-spacing: -0.02em;
+  }
+  .page-subtitle {
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    margin-top: 3px;
+  }
 
   /* ── Filtres ── */
-  .filters-bar        { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 16px; }
-  .filter-input       { padding: 7px 10px; font-size: 0.82rem; border: var(--brutal-border-thin); background: var(--surface); }
-  .filter-input--wide { min-width: 200px; }
+  .filters-bar {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+  .filter-input {
+    padding: 7px 10px;
+    font-size: 0.82rem;
+    border: var(--brutal-border-thin);
+    background: var(--surface);
+  }
+  .filter-input--wide {
+    min-width: 200px;
+  }
 
   /* ── Table ── */
-  .card-flush  { padding: 0; overflow: hidden; }
-  .user-cell   { display: flex; flex-direction: column; gap: 1px; }
-  .user-email  { font-size: 0.72rem; color: var(--text-muted); font-family: var(--font-mono); }
-  .mono        { font-family: var(--font-mono); }
-  .sm          { font-size: 0.8rem; }
-  .xs          { font-size: 0.75rem; }
-  .muted       { color: var(--text-muted); }
-  .empty-row   { text-align: center; color: var(--text-muted); padding: 32px 12px; font-size: 0.83rem; }
+  .card-flush {
+    padding: 0;
+    overflow: hidden;
+  }
+  .user-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+  }
+  .user-email {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+  }
+  .mono {
+    font-family: var(--font-mono);
+  }
+  .sm {
+    font-size: 0.8rem;
+  }
+  .xs {
+    font-size: 0.75rem;
+  }
+  .muted {
+    color: var(--text-muted);
+  }
+  .empty-row {
+    text-align: center;
+    color: var(--text-muted);
+    padding: 32px 12px;
+    font-size: 0.83rem;
+  }
 
   /* ── Boutons ── */
-  .btn-sm { font-size: 0.8rem; }
-  .btn-xs { font-size: 0.72rem; padding: 4px 8px; }
+  .btn-sm {
+    font-size: 0.8rem;
+  }
+  .btn-xs {
+    font-size: 0.72rem;
+    padding: 4px 8px;
+  }
 
   /* ── Pagination ── */
-  .pagination     { display: flex; gap: 8px; justify-content: center; margin-top: 20px; align-items: center; }
-  .page-indicator { padding: 7px 14px; font-size: 0.82rem; color: var(--text-muted); }
+  .pagination {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    margin-top: 20px;
+    align-items: center;
+  }
+  .page-indicator {
+    padding: 7px 14px;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+  }
 </style>

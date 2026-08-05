@@ -3,7 +3,10 @@ import AuthLayout from '../layouts/AuthLayout.astro';
 import { createSupabaseClient } from '../lib/supabase';
 
 const supabase = createSupabaseClient(Astro);
-const { data: { user }, error } = await supabase.auth.getUser();
+const {
+  data: { user },
+  error,
+} = await supabase.auth.getUser();
 
 // Si l'utilisateur n'a pas de session valide, rediriger vers la demande de reset
 if (error || !user) {
@@ -13,19 +16,25 @@ if (error || !user) {
 const nonce = Astro.locals.nonce;
 ---
 
-<AuthLayout title="Nouveau mot de passe" description="Créez un nouveau mot de passe pour votre compte Biscuits IA.">
+<AuthLayout
+  title="Nouveau mot de passe"
+  description="Créez un nouveau mot de passe pour votre compte Biscuits IA."
+>
   <div class="auth-shell">
     <div class="auth-card-wrap">
-
       <div class="auth-card">
         <h1 class="auth-title">Nouveau mot de passe</h1>
-        <p class="auth-lead">
-          Choisissez un mot de passe sécurisé pour votre compte.
-        </p>
+        <p class="auth-lead">Choisissez un mot de passe sécurisé pour votre compte.</p>
 
         <div class="auth-field-sm">
           <label for="password" class="auth-label">Nouveau mot de passe</label>
-          <input type="password" id="password" placeholder="••••••••" autocomplete="new-password" class="auth-input" />
+          <input
+            type="password"
+            id="password"
+            placeholder="••••••••"
+            autocomplete="new-password"
+            class="auth-input"
+          />
         </div>
 
         <div id="strength-wrap" class="auth-field" hidden aria-live="polite">
@@ -40,15 +49,32 @@ const nonce = Astro.locals.nonce;
 
         <div class="auth-field-lg">
           <label for="confirm" class="auth-label">Confirmer</label>
-          <input type="password" id="confirm" placeholder="••••••••" autocomplete="new-password" class="auth-input" />
+          <input
+            type="password"
+            id="confirm"
+            placeholder="••••••••"
+            autocomplete="new-password"
+            class="auth-input"
+          />
           <div id="match-hint" class="auth-match-hint" hidden aria-live="polite"></div>
         </div>
 
         <button id="update-btn" class="auth-btn-primary" type="button">
           <span id="btn-text">Mettre à jour</span>
-          <svg id="btn-loader" class="auth-spinner auth-hidden" width="14" height="14"
-               viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
-            <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+          <svg
+            id="btn-loader"
+            class="auth-spinner auth-hidden"
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            aria-hidden="true"
+          >
+            <path
+              d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"
+            ></path>
           </svg>
         </button>
 
@@ -64,17 +90,47 @@ const nonce = Astro.locals.nonce;
 
 <style>
   /* Deltas propres a cette page (typographie plus grande, brun oklch 53.958). */
-  .auth-lead { color: #372c1f; }
-  .auth-label { font-size: 13px; font-weight: 600; color: oklch(53.958% 0.10717 58.243); }
-  .auth-input { font-size: 16px; font-weight: 700; }
-  .auth-input:focus { border-color: oklch(53.958% 0.10717 58.243); }
-  .auth-input::placeholder { color: #c4b89a; }
-  .auth-btn-primary { background: oklch(53.958% 0.10717 58.243); font-weight: 700; }
-  .auth-btn-primary:hover { background: oklch(40.672% 0.07757 59.025); }
-  .auth-btn-primary:active { background: oklch(49.078% 0.09707 57.871); }
-  .auth-msg { margin-top: 16px; padding: 10px 16px; font-size: 15px; }
-  .auth-link-back { font-size: 15px; }
-  .auth-match-hint { font-size: 11px; font-family: 'Geist Mono', monospace; margin-top: 5px; }
+  .auth-lead {
+    color: #372c1f;
+  }
+  .auth-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: oklch(53.958% 0.10717 58.243);
+  }
+  .auth-input {
+    font-size: 16px;
+    font-weight: 700;
+  }
+  .auth-input:focus {
+    border-color: oklch(53.958% 0.10717 58.243);
+  }
+  .auth-input::placeholder {
+    color: #c4b89a;
+  }
+  .auth-btn-primary {
+    background: oklch(53.958% 0.10717 58.243);
+    font-weight: 700;
+  }
+  .auth-btn-primary:hover {
+    background: oklch(40.672% 0.07757 59.025);
+  }
+  .auth-btn-primary:active {
+    background: oklch(49.078% 0.09707 57.871);
+  }
+  .auth-msg {
+    margin-top: 16px;
+    padding: 10px 16px;
+    font-size: 15px;
+  }
+  .auth-link-back {
+    font-size: 15px;
+  }
+  .auth-match-hint {
+    font-size: 11px;
+    font-family: 'Geist Mono', monospace;
+    margin-top: 5px;
+  }
 </style>
 
 <script is:inline nonce={nonce}>
@@ -82,25 +138,27 @@ const nonce = Astro.locals.nonce;
   const MIN_PASSWORD_LENGTH = 8;
   function validatePasswordClient(value) {
     if (typeof value !== 'string' || value.length === 0) return 'Le mot de passe est requis.';
-    if (value.length < MIN_PASSWORD_LENGTH) return 'Le mot de passe doit contenir au moins ' + MIN_PASSWORD_LENGTH + ' caractères.';
+    if (value.length < MIN_PASSWORD_LENGTH)
+      return 'Le mot de passe doit contenir au moins ' + MIN_PASSWORD_LENGTH + ' caractères.';
     return null;
   }
 
-  const passInput    = document.getElementById('password');
+  const passInput = document.getElementById('password');
   const confirmInput = document.getElementById('confirm');
-  const msgEl        = document.getElementById('msg');
-  const btn          = document.getElementById('update-btn');
-  const btnText      = document.getElementById('btn-text');
-  const btnLoader    = document.getElementById('btn-loader');
-  const segments     = ['s1','s2','s3','s4'].map(function(id) { return document.getElementById(id); });
-  const colors       = ['#E24B4A','#E89A3C','#C4623A','#3D5A47'];
-  const labels       = ['Trop court','Faible','Moyen','Fort'];
-
+  const msgEl = document.getElementById('msg');
+  const btn = document.getElementById('update-btn');
+  const btnText = document.getElementById('btn-text');
+  const btnLoader = document.getElementById('btn-loader');
+  const segments = ['s1', 's2', 's3', 's4'].map(function (id) {
+    return document.getElementById(id);
+  });
+  const colors = ['#E24B4A', '#E89A3C', '#C4623A', '#3D5A47'];
+  const labels = ['Trop court', 'Faible', 'Moyen', 'Fort'];
 
   function showMsg(text, type) {
     if (!type) type = 'error';
-    msgEl.textContent   = text;
-    msgEl.className     = 'auth-msg ' + type;
+    msgEl.textContent = text;
+    msgEl.className = 'auth-msg ' + type;
     // `hidden` et non `style.display` : la regle agent-utilisateur du HTML est
     // `[hidden] { display: none !important }`, et un !important d'agent bat un
     // style inline. Le message restait donc invisible malgre son texte.
@@ -108,14 +166,14 @@ const nonce = Astro.locals.nonce;
   }
 
   function setLoading(loading) {
-    btn.disabled            = loading;
-    btnText.style.display   = loading ? 'none'  : 'block';
+    btn.disabled = loading;
+    btnText.style.display = loading ? 'none' : 'block';
     btnLoader.style.display = loading ? 'block' : 'none';
   }
 
   function getStrength(pw) {
     let s = 0;
-    if (pw.length >= 8)  s++;
+    if (pw.length >= 8) s++;
     if (pw.length >= 12) s++;
     if (/[A-Z]/.test(pw) && /[a-z]/.test(pw)) s++;
     if (/\d/.test(pw) || /[^A-Za-z0-9]/.test(pw)) s++;
@@ -124,9 +182,12 @@ const nonce = Astro.locals.nonce;
 
   function checkMatch() {
     const hint = document.getElementById('match-hint');
-    const pw   = passInput.value;
-    const cf   = confirmInput.value;
-    if (!cf) { hint.style.display = 'none'; return; }
+    const pw = passInput.value;
+    const cf = confirmInput.value;
+    if (!cf) {
+      hint.style.display = 'none';
+      return;
+    }
     hint.style.display = 'block';
     if (pw === cf) {
       hint.textContent = '✓ Les mots de passe correspondent';
@@ -137,13 +198,18 @@ const nonce = Astro.locals.nonce;
     }
   }
 
-  passInput.addEventListener('input', function() {
-    const pw   = passInput.value;
+  passInput.addEventListener('input', function () {
+    const pw = passInput.value;
     const wrap = document.getElementById('strength-wrap');
-    if (!pw) { wrap.style.display = 'none'; return; }
+    if (!pw) {
+      wrap.style.display = 'none';
+      return;
+    }
     wrap.style.display = 'block';
     const s = getStrength(pw);
-    segments.forEach(function(seg, i) { seg.style.background = i < s ? colors[s - 1] : '#DDD0B8'; });
+    segments.forEach(function (seg, i) {
+      seg.style.background = i < s ? colors[s - 1] : '#DDD0B8';
+    });
     const lbl = document.getElementById('strength-label');
     lbl.textContent = labels[s - 1];
     lbl.style.color = colors[s - 1];
@@ -154,7 +220,7 @@ const nonce = Astro.locals.nonce;
 
   async function handleUpdate() {
     const password = passInput.value;
-    const confirm  = confirmInput.value;
+    const confirm = confirmInput.value;
 
     msgEl.hidden = true;
 
@@ -163,7 +229,10 @@ const nonce = Astro.locals.nonce;
       return;
     }
     const passErr = validatePasswordClient(password);
-    if (passErr) { showMsg(passErr); return; }
+    if (passErr) {
+      showMsg(passErr);
+      return;
+    }
     if (password !== confirm) {
       showMsg('Les mots de passe ne correspondent pas.');
       return;
@@ -175,9 +244,9 @@ const nonce = Astro.locals.nonce;
       formData.set('password', password);
 
       const res = await fetch('/auth/reinitialiser-mot-de-passe', {
-      method: 'POST',
-      body: formData,
-    });
+        method: 'POST',
+        body: formData,
+      });
 
       const data = await res.json();
 
@@ -186,7 +255,7 @@ const nonce = Astro.locals.nonce;
         // Le serveur a déjà déconnecté la session — proposer un nouveau lien
         // si c'est une erreur non liée à la politique de mot de passe
         if (res.status === 401 || res.status === 500) {
-          setTimeout(function() {
+          setTimeout(function () {
             window.location.href = '/mot-de-passe-oublie';
           }, 3000);
         }
@@ -195,7 +264,7 @@ const nonce = Astro.locals.nonce;
 
       // Détruire la session et rediriger vers connexion
       showMsg('Mot de passe mis à jour ! Redirection…', 'success');
-      setTimeout(async function() {
+      setTimeout(async function () {
         try {
           await fetch('/auth/deconnexion', { method: 'POST' });
         } catch (e) {}
@@ -210,7 +279,9 @@ const nonce = Astro.locals.nonce;
 
   btn.addEventListener('click', handleUpdate);
 
-  document.querySelectorAll('input[type="password"]').forEach(function(el) {
-    el.addEventListener('keydown', function(e) { if (e.key === 'Enter') handleUpdate(); });
+  document.querySelectorAll('input[type="password"]').forEach(function (el) {
+    el.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') handleUpdate();
+    });
   });
 </script>

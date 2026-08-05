@@ -10,11 +10,20 @@ const { user, supabase } = result;
 const nonce = Astro.locals.nonce;
 const userName = user.user_metadata?.full_name ?? user.email?.split('@')[0] ?? 'Admin';
 
-const page      = Number(Astro.url.searchParams.get('page') ?? 1);
-const perPage   = 50;
-const from      = (page - 1) * perPage;
+const page = Number(Astro.url.searchParams.get('page') ?? 1);
+const perPage = 50;
+const from = (page - 1) * perPage;
 const filterLvl = Astro.url.searchParams.get('level') ?? '';
-const search    = Astro.url.searchParams.get('q') ?? '';
+const search = Astro.url.searchParams.get('q') ?? '';
+
+interface LogRow {
+  id: string;
+  level: string | null;
+  message: string;
+  service: string | null;
+  created_at: string;
+  metadata: unknown;
+}
 
 let query = supabase
   .from('system_logs')
@@ -23,17 +32,16 @@ let query = supabase
   .range(from, from + perPage - 1);
 
 if (filterLvl) query = query.eq('level', filterLvl);
-if (search)    query = query.ilike('message', `%${search}%`);
+if (search) query = query.ilike('message', `%${search}%`);
 
 const { data: logs, count } = await query;
 const totalPages = Math.ceil((count ?? 0) / perPage);
 
 // Comptage par niveau
-await supabase.rpc('log_level_counts');  
+await supabase.rpc('log_level_counts');
 ---
 
 <DashboardLayout title="Logs système" activePage="logs" userName={userName} authResult={result}>
-
   <div class="log-head">
     <div>
       <h1 class="log-title">
@@ -43,10 +51,7 @@ await supabase.rpc('log_level_counts');
       <p class="log-count">{count ?? 0} entrées</p>
     </div>
     <!-- Auto-refresh -->
-    <button
-      data-reload="1"
-      class="btn btn-ghost btn-xs-text"
-    >⟳ Rafraîchir</button>
+    <button data-reload="1" class="btn btn-ghost btn-xs-text">⟳ Rafraîchir</button>
   </div>
 
   <!-- Filtres -->
@@ -60,93 +65,169 @@ await supabase.rpc('log_level_counts');
     />
     <select name="level" class="filter-input" data-autosubmit="1">
       <option value="">Tous les niveaux</option>
-      <option value="INFO"  selected={filterLvl === 'INFO'}>INFO</option>
-      <option value="WARN"  selected={filterLvl === 'WARN'}>WARN</option>
+      <option value="INFO" selected={filterLvl === 'INFO'}>INFO</option>
+      <option value="WARN" selected={filterLvl === 'WARN'}>WARN</option>
       <option value="ERROR" selected={filterLvl === 'ERROR'}>ERROR</option>
       <option value="DEBUG" selected={filterLvl === 'DEBUG'}>DEBUG</option>
     </select>
     <button type="submit" class="btn btn-primary log-filter-btn">Filtrer</button>
-    {(filterLvl || search) && (
-      <a href="/dashboard/admin/logs" class="btn btn-ghost btn-xs-text">× Réinitialiser</a>
-    )}
+    {
+      (filterLvl || search) && (
+        <a href="/dashboard/admin/logs" class="btn btn-ghost btn-xs-text">
+          × Réinitialiser
+        </a>
+      )
+    }
   </form>
 
   <!-- Compteurs par niveau -->
   <div class="level-counts">
-    {[
-      { level: 'INFO',  cls: 'info' },
-      { level: 'WARN',  cls: 'warn' },
-      { level: 'ERROR', cls: 'err' },
-    ].map(({ level, cls }) => (
-      <a href={`?level=${level}`} class={`badge badge-${cls} level-badge`}>
-        {level}
-        {filterLvl === level && ' ✓'}
-      </a>
-    ))}
+    {
+      [
+        { level: 'INFO', cls: 'info' },
+        { level: 'WARN', cls: 'warn' },
+        { level: 'ERROR', cls: 'err' },
+      ].map(({ level, cls }) => (
+        <a href={`?level=${level}`} class={`badge badge-${cls} level-badge`}>
+          {level}
+          {filterLvl === level && ' ✓'}
+        </a>
+      ))
+    }
   </div>
 
   <!-- Log list -->
   <div class="log-list log-list--tight">
-    {logs && logs.length > 0 ? logs.map((log: any) => {
-      const d   = new Date(log.created_at);
-      const lvl = (log.level ?? 'info').toLowerCase();
-      const svc = log.service ?? '';
-      return (
-        <div class="log-entry log-cols">
-          <span class="log-time">
-            {d.toLocaleDateString('fr-FR')} {d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-          </span>
-          <span class={`log-level ${lvl}`}>{log.level}</span>
-          <span class="log-svc">
-            {svc || '—'}
-          </span>
-          <span class="log-msg">{log.message}</span>
-        </div>
-      );
-    }) : (
-      <div class="log-empty">
-        Aucun log trouvé.
-      </div>
-    )}
+    {
+      logs && logs.length > 0 ? (
+        (logs as LogRow[]).map((log) => {
+          const d = new Date(log.created_at);
+          const lvl = (log.level ?? 'info').toLowerCase();
+          const svc = log.service ?? '';
+          return (
+            <div class="log-entry log-cols">
+              <span class="log-time">
+                {d.toLocaleDateString('fr-FR')}{' '}
+                {d.toLocaleTimeString('fr-FR', {
+                  hour: '2-digit',
+                  minute: '2-digit',
+                  second: '2-digit',
+                })}
+              </span>
+              <span class={`log-level ${lvl}`}>{log.level}</span>
+              <span class="log-svc">{svc || '—'}</span>
+              <span class="log-msg">{log.message}</span>
+            </div>
+          );
+        })
+      ) : (
+        <div class="log-empty">Aucun log trouvé.</div>
+      )
+    }
   </div>
 
   <!-- Pagination -->
-  {totalPages > 1 && (
-    <div class="pager">
-      {page > 1 && (
-        <a href={`?page=${page - 1}&level=${filterLvl}&q=${search}`} class="btn btn-ghost">← Précédent</a>
-      )}
-      <span class="pager-info">{page} / {totalPages}</span>
-      {page < totalPages && (
-        <a href={`?page=${page + 1}&level=${filterLvl}&q=${search}`} class="btn btn-ghost">Suivant →</a>
-      )}
-    </div>
-  )}
+  {
+    totalPages > 1 && (
+      <div class="pager">
+        {page > 1 && (
+          <a href={`?page=${page - 1}&level=${filterLvl}&q=${search}`} class="btn btn-ghost">
+            ← Précédent
+          </a>
+        )}
+        <span class="pager-info">
+          {page} / {totalPages}
+        </span>
+        {page < totalPages && (
+          <a href={`?page=${page + 1}&level=${filterLvl}&q=${search}`} class="btn btn-ghost">
+            Suivant →
+          </a>
+        )}
+      </div>
+    )
+  }
 
   <!-- Auto-refresh JS (optionnel) -->
   <script is:inline nonce={nonce}>
     // Refresh automatique toutes les 30s si on est sur la page 1 sans filtre actif
-    if (!new URLSearchParams(location.search).get('page') && !new URLSearchParams(location.search).get('level')) {
-      setTimeout(function() { location.reload(); }, 30000);
+    if (
+      !new URLSearchParams(location.search).get('page') &&
+      !new URLSearchParams(location.search).get('level')
+    ) {
+      setTimeout(function () {
+        location.reload();
+      }, 30000);
     }
   </script>
-
 </DashboardLayout>
 
 <style>
   /* Specifique a la page logs (audit S4 : sortie des attributs inline). */
-  .log-head        { margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; }
-  .log-title       { font-size: 1.2rem; font-weight: 400; letter-spacing: -0.02em; }
-  .log-live-badge  { font-size: 0.62rem; margin-left: 8px; vertical-align: middle; }
-  .log-count       { color: var(--text-muted); font-size: 0.8rem; margin-top: 3px; }
-  .search-input    { min-width: 240px; }
-  .log-filter-btn  { font-size: 0.8rem; }
-  .level-counts    { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
-  .level-badge     { cursor: pointer; font-size: 0.72rem; }
-  .log-list--tight { gap: 4px; }
-  .log-cols        { grid-template-columns: 170px 60px 90px 1fr; }
-  .log-svc         { font-size: 0.72rem; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .log-empty       { text-align: center; padding: 40px; color: var(--text-muted); font-size: 0.83rem; }
-  .pager           { display: flex; gap: 8px; justify-content: center; margin-top: 20px; }
-  .pager-info      { padding: 7px 14px; font-size: 0.82rem; color: var(--text-muted); }
+  .log-head {
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .log-title {
+    font-size: 1.2rem;
+    font-weight: 400;
+    letter-spacing: -0.02em;
+  }
+  .log-live-badge {
+    font-size: 0.62rem;
+    margin-left: 8px;
+    vertical-align: middle;
+  }
+  .log-count {
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    margin-top: 3px;
+  }
+  .search-input {
+    min-width: 240px;
+  }
+  .log-filter-btn {
+    font-size: 0.8rem;
+  }
+  .level-counts {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+  .level-badge {
+    cursor: pointer;
+    font-size: 0.72rem;
+  }
+  .log-list--tight {
+    gap: 4px;
+  }
+  .log-cols {
+    grid-template-columns: 170px 60px 90px 1fr;
+  }
+  .log-svc {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .log-empty {
+    text-align: center;
+    padding: 40px;
+    color: var(--text-muted);
+    font-size: 0.83rem;
+  }
+  .pager {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    margin-top: 20px;
+  }
+  .pager-info {
+    padding: 7px 14px;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+  }
 </style>

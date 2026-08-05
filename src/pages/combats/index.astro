@@ -20,13 +20,13 @@ const combats = [
   {
     slug: 'plateformes-ouvertes',
     title: 'Souveraineté numérique : reprendre les clés de vos outils',
-    lead: "Encourager les solutions ouvertes et maîtrisables pour éviter que les petites structures ne deviennent prisonnières de leurs outils.",
+    lead: 'Encourager les solutions ouvertes et maîtrisables pour éviter que les petites structures ne deviennent prisonnières de leurs outils.',
     icon: '🔓',
   },
   {
     slug: 'partage-connaissance',
     title: 'Libérer les savoirs : vers une autonomie numérique partagée',
-    lead: "Documenter ce que nous faisons, accompagner nos partenaires et partager nos méthodes en accès libre pour que le savoir profite à tous.",
+    lead: 'Documenter ce que nous faisons, accompagner nos partenaires et partager nos méthodes en accès libre pour que le savoir profite à tous.',
     icon: '📚',
   },
 ];
@@ -35,7 +35,7 @@ const schema = {
   type: 'WebPage' as const,
   data: {
     name: 'Nos combats - Biscuits IA',
-    description: "Quatre combats pour une IA accessible, utile, ouverte et partagée.",
+    description: 'Quatre combats pour une IA accessible, utile, ouverte et partagée.',
   },
 };
 ---
@@ -50,7 +50,8 @@ const schema = {
     <div class="container">
       <h1>Nos combats</h1>
       <p class="lead">
-        Une IA vraiment utile passe par quatre combats concrets. Découvrez nos positions, nos actions et les leviers que nous activons chaque jour.
+        Une IA vraiment utile passe par quatre combats concrets. Découvrez nos positions, nos
+        actions et les leviers que nous activons chaque jour.
       </p>
     </div>
   </section>
@@ -58,14 +59,18 @@ const schema = {
   <section class="combats-grid-section">
     <div class="container">
       <div class="combats-grid">
-        {combats.map((c) => (
-          <a href={`/combats/${c.slug}`} class="combat-card">
-            <span class="combat-icon" aria-hidden="true">{c.icon}</span>
-            <h2>{c.title}</h2>
-            <p>{c.lead}</p>
-            <span class="combat-link">Lire notre position →</span>
-          </a>
-        ))}
+        {
+          combats.map((c) => (
+            <a href={`/combats/${c.slug}`} class="combat-card">
+              <span class="combat-icon" aria-hidden="true">
+                {c.icon}
+              </span>
+              <h2>{c.title}</h2>
+              <p>{c.lead}</p>
+              <span class="combat-link">Lire notre position →</span>
+            </a>
+          ))
+        }
       </div>
     </div>
   </section>
@@ -113,7 +118,10 @@ const schema = {
     text-decoration: none;
     color: inherit;
     box-shadow: var(--shadow-md);
-    transition: transform var(--transition-base), box-shadow var(--transition-base), border-color var(--transition-base);
+    transition:
+      transform var(--transition-base),
+      box-shadow var(--transition-base),
+      border-color var(--transition-base);
   }
   .combat-card:hover {
     transform: translateY(-4px);

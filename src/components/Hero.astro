@@ -1,45 +1,51 @@
 ---
-import { Image } from "astro:assets";
+import { Image } from 'astro:assets';
 // Source WebP lossy q=80 (154 Ko) au lieu du PNG d'origine (1.59 Mo).
 // La dimension source est 1200x800 max ; Astro re-decoupe aux breakpoints
 // 400/800/1200 declares ci-dessous.
 import Logo from '../assets/logo.webp';
 ---
 
-<section class="hero-section relative min-h-screen flex items-center justify-center overflow-hidden bg-(--color-bg)" data-hero-section>
-  
+<section
+  class="hero-section relative min-h-screen flex items-center justify-center overflow-hidden bg-(--color-bg)"
+  data-hero-section
+>
   <!-- Contenu Hero -->
-  <div class="hero-content relative z-10 max-w-350 w-full grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center">
-    
+  <div
+    class="hero-content relative z-10 max-w-350 w-full grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center"
+  >
     <!-- Texte Hero -->
     <div class="hero-text flex flex-col gap-6 text-center lg:text-left items-center lg:items-start">
-      <h1 class="hero-title text-4xl md:text-6xl lg:text-7xl font-extrabold leading-tight text-(--color-text) animate-fadeInUp opacity-0">
-       L'intelligence artificielle au service de l'intérêt général.
+      <h1
+        class="hero-title text-4xl md:text-6xl lg:text-7xl font-extrabold leading-tight text-(--color-text) animate-fadeInUp opacity-0"
+      >
+        L'intelligence artificielle au service de l'intérêt général.
       </h1>
       <p class="hero-badge animate-fadeInUp opacity-0" style="animation-delay: 0.3s;">
         Gratuit · Simple · Prêt à l'emploi
       </p>
       <p class="hero-subtitle animate-fadeInUp opacity-0" style="animation-delay: 0.5s;">
-Nous aidons les associations, collectivités et professionnels à adopter une intelligence artificielle utile, responsable et accessible.      </p>
+        Nous aidons les associations, collectivités et professionnels à adopter une intelligence
+        artificielle utile, responsable et accessible.
+      </p>
 
       <!-- CTA Buttons -->
       <div class="hero-cta-grid">
         <div class="hero-cta animate-fadeInUp opacity-0" style="animation-delay: 1s;">
-          <a href="/piliers" class="btn-hero-primary">
-            Découvrir nos actions
-          </a>
+          <a href="/piliers" class="btn-hero-primary"> Découvrir nos actions </a>
         </div>
 
         <div class="hero-cta animate-fadeInUp opacity-0" style="animation-delay: 1.2s;">
-          <a href="/rejoignez-nous" class="btn-hero-secondary">
-            Nous rejoindre
-          </a>
+          <a href="/rejoignez-nous" class="btn-hero-secondary"> Nous rejoindre </a>
         </div>
       </div>
     </div>
 
     <!-- Visual Hero -->
-    <div class="hero-visual relative hidden lg:flex lg:items-center lg:justify-end animate-fadeInRight opacity-0" style="animation-delay: 0.6s;">
+    <div
+      class="hero-visual relative hidden lg:flex lg:items-center lg:justify-end animate-fadeInRight opacity-0"
+      style="animation-delay: 0.6s;"
+    >
       <div class="visual-card relative rounded-[20px]" style="max-width: 520px; width: 100%;">
         <Image
           src={Logo}
@@ -157,7 +163,9 @@ Nous aidons les associations, collectivités et professionnels à adopter une in
     letter-spacing: 0.05em;
     border: 4px solid var(--color-border);
     box-shadow: var(--shadow-lg);
-    transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+    transition:
+      transform var(--transition-fast),
+      box-shadow var(--transition-fast);
     white-space: nowrap;
   }
 
@@ -186,7 +194,10 @@ Nous aidons les associations, collectivités et professionnels à adopter une in
     letter-spacing: 0.05em;
     border: 4px solid var(--color-border);
     box-shadow: var(--shadow-lg);
-    transition: transform var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast);
+    transition:
+      transform var(--transition-fast),
+      box-shadow var(--transition-fast),
+      background var(--transition-fast);
     white-space: nowrap;
   }
 
@@ -210,7 +221,7 @@ Nous aidons les associations, collectivités et professionnels à adopter une in
       animation-iteration-count: 1 !important;
       transition-duration: 0.01ms !important;
     }
-    
+
     .hero-subtitle,
     .hero-title,
     .hero-cta,
@@ -220,5 +231,4 @@ Nous aidons les associations, collectivités et professionnels à adopter une in
       transform: none !important;
     }
   }
-
 </style>

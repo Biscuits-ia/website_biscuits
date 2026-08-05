@@ -71,10 +71,7 @@ export async function deleteUserFromSupabase(userId: string): Promise<boolean> {
 
 export async function stopBeingBenevole(userId: string): Promise<boolean> {
   const adminClient = createSupabaseAdminClient();
-  const { error } = await adminClient
-    .from('profiles')
-    .update({ role: 'user' })
-    .eq('id', userId);
+  const { error } = await adminClient.from('profiles').update({ role: 'user' }).eq('id', userId);
   if (error) {
     console.error('[auth] stopBeingBenevole error:', error.message);
     return false;
@@ -162,7 +159,10 @@ export async function fetchRoleSecure(userId: string): Promise<UserRole | null> 
 
 export async function requireAuth(Astro: AuthContext): Promise<AuthResult | AuthRedirect> {
   const supabase = Astro.locals.supabase ?? createSupabaseClient(Astro);
-  const { data: { user }, error } = await supabase.auth.getUser();
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser();
   if (error || !user) {
     return authRedirect(Astro.redirect('/connexion'));
   }
@@ -174,10 +174,13 @@ export async function requireAuth(Astro: AuthContext): Promise<AuthResult | Auth
 
 export async function requireRole(
   Astro: AuthContext,
-  allowed: ReadonlyArray<UserRole>,
+  allowed: ReadonlyArray<UserRole>
 ): Promise<AuthResult | AuthRedirect> {
   const supabase = Astro.locals.supabase ?? createSupabaseClient(Astro);
-  const { data: { user }, error } = await supabase.auth.getUser();
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser();
   if (error || !user) {
     return authRedirect(Astro.redirect('/connexion'));
   }
@@ -229,16 +232,19 @@ function jsonError(message: string, status: 401 | 403): AuthRedirect {
     new Response(JSON.stringify({ error: message }), {
       status,
       headers: { 'Content-Type': 'application/json' },
-    }),
+    })
   );
 }
 
 async function requireJson(
   ctx: JsonAuthContext,
-  allowed: ReadonlyArray<UserRole>,
+  allowed: ReadonlyArray<UserRole>
 ): Promise<AuthResult | AuthRedirect> {
   const supabase = ctx.locals?.supabase ?? createSupabaseClient(ctx);
-  const { data: { user }, error } = await supabase.auth.getUser();
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser();
   if (error || !user) return jsonError('Non authentifié', 401);
   const role = await fetchRoleSecure(user.id);
   if (!role || !allowed.includes(role)) return jsonError('Accès refusé', 403);

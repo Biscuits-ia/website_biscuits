@@ -1,0 +1,3 @@
+# Le parseur Astro de Prettier tente d'interpreter ce script inline classique
+# comme du JSX et echoue, alors que le JavaScript est syntaxiquement valide.
+src/components/BaseHead.astro

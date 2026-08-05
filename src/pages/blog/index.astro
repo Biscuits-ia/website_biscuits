@@ -25,8 +25,9 @@ const PAGE_SIZE = 5; // Nombre d'articles affiches par page (pagination client)
 const allArticles = await getCollection('blog');
 const sorted = allArticles
   .filter((a: CollectionEntry<'blog'>) => (import.meta.env.PROD ? !a.data.draft : true))
-  .sort((a: CollectionEntry<'blog'>, b: CollectionEntry<'blog'>) =>
-    b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
+  .sort(
+    (a: CollectionEntry<'blog'>, b: CollectionEntry<'blog'>) =>
+      b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
   );
 
 const total = sorted.length;
@@ -64,10 +65,14 @@ const allArticlesForSearch = sorted.map((a: CollectionEntry<'blog'>) => ({
   id: a.id,
   title: a.data.title,
   description: (a.data.description ?? '') as string,
-  pubDate: a.data.pubDate.toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' }),
+  pubDate: a.data.pubDate.toLocaleDateString('fr-FR', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  }),
   pubDateISO: a.data.pubDate.toISOString(),
   author: a.data.author ?? 'Biscuits IA',
-  tags: ((a.data.tags ?? []) as string[]),
+  tags: (a.data.tags ?? []) as string[],
   tagsSlug: ((a.data.tags ?? []) as string[]).map((t) => slugifyTag(t)),
   url: `/blog/${a.id}`,
   featured: a.data.featured ?? false,
@@ -87,7 +92,7 @@ const pageDescription = `${total} articles sur l'IA generative, la cybersecurite
     data: {
       name: pageTitle,
       description: pageDescription,
-    }
+    },
   }}
 >
   <Breadcrumb />
@@ -96,33 +101,47 @@ const pageDescription = `${total} articles sur l'IA generative, la cybersecurite
     <header class="blog-hero">
       <div class="hero-content">
         <span class="hero-eyebrow">Le blog de Biscuits IA</span>
+        <h1 class="hero-title">Comprendre et utiliser l'intelligence artificielle</h1>
       </div>
     </header>
 
     <div class="blog-container">
-
       <section class="featured-section" aria-labelledby="featured-title">
         <h2 id="featured-title" class="section-title">
           <span aria-hidden="true">★</span> Articles en vedette
         </h2>
         <div class="featured-grid">
-          {featuredArticles.map((article) => (
-            <a href={`/blog/${article.id}`} class="featured-card">
-              <span class="featured-eyebrow">A la une</span>
-              <h3 class="featured-title">{article.data.title}</h3>
-              {article.data.description && (
-                <p class="featured-description">{article.data.description}</p>
-              )}
-              <span class="featured-cta">Lire l'article →</span>
-            </a>
-          ))}
+          {
+            featuredArticles.map((article) => (
+              <a href={`/blog/${article.id}`} class="featured-card">
+                <span class="featured-eyebrow">A la une</span>
+                <h3 class="featured-title">{article.data.title}</h3>
+                {article.data.description && (
+                  <p class="featured-description">{article.data.description}</p>
+                )}
+                <span class="featured-cta">Lire l'article →</span>
+              </a>
+            ))
+          }
         </div>
       </section>
 
       <section class="filter-section" aria-label="Filtrer les articles">
         <div class="search-wrapper">
           <div class="search-box">
-            <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <svg
+              class="search-icon"
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
               <circle cx="11" cy="11" r="8"></circle>
               <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
             </svg>
@@ -133,8 +152,25 @@ const pageDescription = `${total} articles sur l'IA generative, la cybersecurite
               autocomplete="off"
               aria-label="Rechercher un article"
             />
-            <button type="button" id="search-clear" class="search-clear" aria-label="Effacer la recherche" hidden>
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <button
+              type="button"
+              id="search-clear"
+              class="search-clear"
+              aria-label="Effacer la recherche"
+              hidden
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
                 <line x1="18" y1="6" x2="6" y2="18"></line>
                 <line x1="6" y1="6" x2="18" y2="18"></line>
               </svg>
@@ -146,43 +182,53 @@ const pageDescription = `${total} articles sur l'IA generative, la cybersecurite
           <button type="button" class="tag-pill active" data-tag="all">
             Tous <span class="tag-count">{total}</span>
           </button>
-          {allTags.slice(0, 6).map((tag) => (
-            <a
-              href={`/blog/tag/${tag.slug}`}
-              class="tag-pill"
-              data-tag={tag.slug}
-            >
-              #{tag.display} <span class="tag-count">{tag.count}</span>
-            </a>
-          ))}
-          {allTags.length > 6 && (
-            <div class="tag-overflow" id="tag-overflow" hidden>
-              {allTags.slice(6).map((tag) => (
-                <a
-                  href={`/blog/tag/${tag.slug}`}
-                  class="tag-pill"
-                  data-tag={tag.slug}
+          {
+            allTags.slice(0, 6).map((tag) => (
+              <a href={`/blog/tag/${tag.slug}`} class="tag-pill" data-tag={tag.slug}>
+                #{tag.display} <span class="tag-count">{tag.count}</span>
+              </a>
+            ))
+          }
+          {
+            allTags.length > 6 && (
+              <div class="tag-overflow" id="tag-overflow" hidden>
+                {allTags.slice(6).map((tag) => (
+                  <a href={`/blog/tag/${tag.slug}`} class="tag-pill" data-tag={tag.slug}>
+                    #{tag.display} <span class="tag-count">{tag.count}</span>
+                  </a>
+                ))}
+              </div>
+            )
+          }
+          {
+            allTags.length > 6 && (
+              <button
+                type="button"
+                class="tag-pill tag-pill-toggle"
+                id="tag-toggle"
+                aria-expanded="false"
+                aria-controls="tag-overflow"
+              >
+                <span class="tag-toggle-label-show">Voir plus ({allTags.length - 6})</span>
+                <span class="tag-toggle-label-hide">Voir moins</span>
+                <svg
+                  class="tag-toggle-icon"
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
                 >
-                  #{tag.display} <span class="tag-count">{tag.count}</span>
-                </a>
-              ))}
-            </div>
-          )}
-          {allTags.length > 6 && (
-            <button
-              type="button"
-              class="tag-pill tag-pill-toggle"
-              id="tag-toggle"
-              aria-expanded="false"
-              aria-controls="tag-overflow"
-            >
-              <span class="tag-toggle-label-show">Voir plus ({allTags.length - 6})</span>
-              <span class="tag-toggle-label-hide">Voir moins</span>
-              <svg class="tag-toggle-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <polyline points="6 9 12 15 18 9"></polyline>
-              </svg>
-            </button>
-          )}
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>
+              </button>
+            )
+          }
         </nav>
       </section>
 
@@ -190,7 +236,9 @@ const pageDescription = `${total} articles sur l'IA generative, la cybersecurite
         <p id="search-count" class="search-count"></p>
         <div id="search-grid" class="articles-grid"></div>
         <p id="search-empty" class="search-empty" hidden>
-          Aucun article ne correspond a votre recherche. Essayez d'autres mots-cles ou <a href="/blog">reinitialisez le filtre</a>.
+          Aucun article ne correspond a votre recherche. Essayez d'autres mots-cles ou <a
+            href="/blog">reinitialisez le filtre</a
+          >.
         </p>
       </section>
 
@@ -202,46 +250,93 @@ const pageDescription = `${total} articles sur l'IA generative, la cybersecurite
           </p>
         </div>
         <div class="articles-grid" id="all-articles-grid">
-          {sorted.map((article: CollectionEntry<'blog'>, index: number) => (
-            <article class="article-card" style={`--card-index: ${index}`} data-article-id={article.id} data-page={Math.floor(index / PAGE_SIZE) + 1}>
-              <div class="card-content">
-                <div class="card-meta">
-                  <time datetime={article.data.pubDate.toISOString()}>
-                    {article.data.pubDate.toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' })}
-                  </time>
-                  {article.data.author && <span class="meta-sep">&middot;</span>}
-                  {article.data.author && <span>{article.data.author}</span>}
-                </div>
-                <h3 class="card-title">
-                  <a href={`/blog/${article.id}`} class="card-title-link">{article.data.title}</a>
-                </h3>
-                {article.data.description && (
-                  <p class="card-description">{article.data.description}</p>
-                )}
-                <div class="card-footer">
-                  {article.data.tags && article.data.tags.length > 0 && (
-                    <div class="card-tags">
-                      {(article.data.tags as string[]).slice(0, 3).map((tag: string) => (
-                        <a href={`/blog/tag/${slugifyTag(tag)}`} class="tag" data-tag-slug={slugifyTag(tag)}>#{tag}</a>
-                      ))}
-                    </div>
+          {
+            sorted.slice(0, PAGE_SIZE).map((article, index) => (
+              <article
+                class="article-card"
+                style={`--card-index: ${index}`}
+                data-article-id={article.id}
+                data-page={Math.floor(index / PAGE_SIZE) + 1}
+              >
+                <div class="card-content">
+                  <div class="card-meta">
+                    <time datetime={article.data.pubDate.toISOString()}>
+                      {article.data.pubDate.toLocaleDateString('fr-FR', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                      })}
+                    </time>
+                    {article.data.author && <span class="meta-sep">&middot;</span>}
+                    {article.data.author && <span>{article.data.author}</span>}
+                  </div>
+                  <h3 class="card-title">
+                    <a href={`/blog/${article.id}`} class="card-title-link">
+                      {article.data.title}
+                    </a>
+                  </h3>
+                  {article.data.description && (
+                    <p class="card-description">{article.data.description}</p>
                   )}
-                  <span class="read-more">
-                    Lire l'article
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                      <line x1="5" y1="12" x2="19" y2="12"></line>
-                      <polyline points="12 5 19 12 12 19"></polyline>
-                    </svg>
-                  </span>
+                  <div class="card-footer">
+                    {article.data.tags && article.data.tags.length > 0 && (
+                      <div class="card-tags">
+                        {(article.data.tags as string[]).slice(0, 3).map((tag: string) => (
+                          <a
+                            href={`/blog/tag/${slugifyTag(tag)}`}
+                            class="tag"
+                            data-tag-slug={slugifyTag(tag)}
+                          >
+                            #{tag}
+                          </a>
+                        ))}
+                      </div>
+                    )}
+                    <span class="read-more">
+                      Lire l'article
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="14"
+                        height="14"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2.5"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                        <polyline points="12 5 19 12 12 19" />
+                      </svg>
+                    </span>
+                  </div>
                 </div>
-              </div>
-            </article>
-          ))}
+              </article>
+            ))
+          }
         </div>
 
         <nav id="pagination" class="pagination" aria-label="Pagination des articles">
-          <button type="button" class="pagination-btn" id="pagination-prev" aria-label="Page precedente" disabled>
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <button
+            type="button"
+            class="pagination-btn"
+            id="pagination-prev"
+            aria-label="Page precedente"
+            disabled
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
               <line x1="19" y1="12" x2="5" y2="12"></line>
               <polyline points="12 19 5 12 12 5"></polyline>
             </svg>
@@ -250,16 +345,31 @@ const pageDescription = `${total} articles sur l'IA generative, la cybersecurite
 
           <ol class="pagination-pages" id="pagination-pages"></ol>
 
-          <button type="button" class="pagination-btn" id="pagination-next" aria-label="Page suivante">
+          <button
+            type="button"
+            class="pagination-btn"
+            id="pagination-next"
+            aria-label="Page suivante"
+          >
             <span>Suivant</span>
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
               <line x1="5" y1="12" x2="19" y2="12"></line>
               <polyline points="12 5 19 12 12 19"></polyline>
             </svg>
           </button>
         </nav>
       </section>
-
     </div>
   </div>
 </Layout>
@@ -282,21 +392,39 @@ const pageDescription = `${total} articles sur l'IA generative, la cybersecurite
     const paginationNext = document.getElementById('pagination-next');
     const paginationStatus = document.getElementById('pagination-status');
 
-    if (!searchInput || !searchResults || !searchGrid || !searchCount || !searchEmpty || !mainContent || !allArticlesGrid || !paginationEl || !paginationPages || !paginationPrev || !paginationNext || !paginationStatus) {
+    if (
+      !searchInput ||
+      !searchResults ||
+      !searchGrid ||
+      !searchCount ||
+      !searchEmpty ||
+      !mainContent ||
+      !allArticlesGrid ||
+      !paginationEl ||
+      !paginationPages ||
+      !paginationPrev ||
+      !paginationNext ||
+      !paginationStatus
+    ) {
       return;
     }
 
     // Normalise le texte (lowercase + retrait des accents).
     const normalize = (s) =>
-      (s || '').toString().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      (s || '')
+        .toString()
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '');
 
     let activeTag = 'all';
     let currentPage = 1;
     let currentMatches = allArticlesForSearch.slice();
 
     function escapeHtml(s) {
-      return (s || '').replace(/[&<>"']/g, (c) =>
-        ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])
+      return (s || '').replace(
+        /[&<>"']/g,
+        (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]
       );
     }
 
@@ -325,7 +453,14 @@ const pageDescription = `${total} articles sur l'IA generative, la cybersecurite
     }
 
     function slugify(s) {
-      return (s || '').toString().normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+      return (s || '')
+        .toString()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/(^-|-$)/g, '');
     }
 
     function buildPageList(current, last) {
@@ -377,7 +512,9 @@ const pageDescription = `${total} articles sur l'IA generative, la cybersecurite
         currentMatches = allArticlesForSearch.filter((a) => {
           if (tag !== 'all' && !(a.tagsSlug || []).includes(tag)) return false;
           if (query) {
-            const haystack = normalize(a.title + ' ' + a.description + ' ' + (a.tags || []).join(' '));
+            const haystack = normalize(
+              a.title + ' ' + a.description + ' ' + (a.tags || []).join(' ')
+            );
             if (!haystack.includes(query)) return false;
           }
           return true;
@@ -388,7 +525,8 @@ const pageDescription = `${total} articles sur l'IA generative, la cybersecurite
         searchResults.hidden = false;
         searchGrid.innerHTML = currentMatches.map(renderCard).join('');
         const n = currentMatches.length;
-        searchCount.textContent = n + ' article' + (n > 1 ? 's' : '') + ' trouve' + (n > 1 ? 's' : '');
+        searchCount.textContent =
+          n + ' article' + (n > 1 ? 's' : '') + ' trouve' + (n > 1 ? 's' : '');
         searchEmpty.hidden = n > 0;
       } else {
         // Mode normal : pagination
@@ -406,15 +544,25 @@ const pageDescription = `${total} articles sur l'IA generative, la cybersecurite
       if (currentPage > lastPage) currentPage = lastPage;
       if (currentPage < 1) currentPage = 1;
 
-      // Cache les cartes hors page
-      const cards = allArticlesGrid.querySelectorAll('.article-card');
-      cards.forEach((card) => {
-        const p = parseInt(card.getAttribute('data-page') || '1', 10);
-        card.hidden = p !== currentPage;
-      });
+      // Ne rend que la page courante : les donnees restent compactes dans
+      // l'index de recherche au lieu de dupliquer 33 cartes HTML completes.
+      const start = (currentPage - 1) * PAGE_SIZE;
+      allArticlesGrid.innerHTML = currentMatches
+        .slice(start, start + PAGE_SIZE)
+        .map(renderCard)
+        .join('');
 
       renderPagination(lastPage);
-      paginationStatus.textContent = 'Page ' + currentPage + ' sur ' + lastPage + ' (' + currentMatches.length + ' article' + (currentMatches.length > 1 ? 's' : '') + ')';
+      paginationStatus.textContent =
+        'Page ' +
+        currentPage +
+        ' sur ' +
+        lastPage +
+        ' (' +
+        currentMatches.length +
+        ' article' +
+        (currentMatches.length > 1 ? 's' : '') +
+        ')';
     }
 
     function goToPage(p) {
@@ -449,7 +597,9 @@ const pageDescription = `${total} articles sur l'IA generative, la cybersecurite
         currentPage = 1;
         applyFilter();
         if (activeTag !== 'all') {
-          document.getElementById('search-results')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          document
+            .getElementById('search-results')
+            ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
       });
     });
@@ -493,7 +643,12 @@ const pageDescription = `${total} articles sur l'IA generative, la cybersecurite
 
     // Raccourci "/" pour focaliser la recherche.
     document.addEventListener('keydown', (e) => {
-      if (e.key === '/' && document.activeElement !== searchInput && document.activeElement?.tagName !== 'INPUT' && document.activeElement?.tagName !== 'TEXTAREA') {
+      if (
+        e.key === '/' &&
+        document.activeElement !== searchInput &&
+        document.activeElement?.tagName !== 'INPUT' &&
+        document.activeElement?.tagName !== 'TEXTAREA'
+      ) {
         e.preventDefault();
         searchInput.focus();
         searchInput.select();
@@ -512,7 +667,10 @@ const pageDescription = `${total} articles sur l'IA generative, la cybersecurite
 </script>
 
 <style>
-  .blog-wrapper { min-height: 100vh; background: var(--color-bg); }
+  .blog-wrapper {
+    min-height: 100vh;
+    background: var(--color-bg);
+  }
 
   /* === HERO === */
   .blog-hero {
@@ -521,7 +679,10 @@ const pageDescription = `${total} articles sur l'IA generative, la cybersecurite
     text-align: center;
   }
 
-  .hero-content { max-width: 800px; margin: 0 auto; }
+  .hero-content {
+    max-width: 800px;
+    margin: 0 auto;
+  }
 
   .hero-eyebrow {
     display: inline-block;
@@ -585,7 +746,9 @@ const pageDescription = `${total} articles sur l'IA generative, la cybersecurite
     border-top: 2px solid var(--color-border);
   }
 
-  .section-head-row .section-title { margin: 0; }
+  .section-head-row .section-title {
+    margin: 0;
+  }
 
   .pagination-status {
     color: var(--color-text-light);
@@ -595,7 +758,9 @@ const pageDescription = `${total} articles sur l'IA generative, la cybersecurite
   }
 
   /* === FEATURED === */
-  .featured-section { margin-bottom: 3rem; }
+  .featured-section {
+    margin-bottom: 3rem;
+  }
 
   .featured-grid {
     display: grid;
@@ -614,7 +779,10 @@ const pageDescription = `${total} articles sur l'IA generative, la cybersecurite
     text-decoration: none;
     color: inherit;
     box-shadow: var(--shadow-md, 5px 5px 0 var(--color-border));
-    transition: transform var(--transition-base, 0.3s), box-shadow var(--transition-base, 0.3s), border-color var(--transition-base, 0.3s);
+    transition:
+      transform var(--transition-base, 0.3s),
+      box-shadow var(--transition-base, 0.3s),
+      border-color var(--transition-base, 0.3s);
   }
 
   .featured-card:hover {
@@ -659,9 +827,13 @@ const pageDescription = `${total} articles sur l'IA generative, la cybersecurite
   }
 
   /* === FILTRES === */
-  .filter-section { margin: 2rem 0 1rem; }
+  .filter-section {
+    margin: 2rem 0 1rem;
+  }
 
-  .search-wrapper { margin-bottom: 1.5rem; }
+  .search-wrapper {
+    margin-bottom: 1.5rem;
+  }
 
   .search-box {
     display: flex;
@@ -672,7 +844,9 @@ const pageDescription = `${total} articles sur l'IA generative, la cybersecurite
     border-radius: var(--radius-xl, 1rem);
     padding: 0.85rem 1.1rem;
     box-shadow: var(--shadow-sm, 3px 3px 0 var(--color-border));
-    transition: box-shadow var(--transition-base, 0.3s), border-color var(--transition-base, 0.3s);
+    transition:
+      box-shadow var(--transition-base, 0.3s),
+      border-color var(--transition-base, 0.3s);
   }
 
   .search-box:focus-within {
@@ -680,7 +854,10 @@ const pageDescription = `${total} articles sur l'IA generative, la cybersecurite
     box-shadow: var(--shadow-md, 5px 5px 0 var(--color-border));
   }
 
-  .search-icon { flex-shrink: 0; color: var(--color-text-light); }
+  .search-icon {
+    flex-shrink: 0;
+    color: var(--color-text-light);
+  }
 
   .search-box input {
     flex: 1;
@@ -693,7 +870,10 @@ const pageDescription = `${total} articles sur l'IA generative, la cybersecurite
     font-weight: 500;
   }
 
-  .search-box input::placeholder { color: var(--color-text-light); opacity: 0.7; }
+  .search-box input::placeholder {
+    color: var(--color-text-light);
+    opacity: 0.7;
+  }
 
   .search-clear {
     background: transparent;
@@ -751,7 +931,6 @@ const pageDescription = `${total} articles sur l'IA generative, la cybersecurite
     text-align: center;
   }
 
-
   .tag-overflow {
     display: contents;
   }
@@ -766,7 +945,7 @@ const pageDescription = `${total} articles sur l'IA generative, la cybersecurite
     background: var(--color-bg);
   }
 
-  .tag-pill-toggle[aria-expanded="true"] {
+  .tag-pill-toggle[aria-expanded='true'] {
     color: var(--color-bg-alt);
     background: var(--color-primary);
     border-color: var(--color-primary);
@@ -776,12 +955,12 @@ const pageDescription = `${total} articles sur l'IA generative, la cybersecurite
     transition: transform var(--transition-fast, 0.2s);
   }
 
-  .tag-pill-toggle[aria-expanded="true"] .tag-toggle-icon {
+  .tag-pill-toggle[aria-expanded='true'] .tag-toggle-icon {
     transform: rotate(180deg);
   }
 
-  .tag-pill-toggle[aria-expanded="true"] .tag-toggle-label-show,
-  .tag-pill-toggle:not([aria-expanded="true"]) .tag-toggle-label-hide {
+  .tag-pill-toggle[aria-expanded='true'] .tag-toggle-label-show,
+  .tag-pill-toggle:not([aria-expanded='true']) .tag-toggle-label-hide {
     display: none;
   }
   .tag-pill.active .tag-count,
@@ -823,14 +1002,23 @@ const pageDescription = `${total} articles sur l'IA generative, la cybersecurite
     border: 2px solid var(--color-border);
     border-radius: var(--radius-xl, 1rem);
     overflow: hidden;
-    transition: transform var(--transition-base, 0.3s), box-shadow var(--transition-base, 0.3s), border-color var(--transition-base, 0.3s);
+    transition:
+      transform var(--transition-base, 0.3s),
+      box-shadow var(--transition-base, 0.3s),
+      border-color var(--transition-base, 0.3s);
     animation: fadeInUp 0.4s ease-out backwards;
     animation-delay: calc(var(--card-index, 0) * 0.04s);
   }
 
   @keyframes fadeInUp {
-    from { opacity: 0; transform: translateY(12px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 
   .article-card:hover {
@@ -839,7 +1027,12 @@ const pageDescription = `${total} articles sur l'IA generative, la cybersecurite
     border-color: var(--color-primary);
   }
 
-  .card-content { padding: 1.5rem; display: flex; flex-direction: column; gap: 0.75rem; }
+  .card-content {
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
 
   .card-meta {
     display: flex;
@@ -851,7 +1044,9 @@ const pageDescription = `${total} articles sur l'IA generative, la cybersecurite
     align-items: center;
   }
 
-  .meta-sep { color: var(--color-border); }
+  .meta-sep {
+    color: var(--color-border);
+  }
 
   .card-title {
     font-size: 1.25rem;
@@ -892,7 +1087,11 @@ const pageDescription = `${total} articles sur l'IA generative, la cybersecurite
     padding-top: 0.5rem;
   }
 
-  .card-tags { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+  .card-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
 
   .tag {
     display: inline-block;
@@ -940,7 +1139,9 @@ const pageDescription = `${total} articles sur l'IA generative, la cybersecurite
     flex-wrap: wrap;
   }
 
-  .pagination[hidden] { display: none; }
+  .pagination[hidden] {
+    display: none;
+  }
 
   .pagination-btn {
     display: inline-flex;
@@ -1018,10 +1219,23 @@ const pageDescription = `${total} articles sur l'IA generative, la cybersecurite
 
   /* === RESPONSIVE === */
   @media (max-width: 768px) {
-    .blog-hero { padding-top: calc(var(--header-height-mobile) + 1.5rem); }
-    .featured-grid, .articles-grid { grid-template-columns: 1fr; }
-    .section-head-row { flex-direction: column; align-items: flex-start; gap: 0.25rem; }
-    .pagination-btn span { display: none; }
-    .pagination-btn { padding: 0.65rem 0.75rem; }
+    .blog-hero {
+      padding-top: calc(var(--header-height-mobile) + 1.5rem);
+    }
+    .featured-grid,
+    .articles-grid {
+      grid-template-columns: 1fr;
+    }
+    .section-head-row {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.25rem;
+    }
+    .pagination-btn span {
+      display: none;
+    }
+    .pagination-btn {
+      padding: 0.65rem 0.75rem;
+    }
   }
 </style>

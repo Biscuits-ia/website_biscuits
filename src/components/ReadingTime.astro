@@ -10,7 +10,15 @@ const readingTime = Math.ceil(words / 200);
 ---
 
 <span class="reading-time">
-  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="16"
+    height="16"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+  >
     <circle cx="12" cy="12" r="10"></circle>
     <polyline points="12 6 12 12 16 14"></polyline>
   </svg>
@@ -19,27 +27,29 @@ const readingTime = Math.ceil(words / 200);
 
 <style>
   .reading-time {
-display: inline-flex;
-align-items: center;
-gap: 0.5rem;
-color: var(--color-text-light);
-font-size: 0.875rem;
-padding: 0.5rem 1rem;
-background: var(--glass-bg);
-border: 1px solid var(--glass-border);
-border-radius: var(--radius-full);
-backdrop-filter: var(--glass-blur);
-transition: color var(--transition-fast), border-color var(--transition-fast);
-}
-.reading-time:hover {
-color: var(--color-primary);
-border-color: var(--color-primary);
-}
-.reading-time svg {
-flex-shrink: 0;
-transition: transform var(--transition-fast);
-}
-.reading-time:hover svg {
-transform: rotate(360deg);
-}
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--color-text-light);
+    font-size: 0.875rem;
+    padding: 0.5rem 1rem;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-full);
+    backdrop-filter: var(--glass-blur);
+    transition:
+      color var(--transition-fast),
+      border-color var(--transition-fast);
+  }
+  .reading-time:hover {
+    color: var(--color-primary);
+    border-color: var(--color-primary);
+  }
+  .reading-time svg {
+    flex-shrink: 0;
+    transition: transform var(--transition-fast);
+  }
+  .reading-time:hover svg {
+    transform: rotate(360deg);
+  }
 </style>

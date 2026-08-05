@@ -17,8 +17,13 @@ function mapSignupError(message: string): string {
   if (msg.includes('rate') || msg.includes('security purposes') || msg.includes('too many')) {
     return 'Trop de tentatives. Reessayez dans quelques minutes.';
   }
-  if (msg.includes('redirect') || msg.includes('allow list') || msg.includes('allowlist') || msg.includes('uri')) {
-    return 'Configuration de redirection invalide. Contactez l\'administrateur.';
+  if (
+    msg.includes('redirect') ||
+    msg.includes('allow list') ||
+    msg.includes('allowlist') ||
+    msg.includes('uri')
+  ) {
+    return "Configuration de redirection invalide. Contactez l'administrateur.";
   }
 
   return 'Impossible de creer le compte. Veuillez reessayer.';
@@ -37,8 +42,10 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     }
 
     const formData = await request.formData();
-    const email = formData.get('email') instanceof File ? null : (formData.get('email') as string | null);
-    const password = formData.get('password') instanceof File ? null : (formData.get('password') as string | null);
+    const email =
+      formData.get('email') instanceof File ? null : (formData.get('email') as string | null);
+    const password =
+      formData.get('password') instanceof File ? null : (formData.get('password') as string | null);
 
     if (!email || !password) {
       return jsonError('Email et mot de passe requis.', 400);
@@ -74,8 +81,11 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     }
 
     return new Response(
-      JSON.stringify({ success: true, message: 'Compte cree. Verifiez votre email pour recuperer le code de confirmation.' }),
-      { status: 200, headers: JSON_HDR },
+      JSON.stringify({
+        success: true,
+        message: 'Compte cree. Verifiez votre email pour recuperer le code de confirmation.',
+      }),
+      { status: 200, headers: JSON_HDR }
     );
   } catch (err) {
     console.error('[Auth] inscription route error:', err);

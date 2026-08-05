@@ -12,20 +12,13 @@ interface Props {
   tags?: string[];
 }
 
-const {
-  title,
-  description,
-  pubDate,
-  author,
-  image,
-  tags
-} = Astro.props;
+const { title, description, pubDate, author, image, tags } = Astro.props;
 
 const publishDate = pubDate ? new Date(pubDate) : new Date();
 const formattedDate = publishDate.toLocaleDateString('fr-FR', {
   year: 'numeric',
   month: 'long',
-  day: 'numeric'
+  day: 'numeric',
 });
 
 const content = await Astro.slots.render('default');
@@ -45,52 +38,50 @@ const schema = {
     datePublished: publishDate.toISOString(),
     dateModified: publishDate.toISOString(),
     author: author || 'Biscuits IA',
-    keywords: tags
-  }
+    keywords: tags,
+  },
 };
 ---
 
-<Layout
-  title={title}
-  description={description}
-  ogImage={ogImage}
-  ogType="article"
-  schema={schema}
->
+<Layout title={title} description={description} ogImage={ogImage} ogType="article" schema={schema}>
   <Breadcrumb />
 
-  <main class="blog-container">
+  <div class="blog-container">
     <!-- En-tête de l'article -->
     <header class="article-header">
       <h1>{title}</h1>
 
       <div class="article-meta">
-        {pubDate && (
-          <>
-            <time datetime={publishDate.toISOString()}>
-              {formattedDate}
-            </time>
-            <span class="separator">·</span>
-          </>
-        )}
+        {
+          pubDate && (
+            <>
+              <time datetime={publishDate.toISOString()}>{formattedDate}</time>
+              <span class="separator">·</span>
+            </>
+          )
+        }
         <span class="reading-time">
           {readingTime} min de lecture
         </span>
-        {author && (
-          <>
-            <span class="separator">·</span>
-            <span class="author">Par {author}</span>
-          </>
-        )}
+        {
+          author && (
+            <>
+              <span class="separator">·</span>
+              <span class="author">Par {author}</span>
+            </>
+          )
+        }
       </div>
 
-      {tags && tags.length > 0 && (
-        <div class="article-tags">
-          {tags.map((tag: unknown) => (
-            <span class="tag">{tag}</span>
-          ))}
-        </div>
-      )}
+      {
+        tags && tags.length > 0 && (
+          <div class="article-tags">
+            {tags.map((tag: unknown) => (
+              <span class="tag">{tag}</span>
+            ))}
+          </div>
+        )
+      }
     </header>
 
     <!-- Contenu de l'article -->
@@ -104,16 +95,18 @@ const schema = {
     <!-- Footer de l'article -->
     <footer class="article-footer">
       <p>
-        {pubDate && (
-          <>
-            Publié le <time datetime={publishDate.toISOString()}>{formattedDate}</time>
-          </>
-        )}
+        {
+          pubDate && (
+            <>
+              Publié le <time datetime={publishDate.toISOString()}>{formattedDate}</time>
+            </>
+          )
+        }
         {author && pubDate && ` par ${author}`}
         {author && !pubDate && `Par ${author}`}
       </p>
     </footer>
-  </main>
+  </div>
 </Layout>
 
 <style>

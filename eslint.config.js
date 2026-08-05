@@ -83,10 +83,17 @@ export default tseslint.config(
   },
 
   {
+    files: ['**/*.d.ts'],
+    rules: {
+      '@typescript-eslint/no-unused-vars': 'off',
+    },
+  },
+
+  {
     // Fichiers de conf / scripts Node : CommonJS + globals Node uniquement.
     files: ['**/*.cjs', '**/*.config.{js,mjs,cjs}', 'scripts/**/*.{js,mjs,cjs}'],
     languageOptions: {
       globals: { ...globals.node },
     },
-  },
+  }
 );

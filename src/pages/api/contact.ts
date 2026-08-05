@@ -13,7 +13,9 @@ const ALLOWED_KINDS: ContactKind[] = ['general', 'devis-logiciel', 'signalement'
 
 function parseContactBody(body: ContactBody) {
   const rawKind = typeof body.kind === 'string' ? body.kind.trim().toLowerCase() : '';
-  const kind: ContactKind = (ALLOWED_KINDS as string[]).includes(rawKind) ? (rawKind as ContactKind) : 'general';
+  const kind: ContactKind = (ALLOWED_KINDS as string[]).includes(rawKind)
+    ? (rawKind as ContactKind)
+    : 'general';
   return {
     name: typeof body.name === 'string' ? body.name.trim() : '',
     email: typeof body.email === 'string' ? body.email.trim().toLowerCase() : '',
@@ -24,17 +26,25 @@ function parseContactBody(body: ContactBody) {
   };
 }
 
-function validateContactFields(fields: { name: string; email: string; subject: string; message: string }): Record<string, string[]> {
+function validateContactFields(fields: {
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
+}): Record<string, string[]> {
   const errors: Record<string, string[]> = {};
   if (!fields.name) errors.name = ['Le nom est obligatoire.'];
   else if (fields.name.length > MAX_NAME) errors.name = [`Maximum ${MAX_NAME} caracteres.`];
-  if (!fields.email) errors.email = ['L\'email est obligatoire.'];
+  if (!fields.email) errors.email = ["L'email est obligatoire."];
   else if (!EMAIL_RE.test(fields.email)) errors.email = ['Email invalide.'];
   if (!fields.subject) errors.subject = ['Le sujet est obligatoire.'];
-  else if (fields.subject.length > MAX_SUBJECT) errors.subject = [`Maximum ${MAX_SUBJECT} caracteres.`];
+  else if (fields.subject.length > MAX_SUBJECT)
+    errors.subject = [`Maximum ${MAX_SUBJECT} caracteres.`];
   if (!fields.message) errors.message = ['Le message est obligatoire.'];
-  else if (fields.message.length < MIN_MESSAGE) errors.message = [`Minimum ${MIN_MESSAGE} caracteres.`];
-  else if (fields.message.length > MAX_MESSAGE) errors.message = [`Maximum ${MAX_MESSAGE} caracteres.`];
+  else if (fields.message.length < MIN_MESSAGE)
+    errors.message = [`Minimum ${MIN_MESSAGE} caracteres.`];
+  else if (fields.message.length > MAX_MESSAGE)
+    errors.message = [`Maximum ${MAX_MESSAGE} caracteres.`];
   return errors;
 }
 
@@ -72,7 +82,7 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
   const supabase = createSupabaseAdminClient();
   // On encode kind et urgent dans le message pour exploitation humaine en
   // attendant une colonne dediee en BDD (gain : zero migration requise).
-  const enrichedMessage = `[kind=${kind}${urgent ? " urgent=true" : ""}]\n\n${message}`;
+  const enrichedMessage = `[kind=${kind}${urgent ? ' urgent=true' : ''}]\n\n${message}`;
   const { error } = await supabase
     .from('contact_submissions')
     .insert({ name, email, subject: finalSubject, message: enrichedMessage });

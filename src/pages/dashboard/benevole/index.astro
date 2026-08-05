@@ -20,13 +20,29 @@ const { data: announcementsRaw } = await adminSupabase
   .limit(5);
 
 // ── Typage strict ─────────────────────────────────────────────────────────────
-interface AuthorRow  { full_name: string | null; email: string; }
-interface AnnouncementRow { id: string; title: string; content: string; pinned: boolean; created_at: string; profiles: AuthorRow[] | null; }
+interface AuthorRow {
+  full_name: string | null;
+  email: string;
+}
+interface AnnouncementRow {
+  id: string;
+  title: string;
+  content: string;
+  pinned: boolean;
+  created_at: string;
+  profiles: AuthorRow[] | null;
+}
 
 const announcements = (announcementsRaw ?? []) as unknown as AnnouncementRow[];
 ---
 
-<DashboardLayout title="Vue d'ensemble" activePage="overview" userName={userName} userEmail={user.email ?? ''} authResult={result}>
+<DashboardLayout
+  title="Vue d'ensemble"
+  activePage="overview"
+  userName={userName}
+  userEmail={user.email ?? ''}
+  authResult={result}
+>
   <!-- Bienvenue -->
   <div class="mb-7">
     <h1 class="text-lg font-normal tracking-tight text-primary">
@@ -44,35 +60,70 @@ const announcements = (announcementsRaw ?? []) as unknown as AnnouncementRow[];
   </div>
 
   <!-- Annonces -->
-  {announcements.length > 0 && (
-    <div class="card mt-6">
-      <div class="card-header">
-        <span class="card-title">Annonces</span>
+  {
+    announcements.length > 0 && (
+      <div class="card mt-6">
+        <div class="card-header">
+          <span class="card-title">Annonces</span>
+        </div>
+        <ul class="announcement-list">
+          {announcements.map((a: AnnouncementRow) => {
+            const author = a.profiles?.[0]?.full_name ?? a.profiles?.[0]?.email ?? 'Équipe';
+            return (
+              <li class={`announcement-item${a.pinned ? ' pinned' : ''}`}>
+                <div class="announcement-header">
+                  <strong class="announcement-title">
+                    {a.pinned ? '📌 ' : ''}
+                    {a.title}
+                  </strong>
+                  <span class="announcement-meta">
+                    {author} · {new Date(a.created_at).toLocaleDateString('fr-FR')}
+                  </span>
+                </div>
+                <p class="announcement-content">{a.content}</p>
+              </li>
+            );
+          })}
+        </ul>
       </div>
-      <ul class="announcement-list">
-        {announcements.map((a: AnnouncementRow) => {
-          const author = a.profiles?.[0]?.full_name ?? a.profiles?.[0]?.email ?? 'Équipe';
-          return (
-            <li class={`announcement-item${a.pinned ? ' pinned' : ''}`}>
-              <div class="announcement-header">
-                <strong class="announcement-title">{a.pinned ? '📌 ' : ''}{a.title}</strong>
-                <span class="announcement-meta">{author} · {new Date(a.created_at).toLocaleDateString('fr-FR')}</span>
-              </div>
-              <p class="announcement-content">{a.content}</p>
-            </li>
-          );
-        })}
-      </ul>
-    </div>
-  )}
+    )
+  }
 </DashboardLayout>
 
 <style>
-  .announcement-list   { list-style: none; display: flex; flex-direction: column; gap: var(--space-sm); }
-  .announcement-item   { padding: var(--space-sm) var(--space-md); border: var(--brutal-border-thin); }
-  .announcement-item.pinned { border-color: var(--accent); background: var(--accent-light); }
-  .announcement-header { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 4px; }
-  .announcement-title  { font-size: var(--text-sm); font-weight: 600; }
-  .announcement-meta   { font-size: var(--text-xs); color: var(--text-muted); }
-  .announcement-content { font-size: var(--text-sm); color: var(--text-secondary); white-space: pre-wrap; }
+  .announcement-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+  }
+  .announcement-item {
+    padding: var(--space-sm) var(--space-md);
+    border: var(--brutal-border-thin);
+  }
+  .announcement-item.pinned {
+    border-color: var(--accent);
+    background: var(--accent-light);
+  }
+  .announcement-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 4px;
+  }
+  .announcement-title {
+    font-size: var(--text-sm);
+    font-weight: 600;
+  }
+  .announcement-meta {
+    font-size: var(--text-xs);
+    color: var(--text-muted);
+  }
+  .announcement-content {
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+    white-space: pre-wrap;
+  }
 </style>

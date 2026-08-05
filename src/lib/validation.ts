@@ -2,6 +2,10 @@
 export const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 export const MAX_NAME = 100;
 export const MAX_EMAIL = 255;
+export const MAX_PHONE = 32;
+export const MAX_ORGANIZATION = 160;
+export const MAX_ADDRESS = 300;
+export const MAX_DESCRIPTION = 2000;
 export const MAX_SUBJECT = 150;
 export const MIN_MESSAGE = 20;
 export const MAX_MESSAGE = 2000;

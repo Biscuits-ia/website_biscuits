@@ -8,10 +8,22 @@ if (result instanceof Response) return result;
 
 const { user, supabase } = result;
 const userEmail = user.email ?? '';
-const userName  = user.user_metadata?.full_name ?? userEmail.split('@')[0];
+const userName = user.user_metadata?.full_name ?? userEmail.split('@')[0];
 
-const search   = Astro.url.searchParams.get('q')        ?? '';
+const search = Astro.url.searchParams.get('q') ?? '';
 const category = Astro.url.searchParams.get('category') ?? '';
+
+interface SoftwareRow {
+  id: string;
+  name: string;
+  description: string | null;
+  category: string | null;
+  website_url: string | null;
+  download_url: string | null;
+  install: string | null;
+  logo_url: string | null;
+  is_free: boolean;
+}
 
 let query = supabase
   .from('software')
@@ -19,141 +31,147 @@ let query = supabase
   .eq('is_visible', true)
   .order('name', { ascending: true });
 
-if (search)   query = query.ilike('name', `%${search}%`);
+if (search) query = query.ilike('name', `%${search}%`);
 if (category) query = query.eq('category', category);
 
 const { data: softwares } = await query;
 
-const { data: cats } = await supabase
-  .from('software')
-  .select('category')
-  .eq('is_visible', true);
+const { data: cats } = await supabase.from('software').select('category').eq('is_visible', true);
 
 const uniqueCategories: string[] = [
   ...new Set(
     ((cats ?? []) as Array<{ category: string | null }>)
       .map((r) => r.category)
       .filter((c): c is string => Boolean(c))
-  )
+  ),
 ].sort();
 ---
 
-<DashboardLayout title="Logiciels" activePage="logiciels" userName={userName} userEmail={userEmail} authResult={result}>
-
+<DashboardLayout
+  title="Logiciels"
+  activePage="logiciels"
+  userName={userName}
+  userEmail={userEmail}
+  authResult={result}
+>
   <div class="mb-7">
     <h1>Logiciels recommandés</h1>
     <p class="description">
-      Une sélection d'outils libres et gratuits recommandés par Biscuits IA pour les associations.  N'hésitez pas à nous contacter via le formulaire de demande si vous avez des questions sur un logiciel ou besoin d'aide pour choisir.
+      Une sélection d'outils libres et gratuits recommandés par Biscuits IA pour les associations.
+      N'hésitez pas à nous contacter via le formulaire de demande si vous avez des questions sur un
+      logiciel ou besoin d'aide pour choisir.
     </p>
   </div>
 
   <!-- Filtres -->
   <form method="get" class="filters-bar">
-      <input
-        type="search"
-        name="q"
-        placeholder="Rechercher un logiciel…"
-        value={search}
-        class="filter-input border border-border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 min-w-55"
-      />
+    <input
+      type="search"
+      name="q"
+      placeholder="Rechercher un logiciel…"
+      value={search}
+      class="filter-input border border-border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 min-w-55"
+    />
     <select name="category" class="filter-input" data-autosubmit="1">
       <option value="">Toutes les catégories</option>
-      {uniqueCategories.map((cat) => (
-        <option value={cat} selected={category === cat}>{cat}</option>
-      ))}
+      {
+        uniqueCategories.map((cat) => (
+          <option value={cat} selected={category === cat}>
+            {cat}
+          </option>
+        ))
+      }
     </select>
     <button type="submit" class="btn btn-primary">Rechercher</button>
-    {(search || category) && (
-      <a href="/dashboard/user/logiciels" class="btn btn-ghost">× Réinitialiser</a>
-    )}
+    {
+      (search || category) && (
+        <a href="/dashboard/user/logiciels" class="btn btn-ghost">
+          × Réinitialiser
+        </a>
+      )
+    }
   </form>
 
   <!-- Grille -->
-  {softwares && softwares.length > 0 ? (
-    <div class="software-grid">
-      {softwares.map((sw: any) => (
-        <div class="software-card card">
-
-          <div class="software-top">
-            {sw.logo_url ? (
-              <img src={sw.logo_url} alt={`Logo ${sw.name}`} class="software-logo" />
-            ) : (
-              <div class="software-logo-placeholder">
-                {sw.name.charAt(0).toUpperCase()}
+  {
+    softwares && softwares.length > 0 ? (
+      <div class="software-grid">
+        {(softwares as SoftwareRow[]).map((sw) => (
+          <div class="software-card card">
+            <div class="software-top">
+              {sw.logo_url ? (
+                <img src={sw.logo_url} alt={`Logo ${sw.name}`} class="software-logo" />
+              ) : (
+                <div class="software-logo-placeholder">{sw.name.charAt(0).toUpperCase()}</div>
+              )}
+              <div class="flex-1 min-w-0">
+                <div class="software-name">{sw.name}</div>
+                {sw.category && <span class="badge badge-info mt-1">{sw.category}</span>}
               </div>
-            )}
-            <div class="flex-1 min-w-0">
-              <div class="software-name">{sw.name}</div>
-              {sw.category && (
-                <span class="badge badge-info mt-1">{sw.category}</span>
+              {sw.is_free && <span class="badge badge-ok">Gratuit</span>}
+            </div>
+
+            {sw.description && <p class="software-desc">{sw.description}</p>}
+
+            <div class="software-actions">
+              {sw.website_url && (
+                <a
+                  href={sw.website_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="btn btn-ghost text-sm"
+                >
+                  Site web ↗
+                </a>
+              )}
+              {sw.download_url && (
+                <a
+                  href={sw.download_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="btn btn-primary text-sm"
+                >
+                  Télécharger ↓
+                </a>
+              )}
+
+              {sw.install && (
+                <a
+                  href={sw.install}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="btn btn-primary text-[0.85rem]"
+                >
+                  Demander une installation ↓
+                </a>
               )}
             </div>
-            {sw.is_free && (
-              <span class="badge badge-ok">Gratuit</span>
-            )}
           </div>
-
-          {sw.description && (
-            <p class="software-desc">{sw.description}</p>
-          )}
-
-          <div class="software-actions">
-            {sw.website_url && (
-              <a
-                href={sw.website_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                class="btn btn-ghost text-sm"
-              >
-                Site web ↗
-              </a>
-            )}
-            {sw.download_url && (
-              <a
-                href={sw.download_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                class="btn btn-primary text-sm"
-              >
-                Télécharger ↓
-              </a>
-            )}
-
-            {sw.install && (
-              <a
-                href={sw.install}
-                target="_blank"
-                rel="noopener noreferrer"
-                class="btn btn-primary text-[0.85rem]"
-              >
-                Demander une installation ↓
-              </a>
-            )}
-          </div>
-
-        </div>
-      ))}
-    </div>
-  ) : (
-    <div class="card text-center py-12 px-6">
-      <p class="text-2xl mb-2">🔍</p>
-      <p>
-        {(search || category)
-          ? 'Aucun logiciel ne correspond à votre recherche.'
-          : 'Aucun logiciel disponible pour le moment.'}
-      </p>
-      {(search || category) && (
-        <a href="/dashboard/user/logiciels" class="btn btn-ghost mt-4 inline-flex">
-          Voir tous les logiciels
-        </a>
-      )}
-    </div>
-  )}
+        ))}
+      </div>
+    ) : (
+      <div class="card text-center py-12 px-6">
+        <p class="text-2xl mb-2">🔍</p>
+        <p>
+          {search || category
+            ? 'Aucun logiciel ne correspond à votre recherche.'
+            : 'Aucun logiciel disponible pour le moment.'}
+        </p>
+        {(search || category) && (
+          <a href="/dashboard/user/logiciels" class="btn btn-ghost mt-4 inline-flex">
+            Voir tous les logiciels
+          </a>
+        )}
+      </div>
+    )
+  }
 
   <p class="warn-text">
-    ⚠️ La demande d’installation peut engendrer des frais d’installation ainsi que des frais de maintenance. le choix d’hébergement, des coûts supplémentaires peuvent s’appliquer : soit vous optez pour un hébergement géré par vos soins, soit nous assurons l’hébergement du serveur (ce qui peut impliquer des frais additionnels plus élevés en cas de prise en charge complète).
+    ⚠️ La demande d’installation peut engendrer des frais d’installation ainsi que des frais de
+    maintenance. le choix d’hébergement, des coûts supplémentaires peuvent s’appliquer : soit vous
+    optez pour un hébergement géré par vos soins, soit nous assurons l’hébergement du serveur (ce
+    qui peut impliquer des frais additionnels plus élevés en cas de prise en charge complète).
   </p>
-
 </DashboardLayout>
 
 <style>

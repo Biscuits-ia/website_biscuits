@@ -1,10 +1,10 @@
-import type { APIRoute } from "astro";
-import { createSupabaseClient } from "@/lib/supabase";
+import type { APIRoute } from 'astro';
+import { createSupabaseClient } from '@/lib/supabase';
 
 export const GET: APIRoute = async ({ request, url, cookies, redirect }) => {
-  const authCode = url.searchParams.get("code");
-  const next = url.searchParams.get("next") ?? "/dashboard/user";
-  const errorParam = url.searchParams.get("error");
+  const authCode = url.searchParams.get('code');
+  const next = url.searchParams.get('next') ?? '/dashboard/user';
+  const errorParam = url.searchParams.get('error');
 
   // Handle OAuth/error callbacks from Supabase
   if (errorParam) {
@@ -13,12 +13,12 @@ export const GET: APIRoute = async ({ request, url, cookies, redirect }) => {
   }
 
   // Validate `next`: only relative paths to prevent open redirects
-  const safeNext = next.startsWith("/") && !next.startsWith("//") ? next : "/dashboard/user";
+  const safeNext = next.startsWith('/') && !next.startsWith('//') ? next : '/dashboard/user';
 
   if (!authCode) {
-    return new Response("No code provided", {
+    return new Response('No code provided', {
       status: 400,
-      headers: { 'Content-Type': 'text/plain' }
+      headers: { 'Content-Type': 'text/plain' },
     });
   }
 
@@ -26,8 +26,8 @@ export const GET: APIRoute = async ({ request, url, cookies, redirect }) => {
   const { error } = await supabase.auth.exchangeCodeForSession(authCode);
 
   if (error) {
-    console.error("[callback] exchangeCodeForSession error:", error.message, '| code:', error.code);
-    return redirect("/connexion?error=session");
+    console.error('[callback] exchangeCodeForSession error:', error.message, '| code:', error.code);
+    return redirect('/connexion?error=session');
   }
 
   // Return a proper Response with redirect status to ensure cookies are sent

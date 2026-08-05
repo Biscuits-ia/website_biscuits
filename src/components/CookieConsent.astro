@@ -56,9 +56,9 @@ const { consentVersion = '1.0', nonce } = Astro.props;
         <div class="cookie-text">
           <h3 id="cookie-banner-title">Cookies</h3>
           <p id="cookie-banner-description">
-            Nous utilisons des cookies pour ameliorer votre experience. Les
-            cookies necessaires sont requis pour le fonctionnement du site. Vous
-            pouvez personnaliser vos preferences a tout moment.{' '}
+            Nous utilisons des cookies pour ameliorer votre experience. Les cookies necessaires sont
+            requis pour le fonctionnement du site. Vous pouvez personnaliser vos preferences a tout
+            moment.{' '}
             <a href="/legal/cookies" style="color:inherit;text-decoration:underline">
               En savoir plus
             </a>
@@ -72,8 +72,8 @@ const { consentVersion = '1.0', nonce } = Astro.props;
           aria-label="Refuser les cookies optionnels"
         >
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
-            <line x1="18" y1="6" x2="6" y2="18" stroke-width="2" stroke-linecap="round" />
-            <line x1="6" y1="6" x2="18" y2="18" stroke-width="2" stroke-linecap="round" />
+            <line x1="18" y1="6" x2="6" y2="18" stroke-width="2" stroke-linecap="round"></line>
+            <line x1="6" y1="6" x2="18" y2="18" stroke-width="2" stroke-linecap="round"></line>
           </svg>
         </button>
       </div>
@@ -81,8 +81,8 @@ const { consentVersion = '1.0', nonce } = Astro.props;
       <div class="cookie-actions">
         <button type="button" class="cookie-btn cookie-btn-secondary" data-action="settings">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
-            <circle cx="12" cy="12" r="3" stroke-width="2" />
-            <path d="M12 1v6m0 6v6M23 12h-6m-6 0H1" stroke-width="2" stroke-linecap="round" />
+            <circle cx="12" cy="12" r="3" stroke-width="2"></circle>
+            <path d="M12 1v6m0 6v6M23 12h-6m-6 0H1" stroke-width="2" stroke-linecap="round"></path>
           </svg>
           Personnaliser
         </button>
@@ -101,8 +101,8 @@ const { consentVersion = '1.0', nonce } = Astro.props;
         <div class="cookie-text">
           <h3>Vos preferences</h3>
           <p>
-            Choisissez les categories de cookies que vous autorisez. Vous pouvez
-            modifier votre choix a tout moment.
+            Choisissez les categories de cookies que vous autorisez. Vous pouvez modifier votre
+            choix a tout moment.
           </p>
         </div>
       </div>
@@ -111,9 +111,7 @@ const { consentVersion = '1.0', nonce } = Astro.props;
         <div class="cookie-pref-item">
           <div class="cookie-pref-text">
             <p class="cookie-pref-title">Cookies necessaires</p>
-            <p class="cookie-pref-desc">
-              Requis pour le fonctionnement du site (toujours actives)
-            </p>
+            <p class="cookie-pref-desc">Requis pour le fonctionnement du site (toujours actives)</p>
           </div>
           <div class="cookie-toggle cookie-toggle-active" aria-hidden="true">
             <div class="cookie-toggle-thumb"></div>
@@ -123,9 +121,7 @@ const { consentVersion = '1.0', nonce } = Astro.props;
         <div class="cookie-pref-item">
           <div class="cookie-pref-text">
             <p class="cookie-pref-title">Cookies analytiques</p>
-            <p class="cookie-pref-desc">
-              Nous aident a comprendre comment vous utilisez le site
-            </p>
+            <p class="cookie-pref-desc">Nous aident a comprendre comment vous utilisez le site</p>
           </div>
           <button
             type="button"
@@ -152,14 +148,21 @@ const { consentVersion = '1.0', nonce } = Astro.props;
   </div>
 </div>
 
-{/* `define:vars` fait perdre l'attribut nonce au build : le bandeau etait
+{
+  /* `define:vars` fait perdre l'attribut nonce au build : le bandeau etait
     bloque par la CSP sur toutes les routes SSR. Data-block JSON + script
-    nonce a la place. Cf. lib/jsonLd.ts. */}
-<script type="application/json" id="cookie-consent-config" is:inline set:html={jsonIsland({ consentVersion })} />
+    nonce a la place. Cf. lib/jsonLd.ts. */
+}
+<script
+  type="application/json"
+  id="cookie-consent-config"
+  is:inline
+  set:html={jsonIsland({ consentVersion })}
+/>
 <script is:inline nonce={nonce}>
   (function () {
     const consentVersion = JSON.parse(
-      document.getElementById('cookie-consent-config').textContent,
+      document.getElementById('cookie-consent-config').textContent
     ).consentVersion;
 
     const banner = document.getElementById('cookie-banner');
@@ -187,7 +190,9 @@ const { consentVersion = '1.0', nonce } = Astro.props;
     // GTM est gere par BaseHead (loadGTMIfConsented) ; ici, uniquement Insights.
     function loadAnalytics() {
       if (window.__ANALYTICS_DISABLED__ === true) return;
-      if (document.querySelector('script[data-consent="analytics"], script[data-vercel-insights]')) {
+      if (
+        document.querySelector('script[data-consent="analytics"], script[data-vercel-insights]')
+      ) {
         return;
       }
       const script = document.createElement('script');
@@ -202,7 +207,7 @@ const { consentVersion = '1.0', nonce } = Astro.props;
             console.info('[Vercel Insights] load failed (likely blocked or offline)');
           }
         },
-        { once: true },
+        { once: true }
       );
       try {
         document.head.appendChild(script);
@@ -249,7 +254,7 @@ const { consentVersion = '1.0', nonce } = Astro.props;
       window.dispatchEvent(
         new CustomEvent('cookieConsentUpdated', {
           detail: { ...prefs, date, version: consentVersion },
-        }),
+        })
       );
 
       // RGPD : un refus explicite doit retirer les scripts deja charges.
@@ -266,7 +271,8 @@ const { consentVersion = '1.0', nonce } = Astro.props;
 
     // ── Interactions (delegation) ────────────────────────────────────────────────
     banner.addEventListener('click', (e) => {
-      const el = e.target instanceof Element ? e.target.closest('[data-action],[data-toggle]') : null;
+      const el =
+        e.target instanceof Element ? e.target.closest('[data-action],[data-toggle]') : null;
       if (!el) return;
 
       const toggle = el.getAttribute('data-toggle');

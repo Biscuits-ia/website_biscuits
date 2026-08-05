@@ -17,9 +17,11 @@ par virement, valides manuellement par un admin (HelloAsso retire le 2026-07-09)
 1. **`supabase.auth.getUser()` UNIQUEMENT côté serveur.** Jamais `getSession()`
    pour vérifier un accès : la session est dans un cookie que l'utilisateur
    contrôle. `getUser()` contacte le serveur Auth → non forgeable.
-2. **Pas de `signOut()` côté serveur.** La déconnexion est gérée par le client
-   (page `/api/account/logout` ne fait que rediriger après `supabase.auth.signOut()`
-   client-side). Server-side, on ne touche pas à la session.
+2. **Mutations Auth serveur strictement bornées.** `signOut({ scope: 'local' })`
+   est autorisé uniquement dans la route POST dédiée, protégée par la vérification
+   stricte de l'origine. `updateUser()` est réservé aux routes sensibles avec
+   réauthentification. Ne jamais appeler `getSession()`, `refreshSession()` ni un
+   `signOut()` global depuis une lambda.
 3. **CSP nonces via `Astro.locals.nonce` uniquement.** Middleware génère le
    nonce à chaque requête, l'injecte dans `locals`, l'utilise dans les headers
    `script-src` et `style-src`. Tout script inline doit avoir `nonce={Astro.locals.nonce}`.
@@ -36,8 +38,8 @@ par virement, valides manuellement par un admin (HelloAsso retire le 2026-07-09)
    - `requireAppointmentOwner(supabase, apptId, userId, isAdmin)` → 200/404/403
      pour les endpoints de rendez-vous.
 6. **Rate-limit : IP source = `x-vercel-forwarded-for` UNIQUEMENT.**
-   Ne JAMAIS faire confiance à `cf-connecting-ip`, `x-real-ip`, ou
-   `x-forwarded-for` non-Vercel. Header Vercel signé, le reste ne l'est pas.
+   Ne JAMAIS faire confiance aux en-têtes IP fournis par le client ou par un
+   proxy non configuré. L'en-tête imposé par Vercel reste la source de vérité.
 7. **Tout webhook de paiement futur doit vérifier sa signature avant tout
    parsing.** L'intégration HelloAsso a été retirée le 2026-07-09 ; si un
    prestataire la remplace, la vérif HMAC constant-time est non négociable.

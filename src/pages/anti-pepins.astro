@@ -11,7 +11,8 @@ const schema = {
   type: 'WebPage' as const,
   data: {
     name: 'Anti Pepins - Biscuits IA',
-    description: 'Anti Pepins : service public gratuit pour analyser un message suspect (SMS, e-mail, lien) et obtenir un avis immediat. Edite par Biscuits IA.',
+    description:
+      'Anti Pepins : service public gratuit pour analyser un message suspect (SMS, e-mail, lien) et obtenir un avis immediat. Edite par Biscuits IA.',
   },
 };
 ---
@@ -28,10 +29,18 @@ const schema = {
       <p class="eyebrow">Pilier 3 - Service public</p>
       <h1>Anti Pepins</h1>
       <p class="lead">
-        Un SMS douteux, un mail suspect, un lien inconnu : collez-le dans Anti Pepins, on vous dit en quelques secondes si c'est une arnaque. <strong>Gratuit, anonyme, sans inscription.</strong>
+        Un SMS douteux, un mail suspect, un lien inconnu : collez-le dans Anti Pepins, on vous dit
+        en quelques secondes si c'est une arnaque. <strong
+          >Gratuit, anonyme, sans inscription.</strong
+        >
       </p>
       <div class="hero-cta">
-        <a href="https://anti-pepins.biscuits-ia.com/" class="btn-primary" rel="noopener noreferrer" target="_blank">
+        <a
+          href="https://anti-pepins.biscuits-ia.com/"
+          class="btn-primary"
+          rel="noopener noreferrer"
+          target="_blank"
+        >
           Ouvrir Anti Pepins
           <span class="ext" aria-hidden="true">↗</span>
         </a>
@@ -66,17 +75,26 @@ const schema = {
         <article class="how-step">
           <span class="how-num">1</span>
           <h3>Vous collez le message</h3>
-          <p>SMS douteux, mail suspect, lien inconnu : copiez-collez le contenu (ou l'URL) dans le champ d'analyse d'Anti Pepins.</p>
+          <p>
+            SMS douteux, mail suspect, lien inconnu : copiez-collez le contenu (ou l'URL) dans le
+            champ d'analyse d'Anti Pepins.
+          </p>
         </article>
         <article class="how-step">
           <span class="how-num">2</span>
           <h3>On analyse les signaux</h3>
-          <p>Anti Pepins verifie : domaine, presence dans la base de signalements, patterns connus (phishing, smishing, fausse livraison, faux support, etc.).</p>
+          <p>
+            Anti Pepins verifie : domaine, presence dans la base de signalements, patterns connus
+            (phishing, smishing, fausse livraison, faux support, etc.).
+          </p>
         </article>
         <article class="how-step">
           <span class="how-num">3</span>
           <h3>On vous dit quoi faire</h3>
-          <p>Resultat clair : arnaque probable, douteux, ou probablement legitime. Et les bons reflexes a adopter (supprimer, signaler, ne pas cliquer).</p>
+          <p>
+            Resultat clair : arnaque probable, douteux, ou probablement legitime. Et les bons
+            reflexes a adopter (supprimer, signaler, ne pas cliquer).
+          </p>
         </article>
       </div>
     </div>
@@ -88,27 +106,45 @@ const schema = {
       <div class="example-grid">
         <article class="example-card">
           <h3>Phishing bancaire</h3>
-          <p>Mail imitant votre banque, votre impots, la CAF, l'Assurance Maladie, avec un lien vers un faux site qui copie la charte graphique officielle.</p>
+          <p>
+            Mail imitant votre banque, votre impots, la CAF, l'Assurance Maladie, avec un lien vers
+            un faux site qui copie la charte graphique officielle.
+          </p>
         </article>
         <article class="example-card">
           <h3>Smishing de livraison</h3>
-          <p>SMS de La Poste, Chronopost, DPD, FedEx vous demandant de payer des frais supplementaires pour un colis que vous n'attendez pas.</p>
+          <p>
+            SMS de La Poste, Chronopost, DPD, FedEx vous demandant de payer des frais
+            supplementaires pour un colis que vous n'attendez pas.
+          </p>
         </article>
         <article class="example-card">
           <h3>Faux support technique</h3>
-          <p>Pop-up Windows / Apple / Norton vous signalant un virus et vous demandant d'appeler un numero surtaxe.</p>
+          <p>
+            Pop-up Windows / Apple / Norton vous signalant un virus et vous demandant d'appeler un
+            numero surtaxe.
+          </p>
         </article>
         <article class="example-card">
           <h3>Fausse offre d'emploi</h3>
-          <p>Mail promettant un job facile et bien paye, demandant de payer une formation ou de fournir des coordonnees bancaires.</p>
+          <p>
+            Mail promettant un job facile et bien paye, demandant de payer une formation ou de
+            fournir des coordonnees bancaires.
+          </p>
         </article>
         <article class="example-card">
           <h3>Hameconnage sentimental</h3>
-          <p>Messages d'un "interesse romantique" qui finit par demander de l'argent, une aide d'urgence, ou des coordonnees.</p>
+          <p>
+            Messages d'un "interesse romantique" qui finit par demander de l'argent, une aide
+            d'urgence, ou des coordonnees.
+          </p>
         </article>
         <article class="example-card">
           <h3>Arnaque au president</h3>
-          <p>Mail d'un "dirigeant" pressant de faire un virement urgent et confidentiel, depuis une adresse presque identique a la vraie.</p>
+          <p>
+            Mail d'un "dirigeant" pressant de faire un virement urgent et confidentiel, depuis une
+            adresse presque identique a la vraie.
+          </p>
         </article>
       </div>
     </div>
@@ -119,10 +155,21 @@ const schema = {
       <div class="privacy-card">
         <h2>Vie privee : ce qu'on ne fait pas</h2>
         <ul>
-          <li><strong>Aucun message n'est stocke</strong> apres analyse. Ils sont analyses a la volee puis oublies.</li>
-          <li><strong>Aucune donnee envoyee a un tiers.</strong> Ni Google Analytics sur la page d'analyse, ni SDK tiers, rien.</li>
-          <li><strong>Aucun cookie de tracking</strong> n'est pose sur anti-pepins.biscuits-ia.com.</li>
-          <li><strong>Aucun modele IA externe</strong> n'est appele avec vos messages. L'analyse repose sur une base de signaux interne.</li>
+          <li>
+            <strong>Aucun message n'est stocke</strong> apres analyse. Ils sont analyses a la volee puis
+            oublies.
+          </li>
+          <li>
+            <strong>Aucune donnee envoyee a un tiers.</strong> Ni Google Analytics sur la page d'analyse,
+            ni SDK tiers, rien.
+          </li>
+          <li>
+            <strong>Aucun cookie de tracking</strong> n'est pose sur anti-pepins.biscuits-ia.com.
+          </li>
+          <li>
+            <strong>Aucun modele IA externe</strong> n'est appele avec vos messages. L'analyse repose
+            sur une base de signaux interne.
+          </li>
           <li><strong>Aucun compte requis.</strong> Pas d'email, pas de nom, pas de cookie.</li>
         </ul>
       </div>
@@ -133,9 +180,13 @@ const schema = {
     <div class="container">
       <h2>Vous avez recu une nouvelle arnaque ?</h2>
       <p>
-        Si vous avez detecte un message qui n'est pas encore reference dans la base d'Anti Pepins, vous pouvez nous le signaler. Notre equipe verifie, deduplique avec les cas connus, puis ajoute le pattern a la detection. Vous contribuez ainsi a proteger les autres utilisateurs.
+        Si vous avez detecte un message qui n'est pas encore reference dans la base d'Anti Pepins,
+        vous pouvez nous le signaler. Notre equipe verifie, deduplique avec les cas connus, puis
+        ajoute le pattern a la detection. Vous contribuez ainsi a proteger les autres utilisateurs.
       </p>
-      <a href="/contact?sujet=signalement-anti-pepins" class="btn-primary">Proposer un signalement</a>
+      <a href="/contact?sujet=signalement-anti-pepins" class="btn-primary"
+        >Proposer un signalement</a
+      >
     </div>
   </section>
 
@@ -144,7 +195,10 @@ const schema = {
       <div class="wl-card">
         <h2>Anti Pepins en marque blanche pour votre association</h2>
         <p>
-          Vous etes une association de lutte contre les arnaques, un CCAS, une collectivite ? Vous pouvez deployer Anti Pepins sur votre propre domaine, avec vos couleurs et votre charte. La base de signaux est mise a jour quotidiennement, vous beneficiez du support de notre equipe.
+          Vous etes une association de lutte contre les arnaques, un CCAS, une collectivite ? Vous
+          pouvez deployer Anti Pepins sur votre propre domaine, avec vos couleurs et votre charte.
+          La base de signaux est mise a jour quotidiennement, vous beneficiez du support de notre
+          equipe.
         </p>
         <ul class="wl-feats">
           <li>Deploiement sur votre nom de domaine (votre-asso.fr/anti-pepins)</li>
@@ -165,8 +219,14 @@ const schema = {
       <h2>Pour aller plus loin</h2>
       <ul class="r-list">
         <li><a href="/ressources">Ressources anti-arnaques</a> : guides, checklists, tutoriels.</li>
-        <li><a href="/blog">Articles du blog</a> sur les arnaques recentes (deepfakes, arnaque au president IA, etc.).</li>
-        <li><a href="/piliers/logiciels">Decouvrir notre pilier Logiciels</a> et les autres outils libres de l'association.</li>
+        <li>
+          <a href="/blog">Articles du blog</a> sur les arnaques recentes (deepfakes, arnaque au president
+          IA, etc.).
+        </li>
+        <li>
+          <a href="/piliers/logiciels">Decouvrir notre pilier Logiciels</a> et les autres outils libres
+          de l'association.
+        </li>
       </ul>
     </div>
   </section>
@@ -236,7 +296,9 @@ const schema = {
     border: 2px solid var(--color-border);
     text-decoration: none;
     box-shadow: 5px 5px 0 rgba(0, 0, 0, 0.3);
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    transition:
+      transform 0.15s ease,
+      box-shadow 0.15s ease;
   }
 
   .btn-primary:hover {

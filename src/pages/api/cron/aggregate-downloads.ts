@@ -32,17 +32,17 @@ async function runWorker(request: Request): Promise<Response> {
   const expectedSecret = import.meta.env.CRON_SECRET;
 
   if (!expectedSecret) {
-    return new Response(
-      JSON.stringify({ error: 'CRON_SECRET not configured' }),
-      { status: 500, headers: { 'Content-Type': 'application/json' } },
-    );
+    return new Response(JSON.stringify({ error: 'CRON_SECRET not configured' }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
 
   if (!verifyBearer(request.headers.get('authorization'), expectedSecret)) {
-    return new Response(
-      JSON.stringify({ error: 'Unauthorized' }),
-      { status: 401, headers: { 'Content-Type': 'application/json' } },
-    );
+    return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+      status: 401,
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
 
   const source = request.headers.get('x-cron-source') ?? 'manual';
@@ -57,25 +57,25 @@ async function runWorker(request: Request): Promise<Response> {
     aggregated = typeof data === 'number' ? data : 0;
   } catch (err) {
     console.error('[cron/aggregate-downloads] error:', err, { source, vercelId });
-    return new Response(
-      JSON.stringify({ error: err instanceof Error ? err.message : 'unknown' }),
-      { status: 500, headers: { 'Content-Type': 'application/json' } },
-    );
+    return new Response(JSON.stringify({ error: err instanceof Error ? err.message : 'unknown' }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
 
   const durationMs = Date.now() - startTime;
   console.log(
     JSON.stringify({
-      msg:        'cron/aggregate-downloads',
+      msg: 'cron/aggregate-downloads',
       source,
       vercelId,
       durationMs,
       aggregated,
-    }),
+    })
   );
 
-  return new Response(
-    JSON.stringify({ aggregated, durationMs, source }),
-    { status: 200, headers: { 'Content-Type': 'application/json' } },
-  );
+  return new Response(JSON.stringify({ aggregated, durationMs, source }), {
+    status: 200,
+    headers: { 'Content-Type': 'application/json' },
+  });
 }

@@ -34,7 +34,8 @@ const pillars: Pillar[] = [
     href: '/piliers/ia',
     label: 'Pilier 1',
     title: 'Accompagnement a l\u0027IA',
-    description: 'On aide le grand public, les associations et les collectivites a comprendre et utiliser l\u0027intelligence artificielle de facon utile, ethique et autonome.',
+    description:
+      'On aide le grand public, les associations et les collectivites a comprendre et utiliser l\u0027intelligence artificielle de facon utile, ethique et autonome.',
     bullets: [
       'Ateliers pratiques en ligne et en presentiel',
       'Diagnostic et feuille de route sur mesure',
@@ -48,7 +49,8 @@ const pillars: Pillar[] = [
     href: '/piliers/logiciels',
     label: 'Pilier 2',
     title: 'Logiciels pour associations partenaires',
-    description: 'On concoit des logiciels libres a but non lucratif pour les associations et les structures publiques, et des sites et applications mobiles pour le grand public sur des enjeux concrets.',
+    description:
+      'On concoit des logiciels libres a but non lucratif pour les associations et les structures publiques, et des sites et applications mobiles pour le grand public sur des enjeux concrets.',
     bullets: [
       'Outils libres, auditables, souverains',
       'Jamais de prestation pour les entreprises',
@@ -62,7 +64,8 @@ const pillars: Pillar[] = [
     href: '/piliers/anti-pepins',
     label: 'Pilier 3',
     title: 'Anti Pepins - detecteur d\u0027arnaques',
-    description: 'Le service public de Biscuits IA : un analyseur de messages suspects (SMS, mails, liens) gratuit pour le grand public et les associations.',
+    description:
+      'Le service public de Biscuits IA : un analyseur de messages suspects (SMS, mails, liens) gratuit pour le grand public et les associations.',
     bullets: [
       'Analyse de SMS, e-mails et liens en quelques secondes',
       'Base de signaux mise a jour par la communaute',
@@ -76,12 +79,13 @@ const pillars: Pillar[] = [
     href: '/piliers/recherche',
     label: 'Pilier 4',
     title: 'Recherche et modeles ouverts',
-    description: "On mene des recherches participatives et on concoit des modeles ouverts (agronomie, nutrition, sante) co-construits avec les agriculteurs, soignants et beneficiaires.",
+    description:
+      'On mene des recherches participatives et on concoit des modeles ouverts (agronomie, nutrition, sante) co-construits avec les agriculteurs, soignants et beneficiaires.',
     bullets: [
-      "Recherche-action en agroecologie et sante communautaire",
-      "Modeles ouverts documentes, en libre acces",
-      "Partenariats avec universites, instituts et acteurs locaux",
-      "Diffusion des resultats en francais et en langues locales",
+      'Recherche-action en agroecologie et sante communautaire',
+      'Modeles ouverts documentes, en libre acces',
+      'Partenariats avec universites, instituts et acteurs locaux',
+      'Diffusion des resultats en francais et en langues locales',
     ],
     cta: 'Decouvrir le pilier Recherche',
     accent: 'recherche',
@@ -98,33 +102,45 @@ const pillars: Pillar[] = [
     </header>
 
     <div class="pillars-grid">
-      {pillars.map((p) => (
-        <article class="pillar-card" data-accent={p.accent}>
-          <div class="pillar-badge" aria-hidden="true">
-            <span class="pillar-number">{p.label}</span>
-          </div>
-          <h3 class="pillar-title">{p.title}</h3>
-          <p class="pillar-desc">{p.description}</p>
-          <ul class="pillar-bullets">
-            {p.bullets.map((b) => (
-              <li>{b}</li>
-            ))}
-          </ul>
-          <a href={p.href} class="pillar-cta">
-            {p.cta}
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-              <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </a>
-        </article>
-      ))}
+      {
+        pillars.map((p) => (
+          <article class="pillar-card" data-accent={p.accent}>
+            <div class="pillar-badge" aria-hidden="true">
+              <span class="pillar-number">{p.label}</span>
+            </div>
+            <h3 class="pillar-title">{p.title}</h3>
+            <p class="pillar-desc">{p.description}</p>
+            <ul class="pillar-bullets">
+              {p.bullets.map((b) => (
+                <li>{b}</li>
+              ))}
+            </ul>
+            <a href={p.href} class="pillar-cta">
+              {p.cta}
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <path
+                  d="M3 8h10M9 4l4 4-4 4"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </a>
+          </article>
+        ))
+      }
     </div>
 
-    {showCta && (
-      <div class="pillars-foot">
-        <a href="/piliers" class="pillars-foot-cta">Voir tous nos piliers et nos engagements</a>
-      </div>
-    )}
+    {
+      showCta && (
+        <div class="pillars-foot">
+          <a href="/piliers" class="pillars-foot-cta">
+            Voir tous nos piliers et nos engagements
+          </a>
+        </div>
+      )
+    }
   </div>
 </section>
 
@@ -183,7 +199,10 @@ const pillars: Pillar[] = [
     display: flex;
     flex-direction: column;
     gap: 0.85rem;
-    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    transition:
+      transform 0.2s ease,
+      box-shadow 0.2s ease,
+      border-color 0.2s ease;
     position: relative;
   }
 
@@ -194,10 +213,21 @@ const pillars: Pillar[] = [
     box-shadow: 6px 6px 0 var(--color-border);
   }
 
-  .pillar-card[data-accent="ia"] .pillar-badge { background: var(--color-secondary); color: #fff; }
-  .pillar-card[data-accent="logiciels"] .pillar-badge { background: var(--color-first); }
-  .pillar-card[data-accent="anti-pepins"] .pillar-badge { background: var(--color-accent-caramel); color: var(--color-text); }
-  .pillar-card[data-accent="recherche"] .pillar-badge { background: #2e7d32; color: #fff; }
+  .pillar-card[data-accent='ia'] .pillar-badge {
+    background: var(--color-secondary);
+    color: #fff;
+  }
+  .pillar-card[data-accent='logiciels'] .pillar-badge {
+    background: var(--color-first);
+  }
+  .pillar-card[data-accent='anti-pepins'] .pillar-badge {
+    background: var(--color-accent-caramel);
+    color: var(--color-text);
+  }
+  .pillar-card[data-accent='recherche'] .pillar-badge {
+    background: #2e7d32;
+    color: #fff;
+  }
 
   .pillar-badge {
     display: inline-flex;
@@ -265,7 +295,9 @@ const pillars: Pillar[] = [
     font-size: 0.9rem;
     text-decoration: none;
     border: 2px solid var(--color-border);
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    transition:
+      transform 0.15s ease,
+      box-shadow 0.15s ease;
   }
 
   .pillar-cta:hover,
@@ -293,7 +325,9 @@ const pillars: Pillar[] = [
     font-weight: 700;
     border: 2px solid var(--color-border);
     text-decoration: none;
-    transition: background 0.15s ease, color 0.15s ease;
+    transition:
+      background 0.15s ease,
+      color 0.15s ease;
   }
 
   .pillars-foot-cta:hover {
@@ -301,7 +335,7 @@ const pillars: Pillar[] = [
     color: var(--color-bg-alt);
   }
 
-  [data-layout="hub"] .pillars-section {
+  [data-layout='hub'] .pillars-section {
     padding-block: 3rem;
   }
 </style>

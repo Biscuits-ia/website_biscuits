@@ -14,9 +14,9 @@ import Communaute from '@/components/Communaute.astro';
 import NewsletterSocial from '@/components/NewsletterSocial.astro';
 import { getCollection } from 'astro:content';
 
-const latestArticles = (await getCollection('blog', ({ data }) =>
-  import.meta.env.PROD ? !data.draft : true
-))
+const latestArticles = (
+  await getCollection('blog', ({ data }) => (import.meta.env.PROD ? !data.draft : true))
+)
   .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
   .slice(0, 3);
 ---
@@ -28,7 +28,8 @@ const latestArticles = (await getCollection('blog', ({ data }) =>
     type: 'WebPage',
     data: {
       name: 'Biscuits IA - Association Loi 1901',
-      description: 'IA simple et gratuite pour les associations. Automatisez vos tâches administratives avec des outils IA prêts à l\'emploi.',
+      description:
+        "IA simple et gratuite pour les associations. Automatisez vos tâches administratives avec des outils IA prêts à l'emploi.",
     },
   }}
 >

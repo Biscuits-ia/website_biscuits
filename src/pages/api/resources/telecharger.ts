@@ -13,7 +13,7 @@
 //
 // Nouvelle architecture (CQRS-lite) :
 //   * Cote user : 1 INSERT dans resource_downloads (log, append-only).
-//   * Cote user : rate-limit distribué Upstash (20/h par IP) avant tout I/O.
+//   * Cote user : rate-limit local (20/h par IP) avant tout I/O.
 //   * Cote cron : un worker `aggregate-downloads` agrege periodiquement
 //     le log → resources.downloads via pg_cron (toutes les 5 minutes).
 // Le compteur affiché est eventuellement consistant (lag max = 1 cycle cron),
@@ -36,14 +36,14 @@ const DOWNLOAD_LIMIT = 20;
 const DOWNLOAD_WINDOW_MS = 60 * 60_000; // 1h
 
 export const GET: APIRoute = async ({ url, request, cookies, clientAddress }) => {
-  // 1. Rate-limit distribué (Upstash) AVANT tout I/O Supabase. Si l'IP est
+  // 1. Rate-limit local AVANT tout I/O Supabase. Si l'IP est
   //    au plafond, on renvoie 429 sans toucher la DB.
   const ip = getClientIp(request, clientAddress as string | undefined);
   const blocked = await rateLimitRoute(
     ip,
     '/api/resources/telecharger',
     DOWNLOAD_LIMIT,
-    DOWNLOAD_WINDOW_MS,
+    DOWNLOAD_WINDOW_MS
   );
   if (blocked) return blocked;
 
@@ -87,7 +87,9 @@ export const GET: APIRoute = async ({ url, request, cookies, clientAddress }) =>
   let userId: string | null = null;
   try {
     const supabase = createSupabaseClient({ request, cookies });
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     userId = user?.id ?? null;
   } catch {
     // Anonyme — pas de problème

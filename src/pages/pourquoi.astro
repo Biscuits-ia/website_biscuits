@@ -7,63 +7,69 @@ import Breadcrumb from '@/components/Breadcrumb.astro';
 // Pourquoi Biscuits IA - Nos valeurs différenciantes
 const values = [
   {
-    title: "Pas une agence classique",
-    description: "Nous ne vendons pas de prestations éphémères. Nous accompagnons vos structures à l'écoute de leur mission, sur le long terme.",
-    image: "🤝"
+    title: 'Pas une agence classique',
+    description:
+      "Nous ne vendons pas de prestations éphémères. Nous accompagnons vos structures à l'écoute de leur mission, sur le long terme.",
+    image: '🤝',
   },
   {
-    title: "Pas un SaaS fermé",
-    description: "Aucun abonnement mensuel, aucune dépendance à un éditeur. Nos outils sont open source, auditables, et vous appartenez pleinement.",
-    image: "🔒"
+    title: 'Pas un SaaS fermé',
+    description:
+      'Aucun abonnement mensuel, aucune dépendance à un éditeur. Nos outils sont open source, auditables, et vous appartenez pleinement.',
+    image: '🔒',
   },
   {
-    title: "Pas une startup classique",
-    description: "Pas de levée de fonds, pas de pression de croissance. Une association Loi 1901, à mission d'intérêt général, qui ne cherche pas à maximiser le profit.",
-    image: "🌱"
+    title: 'Pas une startup classique',
+    description:
+      "Pas de levée de fonds, pas de pression de croissance. Une association Loi 1901, à mission d'intérêt général, qui ne cherche pas à maximiser le profit.",
+    image: '🌱',
   },
   {
-    title: "Approche open + public",
-    description: "Tout ce que nous créons est public. Nos guides, nos outils, nos cas d'usage — téléchargeables, modifiables, réutilisables par tous.",
-    image: "🌐"
+    title: 'Approche open + public',
+    description:
+      "Tout ce que nous créons est public. Nos guides, nos outils, nos cas d'usage — téléchargeables, modifiables, réutilisables par tous.",
+    image: '🌐',
   },
   {
-    title: "Modulaire et adaptable",
-    description: "Pas de solutions toutes faites. Chaque outil est conçu pour être modulaire, afin de s'adapter précisément au contexte de votre structure.",
-    image: "🧩"
+    title: 'Modulaire et adaptable',
+    description:
+      "Pas de solutions toutes faites. Chaque outil est conçu pour être modulaire, afin de s'adapter précisément au contexte de votre structure.",
+    image: '🧩',
   },
   {
-    title: "Transparence totale",
-    description: "Pas de boîte noire. Vous savez exactement comment fonctionnent vos outils, ce que deviennent vos données, et comment les modifier si besoin.",
-    image: "🔍"
-  }
+    title: 'Transparence totale',
+    description:
+      'Pas de boîte noire. Vous savez exactement comment fonctionnent vos outils, ce que deviennent vos données, et comment les modifier si besoin.',
+    image: '🔍',
+  },
 ];
 
 const keyDifferences = [
   {
-    aspect: "Coût",
-    biscuits: "Gratuit ou très faible coût (adhésion associative)",
-    autre: "Abonnements mensuels ou tarifs professionnels élevés"
+    aspect: 'Coût',
+    biscuits: 'Gratuit ou très faible coût (adhésion associative)',
+    autre: 'Abonnements mensuels ou tarifs professionnels élevés',
   },
   {
-    aspect: "Données",
-    biscuits: "Vos données vous appartiennent, jamais externalisées",
-    autre: "Données hébergées par un éditeur, selon ses conditions"
+    aspect: 'Données',
+    biscuits: 'Vos données vous appartiennent, jamais externalisées',
+    autre: 'Données hébergées par un éditeur, selon ses conditions',
   },
   {
-    aspect: "Source",
-    biscuits: "Code open source, auditable et modifiable",
-    autre: "Code propriétaire, boîte noire pour l'utilisateur"
+    aspect: 'Source',
+    biscuits: 'Code open source, auditable et modifiable',
+    autre: "Code propriétaire, boîte noire pour l'utilisateur",
   },
   {
-    aspect: "Objectif",
+    aspect: 'Objectif',
     biscuits: "Mission d'intérêt général, pas de profit",
-    autre: "Recherche de croissance et de rentabilité"
+    autre: 'Recherche de croissance et de rentabilité',
   },
   {
-    aspect: "Support",
-    biscuits: "Communauté et bénévoles disponibles",
-    autre: "Service client commercial, avec temps de réponse variable"
-  }
+    aspect: 'Support',
+    biscuits: 'Communauté et bénévoles disponibles',
+    autre: 'Service client commercial, avec temps de réponse variable',
+  },
 ];
 ---
 
@@ -74,7 +80,8 @@ const keyDifferences = [
     type: 'WebPage',
     data: {
       name: 'Pourquoi Biscuits IA',
-      description: 'Notre différenciation : une approche open source, publique, modulaire et associatif pour l\'IA utile.',
+      description:
+        "Notre différenciation : une approche open source, publique, modulaire et associatif pour l'IA utile.",
     },
   }}
 >
@@ -82,7 +89,10 @@ const keyDifferences = [
   <section class="hero">
     <div class="container">
       <h1>Pourquoi Biscuits IA ?</h1>
-      <p class="subtitle">Notre positionnement unique : pas une agence, pas un SaaS, pas une startup — mais une association pour le service public du numérique.</p>
+      <p class="subtitle">
+        Notre positionnement unique : pas une agence, pas un SaaS, pas une startup — mais une
+        association pour le service public du numérique.
+      </p>
     </div>
   </section>
 
@@ -91,10 +101,12 @@ const keyDifferences = [
       <div class="intro-grid">
         <div class="intro-text">
           <p class="lead">
-            Beaucoup d'acteurs prétendent aider les associations avec l'IA : agences digitales, startups, éditeurs SaaS...
+            Beaucoup d'acteurs prétendent aider les associations avec l'IA : agences digitales,
+            startups, éditeurs SaaS...
           </p>
           <p class="lead">
-            Mais rares sont ceux qui partagent réellement leur savoir-faire, leurs outils, et leur temps — gratuitement.
+            Mais rares sont ceux qui partagent réellement leur savoir-faire, leurs outils, et leur
+            temps — gratuitement.
           </p>
         </div>
         <div class="intro-image">
@@ -110,13 +122,15 @@ const keyDifferences = [
     <div class="container">
       <h2>Notre positionnement unique</h2>
       <div class="values-grid">
-        {values.map((value) => (
-          <div class="value-card">
-            <div class="value-icon">{value.image}</div>
-            <h3>{value.title}</h3>
-            <p>{value.description}</p>
-          </div>
-        ))}
+        {
+          values.map((value) => (
+            <div class="value-card">
+              <div class="value-icon">{value.image}</div>
+              <h3>{value.title}</h3>
+              <p>{value.description}</p>
+            </div>
+          ))
+        }
       </div>
     </div>
   </section>
@@ -130,13 +144,15 @@ const keyDifferences = [
           <span class="biscuits-col">Biscuits IA</span>
           <span class="autre-col">Agences / SaaS</span>
         </div>
-        {keyDifferences.map((diff, idx) => (
-          <div class={`table-row${idx % 2 === 0 ? ' even' : ''}`}>
-            <span class="aspect-name">{diff.aspect}</span>
-            <span class="biscuits-col">{diff.biscuits}</span>
-            <span class="autre-col">{diff.autre}</span>
-          </div>
-        ))}
+        {
+          keyDifferences.map((diff, idx) => (
+            <div class={`table-row${idx % 2 === 0 ? ' even' : ''}`}>
+              <span class="aspect-name">{diff.aspect}</span>
+              <span class="biscuits-col">{diff.biscuits}</span>
+              <span class="autre-col">{diff.autre}</span>
+            </div>
+          ))
+        }
       </div>
     </div>
   </section>
@@ -145,7 +161,10 @@ const keyDifferences = [
     <div class="container">
       <div class="cta-box">
         <h2>Prêt à découvrir une autre approche de l'IA ?</h2>
-        <p>Rejoignez une communauté qui partage ses outils, son savoir-faire, et son temps — sans attendre de contrepartie.</p>
+        <p>
+          Rejoignez une communauté qui partage ses outils, son savoir-faire, et son temps — sans
+          attendre de contrepartie.
+        </p>
         <div class="cta-actions">
           <a href="/contact" class="btn-secondary">Parler à un membre</a>
           <a href="/services" class="btn-secondary">Voir nos services</a>
@@ -325,7 +344,8 @@ const keyDifferences = [
     padding: 1rem;
   }
 
-  .biscuits-col, .autre-col {
+  .biscuits-col,
+  .autre-col {
     text-align: center;
   }
 
@@ -409,7 +429,9 @@ const keyDifferences = [
     font-size: 1rem;
     text-decoration: none;
     border-radius: 10px;
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    transition:
+      transform 0.15s ease,
+      box-shadow 0.15s ease;
   }
 
   .btn-primary:hover {
@@ -451,7 +473,8 @@ const keyDifferences = [
       overflow-x: auto;
     }
 
-    .table-header, .table-row {
+    .table-header,
+    .table-row {
       display: flex;
       flex-wrap: wrap;
     }

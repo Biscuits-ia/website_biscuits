@@ -423,26 +423,26 @@ const articleSchema = {
   }
 
   .article-content {
-    max-width: 1040px;
+    max-width: 1140px;
     margin: 0 auto;
-    padding: calc(var(--header-height-desktop) + 2rem) 1rem 4rem;
+    padding: calc(var(--header-height-desktop) + 3rem) 1rem 5rem;
   }
 
   /* Sections en pleine largeur du conteneur mais alignees sur la meme
-     colonne de lecture (760px) que le corps de l'article. */
+     colonne de lecture (840px) que le corps de l'article. */
   .article-header,
   .article-sources,
   .related-posts,
   .article-nav,
   .same-tag-section,
   .article-footer {
-    max-width: 760px;
+    max-width: 840px;
     margin-left: auto;
     margin-right: auto;
   }
 
   .article-content :global(.cluster-nav) {
-    max-width: 760px;
+    max-width: 840px;
     margin-left: auto;
     margin-right: auto;
   }
@@ -456,13 +456,13 @@ const articleSchema = {
 
   @media (min-width: 1024px) {
     .article-body:has(.toc) {
-      grid-template-columns: 240px minmax(0, 760px);
+      grid-template-columns: 220px minmax(0, 840px);
       justify-content: center;
-      column-gap: 2.5rem;
+      column-gap: 3rem;
       align-items: start;
     }
     .article-body:not(:has(.toc)) {
-      max-width: 760px;
+      max-width: 840px;
       margin: 0 auto;
     }
   }
@@ -505,7 +505,7 @@ const articleSchema = {
   }
 
   .article-header {
-    margin-bottom: 2.5rem;
+    margin-bottom: 3.5rem;
   }
 
   .article-title {
@@ -719,8 +719,8 @@ const articleSchema = {
 
   /* === RELATED POSTS === */
   .related-posts {
-    margin: 3rem 0 0;
-    padding-top: 2rem;
+    margin: 4rem 0 0;
+    padding-top: 3rem;
     border-top: 2px solid var(--color-border);
   }
 
@@ -792,7 +792,7 @@ const articleSchema = {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 1rem;
-    margin: 2rem 0 0;
+    margin: 3.5rem 0 0;
   }
 
   .article-nav-link {
@@ -842,7 +842,7 @@ const articleSchema = {
 
   /* === SAME TAG SECTION === */
   .same-tag-section {
-    margin: 2rem 0 0;
+    margin: 3.5rem 0 0;
   }
 
   .same-tag-grid {

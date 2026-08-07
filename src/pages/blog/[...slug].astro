@@ -685,11 +685,12 @@ const articleSchema = {
   }
 
   .article-sources {
-    margin: 3rem 0 0;
+    margin: 3rem 0 5rem;
     padding: 1.25rem 1.5rem;
     border: 2px solid var(--color-border);
     border-radius: var(--radius-lg, 0.75rem);
     background: var(--color-bg-alt);
+    text-align: center;
   }
 
   .article-sources h2 {
@@ -705,7 +706,8 @@ const articleSchema = {
 
   .article-sources ul {
     margin: 0.85rem 0 0;
-    padding-left: 1.2rem;
+    padding-left: 0;
+    list-style-position: inside;
   }
 
   .article-sources li + li {

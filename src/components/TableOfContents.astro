@@ -27,23 +27,19 @@ const toc = headings.filter((h) => h.depth <= 3);
 <style>
   .toc {
     background: var(--color-bg-alt);
-    border: 1px solid var(--color-border);
+    border: 2px solid var(--color-border);
     border-radius: var(--radius-xl);
-    padding: 2rem;
-    margin: 2rem 0;
-    position: static;
-    top: 100px;
+    padding: 1.25rem;
+    margin: 0;
   }
 
   .toc h2 {
-    margin: 0 0 1.5rem 0;
-    font-size: 1.25rem;
-    font-weight: 700;
+    margin: 0 0 1rem 0;
+    font-size: 1rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
     color: var(--color-text);
-    background: linear-gradient(135deg, var(--color-primary), var(--color-first));
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
   }
 
   .toc ul {
@@ -91,9 +87,12 @@ const toc = headings.filter((h) => h.depth <= 3);
     padding-left: 2rem;
   }
 
-  @media (max-width: 1024px) {
+  @media (min-width: 1024px) {
     .toc {
-      position: static;
+      position: sticky;
+      top: calc(var(--header-height-desktop, 80px) + 2rem);
+      max-height: calc(100vh - var(--header-height-desktop, 80px) - 4rem);
+      overflow-y: auto;
     }
   }
 </style>

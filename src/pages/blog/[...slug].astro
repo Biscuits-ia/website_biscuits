@@ -269,10 +269,12 @@ const articleSchema = {
 
       {cluster && <BlogClusterNav cluster={cluster} articles={clusterArticles} />}
 
-      <TableOfContents headings={headings} />
+      <div class="article-body">
+        <TableOfContents headings={headings} />
 
-      <div class="prose">
-        <Content />
+        <div class="prose">
+          <Content />
+        </div>
       </div>
 
       {
@@ -421,9 +423,48 @@ const articleSchema = {
   }
 
   .article-content {
-    max-width: 800px;
+    max-width: 1040px;
     margin: 0 auto;
     padding: calc(var(--header-height-desktop) + 2rem) 1rem 4rem;
+  }
+
+  /* Sections en pleine largeur du conteneur mais alignees sur la meme
+     colonne de lecture (760px) que le corps de l'article. */
+  .article-header,
+  .article-sources,
+  .related-posts,
+  .article-nav,
+  .same-tag-section,
+  .article-footer {
+    max-width: 760px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .article-content :global(.cluster-nav) {
+    max-width: 760px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  /* === TOC + PROSE === */
+  .article-body {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.5rem;
+  }
+
+  @media (min-width: 1024px) {
+    .article-body:has(.toc) {
+      grid-template-columns: 240px minmax(0, 760px);
+      justify-content: center;
+      column-gap: 2.5rem;
+      align-items: start;
+    }
+    .article-body:not(:has(.toc)) {
+      max-width: 760px;
+      margin: 0 auto;
+    }
   }
 
   .back-link {
@@ -678,8 +719,8 @@ const articleSchema = {
 
   /* === RELATED POSTS === */
   .related-posts {
-    margin: 4rem 0 0;
-    padding-top: 2.5rem;
+    margin: 3rem 0 0;
+    padding-top: 2rem;
     border-top: 2px solid var(--color-border);
   }
 
@@ -751,9 +792,7 @@ const articleSchema = {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 1rem;
-    margin: 3rem 0 0;
-    padding-top: 2rem;
-    border-top: 2px solid var(--color-border);
+    margin: 2rem 0 0;
   }
 
   .article-nav-link {
@@ -803,9 +842,7 @@ const articleSchema = {
 
   /* === SAME TAG SECTION === */
   .same-tag-section {
-    margin: 3rem 0 0;
-    padding-top: 2.5rem;
-    border-top: 2px solid var(--color-border);
+    margin: 2rem 0 0;
   }
 
   .same-tag-grid {

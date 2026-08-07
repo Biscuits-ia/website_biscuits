@@ -53,18 +53,6 @@ const allTags = Array.from(tagCounts.entries())
   .map(([slug, meta]) => ({ slug, display: meta.display, count: meta.count }));
 const indexableTagSlugs = allTags.map((tag) => tag.slug);
 
-// Articles en vedette : on prend les 3 plus recents marques featured:true,
-// sinon on complete avec les plus recents.
-const featuredArticles = sorted
-  .filter((a) => a.data.featured)
-  .slice(0, 3)
-  .concat(
-    sorted
-      .filter((a) => !a.data.featured)
-      .slice(0, Math.max(0, 3 - sorted.filter((a) => a.data.featured).length))
-  )
-  .slice(0, 3);
-
 // Donnees serialisees pour la recherche/filtre/pagination cote client.
 const allArticlesForSearch = sorted.map((a: CollectionEntry<'blog'>) => ({
   id: a.id,
@@ -104,9 +92,9 @@ const pageDescription = `${total} articles sur l'IA generative, la cybersecurite
 
   <div class="blog-wrapper">
     <header class="blog-hero">
-      <div class="hero-content">
+      <div class="blog-hero-inner">
         <span class="hero-eyebrow">Le blog de Biscuits IA</span>
-        <h1 class="hero-title">Comprendre et utiliser l'intelligence artificielle</h1>
+        <h1 class="blog-hero-title">Comprendre et utiliser l'intelligence artificielle</h1>
       </div>
     </header>
 
@@ -129,26 +117,6 @@ const pageDescription = `${total} articles sur l'IA generative, la cybersecurite
                 <span class="cluster-card-meta">
                   {cluster.articleIds.length} guides <span aria-hidden="true">→</span>
                 </span>
-              </a>
-            ))
-          }
-        </div>
-      </section>
-
-      <section class="featured-section" aria-labelledby="featured-title">
-        <h2 id="featured-title" class="section-title">
-          <span aria-hidden="true">★</span> Articles en vedette
-        </h2>
-        <div class="featured-grid">
-          {
-            featuredArticles.map((article) => (
-              <a href={`/blog/${article.id}`} class="featured-card">
-                <span class="featured-eyebrow">A la une</span>
-                <h3 class="featured-title">{article.data.title}</h3>
-                {article.data.description && (
-                  <p class="featured-description">{article.data.description}</p>
-                )}
-                <span class="featured-cta">Lire l'article →</span>
               </a>
             ))
           }
@@ -282,12 +250,13 @@ const pageDescription = `${total} articles sur l'IA generative, la cybersecurite
           {
             sorted.slice(0, PAGE_SIZE).map((article, index) => (
               <article
-                class="article-card"
+                class={`article-card${index === 0 ? ' hero-card' : ''}`}
                 style={`--card-index: ${index}`}
                 data-article-id={article.id}
                 data-page={Math.floor(index / PAGE_SIZE) + 1}
               >
                 <div class="card-content">
+                  {index === 0 && <span class="hero-eyebrow-tag">Dernier article</span>}
                   <div class="card-meta">
                     <time datetime={article.data.pubDate.toISOString()}>
                       {article.data.pubDate.toLocaleDateString('fr-FR', {
@@ -461,7 +430,7 @@ const pageDescription = `${total} articles sur l'IA generative, la cybersecurite
       );
     }
 
-    function renderCard(article) {
+    function renderCard(article, isHero) {
       const tagsHtml = (article.tags || [])
         .slice(0, 3)
         .map((t) => {
@@ -472,8 +441,9 @@ const pageDescription = `${total} articles sur l'IA generative, la cybersecurite
         })
         .join('');
       return `
-        <article class="article-card" data-article-id="${article.id}">
+        <article class="article-card${isHero ? ' hero-card' : ''}" data-article-id="${article.id}">
           <div class="card-content">
+            ${isHero ? '<span class="hero-eyebrow-tag">Dernier article</span>' : ''}
             <div class="card-meta">
               <time datetime="${article.pubDateISO}">${article.pubDate}</time>
               <span class="meta-sep">&middot;</span>
@@ -561,7 +531,7 @@ const pageDescription = `${total} articles sur l'IA generative, la cybersecurite
         mainContent.hidden = true;
         paginationEl.hidden = true;
         searchResults.hidden = false;
-        searchGrid.innerHTML = currentMatches.map(renderCard).join('');
+        searchGrid.innerHTML = currentMatches.map((a) => renderCard(a, false)).join('');
         const n = currentMatches.length;
         searchCount.textContent =
           n + ' article' + (n > 1 ? 's' : '') + ' trouve' + (n > 1 ? 's' : '');
@@ -587,7 +557,7 @@ const pageDescription = `${total} articles sur l'IA generative, la cybersecurite
       const start = (currentPage - 1) * PAGE_SIZE;
       allArticlesGrid.innerHTML = currentMatches
         .slice(start, start + PAGE_SIZE)
-        .map(renderCard)
+        .map((a, i) => renderCard(a, currentPage === 1 && i === 0))
         .join('');
 
       renderPagination(lastPage);
@@ -704,7 +674,13 @@ const pageDescription = `${total} articles sur l'IA generative, la cybersecurite
   })();
 </script>
 
-<style>
+<style is:global>
+  /* is:global (pas de scoping Astro) : le script de pagination/recherche
+     ci-dessus reconstruit les cartes via innerHTML cote client. Ces noeuds
+     n'ont pas l'attribut data-astro-cid-* que le scoping Astro exige pour
+     matcher un <style> scope -- sans is:global, les cartes generees par JS
+     s'affichent totalement sans style (border/padding/typo a 0) des que
+     renderMainPagination() tourne au chargement. */
   .blog-wrapper {
     min-height: 100vh;
     background: var(--color-bg);
@@ -712,12 +688,12 @@ const pageDescription = `${total} articles sur l'IA generative, la cybersecurite
 
   /* === HERO === */
   .blog-hero {
-    padding: calc(var(--header-height-desktop) + 2rem) 1rem 3rem;
+    padding: calc(var(--header-height-desktop) + 1.5rem) 1rem 2rem;
     background: var(--color-bg);
     text-align: center;
   }
 
-  .hero-content {
+  .blog-hero-inner {
     max-width: 800px;
     margin: 0 auto;
   }
@@ -736,23 +712,13 @@ const pageDescription = `${total} articles sur l'IA generative, la cybersecurite
     margin-bottom: 1.25rem;
   }
 
-  .hero-title {
+  .blog-hero-title {
     font-size: clamp(2rem, 5vw, 3.25rem);
     font-weight: 900;
-    margin: 0 0 1.25rem;
+    margin: 0;
     color: var(--color-text);
     line-height: 1.15;
     letter-spacing: -0.02em;
-  }
-
-  .hero-description {
-    font-size: clamp(1rem, 1.5vw, 1.2rem);
-    color: var(--color-text-light);
-    line-height: 1.6;
-    margin: 0;
-    max-width: 700px;
-    margin-left: auto;
-    margin-right: auto;
   }
 
   /* === CONTAINER === */
@@ -778,10 +744,10 @@ const pageDescription = `${total} articles sur l'IA generative, la cybersecurite
     justify-content: space-between;
     gap: 1rem;
     flex-wrap: wrap;
-    margin-top: 5rem;
-    padding-top: 2.5rem;
+    margin-top: 1rem;
+    padding-top: 0;
     padding-bottom: 0.5rem;
-    border-top: 2px solid var(--color-border);
+    border-top: 0;
   }
 
   .section-head-row .section-title {
@@ -795,9 +761,8 @@ const pageDescription = `${total} articles sur l'IA generative, la cybersecurite
     margin: 0;
   }
 
-  /* === FEATURED === */
   .cluster-section {
-    margin-bottom: 4rem;
+    margin-bottom: 3rem;
   }
 
   .cluster-heading {
@@ -870,74 +835,6 @@ const pageDescription = `${total} articles sur l'IA generative, la cybersecurite
     color: var(--color-primary);
     font-weight: 800;
     font-size: 0.88rem;
-  }
-
-  .featured-section {
-    margin-bottom: 3rem;
-  }
-
-  .featured-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 1.5rem;
-  }
-
-  .featured-card {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-    padding: 1.75rem;
-    background: var(--color-bg-alt);
-    border: 2px solid var(--color-border);
-    border-radius: var(--radius-xl, 1rem);
-    text-decoration: none;
-    color: inherit;
-    box-shadow: var(--shadow-md, 5px 5px 0 var(--color-border));
-    transition:
-      transform var(--transition-base, 0.3s),
-      box-shadow var(--transition-base, 0.3s),
-      border-color var(--transition-base, 0.3s);
-  }
-
-  .featured-card:hover {
-    transform: translate(-3px, -3px);
-    box-shadow: var(--shadow-xl, 10px 10px 0 var(--color-border));
-    border-color: var(--color-primary);
-  }
-
-  .featured-eyebrow {
-    display: inline-block;
-    align-self: flex-start;
-    font-size: 0.7rem;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: var(--color-bg-alt);
-    background: var(--color-primary);
-    padding: 0.25rem 0.65rem;
-    border-radius: var(--radius-sm, 0);
-  }
-
-  .featured-title {
-    margin: 0;
-    font-size: 1.3rem;
-    font-weight: 800;
-    color: var(--color-text);
-    line-height: 1.3;
-  }
-
-  .featured-description {
-    margin: 0;
-    color: var(--color-text-light);
-    line-height: 1.55;
-    font-size: 0.95rem;
-  }
-
-  .featured-cta {
-    color: var(--color-primary);
-    font-weight: 700;
-    font-size: 0.9rem;
-    margin-top: auto;
   }
 
   /* === FILTRES === */
@@ -1141,6 +1038,49 @@ const pageDescription = `${total} articles sur l'IA generative, la cybersecurite
     border-color: var(--color-primary);
   }
 
+  /* Premier article de la grille (le plus recent) : traitement large. */
+  .hero-card {
+    border-width: 3px;
+    box-shadow: var(--shadow-md, 5px 5px 0 var(--color-border));
+  }
+
+  .hero-eyebrow-tag {
+    display: inline-block;
+    align-self: flex-start;
+    font-size: 0.7rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--color-bg-alt);
+    background: var(--color-primary);
+    padding: 0.25rem 0.65rem;
+    border-radius: var(--radius-sm, 0);
+  }
+
+  .hero-card .card-title {
+    font-size: 1.6rem;
+  }
+
+  .hero-card .card-description {
+    font-size: 1.02rem;
+  }
+
+  @media (min-width: 900px) {
+    .hero-card {
+      grid-column: span 2;
+      position: relative;
+    }
+    .hero-card .card-content {
+      padding: 2rem;
+      max-width: 640px;
+    }
+    .hero-card .hero-eyebrow-tag {
+      position: absolute;
+      top: 1.5rem;
+      right: 1.5rem;
+    }
+  }
+
   .card-content {
     padding: 1.5rem;
     display: flex;
@@ -1334,12 +1274,15 @@ const pageDescription = `${total} articles sur l'IA generative, la cybersecurite
   /* === RESPONSIVE === */
   @media (max-width: 768px) {
     .blog-hero {
-      padding-top: calc(var(--header-height-mobile) + 1.5rem);
+      padding-top: calc(var(--header-height-mobile) + 1rem);
     }
-    .featured-grid,
     .articles-grid,
     .cluster-grid {
       grid-template-columns: 1fr;
+    }
+    .hero-card .card-content {
+      padding: 1.5rem;
+      max-width: none;
     }
     .section-head-row {
       flex-direction: column;

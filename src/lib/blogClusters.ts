@@ -48,6 +48,7 @@ export const BLOG_CLUSTERS: readonly BlogCluster[] = [
       'detecter-contenu-genere-par-ia',
       'smishing-sms-arnaques-ia',
       'fausses-offres-emploi-benevolat-ia',
+      'fausses-cagnottes-appels-aux-dons-ia',
     ],
     sources: [
       {
@@ -91,6 +92,7 @@ export const BLOG_CLUSTERS: readonly BlogCluster[] = [
       'agents-ia-autonomes-association',
       'creer-visuels-communication-ia-generative-association',
       'moderation-ia-communautes-en-ligne-association',
+      'rapport-activite-association-ia',
     ],
     sources: [
       {
@@ -133,6 +135,7 @@ export const BLOG_CLUSTERS: readonly BlogCluster[] = [
       'mistral-rag-chatbot-mairie',
       'ia-sobriete-numerique-impact-environnemental',
       'ia-proprietaire-vs-open-source-grille-decision',
+      'rag-ou-fine-tuning-choisir',
     ],
     sources: [
       {

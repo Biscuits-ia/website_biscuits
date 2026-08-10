@@ -1,0 +1,167 @@
+---
+title: "Fausses cagnottes et fraude aux dons par IA"
+description: "Fausses cagnottes, associations clonées, urgences inventées : comment l'IA industrialise la fraude aux dons, et comment protéger votre association."
+pubDate: 2026-08-10T09:00:00Z
+author: "Biscuits IA"
+tags: ["arnaque", "dons", "cagnotte", "association", "sensibilisation"]
+---
+
+import Callout from '@/components/Callout.astro';
+import ComparisonGrid from '@/components/ComparisonGrid.astro';
+
+Une catastrophe survient. En quelques heures, des dizaines de cagnottes apparaissent en ligne. Photos bouleversantes, texte poignant, nom d'association crédible, logo impeccable. Certaines sont authentiques. Les autres ont été fabriquées en dix minutes par une intelligence artificielle.
+
+La fraude aux dons n'est pas nouvelle. Ce qui change en 2026, c'est le volume et la qualité. Une seule personne peut désormais produire cent appels aux dons différents, chacun avec ses visuels, son histoire et sa page de collecte. Et vous, association, êtes doublement exposée : vos donateurs peuvent être détournés vers de fausses collectes, et votre propre identité peut être usurpée.
+
+<Callout type="error" title="Deux victimes, jamais une seule">
+Dans une fraude aux dons réussie, le donateur perd son argent — mais l'association usurpée perd sa réputation et la confiance de son public. La seconde blessure met beaucoup plus longtemps à cicatriser que la première.
+</Callout>
+
+---
+
+## 🎭 Les quatre scénarios les plus fréquents
+
+<ComparisonGrid
+  type="human"
+  items={[
+    { icon: '🔥', title: "L'urgence opportuniste", description: "Dans les heures qui suivent un incendie, une inondation ou un accident très médiatisé, des cagnottes surgissent en masse. L'émotion pousse à donner vite, sans vérifier." },
+    { icon: '🪞', title: "L'association clonée", description: "Votre nom, votre logo, vos visuels, parfois vos textes recopiés mot pour mot. Seul le lien de paiement change et pointe vers le compte du fraudeur." },
+    { icon: '👤', title: 'Le bénéficiaire inventé', description: "Une famille, un enfant malade, un animal blessé. Photos générées par IA, histoire cohérente, témoignages fabriqués. Personne n'existe." },
+    { icon: '📣', title: 'Le faux collecteur', description: "Quelqu'un se présente comme bénévole de votre association, par téléphone, e-mail ou porte-à-porte, et collecte des dons en votre nom." }
+  ]}
+/>
+
+---
+
+## 🤖 Ce que l'IA a réellement changé
+
+Il serait faux de dire que l'IA a inventé la fraude aux dons. Elle en a supprimé les frictions.
+
+**Le coût de production s'est effondré.** Écrire un appel aux dons convaincant demandait un minimum de talent rédactionnel. Aujourd'hui, quelques phrases d'instruction suffisent à produire un texte qui coche toutes les cases de l'émotion. Fabriquer cent variantes coûte à peine plus cher que d'en fabriquer une.
+
+**Les images ne prouvent plus rien.** Une photo de sinistre, de famille en détresse ou d'animal blessé se génère en quelques secondes, sans reprendre une image existante — donc sans qu'une recherche d'image inversée ne remonte quoi que ce soit. Le réflexe classique de vérification perd de son efficacité.
+
+**Les fautes ont disparu.** L'orthographe approximative était le meilleur signal d'alerte. Elle a cessé d'être fiable.
+
+**Le clonage d'identité visuelle est instantané.** Récupérer votre logo, vos couleurs et le ton de vos publications ne demande que de consulter votre site. Une IA reproduit ensuite votre style éditorial sans difficulté.
+
+<Callout type="warning" title="Le signal qui reste valable">
+La qualité d'un texte ou d'une image ne dit plus rien de l'honnêteté de son auteur. En revanche, **la traçabilité du bénéficiaire reste vérifiable** : qui reçoit l'argent, sous quel statut juridique, avec quel numéro d'identification. C'est le seul terrain où le fraudeur ne peut pas improviser.
+</Callout>
+
+---
+
+## 🔍 Vérifier une collecte avant de donner
+
+Cinq contrôles, dans cet ordre. Les trois premiers suffisent dans la majorité des cas.
+
+1. **Cherchez le numéro RNA ou SIREN.** Une association française déclarée possède un numéro RNA (format `W` suivi de neuf chiffres). Une structure qui collecte sans jamais l'afficher, ou qui refuse de le donner quand on le demande, doit être écartée. Le [répertoire national des associations](https://www.journal-officiel.gouv.fr/associations/) permet de vérifier une déclaration.
+2. **Remontez à la source, ne suivez pas le lien.** Si une collecte se réclame d'une association, allez sur le site officiel de cette association en tapant vous-même son adresse. Si la collecte est réelle, elle y sera annoncée. Si elle n'y figure nulle part, la question est réglée.
+3. **Regardez la date de création de la page.** Une cagnotte ouverte quelques heures après un événement, par un compte créé le même jour, sans historique, mérite une méfiance immédiate.
+4. **Vérifiez qui encaisse.** Les plateformes sérieuses affichent le bénéficiaire final. Un versement vers un compte personnel, une cryptomonnaie ou un virement à l'étranger n'a rien à faire dans une collecte associative.
+5. **Méfiez-vous de l'urgence.** « Il ne reste que quelques heures », « nous allons devoir arrêter demain » : la pression temporelle sert à empêcher exactement les vérifications décrites ci-dessus. C'est sa seule fonction.
+
+---
+
+## 🛡️ Protéger votre association de l'usurpation
+
+C'est le volet que les associations négligent le plus, parce qu'il ne s'agit plus de se protéger soi-même mais de protéger son nom.
+
+### Rendre vos collectes officielles identifiables
+
+Publiez **une page unique** sur votre site qui recense toutes vos collectes en cours, avec les liens exacts. Communiquez systématiquement cette page plutôt que le lien direct de la cagnotte. Vous donnez ainsi à vos donateurs un point de vérification stable, que vous contrôlez.
+
+Affichez votre **numéro RNA et votre adresse de siège** sur votre site et dans vos communications de collecte. C'est peu coûteux et cela crée une asymétrie : le fraudeur qui vous clone devra soit omettre ces informations, soit reprendre les vôtres — ce qui rend le signalement plus simple.
+
+### Surveiller son nom
+
+Une recherche mensuelle sur le nom de votre association, sur un moteur de recherche et sur les principales plateformes de cagnotte, prend dix minutes. Mettez en place une alerte automatique sur votre nom pour être prévenu des nouvelles pages qui le mentionnent.
+
+### Préparer la réaction à l'avance
+
+Le pire moment pour improviser une réponse est celui où l'usurpation est déjà en ligne. Rédigez dès maintenant un message type de démenti, décidez qui a autorité pour le publier, et sachez où signaler.
+
+<Callout type="tip" title="Trois quarts d'heure bien investis">
+Page de collectes officielles, numéro RNA affiché, alerte sur votre nom, message de démenti pré-rédigé. L'ensemble se met en place en moins d'une heure et vous fait gagner un temps considérable le jour où le problème survient.
+</Callout>
+
+---
+
+## 🚨 Que faire si votre association est usurpée
+
+1. **Documentez avant toute chose.** Captures d'écran complètes, adresses exactes, dates, montants affichés. Une page frauduleuse disparaît souvent dès qu'elle est signalée — et avec elle, vos preuves.
+2. **Signalez à la plateforme.** Toutes les plateformes de cagnotte disposent d'un formulaire de signalement d'usurpation. C'est la voie la plus rapide pour faire retirer la page.
+3. **Communiquez publiquement, sans attendre.** Un message clair sur vos canaux : cette collecte n'est pas la nôtre, voici nos collectes officielles. Le silence laisse le doute s'installer, y compris sur vos vraies collectes.
+4. **Signalez aux autorités.** Sur [cybermalveillance.gouv.fr](https://www.cybermalveillance.gouv.fr) et via la plateforme [PHAROS](https://www.internet-signalement.gouv.fr). Une plainte est possible : l'usurpation d'identité et l'escroquerie sont des délits.
+5. **Prévenez vos donateurs directement.** Ceux qui ont donné récemment sont les plus susceptibles d'être ciblés par la fausse collecte.
+
+<Callout type="error" title="Ne payez jamais pour faire retirer une page">
+Certains fraudeurs proposent de supprimer la fausse collecte contre paiement. C'est une seconde arnaque greffée sur la première. Les canaux de signalement officiels sont gratuits.
+</Callout>
+
+---
+
+## ⚖️ Ce que dit le cadre juridique français
+
+Beaucoup d'associations ignorent que la collecte de dons est encadrée, et cette méconnaissance profite aux fraudeurs : elle empêche de savoir ce qui est anormal.
+
+**L'appel public à la générosité est déclaré.** Une association qui sollicite le public au-delà d'un certain seuil annuel doit en faire la déclaration préalable auprès de sa préfecture, et tenir un compte d'emploi des ressources collectées. Une structure qui lance de grandes campagnes sans jamais pouvoir justifier de cette formalité se situe hors du cadre.
+
+**Le donateur a droit à l'information.** Il peut demander à quoi servent les fonds et comment ils sont employés. Une collecte qui refuse de répondre à cette question simple est un signal fort.
+
+**Le reçu fiscal engage l'association.** Toutes les associations ne peuvent pas en délivrer : cela suppose de remplir les conditions d'intérêt général. Un fraudeur promet volontiers une réduction d'impôt qu'il ne pourra jamais matérialiser — le reçu n'arrive jamais, ou arrive sous une forme fantaisiste, sans numéro ni mentions obligatoires.
+
+**L'usurpation est un délit caractérisé.** Se faire passer pour une association existante afin de collecter des fonds relève à la fois de l'escroquerie et de l'usurpation d'identité. Votre association a qualité pour porter plainte, et n'a pas besoin d'attendre qu'un donateur le fasse.
+
+<Callout type="info" title="Une conséquence pratique">
+Ces obligations sont autant de points de vérification. Demandez le numéro RNA, l'objet de la collecte, les conditions du reçu fiscal. Une collecte légitime répond en quelques minutes ; une collecte frauduleuse esquive, change de sujet, ou insiste sur l'urgence.
+</Callout>
+
+---
+
+## 💬 Former ses bénévoles sans les paralyser
+
+L'erreur classique, après une campagne de sensibilisation, consiste à installer une méfiance générale qui bloque aussi les vraies sollicitations. L'objectif n'est pas que votre équipe doute de tout, mais qu'elle sache **où porter son attention**.
+
+Trois messages simples suffisent, et ils tiennent en une réunion d'équipe de vingt minutes :
+
+1. **Personne ne collecte au nom de l'association sans mandat écrit.** Ni en espèces, ni par un lien personnel, ni « pour dépanner ». Cette règle protège autant vos bénévoles que vos donateurs, car elle leur donne une réponse toute prête.
+2. **Un lien de collecte ne se partage jamais tel quel.** On partage la page officielle du site, qui renvoie ensuite vers la collecte. Si l'association change de plateforme, rien ne casse, et un lien frauduleux se repère immédiatement puisqu'il ne figure pas sur cette page.
+3. **Un doute se remonte, il ne se tranche pas seul.** Désignez une personne référente. Un bénévole qui hésite doit savoir à qui poser la question en trente secondes, sans crainte de passer pour naïf.
+
+Ces règles ont un effet secondaire précieux : elles rendent votre association difficile à imiter de façon convaincante, parce que vos propres pratiques deviennent prévisibles et vérifiables.
+
+---
+
+## ✅ Checklist à partager dans votre association
+
+- [ ] Une page unique recense toutes nos collectes officielles
+- [ ] Notre numéro RNA figure sur le site et dans nos communications de collecte
+- [ ] Une alerte automatique surveille les mentions de notre nom
+- [ ] Un message de démenti est pré-rédigé, et une personne est désignée pour le publier
+- [ ] L'équipe sait qu'aucun bénévole ne collecte de dons en espèces sans mandat écrit
+- [ ] Nos donateurs savent qu'ils peuvent vérifier une collecte en nous contactant directement
+
+---
+
+## 🥠 Conclusion : la générosité mérite d'être protégée
+
+La fraude aux dons ne s'attaque pas seulement à des portefeuilles. Elle s'attaque à la disposition même à donner, qui est la ressource la plus précieuse du monde associatif. Chaque donateur trompé donnera un peu moins, ou un peu plus tard, la prochaine fois.
+
+La bonne nouvelle, c'est que les contrôles qui protègent vraiment ne demandent ni compétence technique ni outil payant. Ils demandent de remonter à la source plutôt que de suivre un lien, et de refuser l'urgence comme argument.
+
+### Les 3 actions à faire cette semaine
+
+1. 📄 **Créez** la page qui recense vos collectes officielles.
+2. 🔔 **Mettez en place** une alerte sur le nom de votre association.
+3. 🗣️ **Partagez** les cinq contrôles de vérification avec vos donateurs et vos bénévoles.
+
+---
+
+<Callout type="tip" title="Besoin d'aide ?">
+Anti Pepins, le service gratuit de Biscuits IA, permet de faire analyser une collecte ou un message suspect. Notre équipe accompagne aussi les associations qui découvrent une usurpation de leur identité.
+</Callout>
+
+---
+
+*Vérifier une collecte prend deux minutes. Reconstruire la confiance d'un donateur prend des années. Partagez cet article 🍪*

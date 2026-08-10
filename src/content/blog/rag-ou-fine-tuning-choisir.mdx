@@ -1,0 +1,174 @@
+---
+title: "RAG ou fine-tuning : la grille de décision"
+description: "Faut-il brancher vos documents sur un modèle ou le réentraîner ? Coût, maintenance, confidentialité : la grille de décision pour une petite structure."
+pubDate: 2026-08-10T11:00:00Z
+author: "Biscuits IA"
+tags: ["ia open source", "rag", "fine-tuning", "méthode", "association"]
+---
+
+import Callout from '@/components/Callout.astro';
+import ComparisonGrid from '@/components/ComparisonGrid.astro';
+
+« On veut une IA qui connaisse nos documents. » C'est la demande la plus fréquente que nous recevons, et elle mène presque toujours à la même question technique : faut-il faire du RAG ou du fine-tuning ?
+
+La réponse est claire dans neuf cas sur dix, mais elle est rarement celle que l'on attend. Ce guide donne la grille de décision, les ordres de grandeur en coût et en temps, et les rares situations où le fine-tuning se justifie réellement pour une petite structure.
+
+<Callout type="info" title="Les deux approches en une phrase">
+Le **RAG** donne au modèle vos documents au moment de la question, comme on tend un classeur à quelqu'un. Le **fine-tuning** modifie le modèle lui-même pour changer sa façon de répondre, comme on forme quelqu'un pendant plusieurs semaines.
+</Callout>
+
+---
+
+## 🧭 La distinction que tout le monde confond
+
+L'erreur la plus répandue consiste à croire que le fine-tuning sert à « apprendre des connaissances » à un modèle. C'est faux, et cette confusion coûte cher.
+
+**Le fine-tuning modifie le comportement, pas le savoir.** Il apprend au modèle un format de réponse, un ton, un vocabulaire métier, une structure de sortie. Il n'est ni fiable ni économique pour lui faire mémoriser des faits précis — et surtout, ces faits deviennent figés au moment de l'entraînement.
+
+**Le RAG apporte le savoir au moment de la question.** Le modèle reçoit les extraits pertinents de vos documents et répond à partir d'eux. Mettre à jour la connaissance revient à remplacer un fichier.
+
+D'où une règle simple : si votre besoin s'exprime par « il faut qu'il connaisse nos documents », c'est du RAG. Si votre besoin s'exprime par « il faut qu'il réponde toujours dans ce format précis », c'est peut-être du fine-tuning.
+
+---
+
+## ⚖️ Ce qui les sépare vraiment
+
+<ComparisonGrid
+  type="human"
+  items={[
+    { icon: '🔄', title: 'Mise à jour', description: "RAG : vous remplacez un document, c'est pris en compte immédiatement. Fine-tuning : il faut relancer un entraînement complet." },
+    { icon: '💶', title: 'Coût de départ', description: "RAG : quelques heures de mise en place. Fine-tuning : préparation d'un jeu de données annoté, puis calcul — de plusieurs jours à plusieurs semaines de travail." },
+    { icon: '🔍', title: 'Traçabilité', description: "RAG : le modèle peut citer le document source, donc vous vérifiez. Fine-tuning : la réponse sort du modèle sans source vérifiable." },
+    { icon: '🧯', title: 'Erreurs', description: "RAG : une réponse fausse se corrige en corrigeant le document. Fine-tuning : elle est incrustée dans le modèle jusqu'au prochain entraînement." },
+    { icon: '🎨', title: 'Style et format', description: "RAG : influençable par les instructions, mais imparfait. Fine-tuning : c'est précisément son point fort." },
+    { icon: '🔐', title: 'Confidentialité', description: "Les deux peuvent tourner en local. Mais un modèle fine-tuné contient vos données dans ses poids : le partager, c'est les partager." }
+  ]}
+/>
+
+---
+
+## 🎯 La grille de décision
+
+Répondez dans l'ordre. La première réponse positive tranche.
+
+**1. Vos informations changent-elles plus d'une fois par trimestre ?**
+→ **RAG.** Le fine-tuning est structurellement incompatible avec une information mouvante.
+
+**2. Devez-vous pouvoir justifier une réponse en citant sa source ?**
+→ **RAG.** C'est indispensable dès que la réponse engage votre structure : réglementation, droits des bénéficiaires, procédures internes.
+
+**3. Votre besoin est-il un format ou un ton très spécifique, stable dans le temps, que le prompt n'arrive pas à obtenir ?**
+→ **Fine-tuning envisageable** — mais seulement après avoir sérieusement essayé le prompt.
+
+**4. Disposez-vous d'au moins plusieurs centaines d'exemples de qualité, cohérents entre eux ?**
+→ Si non, **RAG**. Un fine-tuning sur un jeu de données pauvre dégrade le modèle au lieu de l'améliorer.
+
+**5. Aucune des situations ci-dessus ?**
+→ **Commencez par un bon prompt.** C'est gratuit, immédiat, et cela résout une majorité de cas.
+
+<Callout type="warning" title="L'ordre qui fait gagner du temps">
+Prompt, puis RAG, puis fine-tuning. Chaque étape coûte environ dix fois plus que la précédente. Beaucoup de projets démarrent directement à la troisième et n'aboutissent jamais.
+</Callout>
+
+---
+
+## 💰 Ordres de grandeur pour une petite structure
+
+Ces chiffres décrivent une association ou une collectivité de petite taille, avec des compétences techniques limitées et pas de budget dédié.
+
+**Prompt bien construit** — quelques heures de travail, aucun coût d'infrastructure, maintenance nulle. Convient aux tâches de reformulation, de synthèse et de rédaction assistée.
+
+**RAG sur vos documents** — quelques jours de mise en place pour un premier système utilisable, un serveur modeste ou une machine locale correcte suffit. La maintenance consiste à tenir les documents à jour, ce que votre équipe sait déjà faire. C'est le meilleur rapport valeur/effort pour la quasi-totalité des besoins associatifs.
+
+**Fine-tuning** — plusieurs semaines, dont l'essentiel passe à constituer et vérifier le jeu de données, pas à lancer le calcul. Nécessite du matériel adapté ou une location de GPU, et une compétence technique réelle. À chaque évolution du besoin, le cycle recommence.
+
+Pour une petite structure, le fine-tuning n'est presque jamais le bon premier investissement. Nous n'avons pas encore rencontré de cas associatif où il était justifié avant qu'un RAG bien fait ait été mis en place et jugé insuffisant.
+
+---
+
+## 🧪 Les cas où le fine-tuning se justifie
+
+Ils existent, mais ils sont précis.
+
+- **Un format de sortie rigide et répétitif** : produire systématiquement une fiche structurée identique à partir de textes libres, des milliers de fois.
+- **Un vocabulaire métier très particulier** que le modèle comprend mal, avec des exemples nombreux et cohérents à disposition.
+- **Une contrainte de taille** : faire tenir un comportement spécialisé dans un petit modèle exécutable sur du matériel modeste, plutôt que de dépendre d'un grand modèle.
+
+Notez que ces trois cas parlent de **comportement**, jamais de connaissance. C'est le signe distinctif d'un besoin de fine-tuning légitime.
+
+---
+
+## 🧱 À quoi ressemble un RAG minimal
+
+Le mot fait peur, la mécanique est simple. Quatre briques, dont trois relèvent de l'organisation documentaire et non de la technique.
+
+**1. Des documents propres.** C'est la brique décisive, et celle qu'on néglige toujours. Un RAG alimenté par des documents contradictoires, obsolètes ou mal structurés produit des réponses contradictoires et obsolètes. Aucune technologie ne compense un fonds documentaire en désordre. Commencez par identifier vos documents de référence et par désigner, pour chacun, une personne responsable de sa mise à jour.
+
+**2. Un découpage.** Les documents sont coupés en morceaux de taille raisonnable. Un découpage qui suit la structure logique du texte — par section, par article, par question — donne de bien meilleurs résultats qu'un découpage arbitraire au nombre de caractères, parce qu'il évite de séparer une question de sa réponse.
+
+**3. Un index de recherche.** C'est la partie technique, et la plus outillée : il existe des solutions prêtes à l'emploi, y compris entièrement libres et exécutables sur votre matériel. Son rôle est de retrouver, pour une question donnée, les quelques passages les plus pertinents.
+
+**4. Un modèle qui rédige.** Il reçoit la question et les passages retrouvés, et formule la réponse à partir d'eux. Demandez-lui systématiquement de citer les documents utilisés, et de répondre qu'il ne sait pas lorsque les passages ne contiennent pas l'information. Cette dernière instruction évite l'essentiel des réponses inventées.
+
+<Callout type="tip" title="Où se joue vraiment la qualité">
+Sur dix projets de RAG qui déçoivent, neuf échouent sur la brique 1, pas sur la brique 3. Le travail le plus rentable n'est pas le choix du modèle : c'est le ménage dans vos documents. Bonne nouvelle, ce travail sert aussi à vos humains.
+</Callout>
+
+---
+
+## 📉 Comment savoir que ça marche
+
+Une erreur fréquente consiste à juger le résultat à l'impression générale. Établissez plutôt un petit protocole, même artisanal.
+
+Constituez un jeu de **vingt à trente questions réelles** avec, pour chacune, la réponse attendue et le document qui la contient. Passez-les toutes après chaque modification du système. Comptez trois choses : combien de réponses sont exactes, combien citent le bon document, et combien de fois le système invente au lieu d'admettre son ignorance.
+
+Ce dernier chiffre est le plus important. Un système qui répond correctement huit fois sur dix mais invente les deux autres fois est plus dangereux qu'un système qui répond correctement six fois sur dix et dit « je ne sais pas » le reste du temps — parce que le premier vous apprend à lui faire confiance juste avant de vous tromper.
+
+---
+
+## 🔗 Et les deux ensemble ?
+
+C'est l'architecture des systèmes matures : un modèle fine-tuné pour le ton et le format, alimenté par un RAG pour les faits à jour. Elle est parfaitement valide — mais elle cumule les deux coûts de maintenance.
+
+Pour une petite structure, ce n'est pas un point de départ. C'est éventuellement une destination, une fois qu'un RAG fonctionne, qu'il est utilisé quotidiennement, et que sa seule limite identifiée est le style des réponses.
+
+<Callout type="tip" title="Un test simple avant de vous lancer">
+Prenez dix questions réelles que vos usagers posent. Répondez-y à la main en cherchant dans vos documents. Si vous trouvez la réponse dans un document existant, votre problème est un problème de recherche documentaire — donc du RAG. Si vous devez inventer une manière de répondre, votre problème est un problème de format.
+</Callout>
+
+---
+
+## ✅ Checklist avant de choisir
+
+- [ ] Nous avons essayé de résoudre le besoin par un simple prompt
+- [ ] Nous savons à quelle fréquence nos informations changent
+- [ ] Nous savons si la traçabilité de la source est exigée
+- [ ] Nos documents sont identifiés, à jour, et quelqu'un en est responsable
+- [ ] Nous avons testé nos dix questions réelles à la main
+- [ ] Nous savons où tourneront les données : machine locale ou service en ligne
+
+---
+
+## 🥠 Conclusion : commencez par le moins cher
+
+La question « RAG ou fine-tuning » est presque toujours mal posée, parce qu'elle saute l'étape la plus rentable : formuler correctement la demande.
+
+Pour une association ou une petite collectivité, la trajectoire raisonnable est stable : un prompt soigné règle la moitié des besoins, un RAG bien construit règle la quasi-totalité du reste, et le fine-tuning attend d'avoir une raison précise d'exister.
+
+La question à vous poser n'est pas « quelle technologie est la plus avancée », mais « qu'est-ce que nous saurons encore maintenir dans un an, avec l'équipe que nous avons ».
+
+### Les 3 actions à faire cette semaine
+
+1. 📝 **Listez** dix questions réelles posées par vos usagers.
+2. 🔎 **Vérifiez** si leurs réponses existent déjà dans vos documents.
+3. 🧭 **Passez** la grille de décision en équipe avant tout choix technique.
+
+---
+
+<Callout type="tip" title="Besoin d'aide ?">
+Biscuits IA accompagne gratuitement les associations et collectivités dans le choix et la mise en place de ces solutions, avec une préférence assumée pour les modèles ouverts et exécutables localement.
+</Callout>
+
+---
+
+*La bonne architecture est celle que votre équipe saura encore faire tourner dans un an 🍪*

@@ -11,9 +11,12 @@
 // toute exception résiduelle via .catch() pour ne jamais casser le
 // handler fetch du SW.
 
-const CACHE_NAME = 'biscuits-ia-v4';
-const RUNTIME_CACHE = 'biscuits-ia-runtime-v4';
-const PRECACHE_URLS = ['/', '/og-default.webp', '/favicon.svg'];
+// Le nom du cache est incremente a chaque changement de PRECACHE_URLS :
+// `cache.addAll` est atomique, une seule URL en 404 ferait echouer tout le
+// lot, et les clients existants garderaient sinon l'ancienne liste.
+const CACHE_NAME = 'biscuits-ia-v5';
+const RUNTIME_CACHE = 'biscuits-ia-runtime-v5';
+const PRECACHE_URLS = ['/', '/og-default.webp', '/favicon-32.png'];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(

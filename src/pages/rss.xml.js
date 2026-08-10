@@ -59,7 +59,7 @@ export async function GET(context) {
       <managingEditor>${SITE.author} (${SITE.email})</managingEditor>
       <webMaster>${SITE.author} (${SITE.email})</webMaster>
       <image>
-        <url>${context.site}/favicon.svg</url>
+        <url>${context.site}/favicon-32.png</url>
         <title>${SITE.title}</title>
         <link>${context.site}</link>
       </image>

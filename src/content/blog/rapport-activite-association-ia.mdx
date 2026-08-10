@@ -1,0 +1,179 @@
+---
+title: "Rédiger son rapport d'activité avec l'IA"
+description: "Méthode, prompts et garde-fous pour écrire le rapport d'activité annuel de votre association avec l'IA, sans inventer de chiffres ni perdre votre voix."
+pubDate: 2026-08-10T10:00:00Z
+author: "Biscuits IA"
+tags: ["association", "ia", "rapport d'activité", "méthode", "gouvernance"]
+---
+
+import Callout from '@/components/Callout.astro';
+import ComparisonGrid from '@/components/ComparisonGrid.astro';
+
+Chaque année, la même scène. L'assemblée générale approche, le rapport d'activité n'est pas écrit, et la personne qui s'y colle finit par recopier celui de l'an dernier en changeant les dates. Le document est produit, personne ne le lit vraiment, et l'exercice perd son sens.
+
+L'IA peut réellement aider ici — à condition de comprendre où elle est utile et où elle est dangereuse. Ce guide décrit une méthode en cinq étapes, avec les prompts correspondants et, surtout, les garde-fous sans lesquels vous produirez un document creux, voire faux.
+
+<Callout type="warning" title="Le principe à ne jamais perdre de vue">
+Une IA n'a accès à aucune donnée de votre association. Elle ne connaît ni vos chiffres, ni vos actions, ni vos bénéficiaires. Si vous ne les lui fournissez pas, **elle les inventera** — de façon parfaitement plausible. C'est le risque numéro un de cet exercice.
+</Callout>
+
+---
+
+## 🎯 Ce que l'IA fait bien, et ce qu'elle fait mal
+
+<ComparisonGrid
+  type="human"
+  items={[
+    { icon: '✅', title: 'Structurer', description: "Transformer des notes en désordre, des comptes rendus de réunion et des bribes de bilan en un plan cohérent et hiérarchisé." },
+    { icon: '✅', title: 'Reformuler', description: "Réécrire un paragraphe technique pour qu'il soit compris par un financeur, un adhérent ou un élu, sans le dénaturer." },
+    { icon: '✅', title: 'Homogénéiser', description: "Harmoniser le ton entre des parties rédigées par plusieurs personnes différentes." },
+    { icon: '❌', title: 'Produire des chiffres', description: "Elle comblera les trous par des ordres de grandeur crédibles et faux. Aucun chiffre ne doit sortir de l'IA." },
+    { icon: '❌', title: 'Juger votre année', description: "L'analyse de ce qui a marché ou échoué relève de votre gouvernance, pas d'un modèle statistique." },
+    { icon: '❌', title: 'Écrire seule', description: "Un rapport entièrement généré se reconnaît immédiatement : il est fluide, générique et ne dit rien." }
+  ]}
+/>
+
+---
+
+## 📋 La méthode en cinq étapes
+
+### Étape 1 — Rassembler la matière première (sans IA)
+
+C'est l'étape que personne n'aime et que rien ne remplace. Réunissez dans un seul document :
+
+- les **chiffres de l'année** : nombre d'adhérents, de bénévoles, d'heures de bénévolat, d'actions menées, de bénéficiaires touchés, budget réalisé ;
+- les **comptes rendus** de conseil d'administration et de réunions d'équipe ;
+- les **événements marquants**, y compris ceux qui se sont mal passés ;
+- les **retours reçus** : messages de bénéficiaires, remarques de partenaires, échanges avec les financeurs.
+
+Cette matière brute est votre seule protection contre l'invention. Tout ce qui n'y figure pas ne doit pas apparaître dans le rapport final.
+
+<Callout type="tip" title="Le test du chiffre">
+Avant d'écrire, listez vos chiffres clés dans un tableau séparé. À la relecture finale, chaque chiffre du rapport devra pouvoir être pointé dans ce tableau. S'il n'y est pas, il vient de l'IA — supprimez-le.
+</Callout>
+
+### Étape 2 — Faire produire un plan
+
+C'est le premier vrai usage de l'IA, et l'un des plus rentables.
+
+> Voici les éléments d'activité de notre association pour l'année écoulée : [collez votre matière brute]. Nous sommes une association loi 1901 qui [décrivez votre objet en une phrase]. Propose-moi un plan de rapport d'activité en 5 à 7 parties, destiné à être lu par nos adhérents en assemblée générale et par nos financeurs. Pour chaque partie, indique en une ligne ce qu'elle doit contenir. Ne rédige pas encore le contenu.
+
+Vous obtiendrez un plan discutable — c'est le but. Le corriger vous force à décider ce que vous voulez raconter de votre année, ce qui est le vrai travail.
+
+### Étape 3 — Rédiger partie par partie
+
+Ne demandez jamais le rapport entier d'un coup. Vous obtiendriez un texte lisse et sans contenu. Procédez section par section :
+
+> Rédige la partie « [titre de la section] » de notre rapport d'activité, à partir de ces éléments et uniquement de ceux-ci : [éléments de cette section]. Environ 300 mots, ton factuel et accessible, sans superlatifs. Si une information te manque pour être précis, signale-la entre crochets plutôt que de l'inventer.
+
+La dernière phrase est essentielle. Elle transforme les inventions potentielles en `[à compléter]` visibles.
+
+### Étape 4 — Réintroduire votre voix
+
+Un rapport généré est reconnaissable à sa neutralité parfaite. Or ce qui donne sa valeur à un rapport d'activité, ce sont précisément les éléments qu'aucune IA ne peut produire :
+
+- une **anecdote concrète** vécue par un bénévole ;
+- une **difficulté assumée** et ce que vous en avez tiré ;
+- une **citation** d'un bénéficiaire ou d'un partenaire ;
+- un **choix expliqué** : pourquoi vous avez arrêté telle action, pourquoi vous en avez lancé une autre.
+
+Ajoutez-les à la main. Ce sont eux que vos lecteurs retiendront.
+
+### Étape 5 — Relire contre les faits
+
+Trois passes, dans cet ordre :
+
+1. **La passe des chiffres.** Chaque nombre est vérifié dans votre tableau de l'étape 1.
+2. **La passe des noms.** Chaque personne, partenaire, financeur ou lieu cité existe et est correctement orthographié.
+3. **La passe du sens.** Une personne qui n'a pas participé à la rédaction lit le document et signale ce qu'elle ne comprend pas ou ne croit pas.
+
+---
+
+## 🔐 RGPD : ce que vous ne devez pas coller dans une IA
+
+Un rapport d'activité manipule des données de personnes réelles. Avant de coller quoi que ce soit dans un outil en ligne :
+
+- **Aucune donnée nominative** de bénéficiaire, d'adhérent ou de salarié. Anonymisez avant de coller : « une bénéficiaire de 62 ans » plutôt que le prénom et le nom.
+- **Aucune donnée sensible** : santé, situation sociale, orientation, origine, opinions. Ces catégories bénéficient d'une protection renforcée.
+- **Vérifiez le sort des données saisies.** Les outils grand public gratuits réutilisent souvent les contenus pour améliorer leurs modèles. Les offres professionnelles proposent généralement une option de non-conservation.
+
+<Callout type="error" title="Le réflexe minimal">
+Anonymisez d'abord, collez ensuite. Une fois qu'une donnée personnelle est partie dans un service tiers, vous ne pouvez plus la reprendre — et c'est votre association qui reste responsable au titre du RGPD.
+</Callout>
+
+Si votre rapport traite de situations individuelles sensibles, un modèle exécuté localement sur votre propre machine règle le problème à la racine : aucune donnée ne sort.
+
+---
+
+## ⚠️ Les trois erreurs qui se voient tout de suite
+
+Ces erreurs ne sont pas techniques. Elles sont visibles à la lecture, et un financeur habitué les repère en une page.
+
+### L'enthousiasme uniforme
+
+Un texte généré adore les superlatifs. « Une année exceptionnelle », « un engagement sans faille », « des résultats remarquables ». Employés partout, ces qualificatifs ne signifient plus rien et sonnent faux, surtout si votre année a été difficile.
+
+Le correctif est simple : interdisez les superlatifs dans votre prompt, et remplacez chaque appréciation par un fait. Non pas « une forte progression », mais le chiffre, l'écart avec l'an dernier, et l'explication.
+
+### L'absence de tout échec
+
+Un rapport où tout a réussi n'est pas crédible, et il est contre-productif face à un financeur. Les financeurs expérimentés lisent aussi les difficultés : elles montrent que l'association sait s'observer et corriger sa trajectoire.
+
+Une IA ne produira jamais spontanément cette matière, parce que vous ne la lui aurez pas donnée. C'est à vous d'écrire le paragraphe sur l'action qui n'a pas fonctionné, et surtout sur ce que vous en avez conclu.
+
+### Le vocabulaire qui n'est pas le vôtre
+
+Les modèles ont des tics de langage : « dans un contexte marqué par », « il convient de souligner », « en synergie avec ». Si votre association ne parle pas comme ça le reste de l'année, ne commencez pas dans le document qui la représente le mieux.
+
+Un test rapide : lisez trois paragraphes à voix haute. Si vous ne les diriez jamais ainsi devant votre assemblée générale, réécrivez-les.
+
+<Callout type="warning" title="La règle qui résume les trois">
+Un rapport d'activité doit ressembler à votre association, pas à un rapport d'activité. Tout ce qui pourrait être copié-collé dans le document d'une autre structure sans changer un mot est probablement à supprimer.
+</Callout>
+
+---
+
+## ⏱️ Ce que vous gagnez réellement
+
+Soyons honnêtes sur les ordres de grandeur. L'IA ne divise pas le temps par dix.
+
+Ce qu'elle réduit fortement : le **temps de démarrage** — passer de la page blanche à un plan discutable — et le **temps de mise en forme**, harmonisation du ton, transitions, reformulations pour un public non initié.
+
+Ce qu'elle ne réduit pas : la collecte des données, les décisions sur ce qu'il faut raconter, la relecture factuelle. Ces étapes représentent l'essentiel du travail sérieux, et elles restent entièrement à votre charge.
+
+L'économie réelle se situe plutôt autour d'un tiers du temps total, concentrée sur les parties les moins intéressantes. C'est déjà considérable pour une équipe bénévole.
+
+---
+
+## ✅ Checklist avant publication
+
+- [ ] Chaque chiffre du rapport est vérifiable dans nos documents internes
+- [ ] Aucune donnée personnelle identifiante n'a été saisie dans un outil en ligne
+- [ ] Le rapport contient au moins une difficulté assumée, pas seulement des réussites
+- [ ] Au moins un témoignage ou une anecdote concrète y figure
+- [ ] Une personne extérieure à la rédaction l'a relu et a compris l'ensemble
+- [ ] Aucun `[à compléter]` ne subsiste dans la version finale
+
+---
+
+## 🥠 Conclusion : l'IA écrit, vous répondez du contenu
+
+Un rapport d'activité engage votre association devant ses adhérents et ses financeurs. La responsabilité de chaque phrase reste la vôtre, quel que soit l'outil qui l'a produite.
+
+Utilisée comme assistant de structuration et de reformulation, l'IA fait gagner un temps réel sur un exercice que beaucoup d'associations redoutent. Utilisée comme rédacteur autonome, elle produit un document fluide, générique et parfois faux — c'est-à-dire exactement ce qu'un rapport d'activité ne doit pas être.
+
+### Les 3 actions à faire cette semaine
+
+1. 📊 **Constituez** le tableau des chiffres clés de votre année.
+2. 🧩 **Testez** le prompt de plan sur votre matière brute.
+3. 🔒 **Décidez** en équipe de ce qui ne sera jamais collé dans un outil en ligne.
+
+---
+
+<Callout type="tip" title="Besoin d'aide ?">
+Biscuits IA accompagne gratuitement les associations dans la prise en main de ces outils, et propose des ateliers sur la rédaction assistée et la protection des données.
+</Callout>
+
+---
+
+*Un bon rapport d'activité raconte une année, il ne la résume pas. L'IA aide à écrire, pas à se souvenir 🍪*

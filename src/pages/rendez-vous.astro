@@ -1,0 +1,497 @@
+---
+export const prerender = true;
+import BaseLayout from '@/layouts/Layout.astro';
+import Breadcrumb from '@/components/Breadcrumb.astro';
+import { CAL_BOOKING_URL, BOOKING_DURATION_MINUTES, BOOKING_CTA_LABEL } from '@/lib/booking';
+
+const audiences = [
+  {
+    emoji: '🏛️',
+    title: 'Associations et collectivités',
+    text: "Vous vous demandez par où commencer avec l'IA, sans y perdre votre budget ni vos données.",
+  },
+  {
+    emoji: '🏢',
+    title: 'TPE, PME et indépendants',
+    text: 'Vous voulez savoir quels outils valent vraiment le coup pour votre activité, et lesquels non.',
+  },
+  {
+    emoji: '🙋',
+    title: 'Citoyens et curieux',
+    text: 'Vous avez une question précise, un doute sur un outil, ou vous cherchez simplement à y voir clair.',
+  },
+];
+
+const deroule = [
+  {
+    emoji: '⏱️',
+    title: `${BOOKING_DURATION_MINUTES} minutes`,
+    text: 'Assez pour cerner votre besoin et repartir avec des pistes concrètes.',
+  },
+  {
+    emoji: '💻',
+    title: 'En visioconférence',
+    text: 'Un lien vous est envoyé automatiquement après la réservation. Rien à installer.',
+  },
+  {
+    emoji: '🎁',
+    title: 'Gratuit',
+    text: 'Nous sommes une association loi 1901 : ce rendez-vous ne vous coûte rien.',
+  },
+  {
+    emoji: '🕊️',
+    title: 'Sans engagement',
+    text: "Aucune suite obligatoire, aucun devis à signer. Vous repartez avec des réponses, c'est tout.",
+  },
+];
+
+const faq = [
+  {
+    question: 'Faut-il préparer quelque chose ?',
+    answer:
+      "Non. Venez avec vos questions, même vagues. Si vous avez déjà un projet en tête, dites-le en réservant, cela nous permet d'arriver préparés.",
+  },
+  {
+    question: 'Est-ce que vous allez me vendre quelque chose ?',
+    answer:
+      "Non. Nous n'avons rien à vendre et aucun partenariat commercial avec un éditeur. Si un outil payant est la bonne réponse, nous vous le disons franchement.",
+  },
+  {
+    question: 'Puis-je annuler ou déplacer le rendez-vous ?',
+    answer:
+      'Oui, à tout moment depuis le lien de confirmation reçu par e-mail. Prévenez-nous simplement le plus tôt possible.',
+  },
+  {
+    question: "Je préfère écrire plutôt que parler, c'est possible ?",
+    answer:
+      'Bien sûr. Le formulaire de contact convient très bien si votre question tient en quelques lignes.',
+  },
+];
+---
+
+<BaseLayout
+  title="Prendre rendez-vous | Biscuits IA"
+  description={`Réservez un rendez-vous de découverte de ${BOOKING_DURATION_MINUTES} minutes avec Biscuits IA : gratuit, en visioconférence et sans engagement, pour y voir clair sur l'IA.`}
+  schema={{
+    type: 'WebPage',
+    data: {
+      name: 'Prendre rendez-vous avec Biscuits IA',
+      description: `Rendez-vous de decouverte de ${BOOKING_DURATION_MINUTES} minutes, gratuit et sans engagement, en visioconference.`,
+    },
+  }}
+>
+  <Breadcrumb />
+  <!-- —— Hero —— -->
+  <section class="hero">
+    <div class="container">
+      <span class="hero-eyebrow">Rendez-vous de découverte</span>
+      <h1>Parlons-en<br /><em>{BOOKING_DURATION_MINUTES} minutes</em></h1>
+      <p class="hero-sub">
+        Un échange simple avec un bénévole de Biscuits IA pour poser vos questions sur l'IA,
+        clarifier vos priorités et savoir par où commencer. Gratuit, en visio, sans engagement.
+      </p>
+    </div>
+  </section>
+
+  <!-- —— À qui s'adresse ce rendez-vous —— -->
+  <section class="audience-section">
+    <div class="container">
+      <div class="section-header">
+        <h2>À qui s'adresse ce rendez-vous ?</h2>
+        <p>Si vous vous reconnaissez dans une de ces situations, il est fait pour vous.</p>
+      </div>
+      <div class="audience-grid">
+        {
+          audiences.map((a) => (
+            <article class="audience-card">
+              <span class="audience-emoji" aria-hidden="true">
+                {a.emoji}
+              </span>
+              <h3>{a.title}</h3>
+              <p>{a.text}</p>
+            </article>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- —— Ce qui se passe pendant —— -->
+  <section class="deroule-section">
+    <div class="container">
+      <div class="section-header">
+        <h2>Ce qui se passe pendant</h2>
+        <p>Pas de mystère : voilà exactement ce à quoi vous vous engagez.</p>
+      </div>
+      <div class="deroule-grid">
+        {
+          deroule.map((d) => (
+            <div class="deroule-item">
+              <span class="deroule-emoji" aria-hidden="true">
+                {d.emoji}
+              </span>
+              <h3>{d.title}</h3>
+              <p>{d.text}</p>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- —— Questions fréquentes —— -->
+  <section class="faq-section">
+    <div class="container">
+      <div class="section-header">
+        <h2>Questions fréquentes</h2>
+        <p>Les quatre questions qu'on nous pose le plus souvent avant de réserver.</p>
+      </div>
+      <div class="faq-list">
+        {
+          faq.map((f) => (
+            <article class="faq-item">
+              <h3>{f.question}</h3>
+              <p>{f.answer}</p>
+            </article>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- —— CTA final : lien sortant vers Cal.com —— -->
+  <section class="cta-section">
+    <div class="container">
+      <div class="cta-box">
+        <h2>Choisissez votre créneau</h2>
+        <p>
+          La réservation se fait sur Cal.com, notre outil d'agenda. Vous y voyez nos disponibilités
+          et recevez la confirmation par e-mail.
+        </p>
+        <div class="cta-actions">
+          <a href={CAL_BOOKING_URL} class="btn-primary" target="_blank" rel="noopener noreferrer">
+            {BOOKING_CTA_LABEL}
+            <span class="visually-hidden">(s'ouvre dans un nouvel onglet)</span>
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path
+                d="M6 3h7v7M13 3L4 12"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"></path>
+            </svg>
+          </a>
+        </div>
+        <p class="cta-alt">
+          Vous préférez écrire ? <a href="/contact">Utilisez le formulaire de contact</a>.
+        </p>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  /* —— Layout —— */
+  .container {
+    width: min(1100px, 92vw);
+    margin: 0 auto;
+  }
+
+  /* —— Hero —— */
+  .hero {
+    padding: 7rem 0 5rem;
+    text-align: center;
+  }
+
+  .hero-eyebrow {
+    display: inline-block;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-primary);
+    border: 2px solid var(--color-primary);
+    padding: 0.3rem 0.8rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .hero h1 {
+    font-size: clamp(2.4rem, 5vw, 3.8rem);
+    font-weight: 900;
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+    margin: 0 0 1.25rem;
+    color: var(--color-text);
+  }
+
+  .hero h1 em {
+    font-style: normal;
+    color: var(--color-primary);
+    text-decoration: underline;
+    text-decoration-color: var(--color-accent-honey);
+    text-underline-offset: 6px;
+    text-decoration-thickness: 3px;
+  }
+
+  .hero-sub {
+    font-size: clamp(1rem, 2vw, 1.2rem);
+    line-height: 1.65;
+    color: var(--color-text-light);
+    max-width: 640px;
+    margin: 0 auto;
+  }
+
+  /* —— Buttons —— */
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.85rem 1.6rem;
+    background: var(--color-primary);
+    color: var(--color-bg);
+    font-weight: 700;
+    font-size: 0.95rem;
+    text-decoration: none;
+    border: 2px solid var(--color-border);
+    box-shadow: var(--shadow-md);
+    transition:
+      transform 0.15s ease,
+      box-shadow 0.15s ease;
+  }
+
+  .btn-primary:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .btn-primary:active {
+    transform: translate(1px, 1px);
+    box-shadow: var(--shadow-sm);
+  }
+
+  /* —— En-tetes de section —— */
+  .section-header {
+    text-align: center;
+    margin-bottom: 3rem;
+  }
+
+  .section-header h2 {
+    font-size: clamp(1.8rem, 3.5vw, 2.4rem);
+    font-weight: 800;
+    margin: 0 0 0.5rem;
+    color: var(--color-text);
+  }
+
+  .section-header p {
+    color: var(--color-text-light);
+    margin: 0;
+  }
+
+  /* —— A qui s'adresse —— */
+  .audience-section {
+    padding: 4rem 0 5rem;
+    background: var(--color-secondary);
+  }
+
+  .audience-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.5rem;
+    align-items: start;
+  }
+
+  .audience-card {
+    background: var(--color-bg-alt);
+    border: 2px solid var(--color-border);
+    box-shadow: var(--shadow-md);
+    padding: 2rem;
+    transition:
+      transform 0.2s ease,
+      box-shadow 0.2s ease;
+  }
+
+  .audience-card:hover {
+    transform: translate(-3px, -3px);
+    box-shadow: var(--shadow-xl);
+  }
+
+  .audience-emoji {
+    display: block;
+    font-size: 2rem;
+    line-height: 1;
+    margin-bottom: 0.75rem;
+  }
+
+  .audience-card h3 {
+    font-size: 1.25rem;
+    font-weight: 800;
+    margin: 0 0 0.5rem;
+    color: var(--color-text);
+  }
+
+  .audience-card p {
+    font-size: 0.95rem;
+    line-height: 1.65;
+    color: var(--color-text-light);
+    margin: 0;
+  }
+
+  /* —— Ce qui se passe pendant —— */
+  .deroule-section {
+    padding: 5rem 0;
+  }
+
+  .deroule-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1.25rem;
+  }
+
+  .deroule-item {
+    background: var(--color-bg-alt);
+    border: 2px solid var(--color-border);
+    box-shadow: var(--shadow-sm);
+    padding: 1.5rem;
+    text-align: center;
+    transition:
+      transform 0.15s ease,
+      box-shadow 0.15s ease;
+  }
+
+  .deroule-item:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: var(--shadow-md);
+  }
+
+  .deroule-emoji {
+    display: block;
+    font-size: 2.2rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .deroule-item h3 {
+    font-size: 1rem;
+    font-weight: 800;
+    margin: 0 0 0.4rem;
+    color: var(--color-text);
+  }
+
+  .deroule-item p {
+    font-size: 0.875rem;
+    color: var(--color-text-light);
+    line-height: 1.55;
+    margin: 0;
+  }
+
+  /* —— Questions frequentes —— */
+  .faq-section {
+    padding: 4rem 0 5rem;
+    background: var(--color-secondary);
+  }
+
+  .faq-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.25rem;
+  }
+
+  .faq-item {
+    background: var(--color-bg-alt);
+    border: 2px solid var(--color-border);
+    box-shadow: var(--shadow-sm);
+    padding: 1.5rem;
+  }
+
+  .faq-item h3 {
+    font-size: 1.05rem;
+    font-weight: 800;
+    margin: 0 0 0.5rem;
+    color: var(--color-text);
+  }
+
+  .faq-item p {
+    font-size: 0.925rem;
+    line-height: 1.65;
+    color: var(--color-text-light);
+    margin: 0;
+  }
+
+  /* —— CTA final —— */
+  .cta-section {
+    padding: 5rem 0 6rem;
+    background: var(--color-bg-alt);
+  }
+
+  .cta-box {
+    background: var(--color-primary);
+    color: var(--color-bg);
+    border: 2px solid var(--color-border);
+    box-shadow: var(--shadow-xl);
+    padding: 3.5rem 3rem;
+    text-align: center;
+    max-width: 720px;
+    margin: 0 auto;
+  }
+
+  .cta-box h2 {
+    font-size: clamp(1.6rem, 3vw, 2.2rem);
+    font-weight: 900;
+    margin: 0 0 0.75rem;
+    color: inherit;
+  }
+
+  .cta-box p {
+    font-size: 1rem;
+    line-height: 1.65;
+    opacity: 0.9;
+    margin: 0 0 2rem;
+  }
+
+  .cta-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .cta-section .btn-primary {
+    background: var(--color-bg);
+    color: var(--color-primary);
+  }
+
+  .cta-alt {
+    font-size: 0.9rem;
+    margin: 1.75rem 0 0;
+  }
+
+  .cta-alt a {
+    color: inherit;
+    font-weight: 700;
+  }
+
+  /* —— Responsive —— */
+  @media (max-width: 900px) {
+    .audience-grid,
+    .faq-list {
+      grid-template-columns: 1fr;
+    }
+
+    .deroule-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 560px) {
+    .deroule-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .cta-box {
+      padding: 2.5rem 1.5rem;
+    }
+
+    .hero {
+      padding: 5rem 0 3.5rem;
+    }
+  }
+</style>

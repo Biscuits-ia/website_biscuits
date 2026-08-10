@@ -4,6 +4,7 @@ export const prerender = true;
 import BaseLayout from '@/layouts/Layout.astro';
 import ContactForm from '@/components/ContactForm.astro';
 import Breadcrumb from '@/components/Breadcrumb.astro';
+import { BOOKING_DURATION_MINUTES } from '@/lib/booking';
 ---
 
 <BaseLayout
@@ -36,6 +37,16 @@ import Breadcrumb from '@/components/Breadcrumb.astro';
       </div>
 
       <ContactForm />
+
+      <!-- —— Alternative : rendez-vous de decouverte —— -->
+      <div class="rdv-block">
+        <h3>Vous préférez en parler de vive voix ?</h3>
+        <p>
+          Réservez un rendez-vous de découverte de {BOOKING_DURATION_MINUTES} minutes : gratuit, en visioconférence
+          et sans engagement.
+        </p>
+        <a href="/rendez-vous" class="btn-rdv">Prendre rendez-vous</a>
+      </div>
     </div>
   </section>
 </BaseLayout>
@@ -103,5 +114,29 @@ import Breadcrumb from '@/components/Breadcrumb.astro';
   .or-separator {
     font-size: 0.9rem;
     color: var(--color-text-light);
+  }
+
+  .rdv-block {
+    max-width: 700px;
+    margin: 3rem auto 0;
+    padding: 2rem;
+    text-align: center;
+    background: var(--color-bg-alt);
+    border: 2px solid var(--color-border);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .rdv-block h3 {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: var(--color-text);
+    margin: 0 0 0.5rem;
+  }
+
+  .rdv-block p {
+    font-size: 0.95rem;
+    line-height: 1.65;
+    color: var(--color-text-light);
+    margin: 0 0 1.5rem;
   }
 </style>

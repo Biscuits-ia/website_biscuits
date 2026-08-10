@@ -242,6 +242,13 @@ const isActive = (href: string) => (href === '/' ? pathname === '/' : pathname.s
             role="menuitem">Contact</a
           >
         </li>
+        <li class="nav-item" role="none">
+          <a
+            href="/rendez-vous"
+            class={`nav-link ${isActive('/rendez-vous') ? 'nav-link--active' : ''}`}
+            role="menuitem">Prendre rendez-vous</a
+          >
+        </li>
       </ul>
     </nav>
 

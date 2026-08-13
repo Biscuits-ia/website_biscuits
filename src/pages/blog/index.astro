@@ -95,6 +95,14 @@ const pageDescription = `${total} articles sur l'IA generative, la cybersecurite
       <div class="blog-hero-inner">
         <span class="hero-eyebrow">Le blog de Biscuits IA</span>
         <h1 class="blog-hero-title">Comprendre et utiliser l'intelligence artificielle</h1>
+        <p class="blog-transparency">
+          <span aria-hidden="true">🤖</span>
+          <span>
+            <strong>Transparence :</strong> nos articles sont rédigés ou corrigés avec l'aide de notre
+            modèle IA. Chacun repose sur un travail de recherche et de vérification des sources mené en
+            amont par notre équipe, et relu par une personne avant publication.
+          </span>
+        </p>
       </div>
     </header>
 
@@ -719,6 +727,29 @@ const pageDescription = `${total} articles sur l'IA generative, la cybersecurite
     color: var(--color-text);
     line-height: 1.15;
     letter-spacing: -0.02em;
+  }
+
+  /* Mention de transparence : volontairement discrete (texte reduit, couleur
+     secondaire) mais lisible -- contraste et taille restent au-dessus des
+     seuils WCAG AA, elle ne doit pas devenir une clause illisible. */
+  .blog-transparency {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.6rem;
+    max-width: 640px;
+    margin: 1.5rem auto 0;
+    padding: 0.75rem 1rem;
+    background: var(--color-bg-alt);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md, 0.75rem);
+    font-size: 0.9rem;
+    line-height: 1.55;
+    color: var(--color-text-light);
+    text-align: left;
+  }
+
+  .blog-transparency strong {
+    color: var(--color-text);
   }
 
   /* === CONTAINER === */

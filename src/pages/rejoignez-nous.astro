@@ -7,6 +7,10 @@
 import Layout from '@/layouts/Layout.astro';
 import Breadcrumb from '@/components/Breadcrumb.astro';
 
+// Fiche organisation Biscuits IA sur JeVeuxAider : elle mene directement a nos
+// missions, contrairement a la page d'accueil de la plateforme.
+const JVA_ORGANISATION_URL = 'https://www.jeveuxaider.gouv.fr/organisations/34315-biscuits-ia';
+
 const schema = {
   type: 'WebPage' as const,
   data: {
@@ -24,6 +28,49 @@ const schema = {
 >
   <Breadcrumb />
 
+  {
+    /* Banniere de redirection : le recrutement de benevoles ne se fait plus par
+      formulaire ici mais sur JeVeuxAider, la plateforme publique du benevolat.
+      Placee avant le hero pour etre vue avant toute autre action. */
+  }
+  <aside class="jva-banner" aria-labelledby="jva-banner-title">
+    <div class="container jva-banner-inner">
+      {
+        /* width/height explicites : evitent un decalage de mise en page au
+          chargement. Le logo est purement illustratif ici, le texte qui suit
+          porte deja l'information, d'ou l'alt vide. */
+      }
+      <img
+        src="/logos/jeveuxaider.svg"
+        alt=""
+        width="227"
+        height="37"
+        loading="lazy"
+        decoding="async"
+        class="jva-banner-logo"
+      />
+      <div class="jva-banner-text">
+        <p id="jva-banner-title" class="jva-banner-title">
+          Nos recrutements se font sur JeVeuxAider.gouv.fr
+        </p>
+        <p class="jva-banner-desc">
+          La plateforme publique du bénévolat, opérée par l'État. Toutes nos missions y sont
+          publiées et les candidatures s'y déposent directement.
+        </p>
+      </div>
+      <a
+        href={JVA_ORGANISATION_URL}
+        target="_blank"
+        rel="noopener noreferrer"
+        class="jva-banner-cta"
+      >
+        Voir nos missions
+        <span class="visually-hidden">sur JeVeuxAider.gouv.fr (s'ouvre dans un nouvel onglet)</span>
+        <span aria-hidden="true">↗</span>
+      </a>
+    </div>
+  </aside>
+
   <section class="recruit-hero">
     <div class="container">
       <p class="eyebrow">Bénévolat</p>
@@ -33,16 +80,13 @@ const schema = {
         Nous avons besoin de bénévoles motivés pour accompagner nos piliers : IA, cybercriminalité,
         logiciels libres, Anti Pepins et recherche participative.
       </p>
+      {
+        /* Un seul bouton ici : le lien JeVeuxAider est porte par la banniere
+          ci-dessus. Les deux canaux restent ainsi distincts — candidater sur
+          JeVeuxAider, poser une question par le formulaire de contact. */
+      }
       <div class="hero-cta">
         <a href="/contact" class="btn-primary">Nous contacter</a>
-        <a
-          href="https://www.jeveuxaider.gouv.fr/organisations/34315-biscuits-ia"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="btn-ghost"
-        >
-          Voir sur jeveuxaider.gouv
-        </a>
       </div>
     </div>
   </section>
@@ -105,6 +149,69 @@ const schema = {
 </Layout>
 
 <style>
+  /* Banniere JeVeuxAider : visible sans etre agressive. Elle precede le hero
+     parce qu'elle repond a la question que se pose le visiteur en arrivant
+     ("comment je candidate ?") avant qu'il ne cherche un formulaire. */
+  .jva-banner {
+    background: var(--color-bg-alt);
+    border-bottom: 2px solid var(--color-border);
+    padding: 1.25rem 1.5rem;
+  }
+
+  .jva-banner-inner {
+    max-width: 880px;
+    margin: 0 auto;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem 1.5rem;
+  }
+
+  .jva-banner-logo {
+    flex-shrink: 0;
+    width: 170px;
+    height: auto;
+    align-self: center;
+  }
+
+  .jva-banner-text {
+    flex: 1 1 18rem;
+  }
+
+  .jva-banner-title {
+    margin: 0 0 0.25rem;
+    font-weight: 800;
+    color: var(--color-text);
+    font-size: 1.05rem;
+  }
+
+  .jva-banner-desc {
+    margin: 0;
+    color: var(--color-text-light);
+    font-size: 0.95rem;
+    line-height: 1.5;
+  }
+
+  .jva-banner-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-shrink: 0;
+    padding: 0.7rem 1.25rem;
+    font-weight: 700;
+    text-decoration: none;
+    color: var(--color-text);
+    background: var(--color-bg);
+    border: 2px solid var(--color-text);
+    border-radius: var(--radius-md, 0);
+  }
+
+  .jva-banner-cta:hover,
+  .jva-banner-cta:focus-visible {
+    background: var(--color-primary);
+  }
+
   .recruit-hero {
     padding: 5rem 1.5rem 3rem;
     background: var(--color-bg);
@@ -162,22 +269,6 @@ const schema = {
   .btn-primary:hover:not(:disabled) {
     transform: translate(-2px, -2px);
     box-shadow: 4px 4px 0 var(--color-border);
-  }
-
-  .btn-ghost {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0.85rem 1.5rem;
-    background: transparent;
-    color: var(--color-text);
-    border: 2px solid var(--color-border);
-    text-decoration: none;
-    font-weight: 700;
-  }
-
-  .btn-ghost:hover {
-    background: var(--color-bg-alt);
   }
 
   .recruit-why {
@@ -259,8 +350,7 @@ const schema = {
       align-items: stretch;
     }
 
-    .btn-primary,
-    .btn-ghost {
+    .btn-primary {
       text-align: center;
     }
   }

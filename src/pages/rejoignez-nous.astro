@@ -80,11 +80,13 @@ const schema = {
         Nous avons besoin de bénévoles motivés pour accompagner nos piliers : IA, cybercriminalité,
         logiciels libres, Anti Pepins et recherche participative.
       </p>
+      {
+        /* Un seul bouton ici : le lien JeVeuxAider est porte par la banniere
+          ci-dessus. Les deux canaux restent ainsi distincts — candidater sur
+          JeVeuxAider, poser une question par le formulaire de contact. */
+      }
       <div class="hero-cta">
         <a href="/contact" class="btn-primary">Nous contacter</a>
-        <a href={JVA_ORGANISATION_URL} target="_blank" rel="noopener noreferrer" class="btn-ghost">
-          Voir sur jeveuxaider.gouv
-        </a>
       </div>
     </div>
   </section>
@@ -269,22 +271,6 @@ const schema = {
     box-shadow: 4px 4px 0 var(--color-border);
   }
 
-  .btn-ghost {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0.85rem 1.5rem;
-    background: transparent;
-    color: var(--color-text);
-    border: 2px solid var(--color-border);
-    text-decoration: none;
-    font-weight: 700;
-  }
-
-  .btn-ghost:hover {
-    background: var(--color-bg-alt);
-  }
-
   .recruit-why {
     padding: 4rem 1.5rem;
     background: var(--color-bg-alt);
@@ -364,8 +350,7 @@ const schema = {
       align-items: stretch;
     }
 
-    .btn-primary,
-    .btn-ghost {
+    .btn-primary {
       text-align: center;
     }
   }

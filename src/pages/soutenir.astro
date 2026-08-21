@@ -13,11 +13,6 @@ import Breadcrumb from '@/components/Breadcrumb.astro';
 
 const sujetAfficheDefaut = 'Soutenir Biscuits IA';
 const HELLOASSO_URL = 'https://www.helloasso.com/associations/biscuits-ia';
-// Formulaire de don n°2, integre en iframe (chargee au clic, cf. script en
-// bas de page) plutot qu'au chargement de la page : evite de contacter
-// HelloAsso pour un visiteur qui n'a pas manifeste l'intention de donner.
-const HELLOASSO_WIDGET_URL =
-  'https://www.helloasso.com/associations/biscuits-ia/formulaires/2/widget?view=form';
 
 const schema = {
   type: 'WebPage' as const,
@@ -183,39 +178,18 @@ const faq = [
               <h3>{f.titre}</h3>
               <p>{f.description}</p>
 
-              {f.feature ? (
-                <div class="don-widget" data-don-widget>
-                  <button
-                    type="button"
-                    class="way-cta"
-                    data-load-don
-                    data-widget-src={HELLOASSO_WIDGET_URL}
-                  >
-                    Faire un don ici
-                  </button>
-                  <a
-                    href={f.href}
-                    class="don-widget-alt"
-                    rel="noopener noreferrer"
-                    target="_blank"
-                  >
-                    ou donner sur HelloAsso <span class="way-ext" aria-hidden="true">↗</span>
-                  </a>
-                </div>
-              ) : (
-                <a
-                  href={f.href}
-                  class="way-cta"
-                  {...(f.externe ? { rel: 'noopener noreferrer', target: '_blank' } : {})}
-                >
-                  {f.cta}
-                  {f.externe && (
-                    <span class="way-ext" aria-hidden="true">
-                      ↗
-                    </span>
-                  )}
-                </a>
-              )}
+              <a
+                href={f.href}
+                class="way-cta"
+                {...(f.externe ? { rel: 'noopener noreferrer', target: '_blank' } : {})}
+              >
+                {f.cta}
+                {f.externe && (
+                  <span class="way-ext" aria-hidden="true">
+                    ↗
+                  </span>
+                )}
+              </a>
             </article>
           ))
         }
@@ -302,47 +276,6 @@ const faq = [
     const label = document.querySelector<HTMLElement>('[data-sujet-label]');
     if (cta) cta.href = `/contact?sujet=${sujet}`;
     if (label) label.textContent = labels[sujet];
-  }
-
-  // Widget de don HelloAsso : charge au clic, jamais au chargement de la
-  // page. On ne contacte un tiers que si le visiteur a manifeste
-  // l'intention de donner (pas de requete HelloAsso silencieuse pour
-  // chaque visite de la page).
-  //
-  // L'iframe est construite via createElement + addEventListener, jamais
-  // via un attribut onload="" inline : script-src-attr vaut 'none' en
-  // production (cf. middleware.ts / vercel.json), un attribut onload
-  // serait donc bloque silencieusement.
-  const loadDonBtn = document.querySelector<HTMLButtonElement>('[data-load-don]');
-  const donWidget = document.querySelector<HTMLElement>('[data-don-widget]');
-  if (loadDonBtn && donWidget) {
-    loadDonBtn.addEventListener('click', () => {
-      const src = loadDonBtn.dataset.widgetSrc;
-      if (!src) return;
-
-      const iframe = document.createElement('iframe');
-      iframe.title = 'Formulaire de don HelloAsso';
-      iframe.src = src;
-      iframe.allow = 'payment';
-      iframe.setAttribute('scrolling', 'auto');
-      iframe.style.width = 'clamp(280px, 100%, 26rem)';
-      iframe.style.border = 'none';
-      iframe.style.display = 'block';
-      iframe.style.margin = '0 auto';
-
-      // Le widget HelloAsso poste sa hauteur reelle via postMessage : on
-      // l'applique a l'iframe pour eviter une scrollbar interne. On ignore
-      // tout message qui ne vient pas de HelloAsso.
-      window.addEventListener('message', (event) => {
-        if (event.origin !== 'https://www.helloasso.com') return;
-        const height = Number(event.data?.height);
-        if (Number.isFinite(height) && height > 0) {
-          iframe.style.height = `${height}px`;
-        }
-      });
-
-      donWidget.replaceChildren(iframe);
-    });
   }
 </script>
 
@@ -499,31 +432,6 @@ const faq = [
     background: var(--color-bg-elevated);
     box-shadow: 6px 6px 0 var(--color-border);
     scroll-margin-top: 2rem;
-  }
-
-  .don-widget {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.6rem;
-    width: 100%;
-    margin-top: auto;
-  }
-
-  .don-widget iframe {
-    max-width: 100%;
-  }
-
-  .don-widget-alt {
-    font-size: 0.85rem;
-    font-weight: 700;
-    color: var(--color-text-light);
-    text-decoration: none;
-  }
-
-  .don-widget-alt:hover {
-    color: var(--color-primary);
-    text-decoration: underline;
   }
 
   .way-badge {

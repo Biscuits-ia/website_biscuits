@@ -171,7 +171,7 @@ function buildCsp(nonce: string, isDev: boolean): string {
     // Inter est self-hostee : plus aucun besoin de fonts.gstatic.com.
     `font-src 'self'`,
     `connect-src ${connectSrc.join(' ')}`,
-    `frame-src https://www.googletagmanager.com https://vercel.live https://www.helloasso.com`,
+    `frame-src https://www.googletagmanager.com https://vercel.live`,
     `object-src 'none'`,
     `base-uri 'self'`,
     `form-action 'self'`,

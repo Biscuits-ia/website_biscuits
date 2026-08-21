@@ -38,13 +38,18 @@ function getAuthRedirectOrigin(request: Request, url: URL, site: URL | undefined
     if (origin) return origin;
   }
 
+  // SITE / VERCEL_PROJECT_PRODUCTION_URL priment TOUJOURS sur les headers
+  // X-Forwarded-* : ces headers sont fournis par l'appelant et peuvent etre
+  // forges (Host header injection -> lien de reset pointant vers un domaine
+  // attaquant). Le forwarded ne sert qu'en tout dernier recours, si aucune
+  // variable d'env n'est configuree.
   const candidates = [
-    getForwardedOrigin(request),
     normalizeOrigin(import.meta.env.SITE),
     normalizeOrigin(site),
     import.meta.env.VERCEL_PROJECT_PRODUCTION_URL
       ? `https://${import.meta.env.VERCEL_PROJECT_PRODUCTION_URL}`
       : null,
+    getForwardedOrigin(request),
   ];
 
   const origin = candidates.find((candidate): candidate is string => Boolean(candidate));

@@ -14,7 +14,9 @@ const userName = user.user_metadata?.full_name ?? user.email?.split('@')[0] ?? '
 const page = Math.max(1, Number(Astro.url.searchParams.get('page') ?? '1'));
 const perPage = 20;
 const from = (page - 1) * perPage;
-const search = (Astro.url.searchParams.get('q') ?? '').replace(/[,.()[\]]/g, '');
+// Retire les caracteres de structure PostgREST (,.()[]) ET les wildcards
+// ilike (%, _) : sans ca, `?q=%%%%%%` force un scan complet de `profiles`.
+const search = (Astro.url.searchParams.get('q') ?? '').replace(/[,.()[\]%_]/g, '');
 const role = Astro.url.searchParams.get('role') ?? '';
 
 let query = supabase

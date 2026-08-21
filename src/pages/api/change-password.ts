@@ -1,6 +1,9 @@
 import type { APIRoute } from 'astro';
-import { createClient } from '@supabase/supabase-js';
-import { createSupabaseClient, createSupabaseAdminClient } from '@/lib/supabase';
+import {
+  createSupabaseClient,
+  createSupabaseAdminClient,
+  createSupabaseVerificationClient,
+} from '@/lib/supabase';
 import { validatePassword } from '@/lib/validation';
 
 type ChangePasswordBody = {
@@ -8,27 +11,6 @@ type ChangePasswordBody = {
   newPassword: string;
   confirmPassword: string;
 };
-
-/**
- * Client ephemere isole des cookies de la requete. Utilise uniquement
- * pour verifier le mot de passe actuel via signInWithPassword, sans
- * toucher au refresh_token partage avec le browser SDK.
- */
-function createSupabaseClientForLogin() {
-  const url = import.meta.env.SUPABASE_URL;
-  const key = import.meta.env.PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? import.meta.env.SUPABASE_ANON_KEY;
-  if (!url || !key) {
-    throw new Error('[auth] Configuration Supabase manquante.');
-  }
-  return createClient(url, key, {
-    auth: {
-      persistSession: false,
-      autoRefreshToken: false,
-      skipAutoInitialize: true,
-      detectSessionInUrl: false,
-    },
-  });
-}
 
 export const POST: APIRoute = async ({ request, cookies, locals }) => {
   let body: ChangePasswordBody;
@@ -86,8 +68,8 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
   }
 
   // Verifier le mot de passe actuel via un client ephemere isole des
-  // cookies partages (cf. createSupabaseClientForLogin).
-  const loginClient = createSupabaseClientForLogin();
+  // cookies partages (cf. createSupabaseVerificationClient dans lib/supabase.ts).
+  const loginClient = createSupabaseVerificationClient();
   const { error: loginError } = await loginClient.auth.signInWithPassword({
     email: user.email!,
     password: currentPassword,

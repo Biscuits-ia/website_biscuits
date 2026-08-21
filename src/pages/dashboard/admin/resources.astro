@@ -22,7 +22,12 @@ const error = Astro.url.searchParams.get('error') ?? '';
 // Filtre par catégorie
 const filterCat = Astro.url.searchParams.get('category') ?? '';
 
-let query = supabase.from('resources').select('*').order('created_at', { ascending: false });
+let query = supabase
+  .from('resources')
+  .select(
+    'id, title, description, category, file_path, file_name, file_size, file_type, is_published, downloads, created_by, created_at, updated_at'
+  )
+  .order('created_at', { ascending: false });
 
 if (filterCat) query = query.eq('category', filterCat);
 

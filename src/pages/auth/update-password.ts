@@ -8,13 +8,9 @@ import { validatePassword } from '@/lib/validation';
 
 export const POST: APIRoute = async ({ request, cookies, locals }) => {
   try {
-    if (!import.meta.env.SUPABASE_URL || !import.meta.env.SUPABASE_ANON_KEY) {
-      return new Response(JSON.stringify({ error: 'Configuration Supabase manquante.' }), {
-        status: 500,
-        headers: { 'Content-Type': 'application/json' },
-      });
-    }
-
+    // Pas de garde manuel sur les env vars : createSupabaseClient() jette deja
+    // une erreur explicite si la config manque (cf. resolveSupabaseUrl()),
+    // capturee par le catch ci-dessous.
     const formData = await request.formData();
     const currentPassword = formData.get('current_password') as string | null;
     const newPassword = formData.get('new_password') as string | null;

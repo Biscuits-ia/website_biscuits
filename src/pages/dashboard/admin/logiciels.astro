@@ -27,7 +27,7 @@ interface SoftwareRow {
 
 const { data: softwares } = await supabase
   .from('software')
-  .select('*')
+  .select('id, name, description, category, website_url, download_url, install, logo_url, is_free, is_visible')
   .order('name', { ascending: true });
 ---
 

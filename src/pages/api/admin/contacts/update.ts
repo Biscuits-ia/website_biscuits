@@ -12,7 +12,7 @@ export const POST: APIRoute = async (Astro) => {
   const form = await request.formData();
   const contactId = form.get('contact_id') as string | null;
   const status = form.get('status') as string | null;
-  const adminNotes = (form.get('admin_notes') as string | null)?.slice(0, 2000) ?? null;
+  const adminNotes = (form.get('admin_notes') as string | null)?.trim().slice(0, 2000) || null;
 
   if (!isValidUUID(contactId))
     return redirect('/dashboard/admin/contacts?error=' + encodeURIComponent('ID invalide'));

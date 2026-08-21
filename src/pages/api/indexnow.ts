@@ -11,28 +11,19 @@ export const prerender = false;
 const SITE_URL = import.meta.env.PUBLIC_SITE_URL ?? 'https://biscuits-ia.com';
 const ALLOWED_HOSTS = new Set(['biscuits-ia.com', 'www.biscuits-ia.com', 'localhost:4321']);
 
-// Liste d’URLs à soumettre. En prod on léve le sitemap via fs (rapide),
-// en dev on accepte une liste vide.
-async function getSitemapUrls(): Promise<string[]> {
+// Liste d'URLs à soumettre, lue via HTTP sur le sitemap déjà déployé.
+//
+// L'ancienne version lisait dist/client/sitemap-0.xml sur le filesystem :
+// ça marche en local (`astro build` laisse dist/ sur disque), mais jamais
+// sur Vercel -- le bundle d'une Function ne contient pas les artefacts de
+// build, seulement le code. Chaque appel en prod retombait donc sur une
+// liste vide et un 502 systematique.
+async function getSitemapUrls(siteUrl: string): Promise<string[]> {
   try {
-    const fs = await import('node:fs');
-    const path = await import('node:path');
-    // Cherche le sitemap genere dans dist/client/sitemap-0.xml (apres build)
-    // ou astro build output.
-    const candidates = [
-      'dist/client/sitemap-0.xml',
-      'dist/sitemap-0.xml',
-      '.vercel/output/static/sitemap-0.xml',
-    ];
-    for (const c of candidates) {
-      try {
-        const xml = fs.readFileSync(path.resolve(c), 'utf8');
-        return Array.from(xml.matchAll(/<loc>([^<]+)<\/loc>/g)).map((m) => m[1]);
-      } catch {
-        // continue
-      }
-    }
-    return [];
+    const res = await fetch(`${siteUrl}/sitemap-0.xml`);
+    if (!res.ok) return [];
+    const xml = await res.text();
+    return Array.from(xml.matchAll(/<loc>([^<]+)<\/loc>/g)).map((m) => m[1]);
   } catch {
     return [];
   }
@@ -54,7 +45,7 @@ export const POST: APIRoute = async ({ request }) => {
   }
 
   try {
-    const urls = await getSitemapUrls();
+    const urls = await getSitemapUrls(SITE_URL);
     if (!urls.length) {
       return new Response(JSON.stringify({ error: 'sitemap_empty' }), {
         status: 502,

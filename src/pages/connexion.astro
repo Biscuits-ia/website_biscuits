@@ -91,6 +91,15 @@ const nonce = Astro.locals.nonce;
   const btnText = document.getElementById('btn-text');
   const btnLoader = document.getElementById('btn-loader');
 
+  // Empeche l'open redirect : n'accepte qu'un chemin relatif interne, jamais
+  // une URL absolue ni un chemin protocol-relative (//evil.tld). Meme regle
+  // que getSafeNext() dans src/pages/auth/confirm.ts.
+  function getSafeRedirect(value) {
+    if (!value || !value.startsWith('/') || value.startsWith('//')) return '/dashboard';
+    if (value.startsWith('/api/') || value.startsWith('/auth/')) return '/dashboard';
+    return value;
+  }
+
   function showMsg(text, type) {
     if (type === undefined) type = 'error';
     msgEl.textContent = text;
@@ -155,8 +164,7 @@ const nonce = Astro.locals.nonce;
       else localStorage.removeItem('rememberedEmail');
 
       const url = new URL(window.location.href);
-      const redirectTarget = url.searchParams.get('redirect') || '/dashboard/';
-      window.location.href = redirectTarget;
+      window.location.href = getSafeRedirect(url.searchParams.get('redirect'));
     } catch (e) {
       showMsg('Une erreur est survenue. Veuillez réessayer.');
     } finally {

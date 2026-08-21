@@ -27,7 +27,7 @@ interface SoftwareRow {
 
 let query = supabase
   .from('software')
-  .select('*')
+  .select('id, name, description, category, website_url, download_url, install, logo_url, is_free')
   .eq('is_visible', true)
   .order('name', { ascending: true });
 

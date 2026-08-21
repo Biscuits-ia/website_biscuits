@@ -36,9 +36,6 @@ if (search) query = query.ilike('message', `%${search}%`);
 
 const { data: logs, count } = await query;
 const totalPages = Math.ceil((count ?? 0) / perPage);
-
-// Comptage par niveau
-await supabase.rpc('log_level_counts');
 ---
 
 <DashboardLayout title="Logs système" activePage="logs" userName={userName} authResult={result}>

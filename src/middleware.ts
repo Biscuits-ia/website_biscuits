@@ -20,19 +20,6 @@ import { createSupabaseClient } from './lib/supabase';
 import { logError, requestContext } from './lib/observability';
 import crypto from 'node:crypto';
 
-// ─── Cache logout (30 s, borne) ───────────────────────────────────────────────
-//
-// Une entree par userId vu. Sans borne, la Map croit indefiniment pour la duree
-// de vie de l'instance -- et les instances Fluid Compute vivent longtemps. A
-// l'echelle visee (millions de visiteurs) l'instance finit en OOM.
-//
-// Deux garde-fous :
-//   1. purge des entrees expirees, au plus une fois par CLEANUP_INTERVAL_MS ;
-//   2. plafond dur LOGOUT_CACHE_MAX : au-dela, on evince la plus ancienne
-//      entree inseree (une Map JS conserve l'ordre d'insertion).
-
-// ─── Routes publiques ─────────────────────────────────────────────────────────
-
 // ─── Rate-limit ───────────────────────────────────────────────────────────────
 
 async function checkRouteRateLimit(
@@ -122,21 +109,6 @@ function isInvalidMutationOrigin(
   return fetchSite === 'cross-site' || fetchSite === 'same-site';
 }
 
-// ─── Lecture last_logout_at (cache 30 s) ──────────────────────────────────────
-
-// ─── Guard de session ─────────────────────────────────────────────────────────
-
-/**
- * Verifie que la session est valide et non invalidee par un logout recent.
- *
- * REGLE D'OR : UNIQUEMENT getUser() cote serveur.
- * getUser() = validation JWT reseau. Pas de refresh token consomme.
- * Si erreur ou pas d'utilisateur -> 'unauthenticated'.
- *
- * Si une deconnexion a eu lieu dans les 5 dernieres minutes, on considere
- * la session comme invalidee et on force la redirection vers /connexion
- * (SANS appeler signOut cote serveur -- celui-ci revoquerait le refresh).
- */
 // ─── CSP (routes SSR uniquement) ──────────────────────────────────────────────
 //
 // SUPPRIME LE 2026-07-08 : `injectNonce(html, nonce)`.

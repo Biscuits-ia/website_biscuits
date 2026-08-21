@@ -99,9 +99,18 @@ export const POST: APIRoute = async ({ request, cookies, clientAddress }) => {
 
   // Si on est dans un contexte de formulaire (Content-Type: form), on redirige
   if (!contentType.includes('application/json')) {
-    // Determine le referer pour la redirection
-    const referer = request.headers.get('referer') ?? '/';
-    return new Response(null, { status: 303, headers: { Location: referer } });
+    // Redirige vers le referer UNIQUEMENT s'il est same-origin : sinon un
+    // referer force par l'appelant deviendrait un open redirect.
+    const referer = request.headers.get('referer');
+    let safeReferer = '/';
+    if (referer) {
+      try {
+        if (new URL(referer).origin === new URL(request.url).origin) safeReferer = referer;
+      } catch {
+        // referer non parseable -> fallback '/'
+      }
+    }
+    return new Response(null, { status: 303, headers: { Location: safeReferer } });
   }
 
   return new Response(JSON.stringify({ ok: true, id: data.id, accepted_at: data.accepted_at }), {

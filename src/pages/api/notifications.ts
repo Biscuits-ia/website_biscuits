@@ -35,7 +35,8 @@ export const GET: APIRoute = async ({ request, cookies, url }) => {
   const ctx = await getUser(request, cookies);
   if (!ctx) return jsonError('Non autorisé.', 401);
 
-  const limit = Math.min(Number.parseInt(url.searchParams.get('limit') ?? '20', 10), 50);
+  const rawLimit = Number.parseInt(url.searchParams.get('limit') ?? '20', 10);
+  const limit = Number.isFinite(rawLimit) ? Math.min(Math.max(rawLimit, 1), 50) : 20;
   const unreadOnly = url.searchParams.get('unread_only') === 'true';
 
   let query = ctx.supabase

@@ -613,6 +613,16 @@ const initials = displayName
   // Initial count fetch (silent, non-blocking)
   fetchNotifications();
 
-  // Poll every 60s for new notifications
-  setInterval(fetchNotifications, 60_000);
+  // Poll every 60s for new notifications -- mais uniquement pendant que
+  // l'onglet est visible. Un onglet minimise/en arriere-plan n'a aucune
+  // raison d'appeler Supabase Auth + la DB toutes les 60s pendant des heures.
+  let notifInterval = setInterval(fetchNotifications, 60_000);
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      clearInterval(notifInterval);
+    } else {
+      fetchNotifications();
+      notifInterval = setInterval(fetchNotifications, 60_000);
+    }
+  });
 </script>

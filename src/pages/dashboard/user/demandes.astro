@@ -29,7 +29,7 @@ interface RequestRow {
 // puisse pas se degrader sans plafond.
 const { data: requests } = await supabase
   .from('requests')
-  .select('*')
+  .select('id, subject, description, status, admin_reply, created_at, replied_at')
   .eq('user_id', userId)
   .order('created_at', { ascending: false })
   .limit(200);

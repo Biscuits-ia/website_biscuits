@@ -37,10 +37,12 @@ function jsonError(message: string, status: number): Response {
 
 export const POST: APIRoute = async ({ request, cookies }) => {
   try {
-    if (!import.meta.env.SUPABASE_URL || !import.meta.env.SUPABASE_ANON_KEY) {
-      return jsonError('Configuration Supabase manquante (SUPABASE_URL/SUPABASE_ANON_KEY).', 500);
-    }
-
+    // Pas de garde manuel sur les env vars : createSupabaseClient() appelle
+    // resolveSupabaseUrl()/resolvePublishableKey() qui jettent deja une
+    // erreur explicite si la config manque. Un garde ici duplique la
+    // verification en ne testant QUE l'ancien nom de variable
+    // (SUPABASE_ANON_KEY), ce qui casse la route des que la migration vers
+    // PUBLIC_SUPABASE_PUBLISHABLE_KEY est terminee ailleurs dans le projet.
     const formData = await request.formData();
     const email =
       formData.get('email') instanceof File ? null : (formData.get('email') as string | null);

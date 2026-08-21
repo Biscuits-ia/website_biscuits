@@ -13,13 +13,13 @@ const userName = user.user_metadata?.full_name ?? userEmail.split('@')[0];
 // ── Récupérer les infos de l'association ──────────────────────────────────────
 const { data: associationData } = await supabase
   .from('associations')
-  .select('*')
+  .select('id, structure_name, siret, phone_number, contact_email, address, description, is_verified')
   .eq('id', userId)
   .single();
 
 const { data: associationProjects } = await supabase
   .from('association_projects')
-  .select('*')
+  .select('id, title, description, status, priority, deadline')
   .eq('association_id', userId)
   .order('created_at', { ascending: false });
 

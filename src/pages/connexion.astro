@@ -8,7 +8,7 @@ const supabase = Astro.locals.supabase ?? createSupabaseClient(Astro);
 const {
   data: { user },
 } = await supabase.auth.getUser();
-if (user) return Astro.redirect('/dashboard/user/');
+if (user) return Astro.redirect('/dashboard/user');
 const nonce = Astro.locals.nonce;
 ---
 

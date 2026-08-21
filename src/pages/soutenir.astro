@@ -12,6 +12,12 @@ import Layout from '@/layouts/Layout.astro';
 import Breadcrumb from '@/components/Breadcrumb.astro';
 
 const sujetAfficheDefaut = 'Soutenir Biscuits IA';
+const HELLOASSO_URL = 'https://www.helloasso.com/associations/biscuits-ia';
+// Formulaire de don n°2, integre en iframe (chargee au clic, cf. script en
+// bas de page) plutot qu'au chargement de la page : evite de contacter
+// HelloAsso pour un visiteur qui n'a pas manifeste l'intention de donner.
+const HELLOASSO_WIDGET_URL =
+  'https://www.helloasso.com/associations/biscuits-ia/formulaires/2/widget?view=form';
 
 const schema = {
   type: 'WebPage' as const,
@@ -22,15 +28,46 @@ const schema = {
   },
 };
 
+// Ce que finance concretement un don, aligne sur les 4 piliers reels de
+// l'association (cf. PillarsGrid.astro) -- pas de chiffre invente, uniquement
+// la description deja etablie ailleurs sur le site.
+const financements = [
+  {
+    icon: '🎓',
+    titre: "Ateliers d'accompagnement a l'IA",
+    description:
+      "Sessions gratuites pour le grand public, les associations et les collectivites qui n'ont pas les moyens de se payer un consultant.",
+  },
+  {
+    icon: '🧩',
+    titre: 'Logiciels libres pour associations',
+    description:
+      "Developpement et maintenance d'outils libres, auditables et gratuits pour les structures d'interet general.",
+  },
+  {
+    icon: '🛡️',
+    titre: 'Anti Pepins',
+    description:
+      "Hebergement et developpement continu du service public d'analyse anti-arnaque, gratuit, anonyme et sans inscription.",
+  },
+  {
+    icon: '🔬',
+    titre: 'Recherche participative',
+    description:
+      "Modeles ouverts pour l'agriculture et la sante : le pilier que le marche ne finance pas, faute de client a facturer.",
+  },
+];
+
 const facons = [
   {
     icon: '❤',
     titre: 'Faire un don',
     description:
-      "Votre don finance directement la sensibilisation, les ateliers IA pour les associations, le developpement d'Anti Pepins, et nos programmes de recherche participative. HelloAsso, 100% securise, recu fiscal des 10 EUR.",
-    href: 'https://www.helloasso.com/associations/biscuits-ia',
+      "Un don ponctuel, quel que soit son montant, part directement dans les quatre piliers ci-dessus. Aucune part ne remunere d'actionnaire : il n'y en a pas.",
+    href: HELLOASSO_URL,
     externe: true,
     cta: 'Donner sur HelloAsso',
+    feature: true,
   },
   {
     icon: '✍',
@@ -40,6 +77,7 @@ const facons = [
     href: '/rejoignez-nous',
     externe: false,
     cta: 'Adherer',
+    feature: false,
   },
   {
     icon: '⚡',
@@ -49,6 +87,26 @@ const facons = [
     href: '/rejoignez-nous',
     externe: false,
     cta: 'Voir les besoins',
+    feature: false,
+  },
+];
+
+const faq = [
+  {
+    q: 'Le paiement est-il securise ?',
+    r: "Oui. Les dons passent par HelloAsso, plateforme de paiement associative agreee, hors de ce site. Biscuits IA ne stocke ni ne voit jamais vos coordonnees bancaires.",
+  },
+  {
+    q: "J'ai un recu pour mon don ?",
+    r: "Un recu fiscal est delivre automatiquement des 10 EUR de don, envoye par email depuis HelloAsso.",
+  },
+  {
+    q: 'Mon don finance quel projet precisement ?',
+    r: "Un don libre part dans le budget general, reparti selon les besoins du moment entre les quatre piliers (voir ci-dessus). Pour flecher votre don vers un projet precis (la recherche, par exemple), precisez-le dans le formulaire HelloAsso ou ecrivez-nous avant de donner.",
+  },
+  {
+    q: 'Je represente une entreprise ou une collectivite, comment faire ?',
+    r: "Le don individuel via HelloAsso fonctionne aussi pour une structure. Pour un partenariat plus consequent (mecenat de competences, financement d'un projet, convention), ecrivez-nous : on construit ca ensemble.",
   },
 ];
 ---
@@ -65,12 +123,46 @@ const facons = [
       <p class="eyebrow">Soutenir l'association</p>
       <h1>Une association Loi 1901, financee par ceux qui l'utilisent</h1>
       <p class="lead">
-        Biscuits IA est une association d'interet general. Nous ne cherchons pas la croissance :
-        nous cherchons l'impact. Nos tarifs (logiciels, ateliers, accompagnements) sont calcules au
-        plus juste pour financer la mission, pas pour remunerer des actionnaires. Vos dons et votre
-        temps completent ce financement pour ce que le marche ne couvre pas : la recherche
-        participative, l'acces gratuit pour les publics vulnerables, et les ressources libres.
+        Biscuits IA ne cherche pas la croissance : elle cherche l'impact. Nos tarifs (logiciels,
+        ateliers, accompagnements) sont calcules au plus juste pour financer la mission, jamais
+        pour remunerer des actionnaires — il n'y en a pas. Votre don complete ce financement
+        pour ce que le marche ne couvre pas : la recherche participative, l'acces gratuit pour
+        les publics vulnerables, et les ressources libres.
       </p>
+      <div class="hero-cta">
+        <a href="#don" class="btn-primary">Faire un don</a>
+        <a href="#ou-va-largent" class="btn-ghost">Voir ou va votre don</a>
+      </div>
+      <p class="trust-strip">
+        <span>Association Loi 1901</span>
+        <span aria-hidden="true">·</span>
+        <span>Pas d'actionnaires, pas de publicite</span>
+        <span aria-hidden="true">·</span>
+        <span>Recu fiscal des 10 EUR</span>
+      </p>
+    </div>
+  </section>
+
+  <section class="funding" id="ou-va-largent">
+    <div class="container">
+      <h2>Ou va votre don</h2>
+      <p class="funding-intro">
+        Quatre piliers, un seul objectif : rendre le numerique utile et sur pour celles et ceux
+        que le marche laisse de cote. Voici concretement ce que finance votre don.
+      </p>
+      <div class="funding-grid">
+        {
+          financements.map((f) => (
+            <article class="funding-card">
+              <span class="funding-icon" aria-hidden="true">
+                {f.icon}
+              </span>
+              <h3>{f.titre}</h3>
+              <p>{f.description}</p>
+            </article>
+          ))
+        }
+      </div>
     </div>
   </section>
 
@@ -80,24 +172,50 @@ const facons = [
       <div class="ways-grid">
         {
           facons.map((f) => (
-            <article class="way-card">
+            <article
+              class={`way-card${f.feature ? ' way-card--feature' : ''}`}
+              id={f.feature ? 'don' : undefined}
+            >
+              {f.feature && <span class="way-badge">Le plus direct</span>}
               <span class="way-icon" aria-hidden="true">
                 {f.icon}
               </span>
               <h3>{f.titre}</h3>
               <p>{f.description}</p>
-              <a
-                href={f.href}
-                class="way-cta"
-                {...(f.externe ? { rel: 'noopener noreferrer', target: '_blank' } : {})}
-              >
-                {f.cta}
-                {f.externe && (
-                  <span class="way-ext" aria-hidden="true">
-                    ↗
-                  </span>
-                )}
-              </a>
+
+              {f.feature ? (
+                <div class="don-widget" data-don-widget>
+                  <button
+                    type="button"
+                    class="way-cta"
+                    data-load-don
+                    data-widget-src={HELLOASSO_WIDGET_URL}
+                  >
+                    Faire un don ici
+                  </button>
+                  <a
+                    href={f.href}
+                    class="don-widget-alt"
+                    rel="noopener noreferrer"
+                    target="_blank"
+                  >
+                    ou donner sur HelloAsso <span class="way-ext" aria-hidden="true">↗</span>
+                  </a>
+                </div>
+              ) : (
+                <a
+                  href={f.href}
+                  class="way-cta"
+                  {...(f.externe ? { rel: 'noopener noreferrer', target: '_blank' } : {})}
+                >
+                  {f.cta}
+                  {f.externe && (
+                    <span class="way-ext" aria-hidden="true">
+                      ↗
+                    </span>
+                  )}
+                </a>
+              )}
             </article>
           ))
         }
@@ -107,34 +225,51 @@ const facons = [
 
   <section class="why-research">
     <div class="container">
-      <h2>Pourquoi la recherche a besoin de vous</h2>
+      <p class="eyebrow">Zoom sur le pilier 4</p>
+      <h2>Pourquoi la recherche a besoin de vous en particulier</h2>
       <p>
-        Le 5e pilier de Biscuits IA, c'est la recherche participative et les modeles ouverts au
-        service de l'agriculture et de la sante. C'est aussi celui que le marche finance le moins :
-        pas de SaaS a vendre, pas de client direct a facturer. Un modele ouvert, documente en
-        francais, ne rapporte rien a court terme - mais il peut aider des milliers de personnes a
-        prendre de meilleures decisions.
+        La recherche participative et les modeles ouverts au service de l'agriculture et de la
+        sante, c'est le pilier que le marche finance le moins : pas de SaaS a vendre, pas de
+        client direct a facturer. Un modele ouvert, documente en francais, ne rapporte rien a
+        court terme — mais il peut aider des milliers de personnes a prendre de meilleures
+        decisions.
       </p>
       <ul>
         <li>
-          <strong>Co-financer une etude.</strong> Une parcelle pilote, une enquete de terrain, un prototype
-          de modele : comptez 500 a 5000 EUR par projet selon l'ampleur.
+          <strong>Co-financer une etude.</strong> Une parcelle pilote, une enquete de terrain, un
+          prototype de modele : comptez 500 a 5000 EUR par projet selon l'ampleur.
         </li>
         <li>
-          <strong>Financer une these ou un stage.</strong> 6 a 12 mois de travail encadre sur une question
-          de recherche concrete, avec livrables libres.
+          <strong>Financer une these ou un stage.</strong> 6 a 12 mois de travail encadre sur une
+          question de recherche concrete, avec livrables libres.
         </li>
         <li>
-          <strong>Mettre a disposition une donnee ou un terrain.</strong> Pas d'argent, mais un acces
-          a des donnees reelles : c'est parfois plus precieux qu'un cheque.
+          <strong>Mettre a disposition une donnee ou un terrain.</strong> Pas d'argent, mais un
+          acces a des donnees reelles : c'est parfois plus precieux qu'un cheque.
         </li>
       </ul>
       <p class="why-foot">
-        Vous etre une structure (collectivite, fondation, laboratoire, association soeur) ? On
+        Vous etes une structure (collectivite, fondation, laboratoire, association soeur) ? On
         etablit ensemble un partenariat structure. <a href="/contact?sujet=partenariat"
           >Discutons-en</a
         >.
       </p>
+    </div>
+  </section>
+
+  <section class="faq">
+    <div class="container">
+      <h2>Questions frequentes</h2>
+      <div class="faq-list">
+        {
+          faq.map((item) => (
+            <details class="faq-item">
+              <summary>{item.q}</summary>
+              <p>{item.r}</p>
+            </details>
+          ))
+        }
+      </div>
     </div>
   </section>
 
@@ -167,6 +302,47 @@ const facons = [
     const label = document.querySelector<HTMLElement>('[data-sujet-label]');
     if (cta) cta.href = `/contact?sujet=${sujet}`;
     if (label) label.textContent = labels[sujet];
+  }
+
+  // Widget de don HelloAsso : charge au clic, jamais au chargement de la
+  // page. On ne contacte un tiers que si le visiteur a manifeste
+  // l'intention de donner (pas de requete HelloAsso silencieuse pour
+  // chaque visite de la page).
+  //
+  // L'iframe est construite via createElement + addEventListener, jamais
+  // via un attribut onload="" inline : script-src-attr vaut 'none' en
+  // production (cf. middleware.ts / vercel.json), un attribut onload
+  // serait donc bloque silencieusement.
+  const loadDonBtn = document.querySelector<HTMLButtonElement>('[data-load-don]');
+  const donWidget = document.querySelector<HTMLElement>('[data-don-widget]');
+  if (loadDonBtn && donWidget) {
+    loadDonBtn.addEventListener('click', () => {
+      const src = loadDonBtn.dataset.widgetSrc;
+      if (!src) return;
+
+      const iframe = document.createElement('iframe');
+      iframe.title = 'Formulaire de don HelloAsso';
+      iframe.src = src;
+      iframe.allow = 'payment';
+      iframe.setAttribute('scrolling', 'auto');
+      iframe.style.width = 'clamp(280px, 100%, 26rem)';
+      iframe.style.border = 'none';
+      iframe.style.display = 'block';
+      iframe.style.margin = '0 auto';
+
+      // Le widget HelloAsso poste sa hauteur reelle via postMessage : on
+      // l'applique a l'iframe pour eviter une scrollbar interne. On ignore
+      // tout message qui ne vient pas de HelloAsso.
+      window.addEventListener('message', (event) => {
+        if (event.origin !== 'https://www.helloasso.com') return;
+        const height = Number(event.data?.height);
+        if (Number.isFinite(height) && height > 0) {
+          iframe.style.height = `${height}px`;
+        }
+      });
+
+      donWidget.replaceChildren(iframe);
+    });
   }
 </script>
 
@@ -203,7 +379,86 @@ const facons = [
     color: var(--color-text-light);
     font-size: 1.05rem;
     line-height: 1.65;
+    margin: 0 0 2rem;
+  }
+
+  .hero-cta {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 1.75rem;
+  }
+
+  .trust-strip {
+    display: flex;
+    gap: 0.6rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    color: var(--color-text-light);
+    font-size: 0.85rem;
+    font-weight: 700;
     margin: 0;
+  }
+
+  .funding {
+    padding: 4rem 1.5rem;
+    background: var(--color-bg-alt);
+    scroll-margin-top: 2rem;
+  }
+
+  .funding .container {
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .funding h2 {
+    text-align: center;
+    font-size: clamp(1.6rem, 3vw, 2.2rem);
+    margin: 0 0 0.75rem;
+    color: var(--color-text);
+  }
+
+  .funding-intro {
+    text-align: center;
+    color: var(--color-text-light);
+    line-height: 1.6;
+    max-width: 640px;
+    margin: 0 auto 2.5rem;
+  }
+
+  .funding-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr));
+    gap: 1.25rem;
+  }
+
+  .funding-card {
+    background: var(--color-bg-elevated);
+    border: 2px solid var(--color-border);
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+
+  .funding-icon {
+    font-size: 1.9rem;
+    line-height: 1;
+  }
+
+  .funding-card h3 {
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: var(--color-text);
+    margin: 0;
+  }
+
+  .funding-card p {
+    color: var(--color-text-light);
+    line-height: 1.55;
+    margin: 0;
+    font-size: 0.9rem;
   }
 
   .ways {
@@ -230,12 +485,59 @@ const facons = [
   }
 
   .way-card {
+    position: relative;
     background: var(--color-bg-alt);
     border: 2px solid var(--color-border);
     padding: 1.75rem;
     display: flex;
     flex-direction: column;
     gap: 0.85rem;
+  }
+
+  .way-card--feature {
+    border-width: 3px;
+    background: var(--color-bg-elevated);
+    box-shadow: 6px 6px 0 var(--color-border);
+    scroll-margin-top: 2rem;
+  }
+
+  .don-widget {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.6rem;
+    width: 100%;
+    margin-top: auto;
+  }
+
+  .don-widget iframe {
+    max-width: 100%;
+  }
+
+  .don-widget-alt {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--color-text-light);
+    text-decoration: none;
+  }
+
+  .don-widget-alt:hover {
+    color: var(--color-primary);
+    text-decoration: underline;
+  }
+
+  .way-badge {
+    position: absolute;
+    top: -0.7rem;
+    left: 1.5rem;
+    background: var(--color-primary);
+    color: var(--color-bg-alt);
+    font-size: 0.7rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 0.2rem 0.6rem;
+    border: 2px solid var(--color-border);
   }
 
   .way-icon {
@@ -292,6 +594,10 @@ const facons = [
     margin: 0 auto;
   }
 
+  .why-research .eyebrow {
+    text-align: left;
+  }
+
   .why-research h2 {
     font-size: clamp(1.5rem, 3vw, 2rem);
     margin: 0 0 1rem;
@@ -339,6 +645,71 @@ const facons = [
 
   .why-foot a:hover {
     text-decoration: underline;
+  }
+
+  .faq {
+    padding: 4rem 1.5rem;
+    background: var(--color-bg);
+  }
+
+  .faq .container {
+    max-width: 720px;
+    margin: 0 auto;
+  }
+
+  .faq h2 {
+    text-align: center;
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    margin: 0 0 2rem;
+    color: var(--color-text);
+  }
+
+  .faq-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .faq-item {
+    background: var(--color-bg-alt);
+    border: 2px solid var(--color-border);
+    padding: 0;
+  }
+
+  .faq-item summary {
+    cursor: pointer;
+    padding: 1.1rem 1.35rem;
+    font-weight: 800;
+    color: var(--color-text);
+    list-style: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .faq-item summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .faq-item summary::after {
+    content: '+';
+    font-size: 1.3rem;
+    font-weight: 400;
+    color: var(--color-primary);
+    flex-shrink: 0;
+    transition: transform 0.15s ease;
+  }
+
+  .faq-item[open] summary::after {
+    content: '−';
+  }
+
+  .faq-item p {
+    margin: 0;
+    padding: 0 1.35rem 1.25rem;
+    color: var(--color-text-light);
+    line-height: 1.6;
   }
 
   .contact-cta {

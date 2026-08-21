@@ -1,12 +1,11 @@
 ---
-// Page d'accueil : hero, 4 piliers, publics, anti-pepins, soutien, communaute.
+// Page d'accueil : hero, 4 piliers, publics, soutien, communaute.
 export const prerender = true;
 
 import BaseLayout from '@/layouts/Layout.astro';
 import Hero from '@/components/Hero.astro';
 import PillarsGrid from '@/components/PillarsGrid.astro';
 import PublicsPicker from '@/components/PublicsPicker.astro';
-import AntiPepinsShowcase from '@/components/AntiPepinsShowcase.astro';
 import SupportCTA from '@/components/SupportCTA.astro';
 import Communaute from '@/components/Communaute.astro';
 import NewsletterSocial from '@/components/NewsletterSocial.astro';
@@ -31,7 +30,6 @@ import NewsletterSocial from '@/components/NewsletterSocial.astro';
     intro="Une association Loi 1901 qui agit sur quatre fronts complementaires pour rendre le numerique utile, sur et accessible a tous. Chaque pilier finance et renforce les autres."
   />
   <PublicsPicker />
-  <AntiPepinsShowcase />
   <SupportCTA />
   <Communaute />
   <NewsletterSocial />

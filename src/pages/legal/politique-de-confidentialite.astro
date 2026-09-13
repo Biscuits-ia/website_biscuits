@@ -1,7 +1,7 @@
 ---
 // src/pages/legal/politique-de-confidentialite.astro
 // Politique de confidentialite (RGPD) - version complete avec sous-traitants reels
-// Mise a jour : 24 juin 2026
+// Mise a jour : 13 septembre 2026
 
 import BaseLayout from '@/layouts/Layout.astro';
 import Breadcrumb from '@/components/Breadcrumb.astro';
@@ -18,7 +18,7 @@ export const prerender = true;
   <div class="legal-wrapper">
     <div class="container">
       <h1 class="title">Politique de Confidentialite</h1>
-      <p class="update">Derniere mise a jour : 24 juin 2026 - Version 1.1</p>
+      <p class="update">Derniere mise a jour : 13 septembre 2026 - Version 1.2</p>
 
       <p>
         La presente politique explique comment <strong>Biscuits IA</strong>, association Loi 1901
@@ -230,8 +230,9 @@ export const prerender = true;
         <tbody>
           <tr
             ><td>Donnees de compte (email, nom, profil)</td><td
-              >Tant que le compte est actif + 3 ans apres suppression</td
-            ><td>Interet legitime (gestion)</td></tr
+              >Jusqu'a la suppression du compte par l'utilisateur, ou au maximum 3 ans apres son
+              dernier contact (suppression ou anonymisation pour inactivite)</td
+            ><td>Limitation de la conservation (article 5(1)(e) du RGPD)</td></tr
           >
           <tr
             ><td>Inscriptions aux ateliers/formations</td><td>3 ans apres la derniere activite</td
@@ -325,8 +326,11 @@ export const prerender = true;
       <p>
         Pour exercer vos droits, contactez-nous à l'adresse contact@biscuits-ia.com ou via notre <a
           href="/contact">formulaire de contact</a
-        >, en précisant votre demande et en joignant un justificatif d\'identite (copie de carte
-        d\'identite ou passeport, conformement aux recommandations de la CNIL).
+        >, en précisant votre demande. Conformément au principe de minimisation des données, aucun
+        justificatif d\'identite ne vous sera demandé par défaut. Toutefois, en cas de doute
+        raisonnable sur votre identité, des informations supplémentaires nécessaires à sa
+        confirmation, telles qu'une copie d'une pièce d'identité, pourront vous être demandées
+        conformément à l'article 12.6 du RGPD.
       </p>
       <p>
         Nous nous engageons a repondre dans un delai d\'<strong>un mois</strong> a compter de la reception
@@ -350,7 +354,7 @@ export const prerender = true;
       </p>
 
       <p class="update-footer">
-        Derniere mise a jour : 24 juin 2026 - Version 1.1<br />
+        Derniere mise a jour : 13 septembre 2026 - Version 1.2<br />
         <a href="/legal">Retour a l\'index des documents legaux</a>
       </p>
     </div>
